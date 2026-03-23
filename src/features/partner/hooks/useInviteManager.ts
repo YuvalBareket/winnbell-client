@@ -9,8 +9,8 @@ export const useInviteManager = () => {
       // 1. Copy to clipboard immediately when the API returns the link
       navigator.clipboard.writeText(data.inviteLink);
     },
-    onError: (error: any) => {
-      console.error('Failed to generate link:', error.response?.data?.message);
+    onError: (error: unknown) => {
+      console.error('Failed to generate link:', error);
     },
   });
 };

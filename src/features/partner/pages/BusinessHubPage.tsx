@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -23,15 +23,21 @@ import {
   ChevronRight,
   Business,
   ReceiptLong,
+  Edit,
 } from '@mui/icons-material';
 import { useBusinessData } from '../hooks/useBusinessData';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import { useInviteManager } from '../hooks/useInviteManager';
+import EditLocationModal from './components/EditLocationModal';
+import EditBusinessDrawer from './components/EditBusinessDrawer';
+import type { BusinessLocation } from '../types/business.types';
 
 const BusinessHubPage = () => {
   const { data: business, isLoading, isError } = useBusinessData();
   const { mutateAsync: generateInvite, isPending: isInviting } =
     useInviteManager();
+  const [editingLocation, setEditingLocation] = useState<BusinessLocation | null>(null);
+  const [businessDrawerOpen, setBusinessDrawerOpen] = useState(false);
   const handleCopyInvite = async (locId: number) => {
     // 2. Call the real API instead of a fake link
     await generateInvite(locId, {
@@ -121,6 +127,7 @@ const BusinessHubPage = () => {
               </Box>
             </Stack>
             <IconButton
+              onClick={() => setBusinessDrawerOpen(true)}
               sx={{
                 color: 'white',
                 border: '1px solid rgba(255,255,255,0.2)',
@@ -177,7 +184,7 @@ const BusinessHubPage = () => {
               Branch Management
             </Typography>
             <Stack spacing={2}>
-              {business.locations.map((loc: any) => (
+              {business.locations.map((loc: BusinessLocation) => (
                 <Paper
                   key={loc.id}
                   variant='outlined'
@@ -205,9 +212,18 @@ const BusinessHubPage = () => {
                         <LocationOn sx={{ fontSize: 16 }} /> {loc.address}
                       </Typography>
                     </Box>
-                    <IconButton size='small'>
-                      <ChevronRight />
-                    </IconButton>
+                    <Stack direction='row' alignItems='center'>
+                      <IconButton
+                        size='small'
+                        onClick={() => setEditingLocation(loc)}
+                        aria-label='Edit location'
+                      >
+                        <Edit fontSize='small' />
+                      </IconButton>
+                      <IconButton size='small'>
+                        <ChevronRight />
+                      </IconButton>
+                    </Stack>
                   </Stack>
                   <Divider sx={{ my: 2 }} />
                   <Stack
@@ -219,16 +235,16 @@ const BusinessHubPage = () => {
                       <Groups
                         sx={{
                           fontSize: 20,
-                          color: loc.user_id ? 'success.main' : 'text.disabled',
+                          color: loc.manager_id ? 'success.main' : 'text.disabled',
                         }}
                       />
                       <Typography
                         variant='body2'
                         fontWeight={700}
-                        color={loc.user_id ? 'text.primary' : 'text.disabled'}
+                        color={loc.manager_id ? 'text.primary' : 'text.disabled'}
                       >
                         {loc.manager_name ||
-                          (loc.user_id ? 'Manager Assigned' : 'Unassigned')}
+                          (loc.manager_id ? 'Manager Assigned' : 'Unassigned')}
                       </Typography>
                     </Stack>
                     {!loc?.manager_id && (
@@ -255,6 +271,18 @@ const BusinessHubPage = () => {
           </Box>
         </Stack>
       </Container>
+
+      <EditLocationModal
+        open={!!editingLocation}
+        onClose={() => setEditingLocation(null)}
+        location={editingLocation}
+      />
+
+      <EditBusinessDrawer
+        open={businessDrawerOpen}
+        onClose={() => setBusinessDrawerOpen(false)}
+        business={business}
+      />
     </Box>
   );
 };

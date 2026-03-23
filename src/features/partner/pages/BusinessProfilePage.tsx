@@ -24,6 +24,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { BUSINESS_SECTORS } from '../../admin/data';
+import type { BusinessSetupInput } from '../types/business.types';
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import AddressAutoComplete from '../../../shared/components/AddressAutoComplete';
@@ -54,14 +55,12 @@ const BusinessProfilePage = () => {
 
   const { mutate: setupBusiness, isPending } = useBusinessSetup();
 
-  const onSubmit = (data: any) => {
-    // 'data' already has: businessSector, description, and locations[] (with lat/lon)
+  const onSubmit = (data: BusinessSetupInput) => {
     setupBusiness(data, {
-      onError: (err: any) => {
-        console.error(
-          'Setup failed:',
-          err.response?.data?.message || err.message,
-        );
+      onError: (err: unknown) => {
+        const message =
+          err instanceof Error ? err.message : 'Setup failed';
+        console.error('Setup failed:', message);
       },
     });
   };
