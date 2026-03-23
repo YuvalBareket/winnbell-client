@@ -3,7 +3,7 @@ import { Circle, Person, Storefront } from '@mui/icons-material';
 import { formatTicketDate } from '../../../shared/utils/date';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import { useMyTickets } from '../hooks/useMyTickets';
-import { selectIsBusiness } from '../../../store/selectors/authSelectors';
+import { selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
 
 // --- 1. USER TICKET COMPONENT ---
@@ -45,7 +45,7 @@ const UserTicketRow = ({ ticket }: { ticket: any }) => {
 };
 
 // --- 2. BUSINESS TICKET COMPONENT ---
-const BusinessTicketRow = ({ ticket }: { ticket: any }) => {
+const BusinessTicketRow = ({ ticket,isLocation }: { ticket: any,isLocation:boolean }) => {
   const { date, time } = formatTicketDate(ticket.activated_at);
 
   return (
@@ -74,7 +74,7 @@ const BusinessTicketRow = ({ ticket }: { ticket: any }) => {
               display: 'block',
             }}
           >
-            {ticket.location_name}{' '}
+            {isLocation&&ticket.location_name}{' '}
             {ticket.status === 'Activated' && `• ${date} ${time}`}
           </Typography>
         </Box>
@@ -86,7 +86,9 @@ const BusinessTicketRow = ({ ticket }: { ticket: any }) => {
 
 // --- MAIN LIST COMPONENT ---
 export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
-  const isBusiness = useAppSelector(selectIsBusiness);
+  const isBusinessOwner = useAppSelector(selectIsBusiness);
+    const isLocation = useAppSelector(selectIsLocationManager);
+const isBusiness=isBusinessOwner||isLocation
   const { data: tickets, isLoading } = useMyTickets(draw_id);
 
   if (!draw_id) return null;
@@ -124,7 +126,7 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
         ) : tickets && tickets.length > 0 ? (
           tickets.map((ticket: any) =>
             isBusiness ? (
-              <BusinessTicketRow key={ticket.id} ticket={ticket} />
+              <BusinessTicketRow key={ticket.id} ticket={ticket}  isLocation={isLoading}/>
             ) : (
               <UserTicketRow key={ticket.id} ticket={ticket} />
             ),

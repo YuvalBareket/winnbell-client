@@ -33,6 +33,7 @@ const AppRoutes = () => {
       {/* --- Public Routes --- */}
       <Route path='/login' element={<LoginPage />} />
       <Route path='/register/:role?' element={<RegisterPage />} />
+      <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>

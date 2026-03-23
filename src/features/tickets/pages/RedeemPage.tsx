@@ -313,7 +313,7 @@ const RedeemPage = () => {
                 </Typography>
                 <TextField
                   fullWidth
-                  placeholder='XXXXXX'
+                  placeholder='XXXXXXXX'
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   variant='outlined'

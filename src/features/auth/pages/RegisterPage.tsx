@@ -202,7 +202,7 @@ const RegisterPage = () => {
               name='fullName'
               value={formData.fullName}
               onChange={handleChange}
-              placeholder='Enter your name'
+              placeholder='Enter name'
               InputProps={{
                 startAdornment: (
                   <InputAdornment position='start'>
@@ -324,7 +324,12 @@ const RegisterPage = () => {
             Already have an account?{' '}
             <Typography
               component='span'
-              onClick={() => navigate('/login')}
+              onClick={() =>{ 
+                if(inviteToken){
+                  navigate(`/login/?token=${inviteToken}`)
+                  return
+                }
+                navigate('/login')}}
               sx={{ color: 'primary.main', fontWeight: 800, cursor: 'pointer' }}
             >
               Sign In

@@ -231,7 +231,7 @@ const BusinessHubPage = () => {
                           (loc.user_id ? 'Manager Assigned' : 'Unassigned')}
                       </Typography>
                     </Stack>
-                    {loc?.user_id && (
+                    {!loc?.manager_id && (
                       <Button
                         variant='outlined'
                         size='small'

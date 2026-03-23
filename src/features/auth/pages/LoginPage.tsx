@@ -24,12 +24,15 @@ import {
   Google,
   Apple,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLogin } from '../hooks/useLogin'; // <--- Import Hook
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const { mutate: login, isPending, isError, error } = useLogin(); // <--- Use Hook
+    const [searchParams] = useSearchParams();
+
+  const inviteToken = searchParams.get('token');
 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +43,7 @@ const LoginPage = () => {
 
   const handleSubmit = () => {
     if (!formData.email || !formData.password) return;
-    login(formData);
+    login({...formData, inviteToken: inviteToken || undefined});
   };
 
   const errorMessage =
@@ -254,7 +257,13 @@ const LoginPage = () => {
             Don't have an account?{' '}
             <Typography
               component='span'
-              onClick={() => navigate('/register')}
+              onClick={() =>{ 
+                if(inviteToken){
+                   navigate(`/register/?token=${inviteToken}`)
+                   return
+                }
+                
+                navigate('/register')}}
               sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}
             >
               Create new account
