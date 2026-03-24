@@ -70,7 +70,7 @@ const BusinessHubPage = () => {
       <Box
         sx={{
           background: 'linear-gradient(135deg, #7fa6ff 0%, #06347e 100%)',
-          pt: 8,
+          pt: 3,
           pb: 9,
           px: 3,
           color: 'white',
@@ -283,6 +283,8 @@ const BusinessHubPage = () => {
         onClose={() => setBusinessDrawerOpen(false)}
         business={business}
       />
+
+   
     </Box>
   );
 };

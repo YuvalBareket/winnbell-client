@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -7,10 +8,13 @@ import {
 } from '@mui/material';
 import { ConfirmationNumber, Storefront } from '@mui/icons-material';
 import QrCodeIcon from '@mui/icons-material/QrCode';
+import AppMenuDrawer from './AppMenuDrawer';
+import AppHeader from './AppHeader';
 
 const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <Box
@@ -23,14 +27,22 @@ const MainLayout = () => {
         flexDirection: 'column',
       }}
     >
+
+      {location.pathname !== '/nearby' && (
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} />
+      )}
+
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+
       {/* This is where the child page (Redeem, Nearby, Tickets) renders */}
       <Box
         component='main'
         sx={{
-          flex: 1, // Take all available height
-          display: 'flex', // MAKE THIS A FLEXBOX
+          flex: 1,
+          display: 'flex',
           flexDirection: 'column',
-          pb: 7, // Space for the bottom nav
+          mt: '-10px', // offset for fixed AppBar height
+          pb: 4,
           width: '100%',
         }}
       >

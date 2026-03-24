@@ -11,8 +11,9 @@ export const getFreeTicketStatus = async () => {
   const { data } = await api.get(`/tickets/free-status`);
   return data; // Should return { canActivate: boolean, nextAvailableDate: string }
 };
-export const generateBusinessTicket = async () => {
-  // POST /api/tickets/issue
-  const response = await api.post('/tickets/generate');
-  return response.data; // Expected: { success: true, code: 'AB12CD34' }
+export const generateBusinessTicket = async (locationId: number): Promise<{ success: boolean; code: string }> => {
+  const response = await api.post<{ success: boolean; code: string }>('/tickets/generate', {
+    location_id: locationId,
+  });
+  return response.data;
 };

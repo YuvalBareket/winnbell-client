@@ -19,12 +19,13 @@ import {
   Edit,
   CardGiftcard,
   AddCircleOutline,
+  Storefront,
+  CheckCircle,
 } from '@mui/icons-material';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
-import QRCode from 'react-qr-code'; // npm i react-qr-code
+import QRCode from 'react-qr-code';
 import { useNavigate } from 'react-router-dom';
 
-// Architecture Imports
 import {
   selectIsBusiness,
   selectIsLocationManager,
@@ -32,6 +33,7 @@ import {
 import { useAppSelector } from '../../../store/hook';
 import { useRedeemTicket } from '../hooks/useTickets';
 import { useGenerateTicket } from '../hooks/useGenerateTicket';
+import { useBusinessData } from '../../partner/hooks/useBusinessData';
 
 const RedeemPage = () => {
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
@@ -43,8 +45,13 @@ const RedeemPage = () => {
   const [code, setCode] = useState('');
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
 
   const primaryColor = '#195de6';
+
+  // Business owner locations
+  const { data: businessData } = useBusinessData();
+  const locations = isBusinessAdmin ? (businessData?.locations ?? []) : [];
 
   // Mutations
   const redeemMutation = useRedeemTicket();
@@ -61,7 +68,8 @@ const RedeemPage = () => {
   };
 
   const handleGenerate = () => {
-    generateMutation.mutate(void 0, {
+    if (isBusinessAdmin && !selectedLocationId) return;
+    generateMutation.mutate(selectedLocationId as number, {
       onSuccess: (data) => {
         setGeneratedCode(data.code);
         setSuccessOpen(true);
@@ -267,12 +275,14 @@ const RedeemPage = () => {
           {isBusiness ? (
             /* BUSINESS BUTTONS */
             <Stack spacing={2}>
-              <Button
+              {isBusinessAdmin && locations.length > 0 && (
+                <Box>
+                        <Button
                 variant='contained'
                 fullWidth
                 size='large'
                 onClick={handleGenerate}
-                disabled={generateMutation.isPending}
+                disabled={generateMutation.isPending || (isBusinessAdmin && !selectedLocationId)}
                 startIcon={
                   generateMutation.isPending ? (
                     <CircularProgress size={20} color='inherit' />
@@ -291,6 +301,98 @@ const RedeemPage = () => {
               >
                 {generatedCode ? 'Generate New Code' : 'Generate Ticket'}
               </Button>
+              
+                  <Typography
+                    variant='caption'
+                    fontWeight={700}
+                    sx={{
+                      textTransform: 'uppercase',
+                      letterSpacing: 1,
+                      color: 'text.secondary',
+                      mb: 1.5,mt:3,
+                      display: 'block',
+                    }}
+                  >
+                    Select Branch
+                  </Typography>
+                  <Stack spacing={1}>
+                    
+                    {locations.map((loc) => {
+                      const isSelected = selectedLocationId === loc.id;
+                      return (
+                        <Paper
+                          key={loc.id}
+                          elevation={0}
+                          onClick={() => setSelectedLocationId(loc.id)}
+                          sx={{
+                            p: 1.5,
+                            borderRadius: 3,
+                            border: '2px solid',
+                            borderColor: isSelected ? primaryColor : 'divider',
+                            bgcolor: isSelected ? `${primaryColor}08` : 'white',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            transition: 'all 0.15s ease',
+                            '&:hover': {
+                              borderColor: isSelected ? primaryColor : `${primaryColor}66`,
+                              bgcolor: `${primaryColor}05`,
+                            },
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 38,
+                              height: 38,
+                              borderRadius: 2,
+                              bgcolor: isSelected ? primaryColor : `${primaryColor}12`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                              transition: 'background 0.15s ease',
+                            }}
+                          >
+                            <Storefront
+                              sx={{
+                                fontSize: 18,
+                                color: isSelected ? 'white' : primaryColor,
+                              }}
+                            />
+                          </Box>
+                          <Box flex={1} minWidth={0}>
+                            <Typography
+                              variant='body2'
+                              fontWeight={700}
+                              noWrap
+                              sx={{ color: isSelected ? primaryColor : 'text.primary' }}
+                            >
+                              {loc.name}
+                            </Typography>
+                            {loc.address && (
+                              <Typography
+                                variant='caption'
+                                color='text.secondary'
+                                noWrap
+                                sx={{ display: 'block' }}
+                              >
+                                {loc.address}
+                              </Typography>
+                            )}
+                          </Box>
+                          {isSelected && (
+                            <CheckCircle
+                              sx={{ fontSize: 20, color: primaryColor, flexShrink: 0 }}
+                            />
+                          )}
+                        </Paper>
+                      );
+                    })}
+                  </Stack>
+                </Box>
+              )}
+        
               {generatedCode && (
                 <Button
                   variant='text'

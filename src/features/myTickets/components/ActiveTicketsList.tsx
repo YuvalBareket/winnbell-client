@@ -5,9 +5,10 @@ import { BUSINESS_SECTORS } from '../../admin/data';
 import { useMyTickets } from '../hooks/useMyTickets';
 import { selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
+import type { BusinessTicket, UserTicket } from '../types/myTicket.types';
 
 // --- 1. USER TICKET COMPONENT ---
-const UserTicketRow = ({ ticket }: { ticket: any }) => {
+const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
   const sectorInfo =
     BUSINESS_SECTORS[ticket.business_sector] || BUSINESS_SECTORS.Free;
   const { date, time } = formatTicketDate(ticket.activated_at);
@@ -45,7 +46,7 @@ const UserTicketRow = ({ ticket }: { ticket: any }) => {
 };
 
 // --- 2. BUSINESS TICKET COMPONENT ---
-const BusinessTicketRow = ({ ticket,isLocation }: { ticket: any,isLocation:boolean }) => {
+const BusinessTicketRow = ({ ticket }: { ticket: BusinessTicket }) => {
   const { date, time } = formatTicketDate(ticket.activated_at);
 
   return (
@@ -74,8 +75,8 @@ const BusinessTicketRow = ({ ticket,isLocation }: { ticket: any,isLocation:boole
               display: 'block',
             }}
           >
-            {isLocation&&ticket.location_name}{' '}
-            {ticket.status === 'Activated' && `• ${date} ${time}`}
+            {ticket.location_name}
+            {ticket.status === 'Activated' && ` • ${date} ${time}`}
           </Typography>
         </Box>
       </Box>
@@ -124,11 +125,11 @@ const isBusiness=isBusinessOwner||isLocation
         {isLoading ? (
           [...Array(3)].map((_, index) => <TicketSkeleton key={index} />)
         ) : tickets && tickets.length > 0 ? (
-          tickets.map((ticket: any) =>
+          tickets.map((ticket: BusinessTicket | UserTicket) =>
             isBusiness ? (
-              <BusinessTicketRow key={ticket.id} ticket={ticket}  isLocation={isLoading}/>
+              <BusinessTicketRow key={ticket.id} ticket={ticket as BusinessTicket} />
             ) : (
-              <UserTicketRow key={ticket.id} ticket={ticket} />
+              <UserTicketRow key={ticket.id} ticket={ticket as UserTicket} />
             ),
           )
         ) : (
