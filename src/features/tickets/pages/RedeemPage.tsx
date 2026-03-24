@@ -50,7 +50,7 @@ const RedeemPage = () => {
   const primaryColor = '#195de6';
 
   // Business owner locations
-  const { data: businessData } = useBusinessData();
+  const { data: businessData } = useBusinessData(isBusinessAdmin);
   const locations = isBusinessAdmin ? (businessData?.locations ?? []) : [];
 
   // Mutations
@@ -275,7 +275,7 @@ const RedeemPage = () => {
           {isBusiness ? (
             /* BUSINESS BUTTONS */
             <Stack spacing={2}>
-              {isBusinessAdmin && locations.length > 0 && (
+           
                 <Box>
                         <Button
                 variant='contained'
@@ -301,7 +301,8 @@ const RedeemPage = () => {
               >
                 {generatedCode ? 'Generate New Code' : 'Generate Ticket'}
               </Button>
-              
+                 {isBusinessAdmin && locations.length > 0 && (
+              <Stack>
                   <Typography
                     variant='caption'
                     fontWeight={700}
@@ -390,8 +391,10 @@ const RedeemPage = () => {
                       );
                     })}
                   </Stack>
+                  </Stack>
+                        )}
                 </Box>
-              )}
+        
         
               {generatedCode && (
                 <Button
