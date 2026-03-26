@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 
 import type { AuthResponse, RegisterRequest } from '../types/auth.types';
 import { registerUserFn } from '../api/auth.api';
@@ -9,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 export const useRegister = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  return useMutation<AuthResponse, Error, RegisterRequest>({
+  return useMutation<AuthResponse, AxiosError<{ message: string }>, RegisterRequest>({
     mutationFn: registerUserFn,
     onSuccess: (data) => {
       dispatch(
@@ -19,14 +20,12 @@ export const useRegister = () => {
         }),
       );
       if (data?.user?.role === 'Business') {
-        // 3. Move to Step 2: Business Info
         navigate('/partner/setup-business');
       } else {
         navigate('/');
       }
     },
-    onError: (error: any) => {
-      // Axios errors usually hide the message in error.response.data
+    onError: (error) => {
       console.error(
         'Registration failed:',
         error.response?.data?.message || error.message,

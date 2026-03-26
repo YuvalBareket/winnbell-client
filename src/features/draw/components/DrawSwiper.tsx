@@ -1,5 +1,6 @@
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, EffectCoverflow } from 'swiper/modules';
+import type { Swiper as SwiperClass } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
@@ -16,7 +17,7 @@ interface DrawSwiperProps {
 
 export const DrawSwiper = ({ onDrawChange, draw_id }: DrawSwiperProps) => {
   const { data: draws, isLoading } = useGetDraws();
-  const [swiperInstance, setSwiperInstance] = useState<any>(null);
+  const [swiperInstance, setSwiperInstance] = useState<SwiperClass | null>(null);
   useEffect(() => {
     if (!draw_id)
       if (draws && draws.length > 0) {
@@ -63,7 +64,7 @@ export const DrawSwiper = ({ onDrawChange, draw_id }: DrawSwiperProps) => {
         modules={[EffectCoverflow, Pagination]}
         style={{ padding: '40px 40px 0px 40px' }}
       >
-        {draws?.map((draw) => (
+        {draws?.map((draw, index) => (
           <SwiperSlide
             key={draw.id}
             onClick={() => {

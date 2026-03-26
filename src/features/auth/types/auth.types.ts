@@ -40,11 +40,3 @@ export interface LoginPayload {
   token: string;
 }
 export type TCoords = { longitude: number; latitude: number };
-export interface AuthState {
-  userLocation: TCoords | null;
-  isAuthenticated: boolean;
-  user: User | null;
-  token: string | null;
-  loading: boolean;
-  error: string | null;
-}

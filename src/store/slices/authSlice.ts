@@ -39,9 +39,14 @@ export const authSlice = createSlice({
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
+    clearBusinessSetup: (state) => {
+      if (state.user) {
+        state.user.requiresBusinessSetup = false;
+      }
+    },
   },
 });
 
-export const { login, logout, setLoading, setError, setUserLocation } =
+export const { login, logout, setLoading, setError, setUserLocation, clearBusinessSetup } =
   authSlice.actions;
 export default authSlice.reducer;
