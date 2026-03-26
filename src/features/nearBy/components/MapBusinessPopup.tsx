@@ -15,26 +15,27 @@ import {
   CheckCircle,
   LocationOn,
 } from '@mui/icons-material';
-import type { IBusiness } from '../types/nearBy.types';
+import type { NearbyLocation } from '../types/nearBy.types';
 
 type Props = {
-  business: IBusiness | null;
+  location: NearbyLocation | null;
   onClose: () => void;
 };
 
-const MapBusinessPopup: React.FC<Props> = ({ business, onClose }) => {
-  if (!business) return null;
+const MapBusinessPopup: React.FC<Props> = ({ location, onClose }) => {
+  if (!location) return null;
+
   return (
     <Drawer
       anchor='bottom'
-      open={!!business}
+      open={!!location}
       onClose={onClose}
       PaperProps={{
         sx: {
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
           p: 3,
-          maxHeight: '40vh',
+          maxHeight: '45vh',
         },
       }}
     >
@@ -49,7 +50,7 @@ const MapBusinessPopup: React.FC<Props> = ({ business, onClose }) => {
         <Stack spacing={2}>
           <Stack direction='row' spacing={2} alignItems='center'>
             <Avatar
-              src={business?.logo_url}
+              src={location.logo_url}
               sx={{
                 width: 64,
                 height: 64,
@@ -57,14 +58,14 @@ const MapBusinessPopup: React.FC<Props> = ({ business, onClose }) => {
                 bgcolor: 'primary.light',
               }}
             >
-              {business?.name[0]}
+              {location.name[0]}
             </Avatar>
             <Box>
               <Typography variant='h6' fontWeight={700}>
-                {business?.name}
+                {location.name}
               </Typography>
               <Typography variant='body2' color='text.secondary'>
-                {business?.sector} • {business?.location}
+                {location.sector} • {location.address}
               </Typography>
             </Box>
           </Stack>
@@ -73,8 +74,8 @@ const MapBusinessPopup: React.FC<Props> = ({ business, onClose }) => {
             <Chip
               icon={<LocationOn sx={{ fontSize: '16px !important' }} />}
               label={
-                business?.distance_km
-                  ? `${business.distance_km.toFixed(1)} km`
+                location.distance_km
+                  ? `${location.distance_km.toFixed(1)} km`
                   : 'Nearby'
               }
               size='small'
@@ -89,7 +90,7 @@ const MapBusinessPopup: React.FC<Props> = ({ business, onClose }) => {
           </Stack>
 
           <Typography variant='body2' sx={{ color: 'text.secondary', py: 1 }}>
-            {business?.terms_text ||
+            {location.terms_text ||
               'Visit this business to earn lottery tickets!'}
           </Typography>
 
@@ -100,9 +101,9 @@ const MapBusinessPopup: React.FC<Props> = ({ business, onClose }) => {
             startIcon={<Directions />}
             sx={{ borderRadius: 3, py: 1.5 }}
             onClick={() => {
-              window.open(
-                `https://www.google.com/maps/dir/?api=1&destination=${business.latitude},${business.longitude}`,
-              );
+              // Open native Google Maps with coordinates
+              const url = `https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`;
+              window.open(url, '_blank');
             }}
           >
             Get Directions

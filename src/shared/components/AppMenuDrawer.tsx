@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { logout } from '../../store/slices/authSlice';
 import { selectCurrentUser } from '../../store/selectors/authSelectors';
+import { useClerk } from '@clerk/clerk-react';
 
 interface Props {
   open: boolean;
@@ -25,10 +26,11 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const user = useAppSelector(selectCurrentUser);
-
+const { signOut } = useClerk();
   const handleLogout = () => {
     dispatch(logout());
-    navigate('/login');
+    signOut();
+    // ProtectedRoute handles the redirect to /login via React Router (no page reload)
   };
 
   const initials = user?.fullName

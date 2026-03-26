@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import type { IBusiness } from '../types/nearBy.types';
+import type { NearbyLocation } from '../types/nearBy.types';
 
-// We use the "Liberty" style which is clean and works well for English labels
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
 
 function setEnglishLabels(map: maplibregl.Map) {
@@ -12,32 +11,34 @@ function setEnglishLabels(map: maplibregl.Map) {
 
   for (const layer of style.layers) {
     if (layer.type !== 'symbol') continue;
-    // We target layers that have labels
     const layout: any = (layer as any).layout;
     if (!layout || layout['text-field'] == null) continue;
 
     map.setLayoutProperty(layer.id, 'text-field', [
       'coalesce',
-      ['get', 'name:en'], // Prioritize English
+      ['get', 'name:en'], 
       ['get', 'name'],
     ]);
   }
 }
 
 type Props = {
-  businesses: IBusiness[];
-  onBusinessClick?: (id: number) => void;
+  locations: NearbyLocation[]; 
+  // FIX: This now explicitly expects the locationId to match the Page state
+  onBusinessClick?: (locationId: number) => void; 
   userLocation?: { latitude: number; longitude: number } | null;
 };
 
 export default function BusinessMap({
-  businesses,
+  locations,
   onBusinessClick,
   userLocation,
 }: Props) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const markersByIdRef = useRef<Map<number, maplibregl.Marker>>(new Map());
+  
+  // KEY FIX: Store markers by location_id
+  const markersByLocRef = useRef<Map<number, maplibregl.Marker>>(new Map());
 
   // Initialize Map
   useEffect(() => {
@@ -58,8 +59,8 @@ export default function BusinessMap({
     });
 
     return () => {
-      markersByIdRef.current.forEach((marker) => marker.remove());
-      markersByIdRef.current.clear();
+      markersByLocRef.current.forEach((marker) => marker.remove());
+      markersByLocRef.current.clear();
       map.remove();
       mapRef.current = null;
     };
@@ -70,31 +71,34 @@ export default function BusinessMap({
     const map = mapRef.current;
     if (!map) return;
 
-    const nextIds = new Set<number>();
+    const nextLocationIds = new Set<number>();
 
-    businesses.forEach((b) => {
-      nextIds.add(b.id);
-      if (!markersByIdRef.current.has(b.id)) {
-        // Create simple marker (we can style this later with createStationPinElement logic)
+    locations?.forEach((loc) => {
+      const locId = loc.location_id;
+      nextLocationIds.add(locId);
+
+      if (!markersByLocRef.current.has(locId)) {
         const marker = new maplibregl.Marker()
-          .setLngLat([b.longitude, b.latitude])
+          .setLngLat([loc.longitude, loc.latitude])
           .addTo(map);
 
+        // FIX: Pass loc.location_id so the NearbyPage can find the right branch
         marker
           .getElement()
-          .addEventListener('click', () => onBusinessClick?.(b.id));
-        markersByIdRef.current.set(b.id, marker);
+          .addEventListener('click', () => onBusinessClick?.(loc.location_id));
+        
+        markersByLocRef.current.set(locId, marker);
       }
     });
 
     // Cleanup old markers
-    markersByIdRef.current.forEach((marker, id) => {
-      if (!nextIds.has(id)) {
+    markersByLocRef.current.forEach((marker, id) => {
+      if (!nextLocationIds.has(id)) {
         marker.remove();
-        markersByIdRef.current.delete(id);
+        markersByLocRef.current.delete(id);
       }
     });
-  }, [businesses, onBusinessClick]);
+  }, [locations, onBusinessClick]);
 
   // Recenter when user location changes
   useEffect(() => {
@@ -102,9 +106,10 @@ export default function BusinessMap({
       mapRef.current.flyTo({
         center: [userLocation.longitude, userLocation.latitude],
         zoom: 14,
+        essential: true
       });
     }
   }, [userLocation]);
 
-  return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
+  return <div ref={containerRef} style={{ width: '100%', height: '100%', borderRadius: '8px' }} />;
 }

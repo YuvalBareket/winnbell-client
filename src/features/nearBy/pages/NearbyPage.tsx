@@ -29,71 +29,59 @@ import { BUSINESS_SECTORS } from '../../admin/data';
 
 const NearbyPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedBusinessId, setSelectedBusinessId] = useState<number | null>(
-    null,
-  );
+  // Use location_id as the state key to support multiple locations per business
+  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
 
   // 1. Get Current Location (Updates Redux)
   const { refreshLocation } = useCurrentLocation();
 
   // 2. Pull Location and Fetch Data via React Query
   const { userLocation } = useSelector((state: RootState) => state.auth);
-  const { data: businesses, isLoading, isError } = useNearbyBusinesses();
-  const selectedBusiness =
-    businesses?.find((b) => String(b.id) === String(selectedBusinessId)) ||
-    null;
-  // 3. Filter businesses based on search term
-  const filteredBusinesses =
-    businesses?.filter((b) =>
-      b.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  const { data: locations, isLoading, isError } = useNearbyBusinesses();
+
+  // 3. Find the specific location object for the popup
+  const selectedLocation =
+    locations?.find((loc) => loc.location_id === selectedLocationId) || null;
+
+  // 4. Filter locations based on search term
+  const filteredLocations =
+    locations?.filter((loc) =>
+      loc.name.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
+
   return (
     <Box
       sx={{
         width: '100%',
-        height: 'calc(100dvh - 60px)', // Locks the container to the viewport height
+        height: 'calc(100dvh - 60px)',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden', // Prevents body scroll
+        overflow: 'hidden',
       }}
     >
-      {/* 1. MAP SECTION - FIXED */}
+      {/* 1. MAP SECTION */}
       <Box
         sx={{
           position: 'relative',
           width: '100%',
-          height: '40vh', // Fixed height for the map
+          height: '40vh',
           bgcolor: '#e3f2fd',
-          flexShrink: 0, // Prevents the map from collapsing
+          flexShrink: 0,
         }}
       >
         <BusinessMap
-          businesses={filteredBusinesses}
+          locations={filteredLocations}
           userLocation={userLocation}
-          onBusinessClick={(id) => setSelectedBusinessId(id)}
+          onBusinessClick={(id) => setSelectedLocationId(id)}
         />
 
         {/* Floating Search Bar */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 16,
-            left: 16,
-            right: 16,
-            zIndex: 10,
-          }}
-        >
+        <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16, zIndex: 10 }}>
           <Paper
             elevation={3}
-            sx={{
-              p: '2px 4px',
-              display: 'flex',
-              alignItems: 'center',
-              borderRadius: 3,
-              height: 48,
-            }}
+            sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 3, height: 48 }}
           >
-            <IconButton sx={{ p: '10px' }} aria-label='search'>
+            <IconButton sx={{ p: '10px' }}>
               <Search sx={{ color: 'text.secondary' }} />
             </IconButton>
             <InputBase
@@ -122,12 +110,12 @@ const NearbyPage = () => {
         </IconButton>
       </Box>
 
-      {/* 2. PARTNERS LIST - SCROLLABLE */}
+      {/* 2. PARTNERS LIST */}
       <Paper
         elevation={0}
         sx={{
           flex: 1,
-          mt: -3, // Overlap effect
+          mt: -3,
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
           position: 'relative',
@@ -139,29 +127,13 @@ const NearbyPage = () => {
           overflow: 'hidden',
         }}
       >
-        {/* List Header */}
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            p: 3,
-            pb: 2,
-          }}
-        >
-          <Typography variant='h6' sx={{ fontWeight: 700 }}>
-            Partners List
-          </Typography>
-          <Typography
-            variant='subtitle2'
-            color='primary'
-            sx={{ fontWeight: 700 }}
-          >
-            {isLoading ? 'Loading...' : `${filteredBusinesses.length} Found`}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pb: 2 }}>
+          <Typography variant='h6' sx={{ fontWeight: 700 }}>Partners List</Typography>
+          <Typography variant='subtitle2' color='primary' sx={{ fontWeight: 700 }}>
+            {isLoading ? 'Loading...' : `${filteredLocations.length} Found`}
           </Typography>
         </Box>
 
-        {/* Scrollable Stack Area */}
         <Stack
           spacing={2}
           sx={{
@@ -174,28 +146,22 @@ const NearbyPage = () => {
           }}
         >
           {isLoading && (
-            <Box display='flex' justifyContent='center' p={4}>
-              <CircularProgress />
-            </Box>
+            <Box display='flex' justifyContent='center' p={4}><CircularProgress /></Box>
           )}
 
           {isError && (
-            <Typography color='error' align='center' sx={{ p: 4 }}>
-              Error loading nearby places.
-            </Typography>
+            <Typography color='error' align='center' sx={{ p: 4 }}>Error loading nearby places.</Typography>
           )}
 
           {!isLoading &&
-            filteredBusinesses.map((partner) => {
-              // Lookup sector UI data (icon, colors) from centralized file
-              const sectorInfo =
-                BUSINESS_SECTORS[partner.sector] || BUSINESS_SECTORS.Retail;
+            filteredLocations.map((partner) => {
+              const sectorInfo = BUSINESS_SECTORS[partner.sector] || BUSINESS_SECTORS.Retail;
 
               return (
                 <Paper
-                  key={partner.id}
+                  key={partner.location_id}
                   elevation={0}
-                  onClick={() => setSelectedBusinessId(partner.id)}
+                  onClick={() => setSelectedLocationId(partner.location_id)}
                   sx={{
                     p: 2,
                     borderRadius: 3,
@@ -226,43 +192,16 @@ const NearbyPage = () => {
                     </Avatar>
 
                     <Box>
-                      <Typography
-                        variant='subtitle1'
-                        sx={{ fontWeight: 700, lineHeight: 1.2 }}
-                      >
+                      <Typography variant='subtitle1' sx={{ fontWeight: 700, lineHeight: 1.2 }}>
                         {partner.name}
                       </Typography>
 
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          mt: 0.5,
-                        }}
-                      >
-                        <Typography
-                          variant='caption'
-                          sx={{ fontWeight: 600, color: 'text.secondary' }}
-                        >
-                          {partner.distance_km
-                            ? `${partner.distance_km.toFixed(1)} km away`
-                            : sectorInfo.label}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                        <Typography variant='caption' sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                          {partner.distance_km ? `${partner.distance_km.toFixed(1)} km away` : sectorInfo.label}
                         </Typography>
-
-                        <Box
-                          sx={{
-                            width: 4,
-                            height: 4,
-                            borderRadius: '50%',
-                            bgcolor: 'divider',
-                          }}
-                        />
-
                         <Chip
-                          icon={
-                            <CheckCircle sx={{ fontSize: '12px !important' }} />
-                          }
+                          icon={<CheckCircle sx={{ fontSize: '12px !important' }} />}
                           label='Active'
                           size='small'
                           sx={{
@@ -278,27 +217,9 @@ const NearbyPage = () => {
                     </Box>
                   </Box>
 
-                  <Button
-                    variant='text'
-                    sx={{
-                      minWidth: 'auto',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 0.5,
-                      p: 1,
-                    }}
-                  >
+                  <Button variant='text' sx={{ minWidth: 'auto', display: 'flex', flexDirection: 'column', gap: 0.5, p: 1 }}>
                     <Directions color='primary' />
-                    <Typography
-                      variant='caption'
-                      sx={{
-                        fontWeight: 700,
-                        color: 'primary.main',
-                        lineHeight: 1,
-                      }}
-                    >
-                      Go
-                    </Typography>
+                    <Typography variant='caption' sx={{ fontWeight: 700, color: 'primary.main', lineHeight: 1 }}>Go</Typography>
                   </Button>
                 </Paper>
               );
@@ -308,8 +229,8 @@ const NearbyPage = () => {
 
       {/* POPUP DRAWER */}
       <MapBusinessPopup
-        business={selectedBusiness}
-        onClose={() => setSelectedBusinessId(null)}
+        location={selectedLocation}
+        onClose={() => setSelectedLocationId(null)}
       />
     </Box>
   );

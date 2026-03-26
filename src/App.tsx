@@ -5,6 +5,7 @@ import { PersistGate } from 'redux-persist/integration/react'; // Import Gate
 import { store, persistor } from './store/store'; // Import persistor
 import { theme } from './shared/theme';
 import AppRoutes from './routes/AppRoutes';
+import { ClerkProvider } from '@clerk/clerk-react';
 
 // Optional: A simple loading spinner while Redux rehydrates
 const LoadingState = () => (
@@ -12,10 +13,12 @@ const LoadingState = () => (
     <CircularProgress />
   </Box>
 );
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 function App() {
   return (
     <Provider store={store}>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY} allowedRedirectOrigins={['http://localhost:8081']}>
       <PersistGate loading={<LoadingState />} persistor={persistor}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
@@ -24,6 +27,7 @@ function App() {
           </BrowserRouter>
         </ThemeProvider>
       </PersistGate>
+      </ClerkProvider>
     </Provider>
   );
 }

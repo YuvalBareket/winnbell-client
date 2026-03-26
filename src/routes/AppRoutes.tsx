@@ -1,17 +1,22 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../store/hook';
 import {
   selectIsRegularUser,
   selectIsBusiness,
-  selectIsLocationManager,
+  selectIsRequiresBusinessSetup,
+  selectIsAuthenticated,
 } from '../store/selectors/authSelectors';
+import { useClerkSync } from '../shared/hooks/useClerkSync';
 
 import MainLayout from '../shared/components/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
 
-// Common/Auth
+// Auth
 import LoginPage from '../features/auth/pages/LoginPage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
+import VerifyEmailPage from '../features/auth/pages/VerifyEmailPage';
+import SSOCallbackPage from '../features/auth/pages/SSOCallbackPage';
 
 // User Specific
 import NearbyPage from '../features/nearBy/pages/NearbyPage';
@@ -25,48 +30,47 @@ import BusinessProfilePage from '../features/partner/pages/BusinessProfilePage';
 import BusinessHubPage from '../features/partner/pages/BusinessHubPage';
 
 const AppRoutes = () => {
+  const navigate = useNavigate();
   const isUser = useAppSelector(selectIsRegularUser);
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
+
+  // Syncs an active Clerk session into Redux (handles SSO callbacks)
+  useClerkSync();
+
+  // Redirect new business owners to setup after registration
+  useEffect(() => {
+    if (isAuthenticated && requiresBusinessSetup) {
+      navigate('/partner/setup-business', { replace: true });
+    }
+  }, [isAuthenticated, requiresBusinessSetup]);
 
   return (
     <Routes>
       {/* --- Public Routes --- */}
       <Route path='/login' element={<LoginPage />} />
       <Route path='/register/:role?' element={<RegisterPage />} />
+      <Route path='/verify-email' element={<VerifyEmailPage />} />
+      <Route path='/sso-callback' element={<SSOCallbackPage />} />
       <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>
-          {/* TAB 1 (LEFT): 
-              User & Location Manager see the Map. 
-              Business Owner (Admin) sees their Profile/Settings.
-          */}
           <Route
             path='/nearby'
             element={isBusinessAdmin ? <BusinessHubPage /> : <NearbyPage />}
           />
-
-          {/* TAB 2 (MIDDLE): 
-              The "Action" Page. 
-              Users Redeem. Business (Manager & Admin) Issue Tickets.
-          */}
           <Route path='/' element={<RedeemPage />} />
-
-          {/* TAB 3 (RIGHT): 
-              Users see personal history. 
-              Location Manager sees Branch stats.
-              Admin sees the Global Dashboard.
-          */}
           <Route path='/tickets' element={<MyTicketsPage />} />
         </Route>
 
-        {/* User-only bonus page */}
         {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}
       </Route>
 
       {/* Fallback */}
-      <Route path='*' element={<Navigate to='/login' replace />} />
+      <Route path='*' element={<Navigate to='/' replace />} />
     </Routes>
   );
 };

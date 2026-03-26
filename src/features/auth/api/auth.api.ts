@@ -19,3 +19,15 @@ export const loginUserFn = async (
   const response = await api.post<AuthResponse>('/auth/login', data);
   return response.data;
 };
+
+export const syncUserFn = async (
+  clerkToken: string,
+  options?: { role?: string | null; inviteToken?: string | null },
+): Promise<AuthResponse> => {
+  const response = await api.post<AuthResponse>(
+    '/auth/sync',
+    { role: options?.role || null, inviteToken: options?.inviteToken || null },
+    { headers: { Authorization: `Bearer ${clerkToken}` } },
+  );
+  return response.data;
+};

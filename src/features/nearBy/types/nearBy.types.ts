@@ -1,21 +1,18 @@
-// src/types/business.ts
-
 export type BusinessSector = 'Food' | 'Retail' | 'Service';
 
-export interface IBusiness {
-  id: number;
-  owner_user_id: number;
-  name: string;
-  sector: BusinessSector;
-  location: string;
+// Matches exactly what GET /business/nearby returns
+export interface NearbyLocation {
+  location_id: number;
+  address: string;
   latitude: number;
   longitude: number;
-  logo_url?: string;
-  terms_text?: string;
-  ticket_balance: number;
-  created_at: string;
-  // Optional field if the backend calculates distance
-  distance_km?: number;
+  id: number;            // business id
+  name: string;
+  sector: BusinessSector;
+  description: string;
+  terms_text: string;
+  logo_url: string | null;
+  distance_km: number;
 }
 
 export interface ILocationCoords {
@@ -24,5 +21,5 @@ export interface ILocationCoords {
 }
 
 export interface INearbyParams extends ILocationCoords {
-  radius?: number; // Optional radius in km
+  radius?: number;
 }
