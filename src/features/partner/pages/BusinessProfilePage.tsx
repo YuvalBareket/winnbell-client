@@ -20,6 +20,7 @@ import {
   Map,
   ArrowForward,
   Close,
+  Storefront,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
@@ -41,6 +42,7 @@ const BusinessProfilePage = () => {
   // 1. Setup Form with field array for locations
   const { control, handleSubmit, setValue } = useForm({
     defaultValues: {
+      businessName: user?.fullName || '',
       businessSector: '',
       description: '',
       terms_text: '',
@@ -72,8 +74,7 @@ const BusinessProfilePage = () => {
             Business Details
           </Typography>
           <Typography variant='body1' color='text.secondary'>
-            Tell us about <strong>{user?.fullName}</strong> and where customers
-            can find you.
+            Tell us about your business and where customers can find you.
           </Typography>
         </Box>
 
@@ -81,6 +82,27 @@ const BusinessProfilePage = () => {
           <Stack spacing={4}>
             {/* --- SECTION 1: IDENTITY --- */}
             <Stack spacing={1.5}>
+              <Controller
+                name='businessName'
+                control={control}
+                rules={{ required: 'Required' }}
+                render={({ field, fieldState: { error } }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label='Business Name'
+                    error={!!error}
+                    placeholder='Your business name...'
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position='start'>
+                          <Storefront color='action' fontSize='small' />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
+              />
               <Controller
                 name='businessSector'
                 control={control}

@@ -18,6 +18,10 @@ import RegisterPage from '../features/auth/pages/RegisterPage';
 import VerifyEmailPage from '../features/auth/pages/VerifyEmailPage';
 import SSOCallbackPage from '../features/auth/pages/SSOCallbackPage';
 
+// Legal
+import TermsOfServicePage from '../features/legal/pages/TermsOfServicePage';
+import PrivacyPolicyPage from '../features/legal/pages/PrivacyPolicyPage';
+
 // User Specific
 import NearbyPage from '../features/nearBy/pages/NearbyPage';
 import RedeemPage from '../features/tickets/pages/RedeemPage';
@@ -53,6 +57,8 @@ const AppRoutes = () => {
       <Route path='/register/:role?' element={<RegisterPage />} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
       <Route path='/sso-callback' element={<SSOCallbackPage />} />
+      <Route path='/terms' element={<TermsOfServicePage />} />
+      <Route path='/privacy' element={<PrivacyPolicyPage />} />
       <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
 
       {/* --- Protected Routes --- */}

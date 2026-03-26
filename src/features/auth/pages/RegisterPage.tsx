@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Box, Button, Typography, TextField, IconButton, InputAdornment, Paper, Container, Stack, Alert, CircularProgress, Divider,
+  Box, Button, Typography, TextField, IconButton, InputAdornment, Paper, Container, Stack, Alert, CircularProgress, Divider, Checkbox, FormControlLabel,
 } from '@mui/material';
 import {
   ArrowBackIosNew, Person, Mail, Lock, Visibility, VisibilityOff, Handshake, Storefront, VerifiedUser, Google, Apple
@@ -24,6 +24,7 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -50,7 +51,7 @@ const RegisterPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!isLoaded || !formData.fullName || !formData.email || !formData.password) return;
+    if (!isLoaded || !formData.fullName || !formData.email || !formData.password || !termsAccepted) return;
     setLoading(true);
     setError("");
 
@@ -154,7 +155,33 @@ const RegisterPage = () => {
             />
           </Box>
 
-          <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading} disableElevation
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                size='small'
+              />
+            }
+            label={
+              <Typography variant='caption' color='text.secondary'>
+                I agree to the{' '}
+                <Typography component='span' variant='caption'
+                  onClick={(e) => { e.preventDefault(); navigate('/terms'); }}
+                  sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                  Terms of Service
+                </Typography>{' '}
+                and{' '}
+                <Typography component='span' variant='caption'
+                  onClick={(e) => { e.preventDefault(); navigate('/privacy'); }}
+                  sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                  Privacy Policy
+                </Typography>
+              </Typography>
+            }
+          />
+
+          <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted} disableElevation
             sx={{
               py: 1.8, borderRadius: 3, fontSize: '0.95rem', fontWeight: 800, mt: 1,
               bgcolor: isLocationManager ? '#0F172A' : 'primary.main',
@@ -175,6 +202,7 @@ const RegisterPage = () => {
               variant="outlined"
               onClick={() => handleSocialSignUp("oauth_google")}
               startIcon={<Google />}
+              disabled={!termsAccepted}
               sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: '#E2E8F0', color: '#444' }}
             >
               Google
@@ -184,6 +212,7 @@ const RegisterPage = () => {
               variant="outlined"
               onClick={() => handleSocialSignUp("oauth_apple")}
               startIcon={<Apple />}
+              disabled={!termsAccepted}
               sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: '#E2E8F0', color: '#444' }}
             >
               Apple

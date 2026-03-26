@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Box, Button, Typography, TextField, IconButton, InputAdornment, Paper, Container, Divider, Stack, Alert, CircularProgress,
+  Box, Button, Typography, TextField, IconButton, InputAdornment, Paper, Container, Divider, Stack, Alert, CircularProgress, Checkbox, FormControlLabel,
 } from '@mui/material';
 import {
   ArrowBackIosNew, ConfirmationNumber, Mail, Lock, Visibility, VisibilityOff, Login, Google, Apple, MarkEmailRead,
@@ -21,6 +21,7 @@ const LoginPage = () => {
   // 2FA state
   const [needs2FA, setNeeds2FA] = useState(false);
   const [mfaCode, setMfaCode] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -42,7 +43,7 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!isLoaded || !formData.email || !formData.password) return;
+    if (!isLoaded || !formData.email || !formData.password || !termsAccepted) return;
     setLoading(true);
     setError('');
 
@@ -190,7 +191,33 @@ const LoginPage = () => {
             />
           </Box>
 
-          <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                size='small'
+              />
+            }
+            label={
+              <Typography variant='caption' color='text.secondary'>
+                I agree to the{' '}
+                <Typography component='span' variant='caption'
+                  onClick={(e) => { e.preventDefault(); navigate('/terms'); }}
+                  sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                  Terms of Service
+                </Typography>{' '}
+                and{' '}
+                <Typography component='span' variant='caption'
+                  onClick={(e) => { e.preventDefault(); navigate('/privacy'); }}
+                  sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                  Privacy Policy
+                </Typography>
+              </Typography>
+            }
+          />
+
+          <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted}
             endIcon={!loading && <Login />}
             sx={{ py: 2, borderRadius: 3, fontSize: '1rem', fontWeight: 700, boxShadow: '0 8px 16px rgba(25, 93, 230, 0.2)' }}>
             {loading ? <CircularProgress size={24} color='inherit' /> : 'Sign In'}
@@ -203,10 +230,12 @@ const LoginPage = () => {
           </Divider>
           <Stack direction='row' spacing={2}>
             <Button fullWidth variant='outlined' startIcon={<Google />} onClick={() => handleSocialLogin('oauth_google')}
+              disabled={!termsAccepted}
               sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none' }}>
               Google
             </Button>
             <Button fullWidth variant='outlined' startIcon={<Apple />} onClick={() => handleSocialLogin('oauth_apple')}
+              disabled={!termsAccepted}
               sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none' }}>
               Apple
             </Button>

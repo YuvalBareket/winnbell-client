@@ -6,6 +6,7 @@ export interface LocationInput {
 }
 
 export interface BusinessSetupInput {
+  businessName: string;
   businessSector: string;
   description: string;
   terms_text: string;
