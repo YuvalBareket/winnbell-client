@@ -7,6 +7,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignIn } from '@clerk/clerk-react';
+import { BG_PAGE, BORDER_LIGHT, NEUTRAL_SOCIAL_TEXT, SHADOW_PRIMARY_SOFT } from '../../../shared/colors';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -95,7 +96,7 @@ const LoginPage = () => {
   // --- 2FA STEP ---
   if (needs2FA) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', bgcolor: '#F8FAFC' }}>
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', bgcolor: BG_PAGE }}>
         <Container maxWidth='xs'>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
             <Paper elevation={4} sx={{
@@ -138,7 +139,7 @@ const LoginPage = () => {
 
   // --- MAIN LOGIN FORM ---
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE }}>
       <Box sx={{ p: 2 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'action.hover' }}>
           <ArrowBackIosNew fontSize='small' />
@@ -219,7 +220,7 @@ const LoginPage = () => {
 
           <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted}
             endIcon={!loading && <Login />}
-            sx={{ py: 2, borderRadius: 3, fontSize: '1rem', fontWeight: 700, boxShadow: '0 8px 16px rgba(25, 93, 230, 0.2)' }}>
+            sx={{ py: 2, borderRadius: 3, fontSize: '1rem', fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
             {loading ? <CircularProgress size={24} color='inherit' /> : 'Sign In'}
           </Button>
         </Stack>

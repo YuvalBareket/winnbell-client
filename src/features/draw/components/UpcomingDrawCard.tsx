@@ -3,6 +3,7 @@ import { Box, Typography, Paper } from '@mui/material';
 import { Schedule, ConfirmationNumber } from '@mui/icons-material';
 import type { IDrawSummary } from '../../myTickets/types/myTicket.types';
 import { calculateDaysLeft, formatCurrency } from '../../../shared/utils/date';
+import { GRADIENT_DRAW_CARD, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20 } from '../../../shared/colors';
 
 // Use destructuring here to get the 'draw' property from props
 export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
@@ -20,7 +21,7 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
         width: '100%',
         p: 4,
         mb: 4,
-        background: 'linear-gradient(135deg, #0052CC 0%, #0747A6 100%)',
+        background: GRADIENT_DRAW_CARD,
         color: 'white',
         boxShadow: '0px 20px 25px -5px rgba(0, 82, 204, 0.3)',
       }}
@@ -33,7 +34,7 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
           right: '-10%',
           width: 192,
           height: 192,
-          bgcolor: 'rgba(255,255,255,0.1)',
+          bgcolor: ALPHA_WHITE_10,
           borderRadius: '50%',
           filter: 'blur(48px)',
         }}
@@ -77,11 +78,11 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: 1,
-            bgcolor: 'rgba(255,255,255,0.15)',
+            bgcolor: ALPHA_WHITE_15,
             px: 2,
             py: 1,
             borderRadius: 50,
-            border: '1px solid rgba(255,255,255,0.2)',
+            border: `1px solid ${ALPHA_WHITE_20}`,
           }}
         >
           <Schedule sx={{ fontSize: 18 }} />

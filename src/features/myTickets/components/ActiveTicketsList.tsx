@@ -1,5 +1,11 @@
-import { Box, Typography, Stack, Paper, Chip, Skeleton } from '@mui/material';
-import { Circle, Person, Storefront } from '@mui/icons-material';
+import { Box, Typography, Stack, Paper, Chip, Skeleton, Button } from '@mui/material';
+import { Circle, Person, Storefront, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import {
+  STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
+  STATUS_PENDING_BG, STATUS_PENDING_TEXT,
+  ALPHA_PRIMARY_10,
+} from '../../../shared/colors';
 import { formatTicketDate } from '../../../shared/utils/date';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import { useMyTickets } from '../hooks/useMyTickets';
@@ -87,9 +93,10 @@ const BusinessTicketRow = ({ ticket }: { ticket: BusinessTicket }) => {
 
 // --- MAIN LIST COMPONENT ---
 export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
+  const navigate = useNavigate();
   const isBusinessOwner = useAppSelector(selectIsBusiness);
-    const isLocation = useAppSelector(selectIsLocationManager);
-const isBusiness=isBusinessOwner||isLocation
+  const isLocation = useAppSelector(selectIsLocationManager);
+  const isBusiness = isBusinessOwner || isLocation;
   const { data: tickets, isLoading } = useMyTickets(draw_id);
 
   if (!draw_id) return null;
@@ -132,13 +139,38 @@ const isBusiness=isBusinessOwner||isLocation
               <UserTicketRow key={ticket.id} ticket={ticket as UserTicket} />
             ),
           )
-        ) : (
-          <Box sx={{ py: 4, textAlign: 'center', opacity: 0.6 }}>
-            <Typography variant='body2'>
-              {isBusiness
-                ? 'No tickets handed out for this draw.'
-                : 'No tickets entered for this draw.'}
+        ) : isBusiness ? (
+          <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
+            <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+              <StorefrontOutlined sx={{ fontSize: 32, color: 'text.disabled' }} />
+            </Box>
+            <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
+              No tickets distributed yet
             </Typography>
+            <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
+              Tickets will appear here once customers activate them at your location.
+            </Typography>
+          </Box>
+        ) : (
+          <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
+            <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_PRIMARY_10, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+              <ConfirmationNumberOutlined sx={{ fontSize: 32, color: 'primary.main' }} />
+            </Box>
+            <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
+              No tickets for this draw
+            </Typography>
+            <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5, mb: 2.5 }}>
+              Visit a partner location and scan your QR code to enter this draw.
+            </Typography>
+            <Button
+              variant='contained'
+              size='small'
+              disableElevation
+              onClick={() => navigate('/nearby')}
+              sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', px: 3 }}
+            >
+              Find Partners Nearby
+            </Button>
           </Box>
         )}
       </Stack>
@@ -201,8 +233,8 @@ const TicketStatusSection = ({
           height: 20,
           fontSize: '0.65rem',
           fontWeight: 700,
-          bgcolor: status === 'Activated' ? '#e8f5e9' : '#fff3e0',
-          color: status === 'Activated' ? '#2e7d32' : '#e65100',
+          bgcolor: status === 'Activated' ? STATUS_ACTIVATED_BG : STATUS_PENDING_BG,
+          color: status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
           border: '1px solid',
           borderColor: 'divider',
         }}

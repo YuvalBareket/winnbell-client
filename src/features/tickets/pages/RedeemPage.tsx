@@ -12,6 +12,9 @@ import {
   Snackbar,
   Alert,
   Stack,
+  Dialog,
+  Zoom,
+  Fade,
 } from '@mui/material';
 import {
   Bolt,
@@ -21,6 +24,9 @@ import {
   AddCircleOutline,
   Storefront,
   CheckCircle,
+  ChevronRight,
+  ConfirmationNumber,
+  EmojiEvents,
 } from '@mui/icons-material';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import QRCode from 'react-qr-code';
@@ -34,6 +40,7 @@ import { useAppSelector } from '../../../store/hook';
 import { useRedeemTicket } from '../hooks/useTickets';
 import { useGenerateTicket } from '../hooks/useGenerateTicket';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
+import { PRIMARY_MAIN, GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
 
 const RedeemPage = () => {
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
@@ -45,9 +52,11 @@ const RedeemPage = () => {
   const [code, setCode] = useState('');
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [activatedCode, setActivatedCode] = useState<string | null>(null);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
 
-  const primaryColor = '#195de6';
+  const primaryColor = PRIMARY_MAIN;
 
   // Business owner locations
   const { data: businessData } = useBusinessData(isBusinessAdmin);
@@ -59,9 +68,11 @@ const RedeemPage = () => {
 
   const handleActivate = () => {
     if (!code || code.length < 5) return;
-    redeemMutation.mutate(code, {
+    const submittedCode = code;
+    redeemMutation.mutate(submittedCode, {
       onSuccess: () => {
-        setSuccessOpen(true);
+        setActivatedCode(submittedCode);
+        setSuccessDialogOpen(true);
         setCode('');
       },
     });
@@ -80,7 +91,7 @@ const RedeemPage = () => {
   const handleCloseSnackbar = () => setSuccessOpen(false);
 
   return (
-    <Box p={2} pt={3} sx={{ display: 'flex', flexDirection: 'column' }}>
+    <Box p={2} pt={0} sx={{ display: 'flex', flexDirection: 'column' }}>
       <Container
         maxWidth='xs'
         sx={{
@@ -504,13 +515,13 @@ const RedeemPage = () => {
                   </Box>
                   <Stack flex={1}>
                     <Typography variant='body2' fontWeight={700}>
-                      free weekly ticket
+                      Free Weekly Ticket
                     </Typography>
                     <Typography variant='caption' color='text.secondary'>
                       Claim your 1 free entry for this week
                     </Typography>
                   </Stack>
-                  <Box sx={{ color: primaryColor, fontWeight: 900 }}>&gt;</Box>
+                  <ChevronRight sx={{ color: primaryColor }} />
                 </Paper>
 
                 <Box
@@ -553,17 +564,117 @@ const RedeemPage = () => {
         </Box>
       </Container>
 
+      {/* Business: simple snackbar */}
       <Snackbar
         open={successOpen}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
       >
         <Alert severity='success' variant='filled'>
-          {isBusiness
-            ? 'Ticket Generated Successfully!'
-            : 'Ticket activated successfully!'}
+          Ticket Generated Successfully!
         </Alert>
       </Snackbar>
+
+      {/* User: full-screen celebration dialog */}
+      <Dialog
+        open={successDialogOpen}
+        fullScreen
+        TransitionComponent={Fade}
+        PaperProps={{ sx: { bgcolor: 'transparent' } }}
+      >
+        <Box
+          sx={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: GRADIENT_SUCCESS,
+            px: 4,
+            textAlign: 'center',
+          }}
+        >
+          <Zoom in={successDialogOpen} timeout={400}>
+            <Box
+              sx={{
+                width: 100,
+                height: 100,
+                borderRadius: '50%',
+                bgcolor: 'rgba(255,255,255,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 3,
+                border: '2px solid rgba(255,255,255,0.3)',
+              }}
+            >
+              <EmojiEvents sx={{ fontSize: 52, color: GOLD_TROPHY }} />
+            </Box>
+          </Zoom>
+
+          <Fade in={successDialogOpen} timeout={600}>
+            <Box>
+              <Typography variant='h3' fontWeight={800} sx={{ color: 'white', mb: 1 }}>
+                You're In!
+              </Typography>
+              <Typography variant='body1' sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, lineHeight: 1.6 }}>
+                Your ticket has been activated.<br />Good luck in the draw!
+              </Typography>
+
+              {activatedCode && (
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: 3,
+                    px: 4,
+                    py: 2.5,
+                    mb: 5,
+                    display: 'inline-block',
+                  }}
+                >
+                  <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 2, display: 'block', mb: 0.5 }}>
+                    Ticket Code
+                  </Typography>
+                  <Typography variant='h4' fontWeight={900} sx={{ color: 'white', fontFamily: 'monospace', letterSpacing: 4 }}>
+                    {activatedCode}
+                  </Typography>
+                </Box>
+              )}
+
+              <Stack spacing={2}>
+                <Button
+                  variant='contained'
+                  size='large'
+                  startIcon={<ConfirmationNumber />}
+                  onClick={() => {
+                    setSuccessDialogOpen(false);
+                    navigate('/tickets');
+                  }}
+                  sx={{
+                    bgcolor: 'white',
+                    color: primaryColor,
+                    fontWeight: 800,
+                    borderRadius: 3,
+                    py: 1.8,
+                    px: 4,
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+                  }}
+                >
+                  View My Tickets
+                </Button>
+                <Button
+                  variant='text'
+                  onClick={() => setSuccessDialogOpen(false)}
+                  sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}
+                >
+                  Done
+                </Button>
+              </Stack>
+            </Box>
+          </Fade>
+        </Box>
+      </Dialog>
     </Box>
   );
 };

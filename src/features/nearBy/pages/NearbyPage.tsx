@@ -16,6 +16,8 @@ import {
   MyLocation,
   Directions,
   CheckCircle,
+  SearchOff,
+  Storefront as StorefrontIcon,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 
@@ -151,6 +153,35 @@ const NearbyPage = () => {
 
           {isError && (
             <Typography color='error' align='center' sx={{ p: 4 }}>Error loading nearby places.</Typography>
+          )}
+
+          {/* Empty state — no search results */}
+          {!isLoading && !isError && filteredLocations.length === 0 && searchTerm.length > 0 && (
+            <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
+              <SearchOff sx={{ fontSize: 56, color: 'text.disabled', mb: 1.5 }} />
+              <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
+                No partners found for "{searchTerm}"
+              </Typography>
+              <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5, mb: 2 }}>
+                Try a different name or clear the search.
+              </Typography>
+              <Button variant='outlined' size='small' sx={{ borderRadius: 2, fontWeight: 700 }} onClick={() => setSearchTerm('')}>
+                Clear Search
+              </Button>
+            </Box>
+          )}
+
+          {/* Empty state — no nearby partners at all */}
+          {!isLoading && !isError && filteredLocations.length === 0 && searchTerm.length === 0 && (
+            <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
+              <StorefrontIcon sx={{ fontSize: 56, color: 'text.disabled', mb: 1.5 }} />
+              <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
+                No partners near you yet
+              </Typography>
+              <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
+                Try zooming out on the map or check back later.
+              </Typography>
+            </Box>
           )}
 
           {!isLoading &&

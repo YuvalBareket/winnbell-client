@@ -1,28 +1,32 @@
 import { createTheme } from '@mui/material/styles';
+import {
+  PRIMARY_MAIN,
+  BG_DEFAULT,
+  TEXT_PRIMARY,
+  TEXT_SECONDARY,
+} from './colors';
 
 export const theme = createTheme({
   palette: {
     primary: {
-      main: '#195de6',
+      main: PRIMARY_MAIN,
       contrastText: '#ffffff',
     },
     background: {
-      default: '#f8f9fa',
+      default: BG_DEFAULT,
       paper: '#ffffff',
     },
     text: {
-      primary: '#0e121b',
-      secondary: '#6b7280',
+      primary: TEXT_PRIMARY,
+      secondary: TEXT_SECONDARY,
     },
   },
   typography: {
-    // 1. Switched to Plus Jakarta Sans
     fontFamily: '"Plus Jakarta Sans", "Manrope", "Roboto", "Arial", sans-serif',
     button: {
       textTransform: 'none',
       fontWeight: 700,
     },
-    // 2. Headings look "prettier" with slightly negative letter spacing
     h1: { fontWeight: 800, letterSpacing: '-0.02em' },
     h2: { fontWeight: 800, letterSpacing: '-0.02em' },
     h3: { fontWeight: 800, letterSpacing: '-0.02em' },
@@ -42,7 +46,7 @@ export const theme = createTheme({
         root: {
           borderRadius: 12,
           boxShadow: 'none',
-          padding: '10px 20px', // Slightly taller for a more premium feel
+          padding: '10px 20px',
         },
       },
     },
@@ -50,7 +54,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)', // Softer shadow
+          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)',
         },
       },
     },

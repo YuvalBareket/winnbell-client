@@ -16,6 +16,7 @@ import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { logout } from '../../store/slices/authSlice';
 import { selectCurrentUser } from '../../store/selectors/authSelectors';
 import { useClerk } from '@clerk/clerk-react';
+import { GRADIENT_HERO, ALPHA_WHITE_20, ALPHA_WHITE_70 } from '../../shared/colors';
 
 interface Props {
   open: boolean;
@@ -54,7 +55,7 @@ const { signOut } = useClerk();
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #7fa6ff 0%, #06347e 100%)',
+            background: GRADIENT_HERO,
             px: 3,
             pt: 5,
             pb: 3,
@@ -66,7 +67,7 @@ const { signOut } = useClerk();
               sx={{
                 width: 48,
                 height: 48,
-                bgcolor: 'rgba(255,255,255,0.2)',
+                bgcolor: ALPHA_WHITE_20,
                 color: 'white',
                 fontWeight: 800,
                 fontSize: 16,
@@ -80,7 +81,7 @@ const { signOut } = useClerk();
               </Typography>
               <Typography
                 variant='caption'
-                sx={{ color: 'rgba(255,255,255,0.7)' }}
+                sx={{ color: ALPHA_WHITE_70 }}
                 noWrap
               >
                 {user?.email}

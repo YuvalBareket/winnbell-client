@@ -8,7 +8,7 @@ const MyTicketsPage = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
-      <Box sx={{ pb: 2 }}>
+      <Box sx={{ pt: 0 }}>
         {/* Component 1: The Draw Header */}
         <DrawSwiper
           draw_id={activeDrawId}

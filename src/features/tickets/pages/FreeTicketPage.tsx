@@ -9,19 +9,20 @@ import {
   Alert,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ScheduleIcon from '@mui/icons-material/Schedule';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import LockIcon from '@mui/icons-material/Lock';
 import BoltIcon from '@mui/icons-material/Bolt';
 import { useNavigate } from 'react-router-dom';
 import { useFreeTicket } from '../hooks/useFreeTicket';
+import { AMBER_HOURGLASS, SHADOW_PRIMARY_MEDIUM } from '../../../shared/colors';
 
 const FreeTicketPage: React.FC = () => {
   const navigate = useNavigate();
-  const primaryColor = '#137fec';
   const { status, activate, isActivating, isLoading } = useFreeTicket();
   const [timeLeft, setTimeLeft] = useState<string>('00:00:00');
   const [successOpen, setSuccessOpen] = useState(false);
+
   const handleCloseSnackbar = (
     event?: React.SyntheticEvent | Event,
     reason?: string,
@@ -32,12 +33,10 @@ const FreeTicketPage: React.FC = () => {
 
   const handleActivateClick = () => {
     activate(undefined, {
-      onSuccess: () => {
-        setSuccessOpen(true);
-      },
+      onSuccess: () => setSuccessOpen(true),
     });
   };
-  // Timer logic for the countdown
+
   useEffect(() => {
     if (status?.canActivate || !status?.nextAvailableDate) return;
 
@@ -49,14 +48,11 @@ const FreeTicketPage: React.FC = () => {
       if (difference <= 0) {
         setTimeLeft('00:00:00');
         clearInterval(timer);
-        // Optional: Trigger a refetch of the status
       } else {
         const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours =
-          Math.floor((difference / (1000 * 60 * 60)) % 24) + days * 24;
+        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24) + days * 24;
         const minutes = Math.floor((difference / 1000 / 60) % 60);
         const seconds = Math.floor((difference / 1000) % 60);
-
         const pad = (n: number) => n.toString().padStart(2, '0');
         setTimeLeft(`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`);
       }
@@ -67,13 +63,8 @@ const FreeTicketPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box
-        display='flex'
-        justifyContent='center'
-        alignItems='center'
-        minHeight='100vh'
-      >
-        <CircularProgress sx={{ color: primaryColor }} />
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight='100vh'>
+        <CircularProgress color='primary' />
       </Box>
     );
   }
@@ -85,49 +76,47 @@ const FreeTicketPage: React.FC = () => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100%', // Fills the flex:1 container in MainLayout
+        height: '100%',
         maxWidth: '480px',
         pt: 1,
       }}
     >
-      {/* 1. Header (Fixed Height) */}
+      {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 2 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ color: 'text.primary' }}>
           <ArrowBackIcon />
         </IconButton>
-        <Typography
-          variant='h6'
-          sx={{ flex: 1, textAlign: 'center', fontWeight: 700, pr: 5 }}
-        >
+        <Typography variant='h6' sx={{ flex: 1, textAlign: 'center', fontWeight: 700, pr: 5 }}>
           Weekly Free Ticket
         </Typography>
       </Box>
 
-      {/* 2. Main Content (This "Flex: 1" is the secret - it pushes the footer down) */}
+      {/* Main content — flex:1 pushes footer down naturally */}
       <Box
         sx={{
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center', // Centers content vertically in the available space
+          justifyContent: 'center',
           px: 3,
           pt: 3,
           textAlign: 'center',
         }}
       >
-        {/* Visual Icon Section */}
+        {/* Icon */}
         <Box sx={{ position: 'relative', mb: 4 }}>
           <Box
             sx={{
               display: 'flex',
               p: 3,
               borderRadius: '50%',
-              bgcolor: 'action.hover',
-              color: canActivate ? primaryColor : 'text.disabled',
+              bgcolor: canActivate ? 'primary.main' : 'action.hover',
+              color: canActivate ? 'white' : 'text.disabled',
+              transition: 'background 0.3s',
             }}
           >
-            <ScheduleIcon sx={{ fontSize: 60 }} />
+            <ConfirmationNumberIcon sx={{ fontSize: 60 }} />
           </Box>
           {!canActivate && (
             <Box
@@ -141,12 +130,12 @@ const FreeTicketPage: React.FC = () => {
                 display: 'flex',
               }}
             >
-              <HourglassTopIcon sx={{ color: '#f59e0b' }} />
+              <HourglassTopIcon sx={{ color: AMBER_HOURGLASS }} />
             </Box>
           )}
         </Box>
 
-        {/* Timer Section */}
+        {/* Timer / Status */}
         <Box sx={{ mb: 4 }}>
           <Typography
             variant='caption'
@@ -163,7 +152,7 @@ const FreeTicketPage: React.FC = () => {
             variant='h2'
             sx={{
               fontWeight: 900,
-              color: canActivate ? '#10b981' : primaryColor,
+              color: canActivate ? 'success.main' : 'primary.main',
               fontFamily: 'monospace',
               mt: 1,
             }}
@@ -172,16 +161,12 @@ const FreeTicketPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* Text Section */}
+        {/* Description */}
         <Box sx={{ maxWidth: '320px' }}>
           <Typography variant='h5' sx={{ fontWeight: 700, mb: 1.5 }}>
             {canActivate ? 'Your Ticket is Waiting!' : 'Entry Request Pending'}
           </Typography>
-          <Typography
-            variant='body1'
-            color='text.secondary'
-            sx={{ lineHeight: 1.6 }}
-          >
+          <Typography variant='body1' color='text.secondary' sx={{ lineHeight: 1.6 }}>
             Winnbell rewards you with one free ticket every week.
             {canActivate
               ? ' Click below to claim your ticket and join the draw!'
@@ -190,16 +175,8 @@ const FreeTicketPage: React.FC = () => {
         </Box>
       </Box>
 
-      {/* 3. Footer Action (Sits at the bottom because content above is flex:1) */}
-      <Box
-        sx={{
-          p: 3,
-          position: 'absolute',
-          bottom: '60px',
-          left: '0px',
-          width: '100%',
-        }}
-      >
+      {/* Footer — in normal flow, pushed to bottom by flex:1 above */}
+      <Box sx={{ p: 3, pb: 4 }}>
         <Button
           fullWidth
           variant='contained'
@@ -213,44 +190,21 @@ const FreeTicketPage: React.FC = () => {
             fontSize: '1.1rem',
             fontWeight: 700,
             textTransform: 'none',
-            bgcolor: canActivate ? primaryColor : 'action.disabledBackground',
-            boxShadow: canActivate
-              ? `${primaryColor}4D 0px 10px 15px -3px`
-              : 'none',
+            boxShadow: canActivate ? SHADOW_PRIMARY_MEDIUM : 'none',
           }}
         >
           {isActivating ? 'Claiming...' : 'Get Your Ticket'}
         </Button>
-
-        <Box
-          sx={{
-            mt: 3,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 1,
-          }}
+        <Typography
+          variant='caption'
+          sx={{ display: 'block', textAlign: 'center', mt: 2, color: 'text.secondary', fontWeight: 500 }}
         >
-          <Typography
-            variant='caption'
-            sx={{ color: 'text.secondary', fontWeight: 500 }}
-          >
-            You can claim a new free ticket every 7 days.
-          </Typography>
-        </Box>
+          You can claim a new free ticket every 7 days.
+        </Typography>
       </Box>
-      {/* Success Notification */}
-      <Snackbar
-        open={successOpen}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity='success'
-          variant='filled'
-          sx={{ width: '100%' }}
-        >
+
+      <Snackbar open={successOpen} autoHideDuration={4000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity='success' variant='filled' sx={{ width: '100%' }}>
           Ticket activated successfully! Good luck in the draw.
         </Alert>
       </Snackbar>

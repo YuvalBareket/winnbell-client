@@ -3,6 +3,7 @@ import {
   Box, Button, Typography, TextField, Container, Stack, Alert, CircularProgress, Paper,
 } from '@mui/material';
 import { ConfirmationNumber, MarkEmailRead } from '@mui/icons-material';
+import { BG_PAGE } from '../../../shared/colors';
 import { useSignUp } from '@clerk/clerk-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -39,7 +40,7 @@ const VerifyEmailPage = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', bgcolor: '#F8FAFC' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', bgcolor: BG_PAGE }}>
       <Container maxWidth='xs'>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
           <Paper elevation={4} sx={{

@@ -6,9 +6,11 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 
 import { UpcomingDrawCard } from './UpcomingDrawCard';
-import { Box, Skeleton, Stack } from '@mui/material';
+import { Box, Skeleton, Stack, Typography } from '@mui/material';
+import { EmojiEventsOutlined } from '@mui/icons-material';
 import { useGetDraws } from '../hooks/useGetDraws';
 import { useEffect, useState } from 'react';
+import { ALPHA_PRIMARY_10 } from '../../../shared/colors';
 
 interface DrawSwiperProps {
   draw_id: number | null;
@@ -26,7 +28,7 @@ export const DrawSwiper = ({ onDrawChange, draw_id }: DrawSwiperProps) => {
   }, [draws, onDrawChange]);
   if (isLoading) {
     return (
-      <Box sx={{ p: 2, pt: '10px', pb: 7 }}>
+      <Box sx={{ p: 2, pt: '0px', pb: 7 }}>
         <Skeleton
           variant='rectangular'
           width='100%' // Match the SwiperSlide width
@@ -42,10 +44,18 @@ export const DrawSwiper = ({ onDrawChange, draw_id }: DrawSwiperProps) => {
     );
   }
   if (!draws || draws?.length === 0) {
-    return <Stack>There are no upcoming draws</Stack>;
+    return (
+      <Box sx={{ textAlign: 'center', py: 6, px: 3 }}>
+        <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_PRIMARY_10, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+          <EmojiEventsOutlined sx={{ fontSize: 32, color: 'primary.main' }} />
+        </Box>
+        <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>No active draws right now</Typography>
+        <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>Check back soon — new draws are added regularly.</Typography>
+      </Box>
+    );
   }
   return (
-    <Box sx={{ width: '100%', mb: 0 }}>
+    <Box sx={{ width: '100%', mb: 0 ,mt:'-10px'}}>
       <Swiper
         slideToClickedSlide={true} // Swiper built-in: moves slide to center on click
         onSwiper={setSwiperInstance} // Capture the instance
@@ -62,7 +72,7 @@ export const DrawSwiper = ({ onDrawChange, draw_id }: DrawSwiperProps) => {
         }}
         onSlideChange={(swiper) => onDrawChange(draws[swiper.activeIndex].id)}
         modules={[EffectCoverflow, Pagination]}
-        style={{ padding: '40px 40px 0px 40px' }}
+        style={{ padding: '10px 40px 0px 40px' }}
       >
         {draws?.map((draw, index) => (
           <SwiperSlide

@@ -22,6 +22,7 @@ import {
   Close,
   Storefront,
 } from '@mui/icons-material';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { BUSINESS_SECTORS } from '../../admin/data';
@@ -263,6 +264,7 @@ const BusinessProfilePage = () => {
               size='large'
               variant='contained'
               type='submit'
+              disabled={isPending}
               sx={{
                 py: 2,
                 borderRadius: 3,
@@ -270,7 +272,7 @@ const BusinessProfilePage = () => {
                 fontWeight: 700,
               }}
             >
-              Complete Setup
+              {isPending ? <CircularProgress size={24} color='inherit' /> : 'Complete Setup'}
             </Button>
           </Stack>
         </form>

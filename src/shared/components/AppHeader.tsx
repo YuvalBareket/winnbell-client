@@ -1,5 +1,6 @@
 import { AppBar, Toolbar, Typography, IconButton } from '@mui/material';
 import { Menu } from '@mui/icons-material';
+import { TEXT_ICON_MUTED } from '../colors';
 
 interface Props {
   onMenuOpen: () => void;
@@ -17,7 +18,7 @@ const AppHeader = ({ onMenuOpen }: Props) => {
           variant='h6'
           fontWeight={500}
           letterSpacing={0.5}
-          sx={{ color: '#7e7e7e' }}
+          sx={{ color: TEXT_ICON_MUTED }}
         >
           Winnbell
         </Typography>

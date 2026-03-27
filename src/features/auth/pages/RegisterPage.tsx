@@ -7,6 +7,15 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSignUp } from "@clerk/clerk-react"; // Import Clerk Hook
+import {
+  BG_PAGE,
+  TEXT_HEADING,
+  ROLE_MANAGER_BG,
+  ROLE_MANAGER_HOVER,
+  BORDER_LIGHT,
+  NEUTRAL_SOCIAL_TEXT,
+  SHADOW_PRIMARY_SOFT,
+} from '../../../shared/colors';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -81,7 +90,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#F8FAFC' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE }}>
       <Box sx={{ p: 2 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}>
           <ArrowBackIosNew fontSize='small' />
@@ -92,7 +101,7 @@ const RegisterPage = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
           <Paper elevation={0} sx={{
               width: 72, height: 72,
-              bgcolor: isLocationManager ? '#0F172A' : isBusinessOwner ? 'primary.main' : 'secondary.main',
+              bgcolor: isLocationManager ? ROLE_MANAGER_BG : isBusinessOwner ? 'primary.main' : 'secondary.main',
               borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2,
               border: '1px solid rgba(0,0,0,0.1)',
             }}>
@@ -101,7 +110,7 @@ const RegisterPage = () => {
              <Person sx={{ color: 'white', fontSize: 36 }} />}
           </Paper>
 
-          <Typography variant='h4' sx={{ fontWeight: 800, mb: 1, textAlign: 'center', color: '#1E293B' }}>
+          <Typography variant='h4' sx={{ fontWeight: 800, mb: 1, textAlign: 'center', color: TEXT_HEADING }}>
             {isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Partner Program' : 'Join Winnbell'}
           </Typography>
 
@@ -112,37 +121,35 @@ const RegisterPage = () => {
           </Typography>
         </Box>
 
-        {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 1 }}>{error}</Alert>}
+        {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
 
         <Stack spacing={2.5}>
           {/* Form Fields - Kept your exact style */}
           <Box>
-            <Typography variant='caption' sx={{ ml: 0.5, mb: 0.5, fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase' }}>
-              Full Name
-            </Typography>
-            <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter name'
+            <Typography variant='subtitle2' sx={{ ml: 1, mb: 1, fontWeight: 700 }}>Full Name</Typography>
+            <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
               InputProps={{
-                startAdornment: (<InputAdornment position='start'><Person sx={{ color: 'text.disabled', fontSize: 20 }} /></InputAdornment>),
-                sx: { borderRadius: 1, bgcolor: 'white' },
+                startAdornment: (<InputAdornment position='start'><Person sx={{ color: 'text.secondary' }} /></InputAdornment>),
+                sx: { borderRadius: 3, bgcolor: 'background.paper' },
               }}
             />
           </Box>
 
           <Box>
-            <Typography variant='caption' sx={{ ml: 0.5, mb: 0.5, fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase' }}>Email</Typography>
-            <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='name@winnbell.com'
+            <Typography variant='subtitle2' sx={{ ml: 1, mb: 1, fontWeight: 700 }}>Email</Typography>
+            <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
               InputProps={{
-                startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.disabled', fontSize: 20 }} /></InputAdornment>),
-                sx: { borderRadius: 1, bgcolor: 'white' },
+                startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
+                sx: { borderRadius: 3, bgcolor: 'background.paper' },
               }}
             />
           </Box>
 
           <Box>
-            <Typography variant='caption' sx={{ ml: 0.5, mb: 0.5, fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase' }}>Secure Password</Typography>
+            <Typography variant='subtitle2' sx={{ ml: 1, mb: 1, fontWeight: 700 }}>Password</Typography>
             <TextField fullWidth name='password' value={formData.password} onChange={handleChange} type={showPassword ? 'text' : 'password'} placeholder='••••••••'
               InputProps={{
-                startAdornment: (<InputAdornment position='start'><Lock sx={{ color: 'text.disabled', fontSize: 20 }} /></InputAdornment>),
+                startAdornment: (<InputAdornment position='start'><Lock sx={{ color: 'text.secondary' }} /></InputAdornment>),
                 endAdornment: (
                   <InputAdornment position='end'>
                     <IconButton onClick={() => setShowPassword(!showPassword)} size='small'>
@@ -150,7 +157,7 @@ const RegisterPage = () => {
                     </IconButton>
                   </InputAdornment>
                 ),
-                sx: { borderRadius: 1, bgcolor: 'white' },
+                sx: { borderRadius: 3, bgcolor: 'background.paper' },
               }}
             />
           </Box>
@@ -183,9 +190,10 @@ const RegisterPage = () => {
 
           <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted} disableElevation
             sx={{
-              py: 1.8, borderRadius: 3, fontSize: '0.95rem', fontWeight: 800, mt: 1,
-              bgcolor: isLocationManager ? '#0F172A' : 'primary.main',
-              '&:hover': { bgcolor: isLocationManager ? '#1E293B' : 'primary.dark' },
+              py: 2, borderRadius: 3, fontSize: '1rem', fontWeight: 700,
+              bgcolor: isLocationManager ? ROLE_MANAGER_BG : 'primary.main',
+              boxShadow: SHADOW_PRIMARY_SOFT,
+              '&:hover': { bgcolor: isLocationManager ? ROLE_MANAGER_HOVER : 'primary.dark' },
             }}
           >
             {loading ? <CircularProgress size={24} color='inherit' /> : 'Create Account'}
@@ -203,7 +211,7 @@ const RegisterPage = () => {
               onClick={() => handleSocialSignUp("oauth_google")}
               startIcon={<Google />}
               disabled={!termsAccepted}
-              sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: '#E2E8F0', color: '#444' }}
+              sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT }}
             >
               Google
             </Button>
@@ -213,7 +221,7 @@ const RegisterPage = () => {
               onClick={() => handleSocialSignUp("oauth_apple")}
               startIcon={<Apple />}
               disabled={!termsAccepted}
-              sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: '#E2E8F0', color: '#444' }}
+              sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT }}
             >
               Apple
             </Button>

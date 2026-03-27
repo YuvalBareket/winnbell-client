@@ -1,12 +1,13 @@
 import { Box, Container, Typography, IconButton, Divider } from '@mui/material';
 import { ArrowBackIosNew } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { BG_PAGE } from '../../../shared/colors';
 
 const TermsOfServicePage = () => {
   const navigate = useNavigate();
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F8FAFC' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: BG_PAGE }}>
       <Box sx={{ p: 2 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'action.hover' }}>
           <ArrowBackIosNew fontSize='small' />

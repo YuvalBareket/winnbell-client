@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Container,
-  Grid,
   Paper,
   Avatar,
   Button,
@@ -11,7 +10,9 @@ import {
   Chip,
   Divider,
   IconButton,
-  CircularProgress,
+  Skeleton,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Storefront,
@@ -21,9 +22,9 @@ import {
   Share,
   Verified,
   ChevronRight,
-  Business,
   ReceiptLong,
   Edit,
+  AddBusiness,
 } from '@mui/icons-material';
 import { useBusinessData } from '../hooks/useBusinessData';
 import { BUSINESS_SECTORS } from '../../admin/data';
@@ -31,68 +32,103 @@ import { useInviteManager } from '../hooks/useInviteManager';
 import EditLocationModal from './components/EditLocationModal';
 import EditBusinessDrawer from './components/EditBusinessDrawer';
 import type { BusinessLocation } from '../types/business.types';
+import {
+  BG_PAGE,
+  GRADIENT_HERO,
+  ALPHA_WHITE_10,
+  ALPHA_WHITE_15,
+  ALPHA_WHITE_20,
+  ALPHA_WHITE_30,
+  VERIFIED_BLUE,
+} from '../../../shared/colors';
 
 const BusinessHubPage = () => {
   const { data: business, isLoading, isError } = useBusinessData();
-  const { mutateAsync: generateInvite, isPending: isInviting } =
-    useInviteManager();
+  const { mutateAsync: generateInvite, isPending: isInviting } = useInviteManager();
   const [editingLocation, setEditingLocation] = useState<BusinessLocation | null>(null);
   const [businessDrawerOpen, setBusinessDrawerOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
   const handleCopyInvite = async (locId: number) => {
-    // 2. Call the real API instead of a fake link
-    await generateInvite(locId, {
-      onSuccess: () => {
-        // 3. This is where you'd trigger a professional Toast/Snackbar
-        alert('Invite link copied to clipboard! Send it to your manager.');
-      },
-    });
+    try {
+      await generateInvite(locId, {
+        onSuccess: () => {
+          setSnackbar({ open: true, message: 'Invite link copied to clipboard! Send it to your manager.', severity: 'success' });
+        },
+      });
+    } catch {
+      setSnackbar({ open: true, message: 'Failed to generate invite link. Try again.', severity: 'error' });
+    }
   };
-  if (isLoading)
+
+  if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', pt: 20 }}>
-        <CircularProgress />
+      <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh' }}>
+        {/* Hero skeleton */}
+        <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3 }}>
+          <Container maxWidth='sm'>
+            <Stack direction='row' alignItems='center' spacing={2}>
+              <Skeleton variant='rounded' width={64} height={64} sx={{ borderRadius: 2, bgcolor: ALPHA_WHITE_15 }} />
+              <Box flex={1}>
+                <Skeleton variant='text' width={160} height={28} sx={{ bgcolor: ALPHA_WHITE_15 }} />
+                <Skeleton variant='text' width={100} height={20} sx={{ bgcolor: ALPHA_WHITE_10 }} />
+              </Box>
+            </Stack>
+          </Container>
+        </Box>
+        <Container maxWidth='sm' sx={{ mt: -5 }}>
+          <Stack spacing={3}>
+            <Skeleton variant='rounded' height={72} sx={{ borderRadius: 3 }} />
+            <Skeleton variant='rounded' height={140} sx={{ borderRadius: 3 }} />
+            <Skeleton variant='rounded' height={140} sx={{ borderRadius: 3 }} />
+          </Stack>
+        </Container>
       </Box>
     );
+  }
 
-  if (isError || !business)
+  if (isError || !business) {
     return (
-      <Container maxWidth='sm' sx={{ mt: 10 }}>
-        <Typography color='error'>
-          Failed to load business profile. Please check your connection.
-        </Typography>
+      <Container maxWidth='sm' sx={{ mt: 10, textAlign: 'center' }}>
+        <Typography color='error' variant='h6' fontWeight={700}>Failed to load business profile.</Typography>
+        <Typography color='text.secondary' sx={{ mt: 1 }}>Check your connection and try again.</Typography>
       </Container>
     );
+  }
 
   const sectorUI = BUSINESS_SECTORS[business.sector] || BUSINESS_SECTORS.Retail;
 
   return (
-    <Box sx={{ bgcolor: '#F4F7FA', minHeight: '100vh', pb: 12 }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: 12 }}>
+      {/* Hero */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #7fa6ff 0%, #06347e 100%)',
+          background: GRADIENT_HERO,
           pt: 3,
           pb: 9,
           px: 3,
           color: 'white',
-          borderRadius: '0 0 4px 4px',
+          borderRadius: '0 0 32px 32px',
         }}
       >
         <Container maxWidth='sm'>
-          <Stack
-            direction='row'
-            alignItems='center'
-            justifyContent='space-between'
-          >
-            <Stack direction='row' alignItems='center' spacing={3}>
+          <Stack direction='row' alignItems='center' justifyContent='space-between'>
+            <Stack direction='row' alignItems='center' spacing={2}>
               <Avatar
                 variant='square'
                 sx={{
                   width: 64,
                   height: 64,
-                  bgcolor: 'white',
-                  color: '#0F172A',
+                  bgcolor: ALPHA_WHITE_15,
+                  color: 'white',
                   fontWeight: 900,
-                  borderRadius: 1,
+                  fontSize: 28,
+                  borderRadius: 2,
+                  border: `1px solid ${ALPHA_WHITE_30}`,
                 }}
               >
                 {business.name[0]}
@@ -101,38 +137,29 @@ const BusinessHubPage = () => {
                 <Typography
                   variant='h5'
                   fontWeight={800}
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                 >
-                  {business.name}{' '}
-                  <Verified sx={{ fontSize: 20, color: 'primary.main' }} />
+                  {business.name}
+                  <Verified sx={{ fontSize: 20, color: VERIFIED_BLUE }} />
                 </Typography>
-                <Stack direction='row' spacing={1} mt={1}>
+                <Stack direction='row' spacing={1} mt={0.5}>
                   <Chip
                     label={sectorUI.label}
                     size='small'
-                    sx={{
-                      bgcolor: 'rgba(255,255,255,0.1)',
-                      color: 'white',
-                      fontWeight: 700,
-                      borderRadius: 1,
-                    }}
+                    sx={{ bgcolor: ALPHA_WHITE_15, color: 'white', fontWeight: 700, borderRadius: 2 }}
                   />
                   <Chip
                     label='Active Partner'
                     size='small'
                     color='success'
-                    sx={{ fontWeight: 700, borderRadius: 1 }}
+                    sx={{ fontWeight: 700, borderRadius: 2 }}
                   />
                 </Stack>
               </Box>
             </Stack>
             <IconButton
               onClick={() => setBusinessDrawerOpen(true)}
-              sx={{
-                color: 'white',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 1,
-              }}
+              sx={{ color: 'white', border: `1px solid ${ALPHA_WHITE_20}`, borderRadius: 2 }}
             >
               <Settings />
             </IconButton>
@@ -142,132 +169,116 @@ const BusinessHubPage = () => {
 
       <Container maxWidth='sm' sx={{ mt: -5 }}>
         <Stack spacing={3}>
+          {/* Subscription */}
           <Paper
-            variant='outlined'
-            sx={{
-              p: 3,
-              borderRadius: 1,
-              bgcolor: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-            }}
+            elevation={0}
+            sx={{ p: 3, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}
           >
-            <ReceiptLong color='primary' />
+            <Box
+              sx={{
+                width: 44,
+                height: 44,
+                borderRadius: 2,
+                bgcolor: 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <ReceiptLong sx={{ color: 'white', fontSize: 22 }} />
+            </Box>
             <Box>
-              <Typography
-                variant='caption'
-                fontWeight={800}
-                color='text.secondary'
-                sx={{ textTransform: 'uppercase' }}
-              >
+              <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
                 Subscription Plan
               </Typography>
-              <Typography variant='body1' fontWeight={700}>
-                Standard Monthly Tier
-              </Typography>
+              <Typography variant='body1' fontWeight={700}>Standard Monthly Tier</Typography>
             </Box>
           </Paper>
 
+          {/* Branch Management */}
           <Box>
             <Typography
               variant='subtitle2'
               fontWeight={800}
-              sx={{
-                mb: 2,
-                ml: 1,
-                color: '#475569',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-              }}
+              sx={{ mb: 2, ml: 0.5, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}
             >
               Branch Management
             </Typography>
-            <Stack spacing={2}>
-              {business.locations.map((loc: BusinessLocation) => (
-                <Paper
-                  key={loc.id}
-                  variant='outlined'
-                  sx={{ p: 2.5, borderRadius: 1, overflow: 'hidden' }}
-                >
-                  <Stack
-                    direction='row'
-                    justifyContent='space-between'
-                    alignItems='flex-start'
+
+            {business.locations.length === 0 ? (
+              <Paper
+                elevation={0}
+                sx={{ p: 4, borderRadius: 3, textAlign: 'center', border: '1px dashed', borderColor: 'divider' }}
+              >
+                <AddBusiness sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>No locations yet</Typography>
+                <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
+                  Add your first branch to start issuing tickets.
+                </Typography>
+              </Paper>
+            ) : (
+              <Stack spacing={2}>
+                {business.locations.map((loc: BusinessLocation) => (
+                  <Paper
+                    key={loc.id}
+                    elevation={0}
+                    sx={{ p: 2.5, borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}
                   >
-                    <Box>
-                      <Typography variant='h6' fontWeight={700}>
-                        {loc.name}
-                      </Typography>
-                      <Typography
-                        variant='body2'
-                        color='text.secondary'
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          mt: 0.5,
-                        }}
-                      >
-                        <LocationOn sx={{ fontSize: 16 }} /> {loc.address}
-                      </Typography>
-                    </Box>
-                    <Stack direction='row' alignItems='center'>
-                      <IconButton
-                        size='small'
-                        onClick={() => setEditingLocation(loc)}
-                        aria-label='Edit location'
-                      >
-                        <Edit fontSize='small' />
-                      </IconButton>
-                      <IconButton size='small'>
-                        <ChevronRight />
-                      </IconButton>
+                    <Stack direction='row' justifyContent='space-between' alignItems='flex-start'>
+                      <Box flex={1} minWidth={0}>
+                        <Typography variant='h6' fontWeight={700}>{loc.name}</Typography>
+                        <Typography
+                          variant='body2'
+                          color='text.secondary'
+                          sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}
+                        >
+                          <LocationOn sx={{ fontSize: 16, flexShrink: 0 }} />
+                          {loc.address}
+                        </Typography>
+                      </Box>
+                      <Stack direction='row' alignItems='center' ml={1}>
+                        <IconButton size='small' onClick={() => setEditingLocation(loc)} aria-label='Edit location'>
+                          <Edit fontSize='small' />
+                        </IconButton>
+                        <IconButton size='small'>
+                          <ChevronRight />
+                        </IconButton>
+                      </Stack>
                     </Stack>
-                  </Stack>
-                  <Divider sx={{ my: 2 }} />
-                  <Stack
-                    direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                  >
-                    <Stack direction='row' spacing={1} alignItems='center'>
-                      <Groups
-                        sx={{
-                          fontSize: 20,
-                          color: loc.manager_id ? 'success.main' : 'text.disabled',
-                        }}
-                      />
-                      <Typography
-                        variant='body2'
-                        fontWeight={700}
-                        color={loc.manager_id ? 'text.primary' : 'text.disabled'}
-                      >
-                        {loc.manager_name ||
-                          (loc.manager_id ? 'Manager Assigned' : 'Unassigned')}
-                      </Typography>
+
+                    <Divider sx={{ my: 2 }} />
+
+                    <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                      <Stack direction='row' spacing={1} alignItems='center'>
+                        <Groups
+                          sx={{ fontSize: 20, color: loc.manager_id ? 'success.main' : 'text.disabled' }}
+                        />
+                        <Typography
+                          variant='body2'
+                          fontWeight={700}
+                          color={loc.manager_id ? 'text.primary' : 'text.disabled'}
+                        >
+                          {loc.manager_name || (loc.manager_id ? 'Manager Assigned' : 'Unassigned')}
+                        </Typography>
+                      </Stack>
+                      {!loc.manager_id && (
+                        <Button
+                          variant='outlined'
+                          size='small'
+                          startIcon={<Share />}
+                          disabled={isInviting}
+                          onClick={() => handleCopyInvite(loc.id)}
+                          sx={{ borderRadius: 2, fontWeight: 800, textTransform: 'none', px: 2 }}
+                        >
+                          {isInviting ? 'Generating...' : 'Invite'}
+                        </Button>
+                      )}
                     </Stack>
-                    {!loc?.manager_id && (
-                      <Button
-                        variant='outlined'
-                        size='small'
-                        startIcon={<Share />}
-                        disabled={isInviting} // Disable while the link is generating
-                        onClick={() => handleCopyInvite(loc.id)}
-                        sx={{
-                          borderRadius: 1,
-                          fontWeight: 800,
-                          textTransform: 'none',
-                          px: 2,
-                        }}
-                      >
-                        {isInviting ? 'Generating...' : 'Invite'}
-                      </Button>
-                    )}
-                  </Stack>
-                </Paper>
-              ))}
-            </Stack>
+                  </Paper>
+                ))}
+              </Stack>
+            )}
           </Box>
         </Stack>
       </Container>
@@ -284,7 +295,21 @@ const BusinessHubPage = () => {
         business={business}
       />
 
-   
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          variant='filled'
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
