@@ -48,7 +48,7 @@ const AppHeader = ({ onMenuOpen }: Props) => {
           >
             <Typography sx={{ color: 'white', fontSize: 16, lineHeight: 1 }}>🔔</Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0}}>
             <Typography
               fontWeight={800}
               sx={{ fontSize: '1.1rem', color: '#0e121b', letterSpacing: '-0.02em' }}
