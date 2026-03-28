@@ -63,7 +63,6 @@ const VerifyEmailPage = () => {
             label='Verification code'
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder='Enter 6-digit code'
             inputProps={{ maxLength: 6, style: { letterSpacing: '0.5em', textAlign: 'center', fontSize: '1.5rem' } }}
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: 'background.paper' } }}
           />

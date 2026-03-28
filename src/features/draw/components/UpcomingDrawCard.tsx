@@ -9,7 +9,7 @@ import { GRADIENT_DRAW_CARD, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20 } fr
 export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
   // Now draw refers to the actual IDrawSummary object
   const daysLeft = calculateDaysLeft(draw?.draw_date);
-  const formattedAmount = formatCurrency(draw?.total_pool_amount ?? 0);
+  const formattedAmount = formatCurrency(draw?.prize_amount ?? 0);
 
   return (
     <Paper

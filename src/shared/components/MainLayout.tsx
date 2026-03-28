@@ -44,7 +44,7 @@ const MainLayout = () => {
           flexDirection: 'column',
           // Proper top offset instead of negative margin hack
           pt: location.pathname !== '/nearby' ? '68px' : 0,
-          pb: '20px', // room for fixed bottom nav
+          pb: '60px', // room for fixed bottom nav
           width: '100%',
         }}
       >
