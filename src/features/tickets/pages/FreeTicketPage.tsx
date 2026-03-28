@@ -78,12 +78,13 @@ const FreeTicketPage: React.FC = () => {
         flexDirection: 'column',
         height: '100%',
         maxWidth: '480px',
+        mx: 'auto',
         pt: 1,
       }}
     >
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 2 }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ color: 'text.primary' }}>
+        <IconButton onClick={() => navigate(-1)} sx={{ color: 'text.primary', width: 44, height: 44 }}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant='h6' sx={{ flex: 1, textAlign: 'center', fontWeight: 700, pr: 5 }}>
@@ -155,6 +156,7 @@ const FreeTicketPage: React.FC = () => {
               color: canActivate ? 'success.main' : 'primary.main',
               fontFamily: 'monospace',
               mt: 1,
+              fontSize: { xs: '2.5rem', sm: '3.75rem' },
             }}
           >
             {canActivate ? 'READY' : timeLeft}

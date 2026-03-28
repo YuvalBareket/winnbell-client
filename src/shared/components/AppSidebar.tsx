@@ -1,0 +1,211 @@
+import {
+  Box, Typography, Avatar, List, ListItemButton,
+  ListItemIcon, ListItemText, Stack, Divider, Chip,
+} from '@mui/material';
+import { Logout } from '@mui/icons-material';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../store/hook';
+import { logout } from '../../store/slices/authSlice';
+import { selectCurrentUser, selectIsBusiness, selectIsLocationManager } from '../../store/selectors/authSelectors';
+import { useClerk } from '@clerk/clerk-react';
+import {
+  userNavItems, businessNavItems, legalNavItems,
+} from '../constants/navItems';
+import {
+  GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING,
+} from '../colors';
+
+const AppSidebar = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const user = useAppSelector(selectCurrentUser);
+  const isBusiness = useAppSelector(selectIsBusiness);
+  const isManager = useAppSelector(selectIsLocationManager);
+  const { signOut } = useClerk();
+
+  const initials = user?.fullName
+    ? user.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+    : '?';
+
+  const roleLabel = isBusiness ? 'Partner' : isManager ? 'Manager' : 'Member';
+  const roleColor = isBusiness ? '#10b981' : isManager ? '#f59e0b' : PRIMARY_MAIN;
+
+  const mainNavItems = isBusiness || isManager ? businessNavItems : userNavItems;
+
+  const handleLogout = () => {
+    dispatch(logout());
+    signOut();
+  };
+
+  return (
+    <Box
+      sx={{
+        width: 240,
+        height: '100vh',
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        zIndex: 1100,
+        display: { xs: 'none', md: 'flex' },
+        flexDirection: 'column',
+        bgcolor: 'background.paper',
+        borderRight: `1px solid ${BORDER_LIGHT}`,
+        overflow: 'hidden',
+      }}
+    >
+      {/* Brand */}
+      <Box sx={{ px: 3, pt: 3, pb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box
+            sx={{
+              width: 32, height: 32,
+              borderRadius: '10px',
+              background: GRADIENT_PRIMARY,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <Typography sx={{ color: 'white', fontSize: 16, lineHeight: 1 }}>🔔</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+            <Typography fontWeight={800} sx={{ fontSize: '1.1rem', color: TEXT_HEADING, letterSpacing: '-0.02em' }}>Winn</Typography>
+            <Typography fontWeight={800} sx={{ fontSize: '1.1rem', color: PRIMARY_MAIN, letterSpacing: '-0.02em' }}>bell</Typography>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* User identity */}
+      <Box
+        sx={{
+          mx: 1.5, mb: 1, px: 1.5, py: 1.5,
+          bgcolor: 'rgba(25,93,230,0.04)',
+          borderRadius: 3,
+          display: 'flex', alignItems: 'center', gap: 1.5,
+        }}
+      >
+        <Avatar
+          sx={{
+            width: 36, height: 36,
+            background: GRADIENT_PRIMARY,
+            color: 'white',
+            fontWeight: 800,
+            fontSize: 13,
+            borderRadius: '10px',
+            flexShrink: 0,
+          }}
+        >
+          {initials}
+        </Avatar>
+        <Box flex={1} minWidth={0}>
+          <Typography variant='body2' fontWeight={700} noWrap color={TEXT_HEADING}>
+            {user?.fullName || 'User'}
+          </Typography>
+          <Typography variant='caption' color={TEXT_SECONDARY} noWrap sx={{ display: 'block' }}>
+            {user?.email || ''}
+          </Typography>
+        </Box>
+        <Chip
+          label={roleLabel}
+          size='small'
+          sx={{
+            height: 18, fontSize: '0.6rem', fontWeight: 800,
+            bgcolor: `${roleColor}15`, color: roleColor,
+            flexShrink: 0,
+          }}
+        />
+      </Box>
+
+      <Divider sx={{ mx: 2, mb: 0.5 }} />
+
+      {/* Nav section */}
+      <Box sx={{ px: 1.5, pt: 1 }}>
+        <Typography variant='caption' fontWeight={700} color={TEXT_SECONDARY}
+          sx={{ textTransform: 'uppercase', letterSpacing: 0.8, px: 1, display: 'block', mb: 0.5 }}>
+          Navigation
+        </Typography>
+        <List dense disablePadding>
+          {mainNavItems.map(({ label, Icon, path }) => {
+            const active = location.pathname === path;
+            return (
+              <ListItemButton
+                key={path}
+                onClick={() => navigate(path)}
+                sx={{
+                  borderRadius: 2, mb: 0.5, px: 1.5,
+                  bgcolor: active ? PRIMARY_MAIN : 'transparent',
+                  '&:hover': { bgcolor: active ? PRIMARY_MAIN : 'rgba(25,93,230,0.06)' },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 34 }}>
+                  <Icon sx={{ fontSize: 20, color: active ? 'white' : TEXT_SECONDARY }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={label}
+                  primaryTypographyProps={{
+                    fontSize: '0.875rem', fontWeight: 600,
+                    color: active ? 'white' : TEXT_HEADING,
+                  }}
+                />
+              </ListItemButton>
+            );
+          })}
+        </List>
+      </Box>
+
+      <Divider sx={{ mx: 2, my: 1 }} />
+
+      {/* Support section */}
+      <Box sx={{ px: 1.5 }}>
+        <Typography variant='caption' fontWeight={700} color={TEXT_SECONDARY}
+          sx={{ textTransform: 'uppercase', letterSpacing: 0.8, px: 1, display: 'block', mb: 0.5 }}>
+          Support
+        </Typography>
+        <List dense disablePadding>
+          {legalNavItems.map(({ label, Icon, path }) => (
+            <ListItemButton
+              key={path}
+              onClick={() => navigate(path)}
+              sx={{ borderRadius: 2, mb: 0.5, px: 1.5, '&:hover': { bgcolor: 'rgba(25,93,230,0.06)' } }}
+            >
+              <ListItemIcon sx={{ minWidth: 34 }}>
+                <Icon sx={{ fontSize: 18, color: TEXT_SECONDARY }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={label}
+                primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 500, color: TEXT_HEADING }}
+              />
+            </ListItemButton>
+          ))}
+        </List>
+      </Box>
+
+      {/* Spacer */}
+      <Box sx={{ flex: 1 }} />
+
+      <Divider sx={{ mx: 2 }} />
+
+      {/* Logout */}
+      <List dense disablePadding sx={{ px: 1.5, py: 1 }}>
+        <ListItemButton
+          onClick={handleLogout}
+          sx={{ borderRadius: 2, px: 1.5, '&:hover': { bgcolor: 'rgba(211,47,47,0.06)' } }}
+        >
+          <ListItemIcon sx={{ minWidth: 34 }}>
+            <Logout sx={{ fontSize: 18, color: 'error.main' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary='Log out'
+            primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 600, color: 'error.main' }}
+          />
+        </ListItemButton>
+      </List>
+
+      <Typography variant='caption' color={TEXT_SECONDARY} sx={{ px: 3, pb: 2, display: 'block' }}>
+        Winnbell v1.0 · © {new Date().getFullYear()}
+      </Typography>
+    </Box>
+  );
+};
+
+export default AppSidebar;

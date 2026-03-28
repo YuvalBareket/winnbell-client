@@ -23,9 +23,10 @@ const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
     <Paper elevation={0} sx={rowStyle}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Box sx={iconBoxStyle}>{sectorInfo.icon}</Box>
-        <Box>
+        <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
           <Typography
             variant='subtitle1'
+            noWrap
             sx={{ fontWeight: 700, lineHeight: 1.2 }}
           >
             {ticket.business_name ?? 'Free weekly ticket'}
@@ -65,9 +66,10 @@ const BusinessTicketRow = ({ ticket }: { ticket: BusinessTicket }) => {
             <Storefront color='disabled' />
           )}
         </Box>
-        <Box>
+        <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
           <Typography
             variant='subtitle1'
+            noWrap
             sx={{ fontWeight: 700, lineHeight: 1.2 }}
           >
             {ticket.activated_by_user ?? 'Not Activated'}
@@ -99,7 +101,15 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
   const isBusiness = isBusinessOwner || isLocation;
   const { data: tickets, isLoading } = useMyTickets(draw_id);
 
-  if (!draw_id) return null;
+  if (!draw_id) return (
+    <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
+      <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_PRIMARY_10, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+        <ConfirmationNumberOutlined sx={{ fontSize: 32, color: 'primary.main' }} />
+      </Box>
+      <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>Select a draw</Typography>
+      <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>Choose a draw from the list to see tickets</Typography>
+    </Box>
+  );
 
   return (
     <>

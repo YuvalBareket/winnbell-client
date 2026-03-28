@@ -278,10 +278,10 @@ const LandingPage = () => {
           bgcolor: 'white',
           borderTop: `1px solid ${BORDER_LIGHT}`,
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'flex-start', md: 'center' },
           justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 1,
+          gap: 2,
         }}
       >
         <Typography fontWeight={800} fontSize='1rem'>

@@ -17,6 +17,7 @@ import {
   StorefrontOutlined,
   QrCodeScannerOutlined,
   BusinessOutlined,
+  BarChartOutlined,
   HelpOutlineOutlined,
   PrivacyTipOutlined,
   GavelOutlined,
@@ -75,8 +76,10 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
 
   const mainNavItems: NavItem[] = isBusiness || isManager
     ? [
-        { label: 'Business Hub', icon: <BusinessOutlined />, path: '/hub' },
+        { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
         { label: 'Scan Ticket', icon: <QrCodeScannerOutlined />, path: '/scan' },
+        { label: 'Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
+        { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
       ]
     : [
         { label: 'Nearby Partners', icon: <StorefrontOutlined />, path: '/nearby' },
@@ -96,7 +99,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
       open={open}
       onClose={onClose}
       PaperProps={{
-        sx: { width: 300, borderTopLeftRadius: 20, borderBottomLeftRadius: 20, overflow: 'hidden' },
+        sx: { width: { xs: '85vw', sm: 300 }, maxWidth: 300, borderTopLeftRadius: 20, borderBottomLeftRadius: 20, overflow: 'hidden' },
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -199,7 +202,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
               <ListItemButton
                 key={item.path}
                 onClick={() => handleNav(item.path)}
-                sx={{ borderRadius: 2, mb: 0.5, py: 0.8, '&:hover': { bgcolor: 'rgba(0,0,0,0.03)' } }}
+                sx={{ borderRadius: 2, mb: 0.5, py: 1.25, '&:hover': { bgcolor: 'rgba(0,0,0,0.03)' } }}
               >
                 <ListItemIcon sx={{ minWidth: 36, color: 'text.disabled' }}>
                   {item.icon}

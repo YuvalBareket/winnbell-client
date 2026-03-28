@@ -5,6 +5,7 @@ import { ConfirmationNumber, Storefront } from '@mui/icons-material';
 import QrCodeIcon from '@mui/icons-material/QrCode';
 import AppMenuDrawer from './AppMenuDrawer';
 import AppHeader from './AppHeader';
+import AppSidebar from './AppSidebar';
 import {
   BG_APP_GRADIENT,
   GRADIENT_PRIMARY,
@@ -19,10 +20,13 @@ const MainLayout = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const isNearby = location.pathname === '/nearby';
+  const topPadding = { xs: isNearby ? 0 : '68px', md: 0 };
+
   return (
     <Box
       sx={{
-        width: '100dvw',
+        width: '100%',
         minHeight: '100vh',
         bgcolor: 'background.default',
         background: BG_APP_GRADIENT,
@@ -30,10 +34,13 @@ const MainLayout = () => {
         flexDirection: 'column',
       }}
     >
-      {location.pathname !== '/nearby' && (
-        <AppHeader onMenuOpen={() => setMenuOpen(true)} />
-      )}
+      {/* Desktop persistent sidebar */}
+      <AppSidebar />
 
+      {/* Mobile header — hidden on desktop */}
+      {!isNearby && <AppHeader onMenuOpen={() => setMenuOpen(true)} />}
+
+      {/* Mobile drawer */}
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <Box
@@ -42,25 +49,26 @@ const MainLayout = () => {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          // Proper top offset instead of negative margin hack
-          pt: location.pathname !== '/nearby' ? '68px' : 0,
-          pb: '60px', // room for fixed bottom nav
-          width: '100%',
+          pt: topPadding,
+          pb: { xs: '70px', md: 4 },
+          ml: { xs: 0, md: '268px' },
+          width: { xs: '100%', md: 'calc(100% - 268px)' },
+          zoom: { xs: 1, md: 0.9 },
         }}
       >
         <Outlet />
       </Box>
 
-      {/* Bottom Nav */}
+      {/* Mobile bottom nav — hidden on desktop */}
       <Paper
-        sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000 }}
+        sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, display: { xs: 'block', md: 'none' }, overflow: 'visible' }}
         elevation={8}
       >
         <BottomNavigation
           showLabels
           value={location.pathname}
           onChange={(_, newValue) => navigate(newValue)}
-          sx={{ height: 45 }}
+          sx={{ height: 60 }}
         >
           <BottomNavigationAction
             value='/nearby'
@@ -68,19 +76,15 @@ const MainLayout = () => {
             sx={{ '& .MuiBottomNavigationAction-label': { fontWeight: 700, fontSize: '0.7rem' } }}
           />
 
-          {/* Elevated center QR tab */}
           <BottomNavigationAction
             value='/scan'
             icon={
               <Box
                 sx={{
-                  width: 52,
-                  height: 52,
+                  width: 52, height: 52,
                   borderRadius: '50%',
                   background: location.pathname === '/scan' ? GRADIENT_PRIMARY : NEUTRAL_INACTIVE_BG,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                   mt: '-22px',
                   boxShadow: location.pathname === '/scan' ? SHADOW_PRIMARY_INTENSE : SHADOW_NEUTRAL_SOFT,
                   border: '3px solid white',
@@ -90,9 +94,7 @@ const MainLayout = () => {
                 <QrCodeIcon sx={{ color: location.pathname === '/scan' ? 'white' : NEUTRAL_INACTIVE_ICON, fontSize: 26 }} />
               </Box>
             }
-            sx={{
-              '& .MuiBottomNavigationAction-label': { fontWeight: 700, fontSize: '0.7rem', mt: '4px' },
-            }}
+            sx={{ '& .MuiBottomNavigationAction-label': { fontWeight: 700, fontSize: '0.7rem', mt: '4px' } }}
           />
 
           <BottomNavigationAction

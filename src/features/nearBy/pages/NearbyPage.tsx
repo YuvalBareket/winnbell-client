@@ -55,9 +55,9 @@ const NearbyPage = () => {
     <Box
       sx={{
         width: '100%',
-        height: 'calc(100dvh - 60px)',
+        height: { xs: 'calc(100dvh - 60px)', md: 'calc(100dvh / 0.9)' },
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: { xs: 'column', md: 'row' },
         overflow: 'hidden',
       }}
     >
@@ -66,7 +66,8 @@ const NearbyPage = () => {
         sx={{
           position: 'relative',
           width: '100%',
-          height: '40vh',
+          height: { xs: '40vh', sm: '45vh', md: '100%' },
+          flex: { md: 1 },
           bgcolor: '#e3f2fd',
           flexShrink: 0,
         }}
@@ -116,14 +117,16 @@ const NearbyPage = () => {
       <Paper
         elevation={0}
         sx={{
-          flex: 1,
-          mt: -3,
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
+          flex: { xs: 1, md: 'none' },
+          width: { md: '380px' },
+          flexShrink: { md: 0 },
+          mt: { xs: -3, md: 0 },
+          borderTopLeftRadius: { xs: 24, md: 0 },
+          borderTopRightRadius: { xs: 24, md: 0 },
           position: 'relative',
           zIndex: 12,
           bgcolor: 'background.default',
-          boxShadow: '0px -4px 20px rgba(0,0,0,0.05)',
+          boxShadow: { xs: '0px -4px 20px rgba(0,0,0,0.05)', md: '-4px 0 20px rgba(0,0,0,0.05)' },
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',

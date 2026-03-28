@@ -28,6 +28,7 @@ const AppHeader = ({ onMenuOpen }: Props) => {
         WebkitBackdropFilter: 'blur(12px)',
         boxShadow: 'none',
         zIndex: 1200,
+        display: { xs: 'flex', md: 'none' },
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between', px: 2, minHeight: '56px !important' }}>
@@ -87,8 +88,8 @@ const AppHeader = ({ onMenuOpen }: Props) => {
               color: 'text.secondary',
               bgcolor: 'rgba(0,0,0,0.04)',
               borderRadius: '10px',
-              width: 36,
-              height: 36,
+              width: { xs: 40, md: 36 },
+              height: { xs: 40, md: 36 },
               '&:hover': { bgcolor: 'rgba(0,0,0,0.08)' },
             }}
           >
@@ -106,8 +107,8 @@ const AppHeader = ({ onMenuOpen }: Props) => {
           >
             <Avatar
               sx={{
-                width: 36,
-                height: 36,
+                width: { xs: 40, md: 36 },
+                height: { xs: 40, md: 36 },
                 background: GRADIENT_PRIMARY,
                 color: 'white',
                 fontWeight: 800,

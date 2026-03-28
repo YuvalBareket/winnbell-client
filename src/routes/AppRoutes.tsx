@@ -33,6 +33,7 @@ import FreeTicketPage from '../features/tickets/pages/FreeTicketPage';
 import BusinessDashboard from '../features/admin/pages/BusinessDashboard';
 import BusinessProfilePage from '../features/partner/pages/BusinessProfilePage';
 import BusinessHubPage from '../features/partner/pages/BusinessHubPage';
+import StatsPage from '../features/stats/pages/StatsPage';
 
 const AppRoutes = () => {
   const navigate = useNavigate();
@@ -72,6 +73,7 @@ const AppRoutes = () => {
           />
           <Route path='/scan' element={<RedeemPage />} />
           <Route path='/tickets' element={<MyTicketsPage />} />
+          <Route path='/stats' element={<StatsPage />} />
         </Route>
 
         {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}

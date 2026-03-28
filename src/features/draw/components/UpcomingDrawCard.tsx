@@ -68,7 +68,7 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
 
         <Typography
           variant='h2'
-          sx={{ fontWeight: 900, mb: 3, fontSize: '3.5rem' }}
+          sx={{ fontWeight: 900, mb: 3, fontSize: { xs: '2.2rem', sm: '3rem', md: '3.5rem' } }}
         >
           {formattedAmount}
         </Typography>

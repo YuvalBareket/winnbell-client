@@ -70,7 +70,7 @@ const BusinessHubPage = () => {
       <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh' }}>
         {/* Hero skeleton */}
         <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3 }}>
-          <Container maxWidth='sm'>
+          <Container maxWidth='md'>
             <Stack direction='row' alignItems='center' spacing={2}>
               <Skeleton variant='rounded' width={64} height={64} sx={{ borderRadius: 2, bgcolor: ALPHA_WHITE_15 }} />
               <Box flex={1}>
@@ -80,7 +80,7 @@ const BusinessHubPage = () => {
             </Stack>
           </Container>
         </Box>
-        <Container maxWidth='sm' sx={{ mt: -5 }}>
+        <Container maxWidth='md' sx={{ mt: -5 }}>
           <Stack spacing={3}>
             <Skeleton variant='rounded' height={72} sx={{ borderRadius: 3 }} />
             <Skeleton variant='rounded' height={140} sx={{ borderRadius: 3 }} />
@@ -93,7 +93,7 @@ const BusinessHubPage = () => {
 
   if (isError || !business) {
     return (
-      <Container maxWidth='sm' sx={{ mt: 10, textAlign: 'center' }}>
+      <Container maxWidth='md' sx={{ mt: 10, textAlign: 'center' }}>
         <Typography color='error' variant='h6' fontWeight={700}>Failed to load business profile.</Typography>
         <Typography color='text.secondary' sx={{ mt: 1 }}>Check your connection and try again.</Typography>
       </Container>
@@ -103,7 +103,7 @@ const BusinessHubPage = () => {
   const sectorUI = BUSINESS_SECTORS[business.sector] || BUSINESS_SECTORS.Retail;
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: 12 }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: { xs: 12, md: 6 } }}>
       {/* Hero */}
       <Box
         sx={{
@@ -115,7 +115,7 @@ const BusinessHubPage = () => {
           borderRadius: '0 0 32px 32px',
         }}
       >
-        <Container maxWidth='sm'>
+        <Container maxWidth='md'>
           <Stack direction='row' alignItems='center' justifyContent='space-between'>
             <Stack direction='row' alignItems='center' spacing={2}>
               <Avatar
@@ -167,7 +167,7 @@ const BusinessHubPage = () => {
         </Container>
       </Box>
 
-      <Container maxWidth='sm' sx={{ mt: -5 }}>
+      <Container maxWidth='md' sx={{ mt: -5 }}>
         <Stack spacing={3}>
           {/* Subscription */}
           <Paper
@@ -218,7 +218,7 @@ const BusinessHubPage = () => {
                 </Typography>
               </Paper>
             ) : (
-              <Stack spacing={2}>
+              <Box sx={{ display: { xs: 'flex', md: 'grid' }, flexDirection: 'column', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
                 {business.locations.map((loc: BusinessLocation) => (
                   <Paper
                     key={loc.id}
@@ -238,10 +238,10 @@ const BusinessHubPage = () => {
                         </Typography>
                       </Box>
                       <Stack direction='row' alignItems='center' ml={1}>
-                        <IconButton size='small' onClick={() => setEditingLocation(loc)} aria-label='Edit location'>
+                        <IconButton sx={{ width: 44, height: 44 }} onClick={() => setEditingLocation(loc)} aria-label='Edit location'>
                           <Edit fontSize='small' />
                         </IconButton>
-                        <IconButton size='small'>
+                        <IconButton sx={{ width: 44, height: 44 }}>
                           <ChevronRight />
                         </IconButton>
                       </Stack>
@@ -277,7 +277,7 @@ const BusinessHubPage = () => {
                     </Stack>
                   </Paper>
                 ))}
-              </Stack>
+              </Box>
             )}
           </Box>
         </Stack>
