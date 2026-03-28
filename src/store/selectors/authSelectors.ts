@@ -13,6 +13,10 @@ export const selectIsRequiresBusinessSetup = createSelector(
   [selectAuthState],
   (auth) => auth.user?.requiresBusinessSetup ?? false,
 );
+export const selectBusinessIsActive = createSelector(
+  [selectAuthState],
+  (auth) => auth.user?.businessIsActive ?? false,
+);
 export const selectCurrentUser = createSelector(
   [selectAuthState],
   (auth) => auth.user,

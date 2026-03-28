@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Box, Paper, BottomNavigation, BottomNavigationAction } from '@mui/material';
-import { ConfirmationNumber, Storefront } from '@mui/icons-material';
+import { Box, Paper, BottomNavigation, BottomNavigationAction, Button, Typography, Stack } from '@mui/material';
+import { ConfirmationNumber, Storefront, Warning, CreditCard } from '@mui/icons-material';
 import QrCodeIcon from '@mui/icons-material/QrCode';
 import AppMenuDrawer from './AppMenuDrawer';
 import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
+import { useAppSelector } from '../../store/hook';
+import { selectIsBusiness, selectBusinessIsActive } from '../../store/selectors/authSelectors';
 import {
   BG_APP_GRADIENT,
   GRADIENT_PRIMARY,
@@ -19,6 +21,9 @@ const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const isBusinessAdmin = useAppSelector(selectIsBusiness);
+  const businessIsActive = useAppSelector(selectBusinessIsActive);
+  const showSubscribeBanner = isBusinessAdmin && !businessIsActive;
 
   const isNearby = location.pathname === '/nearby';
   const topPadding = { xs: isNearby ? 0 : '68px', md: 0 };
@@ -56,6 +61,41 @@ const MainLayout = () => {
           zoom: { xs: 1, md: 0.9 },
         }}
       >
+        {showSubscribeBanner && (
+          <Box
+            sx={{
+              mx: { xs: 2, md: 3 },
+              mt: { xs: 1, md: 2 },
+              mb: 1,
+              p: 1.5,
+              borderRadius: 3,
+              bgcolor: 'rgba(237,108,2,0.08)',
+              border: '1px solid',
+              borderColor: 'warning.light',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 1.5,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Stack direction='row' alignItems='center' spacing={1} flex={1} minWidth={0}>
+              <Warning sx={{ color: 'warning.main', fontSize: 20, flexShrink: 0 }} />
+              <Typography variant='body2' fontWeight={600} color='warning.dark' noWrap>
+                Your business isn't live yet — subscribe to appear on the map
+              </Typography>
+            </Stack>
+            <Button
+              size='small'
+              variant='contained'
+              startIcon={<CreditCard sx={{ fontSize: '16px !important' }} />}
+              onClick={() => navigate('/subscribe')}
+              sx={{ bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' }, borderRadius: 2, fontWeight: 800, flexShrink: 0, fontSize: '0.75rem' }}
+            >
+              Subscribe
+            </Button>
+          </Box>
+        )}
         <Outlet />
       </Box>
 

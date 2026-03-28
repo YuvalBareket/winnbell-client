@@ -6,6 +6,7 @@ import {
   selectIsBusiness,
   selectIsRequiresBusinessSetup,
   selectIsAuthenticated,
+  selectBusinessIsActive,
 } from '../store/selectors/authSelectors';
 import { useClerkSync } from '../shared/hooks/useClerkSync';
 
@@ -22,6 +23,11 @@ import SSOCallbackPage from '../features/auth/pages/SSOCallbackPage';
 // Legal
 import TermsOfServicePage from '../features/legal/pages/TermsOfServicePage';
 import PrivacyPolicyPage from '../features/legal/pages/PrivacyPolicyPage';
+
+// Subscription
+import SubscribePage from '../features/subscription/pages/SubscribePage';
+import SubscriptionSuccessPage from '../features/subscription/pages/SubscriptionSuccessPage';
+import SubscriptionManagementPage from '../features/subscription/pages/SubscriptionManagementPage';
 
 // User Specific
 import NearbyPage from '../features/nearBy/pages/NearbyPage';
@@ -41,6 +47,7 @@ const AppRoutes = () => {
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
+  const businessIsActive = useAppSelector(selectBusinessIsActive);
 
   // Syncs an active Clerk session into Redux (handles SSO callbacks)
   useClerkSync();
@@ -51,6 +58,7 @@ const AppRoutes = () => {
       navigate('/partner/setup-business', { replace: true });
     }
   }, [isAuthenticated, requiresBusinessSetup]);
+
 
   return (
     <Routes>
@@ -63,6 +71,9 @@ const AppRoutes = () => {
       <Route path='/terms' element={<TermsOfServicePage />} />
       <Route path='/privacy' element={<PrivacyPolicyPage />} />
       <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
+      <Route path='/subscribe' element={<SubscribePage />} />
+      <Route path='/subscription/success' element={<SubscriptionSuccessPage />} />
+      <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>

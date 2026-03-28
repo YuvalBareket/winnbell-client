@@ -25,7 +25,10 @@ import {
   ReceiptLong,
   Edit,
   AddBusiness,
+  Warning,
+  CreditCard,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useBusinessData } from '../hooks/useBusinessData';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import { useInviteManager } from '../hooks/useInviteManager';
@@ -43,6 +46,7 @@ import {
 } from '../../../shared/colors';
 
 const BusinessHubPage = () => {
+  const navigate = useNavigate();
   const { data: business, isLoading, isError } = useBusinessData();
   const { mutateAsync: generateInvite, isPending: isInviting } = useInviteManager();
   const [editingLocation, setEditingLocation] = useState<BusinessLocation | null>(null);
@@ -148,12 +152,11 @@ const BusinessHubPage = () => {
                     size='small'
                     sx={{ bgcolor: ALPHA_WHITE_15, color: 'white', fontWeight: 700, borderRadius: 2 }}
                   />
-                  <Chip
-                    label='Active Partner'
-                    size='small'
-                    color='success'
-                    sx={{ fontWeight: 700, borderRadius: 2 }}
-                  />
+                  {business.is_active ? (
+                    <Chip label='Active Partner' size='small' color='success' sx={{ fontWeight: 700, borderRadius: 2 }} />
+                  ) : (
+                    <Chip label='Pending Activation' size='small' sx={{ fontWeight: 700, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
+                  )}
                 </Stack>
               </Box>
             </Stack>
@@ -169,31 +172,101 @@ const BusinessHubPage = () => {
 
       <Container maxWidth='md' sx={{ mt: -5 }}>
         <Stack spacing={3}>
-          {/* Subscription */}
-          <Paper
-            elevation={0}
-            sx={{ p: 3, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2 }}
-          >
-            <Box
+          {/* Onboarding banner — shown when not yet subscribed */}
+          {!business.is_active && (
+            <Paper
+              elevation={0}
               sx={{
-                width: 44,
-                height: 44,
-                borderRadius: 2,
-                bgcolor: 'primary.main',
+                p: 2.5,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'warning.main',
+                bgcolor: 'rgba(237,108,2,0.05)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
+                justifyContent: 'space-between',
+                gap: 2,
+                flexWrap: 'wrap',
               }}
             >
-              <ReceiptLong sx={{ color: 'white', fontSize: 22 }} />
-            </Box>
-            <Box>
-              <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                Subscription Plan
-              </Typography>
-              <Typography variant='body1' fontWeight={700}>Standard Monthly Tier</Typography>
-            </Box>
+              <Stack direction='row' alignItems='center' spacing={1.5} flex={1} minWidth={0}>
+                <Warning sx={{ color: 'warning.main', flexShrink: 0 }} />
+                <Box>
+                  <Typography variant='body2' fontWeight={700} color='warning.dark'>
+                    Complete your onboarding
+                  </Typography>
+                  <Typography variant='caption' color='text.secondary'>
+                    Your business isn't live yet. Subscribe to appear on the map and start issuing tickets.
+                  </Typography>
+                </Box>
+              </Stack>
+              <Button
+                variant='contained'
+                size='small'
+                startIcon={<CreditCard />}
+                onClick={() => navigate('/subscribe')}
+                sx={{ borderRadius: 2, fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
+              >
+                Subscribe Now
+              </Button>
+            </Paper>
+          )}
+
+          {/* Subscription card */}
+          <Paper
+            elevation={0}
+            sx={{ p: 3, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}
+          >
+            <Stack direction='row' alignItems='center' gap={2}>
+              <Box
+                sx={{
+                  width: 44, height: 44, borderRadius: 2,
+                  bgcolor: business.subscription_status === 'Active' ? 'primary.main' : 'action.disabledBackground',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}
+              >
+                <ReceiptLong sx={{ color: business.subscription_status === 'Active' ? 'white' : 'text.disabled', fontSize: 22 }} />
+              </Box>
+              <Box>
+                <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Subscription Plan
+                </Typography>
+                <Typography variant='body1' fontWeight={700}>
+                  {business.subscription_status ? 'Partner Monthly Plan' : 'No active subscription'}
+                </Typography>
+                {business.current_period_end && (
+                  <Typography variant='caption' color='text.secondary'>
+                    {business.cancel_at_period_end
+                      ? `Cancels on ${new Date(business.current_period_end).toLocaleDateString()}`
+                      : `Renews ${new Date(business.current_period_end).toLocaleDateString()}`}
+                  </Typography>
+                )}
+              </Box>
+            </Stack>
+            <Stack direction='row' alignItems='center' spacing={1}>
+              <Chip
+                label={business.subscription_status ?? 'Inactive'}
+                size='small'
+                sx={{
+                  fontWeight: 700,
+                  bgcolor: business.subscription_status === 'Active'
+                    ? 'rgba(46,125,50,0.1)'
+                    : business.subscription_status === 'Past_Due'
+                    ? 'rgba(237,108,2,0.1)'
+                    : 'action.hover',
+                  color: business.subscription_status === 'Active'
+                    ? 'success.main'
+                    : business.subscription_status === 'Past_Due'
+                    ? 'warning.main'
+                    : 'text.secondary',
+                }}
+              />
+              {business.subscription_status && (
+                <IconButton size='small' onClick={() => navigate('/subscription/manage')}>
+                  <ChevronRight fontSize='small' />
+                </IconButton>
+              )}
+            </Stack>
           </Paper>
 
           {/* Branch Management */}

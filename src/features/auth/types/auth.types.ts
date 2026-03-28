@@ -8,6 +8,7 @@ export interface User {
   location_id?: number | null; // Added for the Location Manager flow
   business_id?: number | null;
   requiresBusinessSetup?: boolean;
+  businessIsActive?: boolean;
   created_at: string;
 }
 

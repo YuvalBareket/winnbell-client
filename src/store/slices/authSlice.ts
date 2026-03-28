@@ -44,9 +44,14 @@ export const authSlice = createSlice({
         state.user.requiresBusinessSetup = false;
       }
     },
+    setBusinessActive: (state) => {
+      if (state.user) {
+        state.user.businessIsActive = true;
+      }
+    },
   },
 });
 
-export const { login, logout, setLoading, setError, setUserLocation, clearBusinessSetup } =
+export const { login, logout, setLoading, setError, setUserLocation, clearBusinessSetup, setBusinessActive } =
   authSlice.actions;
 export default authSlice.reducer;

@@ -41,8 +41,9 @@ export interface BusinessData {
   sector: string;
   description: string;
   terms_text: string;
+  is_active: boolean;
   subscription_status: string | null;
-  monthly_fee: number | null;
-  next_billing_date: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
   locations: BusinessLocation[];
 }
