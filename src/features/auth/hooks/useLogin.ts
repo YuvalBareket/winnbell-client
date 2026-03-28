@@ -20,7 +20,7 @@ export const useLogin = () => {
           token: data.token ?? '',
         }),
       );
-      navigate('/');
+      navigate('/scan');
     },
     onError: (error) => {
       console.error('Login failed:', error.response?.data?.message);

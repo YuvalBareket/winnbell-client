@@ -11,6 +11,7 @@ import { useClerkSync } from '../shared/hooks/useClerkSync';
 
 import MainLayout from '../shared/components/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
+import LandingPage from '../features/landing/LandingPage';
 
 // Auth
 import LoginPage from '../features/auth/pages/LoginPage';
@@ -53,6 +54,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* --- Public Routes --- */}
+      <Route path='/' element={isAuthenticated ? <Navigate to='/scan' replace /> : <LandingPage />} />
       <Route path='/login' element={<LoginPage />} />
       <Route path='/register/:role?' element={<RegisterPage />} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
@@ -68,7 +70,7 @@ const AppRoutes = () => {
             path='/nearby'
             element={isBusinessAdmin ? <BusinessHubPage /> : <NearbyPage />}
           />
-          <Route path='/' element={<RedeemPage />} />
+          <Route path='/scan' element={<RedeemPage />} />
           <Route path='/tickets' element={<MyTicketsPage />} />
         </Route>
 

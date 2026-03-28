@@ -12,7 +12,7 @@ export const useBusinessSetup = () => {
     mutationFn: setupBusinessProfile,
     onSuccess: () => {
       dispatch(clearBusinessSetup());
-      navigate('/');
+      navigate('/scan');
     },
   });
 };

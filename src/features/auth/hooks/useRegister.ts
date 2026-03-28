@@ -22,7 +22,7 @@ export const useRegister = () => {
       if (data?.user?.role === 'Business') {
         navigate('/partner/setup-business');
       } else {
-        navigate('/');
+        navigate('/scan');
       }
     },
     onError: (error) => {

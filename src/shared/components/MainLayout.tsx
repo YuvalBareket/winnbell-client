@@ -70,24 +70,24 @@ const MainLayout = () => {
 
           {/* Elevated center QR tab */}
           <BottomNavigationAction
-            value='/'
+            value='/scan'
             icon={
               <Box
                 sx={{
                   width: 52,
                   height: 52,
                   borderRadius: '50%',
-                  background: location.pathname === '/' ? GRADIENT_PRIMARY : NEUTRAL_INACTIVE_BG,
+                  background: location.pathname === '/scan' ? GRADIENT_PRIMARY : NEUTRAL_INACTIVE_BG,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   mt: '-22px',
-                  boxShadow: location.pathname === '/' ? SHADOW_PRIMARY_INTENSE : SHADOW_NEUTRAL_SOFT,
+                  boxShadow: location.pathname === '/scan' ? SHADOW_PRIMARY_INTENSE : SHADOW_NEUTRAL_SOFT,
                   border: '3px solid white',
                   transition: 'background 0.2s, box-shadow 0.2s',
                 }}
               >
-                <QrCodeIcon sx={{ color: location.pathname === '/' ? 'white' : NEUTRAL_INACTIVE_ICON, fontSize: 26 }} />
+                <QrCodeIcon sx={{ color: location.pathname === '/scan' ? 'white' : NEUTRAL_INACTIVE_ICON, fontSize: 26 }} />
               </Box>
             }
             sx={{

@@ -76,11 +76,11 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const mainNavItems: NavItem[] = isBusiness || isManager
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/hub' },
-        { label: 'Scan Ticket', icon: <QrCodeScannerOutlined />, path: '/' },
+        { label: 'Scan Ticket', icon: <QrCodeScannerOutlined />, path: '/scan' },
       ]
     : [
         { label: 'Nearby Partners', icon: <StorefrontOutlined />, path: '/nearby' },
-        { label: 'Scan QR Code', icon: <QrCodeScannerOutlined />, path: '/' },
+        { label: 'Scan QR Code', icon: <QrCodeScannerOutlined />, path: '/scan' },
         { label: 'My Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
       ];
 

@@ -35,7 +35,7 @@ const LoginPage = () => {
       await signIn.authenticateWithRedirect({
         strategy: provider,
         redirectUrl: '/sso-callback',
-        redirectUrlComplete: '/',
+        redirectUrlComplete: '/scan',
       });
     } catch (err: any) {
       sessionStorage.removeItem('pendingInviteToken');
@@ -57,7 +57,7 @@ const LoginPage = () => {
       if (result.status === 'complete') {
         if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
-        navigate('/');
+        navigate('/scan');
       } else if (result.status === 'needs_second_factor') {
         // Send the email OTP
         await signIn.prepareSecondFactor({ strategy: 'email_code' });
@@ -84,7 +84,7 @@ const LoginPage = () => {
       if (result.status === 'complete') {
         if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
-        navigate('/');
+        navigate('/scan');
       }
     } catch (err: any) {
       setError(err.errors?.[0]?.message || 'Invalid code');
