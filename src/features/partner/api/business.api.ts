@@ -33,3 +33,14 @@ export const updateLocation = async (
 ): Promise<void> => {
   await api.patch(`/business/locations/${locationId}`, data);
 };
+
+export const addLocation = async (
+  data: UpdateLocationInput,
+): Promise<{ locationId: number }> => {
+  const response = await api.post<{ locationId: number }>('/business/locations', data);
+  return response.data;
+};
+
+export const deleteLocation = async (locationId: number): Promise<void> => {
+  await api.delete(`/business/locations/${locationId}`);
+};

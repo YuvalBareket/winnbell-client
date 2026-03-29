@@ -18,15 +18,17 @@ import {
   QrCodeScannerOutlined,
   BusinessOutlined,
   BarChartOutlined,
-  HelpOutlineOutlined,
+  ReceiptLongOutlined,
   PrivacyTipOutlined,
   GavelOutlined,
   ChevronRight,
+  EmojiEventsOutlined,
+  AdminPanelSettingsOutlined,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { logout } from '../../store/slices/authSlice';
-import { selectCurrentUser, selectIsBusiness, selectIsLocationManager } from '../../store/selectors/authSelectors';
+import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin } from '../../store/selectors/authSelectors';
 import { useClerk } from '@clerk/clerk-react';
 import {
   GRADIENT_HERO,
@@ -55,6 +57,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const user = useAppSelector(selectCurrentUser);
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
+  const isAdmin = useAppSelector(selectIsAdmin);
   const { signOut } = useClerk();
 
   const handleLogout = () => {
@@ -71,10 +74,26 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     ? user.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : '?';
 
-  const roleLabel = isBusiness ? 'Partner' : isManager ? 'Manager' : 'Member';
-  const roleColor = isBusiness ? '#10b981' : isManager ? '#f59e0b' : PRIMARY_MAIN;
+  const roleLabel = isAdmin ? 'Admin' : isBusiness ? 'Partner' : isManager ? 'Manager' : 'Member';
+  const roleColor = isAdmin ? '#7c3aed' : isBusiness ? '#10b981' : isManager ? '#f59e0b' : PRIMARY_MAIN;
 
-  const mainNavItems: NavItem[] = isBusiness || isManager
+  const mainNavItems: NavItem[] = isAdmin
+    ? [
+        { label: 'Admin Panel', icon: <AdminPanelSettingsOutlined />, path: '/admin' },
+        { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
+        { label: 'Scan Ticket', icon: <QrCodeScannerOutlined />, path: '/scan' },
+        { label: 'Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
+        { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
+      ]
+    : isBusiness
+    ? [
+        { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
+        { label: 'Scan Ticket', icon: <QrCodeScannerOutlined />, path: '/scan' },
+        { label: 'Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
+        { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
+        { label: 'Subscription', icon: <ReceiptLongOutlined />, path: '/subscription/manage' },
+      ]
+    : isManager
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
         { label: 'Scan Ticket', icon: <QrCodeScannerOutlined />, path: '/scan' },
@@ -85,10 +104,10 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Nearby Partners', icon: <StorefrontOutlined />, path: '/nearby' },
         { label: 'Scan QR Code', icon: <QrCodeScannerOutlined />, path: '/scan' },
         { label: 'My Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
+        { label: 'Draw History', icon: <EmojiEventsOutlined />, path: '/draws/history' },
       ];
 
   const legalItems: NavItem[] = [
-    { label: 'Help & Support', icon: <HelpOutlineOutlined />, path: '/help' },
     { label: 'Terms of Service', icon: <GavelOutlined />, path: '/terms' },
     { label: 'Privacy Policy', icon: <PrivacyTipOutlined />, path: '/privacy' },
   ];

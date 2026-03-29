@@ -1,7 +1,7 @@
 // components/tickets/UpcomingDrawCard.tsx
 import { Box, Typography, Paper } from '@mui/material';
 import { Schedule, ConfirmationNumber } from '@mui/icons-material';
-import type { IDrawSummary } from '../../myTickets/types/myTicket.types';
+import type { IDrawSummary } from '../types';
 import { calculateDaysLeft, formatCurrency } from '../../../shared/utils/date';
 import { GRADIENT_DRAW_CARD, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20 } from '../../../shared/colors';
 

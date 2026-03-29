@@ -13,6 +13,12 @@ import {
   Skeleton,
   Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  CircularProgress,
 } from '@mui/material';
 import {
   Storefront,
@@ -29,12 +35,15 @@ import {
   CreditCard,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
 import { useBusinessData } from '../hooks/useBusinessData';
+import { useAddLocation } from '../hooks/useAddLocation';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import { useInviteManager } from '../hooks/useInviteManager';
 import EditLocationModal from './components/EditLocationModal';
 import EditBusinessDrawer from './components/EditBusinessDrawer';
-import type { BusinessLocation } from '../types/business.types';
+import AddressAutoComplete from '../../../shared/components/AddressAutoComplete';
+import type { BusinessLocation, UpdateLocationInput } from '../types/business.types';
 import {
   BG_PAGE,
   GRADIENT_HERO,
@@ -45,27 +54,62 @@ import {
   VERIFIED_BLUE,
 } from '../../../shared/colors';
 
+interface AddLocationFormValues {
+  name: string;
+  address: string;
+  lat: number | null;
+  lon: number | null;
+}
+
 const BusinessHubPage = () => {
   const navigate = useNavigate();
-  const { data: business, isLoading, isError } = useBusinessData();
+  const { data: business, isLoading, isError } = useBusinessData(true);
   const { mutateAsync: generateInvite, isPending: isInviting } = useInviteManager();
+  const { mutate: doAddLocation, isPending: isAddingLocation } = useAddLocation();
   const [editingLocation, setEditingLocation] = useState<BusinessLocation | null>(null);
   const [businessDrawerOpen, setBusinessDrawerOpen] = useState(false);
+  const [addLocationOpen, setAddLocationOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteLink, setInviteLink] = useState('');
+
+  const addLocationForm = useForm<AddLocationFormValues>({
+    defaultValues: { name: '', address: '', lat: null, lon: null },
+  });
+
+  const handleAddLocation = (values: AddLocationFormValues) => {
+    if (!values.lat || !values.lon) return;
+    doAddLocation(
+      { name: values.name, address: values.address, lat: values.lat, lon: values.lon },
+      {
+        onSuccess: () => {
+          setAddLocationOpen(false);
+          addLocationForm.reset();
+        },
+      },
+    );
+  };
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
     severity: 'success',
   });
 
-  const handleCopyInvite = async (locId: number) => {
+  const handleGenerateInvite = async (locId: number) => {
     try {
-      await generateInvite(locId, {
-        onSuccess: () => {
-          setSnackbar({ open: true, message: 'Invite link copied to clipboard! Send it to your manager.', severity: 'success' });
-        },
-      });
+      const data = await generateInvite(locId);
+      setInviteLink(data.inviteLink);
+      setInviteDialogOpen(true);
     } catch {
       setSnackbar({ open: true, message: 'Failed to generate invite link. Try again.', severity: 'error' });
+    }
+  };
+
+  const handleCopyInviteLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setSnackbar({ open: true, message: 'Link copied to clipboard!', severity: 'success' });
+    } catch {
+      setSnackbar({ open: true, message: 'Failed to copy link.', severity: 'error' });
     }
   };
 
@@ -271,13 +315,26 @@ const BusinessHubPage = () => {
 
           {/* Branch Management */}
           <Box>
-            <Typography
-              variant='subtitle2'
-              fontWeight={800}
-              sx={{ mb: 2, ml: 0.5, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}
-            >
-              Branch Management
-            </Typography>
+            <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
+              <Typography
+                variant='subtitle2'
+                fontWeight={800}
+                sx={{ ml: 0.5, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}
+              >
+                Branch Management
+              </Typography>
+              {business.locations.length > 0 && (
+                <Button
+                  size='small'
+                  variant='outlined'
+                  startIcon={<AddBusiness />}
+                  onClick={() => setAddLocationOpen(true)}
+                  sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+                >
+                  Add Location
+                </Button>
+              )}
+            </Stack>
 
             {business.locations.length === 0 ? (
               <Paper
@@ -289,6 +346,13 @@ const BusinessHubPage = () => {
                 <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
                   Add your first branch to start issuing tickets.
                 </Typography>
+                <Button
+                  variant='contained'
+                  onClick={() => setAddLocationOpen(true)}
+                  sx={{ mt: 3, borderRadius: 2, fontWeight: 800, textTransform: 'none', px: 4 }}
+                >
+                  Add Location
+                </Button>
               </Paper>
             ) : (
               <Box sx={{ display: { xs: 'flex', md: 'grid' }, flexDirection: 'column', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
@@ -314,7 +378,7 @@ const BusinessHubPage = () => {
                         <IconButton sx={{ width: 44, height: 44 }} onClick={() => setEditingLocation(loc)} aria-label='Edit location'>
                           <Edit fontSize='small' />
                         </IconButton>
-                        <IconButton sx={{ width: 44, height: 44 }}>
+                        <IconButton sx={{ width: 44, height: 44 }} onClick={() => navigate('/scan')} aria-label='Generate tickets'>
                           <ChevronRight />
                         </IconButton>
                       </Stack>
@@ -341,10 +405,10 @@ const BusinessHubPage = () => {
                           size='small'
                           startIcon={<Share />}
                           disabled={isInviting}
-                          onClick={() => handleCopyInvite(loc.id)}
+                          onClick={() => handleGenerateInvite(loc.id)}
                           sx={{ borderRadius: 2, fontWeight: 800, textTransform: 'none', px: 2 }}
                         >
-                          {isInviting ? 'Generating...' : 'Invite'}
+                          {isInviting ? 'Generating...' : 'Invite Manager'}
                         </Button>
                       )}
                     </Stack>
@@ -362,11 +426,87 @@ const BusinessHubPage = () => {
         location={editingLocation}
       />
 
+      {/* Add Location Dialog */}
+      <Dialog open={addLocationOpen} onClose={() => setAddLocationOpen(false)} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ fontWeight: 700 }}>Add New Location</DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <Stack spacing={2.5} component='form' id='add-location-form' onSubmit={addLocationForm.handleSubmit(handleAddLocation)}>
+            <Controller
+              name='name'
+              control={addLocationForm.control}
+              rules={{ required: 'Branch name is required' }}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label='Branch Name'
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  sx={{ mt: 1 }}
+                />
+              )}
+            />
+            <AddressAutoComplete
+              label='Address'
+              defaultValue={null}
+              onSelect={(option) => {
+                addLocationForm.setValue('address', option?.label ?? '');
+                addLocationForm.setValue('lat', option?.lat ?? null);
+                addLocationForm.setValue('lon', option?.lon ?? null);
+              }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button onClick={() => setAddLocationOpen(false)} sx={{ borderRadius: 2, fontWeight: 700 }}>Cancel</Button>
+          <Button
+            type='submit'
+            form='add-location-form'
+            variant='contained'
+            disabled={isAddingLocation}
+            sx={{ borderRadius: 2, fontWeight: 700 }}
+          >
+            {isAddingLocation ? <CircularProgress size={20} color='inherit' /> : 'Add Location'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <EditBusinessDrawer
         open={businessDrawerOpen}
         onClose={() => setBusinessDrawerOpen(false)}
         business={business}
       />
+
+      <Dialog open={inviteDialogOpen} onClose={() => setInviteDialogOpen(false)} maxWidth='sm' fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Manager Invite Link</DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+            Share this link with the manager to invite them:
+          </Typography>
+          <TextField
+            fullWidth
+            value={inviteLink}
+            InputProps={{ readOnly: true }}
+            variant='outlined'
+            sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          />
+          <Typography variant='caption' color='text.secondary'>
+            They can use this link to set up their account and manage your location.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ gap: 1, p: 2 }}>
+          <Button onClick={() => setInviteDialogOpen(false)} sx={{ borderRadius: 2 }}>
+            Close
+          </Button>
+          <Button
+            variant='contained'
+            onClick={handleCopyInviteLink}
+            sx={{ borderRadius: 2, fontWeight: 800, textTransform: 'none' }}
+          >
+            Copy Link
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbar.open}

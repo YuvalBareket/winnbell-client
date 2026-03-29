@@ -227,7 +227,7 @@ const SubscribePage = () => {
                 fullWidth
                 variant='text'
                 size='small'
-                onClick={() => navigate('/scan')}
+                onClick={() => navigate('/nearby')}
                 sx={{ mt: 1.5, color: 'text.disabled', fontWeight: 600 }}
               >
                 I'll do it later

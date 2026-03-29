@@ -4,17 +4,20 @@ export interface BusinessStats {
   id: number;
   name: string;
   sector: string;
-  totalTickets: number;
-  activatedTickets: number;
-  ticketBalance: number;
+  total_tickets_created: number;
+  total_activated: number;
+  ticket_balance: number;
 }
 
 export interface Draw {
   id: number;
   name: string;
-  prizeName: string;
-  drawDate: string;
-  status: 'Open' | 'Closed';
+  prize_amount: number;
+  prize_percentage: number;
+  draw_date: string;
+  status: 'Upcoming' | 'Open' | 'Closed';
+  winner_user_id?: number;
+  closed_at?: string;
 }
 
 export interface TicketBatchRequest {
@@ -35,7 +38,7 @@ export interface CreateBusinessInput {
 
 export interface CreateDrawInput {
   name: string;
-  prize_name: string;
-  prize_amount: number;
+  prize_amount?: number;
+  prize_percentage?: number;
   draw_date: string;
 }

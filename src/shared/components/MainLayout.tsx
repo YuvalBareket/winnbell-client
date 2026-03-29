@@ -58,7 +58,6 @@ const MainLayout = () => {
           pb: { xs: '70px', md: 4 },
           ml: { xs: 0, md: '268px' },
           width: { xs: '100%', md: 'calc(100% - 268px)' },
-          zoom: { xs: 1, md: 0.9 },
         }}
       >
         {showSubscribeBanner && (
@@ -82,7 +81,7 @@ const MainLayout = () => {
             <Stack direction='row' alignItems='center' spacing={1} flex={1} minWidth={0}>
               <Warning sx={{ color: 'warning.main', fontSize: 20, flexShrink: 0 }} />
               <Typography variant='body2' fontWeight={600} color='warning.dark' noWrap>
-                Your business isn't live yet — subscribe to appear on the map
+                Your business is not live yet. Subscribe to appear on the map
               </Typography>
             </Stack>
             <Button

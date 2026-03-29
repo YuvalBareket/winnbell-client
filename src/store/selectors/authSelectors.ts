@@ -38,6 +38,10 @@ export const selectIsBusiness = createSelector(
   (user) =>
     user?.role === 'Admin' || (user?.role === 'Business' && !user.location_id),
 );
+export const selectIsAdmin = createSelector(
+  [selectCurrentUser],
+  (user) => user?.role === 'Admin',
+);
 export const selectAuthToken = createSelector(
   [selectAuthState],
   (auth) => auth.token,

@@ -62,7 +62,7 @@ const SubscriptionSuccessPage = () => {
             variant='contained'
             size='large'
             startIcon={<Storefront />}
-            onClick={() => navigate('/scan')}
+            onClick={() => navigate('/nearby')}
             sx={{ py: 1.75, px: 4, borderRadius: 3, fontWeight: 800 }}
           >
             Go to Dashboard

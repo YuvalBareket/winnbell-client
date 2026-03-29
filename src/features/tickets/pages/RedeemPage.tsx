@@ -20,7 +20,6 @@ import {
 } from '@mui/material';
 import {
   Bolt,
-  QrCodeScanner,
   Edit,
   CardGiftcard,
   AddCircleOutline,
@@ -453,31 +452,6 @@ const RedeemPage = () => {
           <ChevronRight sx={{ color: primaryColor }} />
         </Paper>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, my: 1 }}>
-          <Divider sx={{ flex: 1 }} />
-          <Typography variant='caption' sx={{ fontWeight: 700, color: 'text.disabled', textTransform: 'uppercase' }}>
-            OR
-          </Typography>
-          <Divider sx={{ flex: 1 }} />
-        </Box>
-
-        <Button
-          variant='outlined'
-          size='large'
-          fullWidth
-          startIcon={<QrCodeScanner />}
-          sx={{
-            color: primaryColor,
-            borderColor: primaryColor,
-            height: 56,
-            borderRadius: 3,
-            fontWeight: 700,
-            textTransform: 'none',
-            borderWidth: 2,
-          }}
-        >
-          Scan QR Code
-        </Button>
       </Stack>
     </Stack>
   );

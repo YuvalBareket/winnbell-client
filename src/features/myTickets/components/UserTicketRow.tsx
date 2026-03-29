@@ -5,7 +5,7 @@ import { BUSINESS_SECTORS } from '../../admin/data';
 import { useMyTickets } from '../hooks/useMyTickets';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness } from '../../../store/selectors/authSelectors';
-import type { UserTicket } from '../types/myTicket.types';
+import type { UserTicket, BusinessTicket } from '../types/myTicket.types';
 
 // --- Sub-Component: USER ROW ---
 const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
@@ -78,6 +78,7 @@ const BusinessTicketRow = ({ ticket }: { ticket: BusinessTicket }) => {
 // --- Main Component ---
 export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
   const { data: tickets, isLoading } = useMyTickets(draw_id);
+  const isBusiness = useAppSelector(selectIsBusiness);
 
   if (!draw_id) return null;
 

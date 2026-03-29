@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchMyBusinessDetails } from '../api/business.api';
 
-export const useBusinessData = (enabled:boolean) => {
+export const useBusinessData = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ['business', 'my-details'],
     queryFn: fetchMyBusinessDetails,

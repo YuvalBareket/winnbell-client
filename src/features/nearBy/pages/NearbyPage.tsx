@@ -251,7 +251,17 @@ const NearbyPage = () => {
                     </Box>
                   </Box>
 
-                  <Button variant='text' sx={{ minWidth: 'auto', display: 'flex', flexDirection: 'column', gap: 0.5, p: 1 }}>
+                  <Button
+                    variant='text'
+                    sx={{ minWidth: 'auto', display: 'flex', flexDirection: 'column', gap: 0.5, p: 1 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (partner.latitude && partner.longitude) {
+                        const url = `https://www.google.com/maps/dir/?api=1&destination=${partner.latitude},${partner.longitude}`;
+                        window.open(url, '_blank');
+                      }
+                    }}
+                  >
                     <Directions color='primary' />
                     <Typography variant='caption' sx={{ fontWeight: 700, color: 'primary.main', lineHeight: 1 }}>Go</Typography>
                   </Button>

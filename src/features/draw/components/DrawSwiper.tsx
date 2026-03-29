@@ -52,7 +52,7 @@ export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwipe
           <EmojiEventsOutlined sx={{ fontSize: 32, color: 'primary.main' }} />
         </Box>
         <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>No active draws right now</Typography>
-        <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>Check back soon — new draws are added regularly.</Typography>
+        <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>Check back soon. New draws are added regularly.</Typography>
       </Box>
     );
   }
@@ -63,7 +63,7 @@ export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwipe
         {draws.map((draw, index) => {
           const isActive = draw_id === draw.id;
           const daysLeft = calculateDaysLeft(draw.draw_date);
-          const drawName = (draw as any).name || draw.prize_name;
+          const drawName = draw.name;
           return (
             <Box
               key={draw.id}

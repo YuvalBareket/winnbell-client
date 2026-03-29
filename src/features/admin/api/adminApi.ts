@@ -17,3 +17,9 @@ export const createBusiness = (data: CreateBusinessInput) =>
 export const fetchAllDraws = () => api.get<Draw[]>('/admin/draws-all');
 export const createDraw = (data: CreateDrawInput) =>
   api.post('/admin/draw', data);
+export const openDraw = (drawId: number) =>
+  api.post(`/admin/draws/${drawId}/open`);
+export const closeDraw = (drawId: number) =>
+  api.post(`/admin/draws/${drawId}/close`);
+export const pickWinner = (drawId: number) =>
+  api.post(`/admin/draws/${drawId}/pick-winner`);

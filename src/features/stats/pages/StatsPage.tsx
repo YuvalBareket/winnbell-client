@@ -188,7 +188,7 @@ const StatsPage = () => {
                       <MenuItem value=''>All draws</MenuItem>
                       {draws.map((d) => (
                         <MenuItem key={d.draw_id} value={d.draw_id}>
-                          {d.draw_name} — {formatDate(d.draw_date)}
+                          {d.draw_name} ({formatDate(d.draw_date)})
                         </MenuItem>
                       ))}
                     </Select>
@@ -356,12 +356,12 @@ const StatsPage = () => {
                 <Stack spacing={1.5}>
                   <Stack direction='row' alignItems='center' spacing={1}>
                     <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#10b981' }} />
-                    <Typography variant='body2' fontWeight={600}>Activated — {stats?.summary.total_activated ?? 0}</Typography>
+                    <Typography variant='body2' fontWeight={600}>Activated: {stats?.summary.total_activated ?? 0}</Typography>
                   </Stack>
                   <Stack direction='row' alignItems='center' spacing={1}>
                     <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#e2e8f0' }} />
                     <Typography variant='body2' fontWeight={600}>
-                      Not activated — {Math.max(0, (stats?.summary.total_issued ?? 0) - (stats?.summary.total_activated ?? 0))}
+                      Not activated: {Math.max(0, (stats?.summary.total_issued ?? 0) - (stats?.summary.total_activated ?? 0))}
                     </Typography>
                   </Stack>
                   <Typography variant='h4' fontWeight={800}>{stats?.summary.activation_rate ?? 0}%</Typography>

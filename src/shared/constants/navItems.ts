@@ -5,9 +5,11 @@ import {
   ConfirmationNumberOutlined,
   BusinessOutlined,
   BarChartOutlined,
-  HelpOutlineOutlined,
+  ReceiptLongOutlined,
   GavelOutlined,
   PrivacyTipOutlined,
+  EmojiEventsOutlined,
+  AdminPanelSettingsOutlined,
 } from '@mui/icons-material';
 
 export interface NavItem {
@@ -20,6 +22,7 @@ export const userNavItems: NavItem[] = [
   { label: 'Nearby Partners', Icon: StorefrontOutlined, path: '/nearby' },
   { label: 'Scan QR Code', Icon: QrCodeScannerOutlined, path: '/scan' },
   { label: 'My Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
+  { label: 'Draw History', Icon: EmojiEventsOutlined, path: '/draws/history' },
 ];
 
 export const businessNavItems: NavItem[] = [
@@ -27,10 +30,25 @@ export const businessNavItems: NavItem[] = [
   { label: 'Scan Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
   { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
+  { label: 'Subscription', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
+];
+
+export const managerNavItems: NavItem[] = [
+  { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
+  { label: 'Scan Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
+  { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
+  { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
+];
+
+export const adminNavItems: NavItem[] = [
+  { label: 'Admin Panel', Icon: AdminPanelSettingsOutlined, path: '/admin' },
+  { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
+  { label: 'Scan Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
+  { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
+  { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
 ];
 
 export const legalNavItems: NavItem[] = [
-  { label: 'Help & Support', Icon: HelpOutlineOutlined, path: '/help' },
   { label: 'Terms of Service', Icon: GavelOutlined, path: '/terms' },
   { label: 'Privacy Policy', Icon: PrivacyTipOutlined, path: '/privacy' },
 ];

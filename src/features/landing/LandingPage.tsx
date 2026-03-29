@@ -90,7 +90,7 @@ const LandingPage = () => {
             sx={{ color: TEXT_SECONDARY, fontSize: '1.1rem', lineHeight: 1.7, mb: 4, maxWidth: 480, mx: 'auto' }}
           >
             Winnbell turns every visit to a local business into a chance to win a prize.
-            Scan a QR code, collect a ticket, and enter the monthly draw — completely free.
+            Scan a QR code, collect a ticket, and enter the monthly draw. Completely free.
           </Typography>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent='center'>
@@ -150,7 +150,7 @@ const LandingPage = () => {
               {
                 icon: <Storefront sx={{ fontSize: 32, color: PRIMARY_MAIN }} />,
                 title: 'Visit a partner',
-                body: 'Find a Winnbell partner near you — a cafe, shop, or restaurant — and make a purchase.',
+                body: 'Find a Winnbell partner near you (a cafe, shop, or restaurant) and make a purchase.',
               },
               {
                 icon: <ConfirmationNumber sx={{ fontSize: 32, color: PRIMARY_MAIN }} />,
@@ -228,12 +228,12 @@ const LandingPage = () => {
             sx={{ opacity: 0.85, fontSize: '1.05rem', lineHeight: 1.7, mb: 4, maxWidth: 440, mx: 'auto' }}
           >
             Partner with Winnbell and give your customers a reason to keep coming back.
-            Every visit becomes an exciting moment — and you get the footfall.
+            Every visit becomes an exciting moment, and you get the footfall.
           </Typography>
 
           <Stack spacing={1.5} sx={{ mb: 5, textAlign: 'left', maxWidth: 360, mx: 'auto' }}>
             {[
-              'Zero cost to join — free for partners',
+              'Zero cost to join. Free for partners',
               'Drive repeat visits and word-of-mouth',
               'Get listed on the Winnbell partner map',
               'Simple dashboard to manage your location',

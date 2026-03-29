@@ -6,7 +6,7 @@ import {
   selectIsBusiness,
   selectIsRequiresBusinessSetup,
   selectIsAuthenticated,
-  selectBusinessIsActive,
+  selectIsAdmin,
 } from '../store/selectors/authSelectors';
 import { useClerkSync } from '../shared/hooks/useClerkSync';
 
@@ -40,14 +40,15 @@ import BusinessDashboard from '../features/admin/pages/BusinessDashboard';
 import BusinessProfilePage from '../features/partner/pages/BusinessProfilePage';
 import BusinessHubPage from '../features/partner/pages/BusinessHubPage';
 import StatsPage from '../features/stats/pages/StatsPage';
+import DrawHistoryPage from '../features/draw/pages/DrawHistoryPage';
 
 const AppRoutes = () => {
   const navigate = useNavigate();
   const isUser = useAppSelector(selectIsRegularUser);
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAdmin = useAppSelector(selectIsAdmin);
   const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
-  const businessIsActive = useAppSelector(selectBusinessIsActive);
 
   // Syncs an active Clerk session into Redux (handles SSO callbacks)
   useClerkSync();
@@ -63,7 +64,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* --- Public Routes --- */}
-      <Route path='/' element={isAuthenticated ? <Navigate to='/scan' replace /> : <LandingPage />} />
+      <Route path='/' element={isAuthenticated ? <Navigate to='/nearby' replace /> : <LandingPage />} />
       <Route path='/login' element={<LoginPage />} />
       <Route path='/register/:role?' element={<RegisterPage />} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
@@ -73,10 +74,11 @@ const AppRoutes = () => {
       <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
       <Route path='/subscribe' element={<SubscribePage />} />
       <Route path='/subscription/success' element={<SubscriptionSuccessPage />} />
-      <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>
+        <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
+
         <Route element={<MainLayout />}>
           <Route
             path='/nearby'
@@ -84,7 +86,9 @@ const AppRoutes = () => {
           />
           <Route path='/scan' element={<RedeemPage />} />
           <Route path='/tickets' element={<MyTicketsPage />} />
+          <Route path='/draws/history' element={<DrawHistoryPage />} />
           <Route path='/stats' element={<StatsPage />} />
+          {isAdmin && <Route path='/admin' element={<BusinessDashboard />} />}
         </Route>
 
         {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}

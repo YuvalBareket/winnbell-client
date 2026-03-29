@@ -6,10 +6,10 @@ import { Logout } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { logout } from '../../store/slices/authSlice';
-import { selectCurrentUser, selectIsBusiness, selectIsLocationManager } from '../../store/selectors/authSelectors';
+import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin } from '../../store/selectors/authSelectors';
 import { useClerk } from '@clerk/clerk-react';
 import {
-  userNavItems, businessNavItems, legalNavItems,
+  userNavItems, businessNavItems, managerNavItems, adminNavItems, legalNavItems,
 } from '../constants/navItems';
 import {
   GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING,
@@ -22,16 +22,17 @@ const AppSidebar = () => {
   const user = useAppSelector(selectCurrentUser);
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
+  const isAdmin = useAppSelector(selectIsAdmin);
   const { signOut } = useClerk();
 
   const initials = user?.fullName
     ? user.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
     : '?';
 
-  const roleLabel = isBusiness ? 'Partner' : isManager ? 'Manager' : 'Member';
-  const roleColor = isBusiness ? '#10b981' : isManager ? '#f59e0b' : PRIMARY_MAIN;
+  const roleLabel = isAdmin ? 'Admin' : isBusiness ? 'Partner' : isManager ? 'Manager' : 'Member';
+  const roleColor = isAdmin ? '#7c3aed' : isBusiness ? '#10b981' : isManager ? '#f59e0b' : PRIMARY_MAIN;
 
-  const mainNavItems = isBusiness || isManager ? businessNavItems : userNavItems;
+  const mainNavItems = isAdmin ? adminNavItems : isBusiness ? businessNavItems : isManager ? managerNavItems : userNavItems;
 
   const handleLogout = () => {
     dispatch(logout());

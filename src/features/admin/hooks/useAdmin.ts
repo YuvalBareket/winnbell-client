@@ -6,6 +6,9 @@ import {
   createBusiness,
   fetchAllDraws,
   createDraw,
+  openDraw,
+  closeDraw,
+  pickWinner,
 } from '../api/adminApi';
 
 export const useAdminBusinesses = () => {
@@ -62,7 +65,38 @@ export const useCreateDraw = () => {
     mutationFn: createDraw,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'draws-all'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draws'] }); // Also refresh the dropdown list
+      queryClient.invalidateQueries({ queryKey: ['admin', 'draws'] });
+    },
+  });
+};
+
+export const useOpenDraw = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (drawId: number) => openDraw(drawId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'draws-all'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'draws'] });
+    },
+  });
+};
+
+export const useCloseDraw = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (drawId: number) => closeDraw(drawId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'draws-all'] });
+    },
+  });
+};
+
+export const usePickWinner = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (drawId: number) => pickWinner(drawId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'draws-all'] });
     },
   });
 };

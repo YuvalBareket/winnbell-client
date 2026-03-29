@@ -87,6 +87,7 @@ const LoginPage = () => {
   const [needs2FA, setNeeds2FA] = useState(false);
   const [mfaCode, setMfaCode] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showResetMessage, setShowResetMessage] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -201,6 +202,16 @@ const LoginPage = () => {
 
       {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
 
+      {showResetMessage && (
+        <Alert
+          severity='info'
+          onClose={() => setShowResetMessage(false)}
+          sx={{ mb: 3, borderRadius: 3 }}
+        >
+          Password reset is not available yet. Please contact support.
+        </Alert>
+      )}
+
       <Stack spacing={3}>
         <Box>
           <Typography variant='subtitle2' sx={{ ml: 1, mb: 1, fontWeight: 700 }}>Email</Typography>
@@ -215,7 +226,13 @@ const LoginPage = () => {
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, ml: 1 }}>
             <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>Password</Typography>
-            <Typography variant='caption' sx={{ fontWeight: 700, color: 'primary.main', cursor: 'pointer' }}>Forgot?</Typography>
+            <Typography
+              variant='caption'
+              sx={{ fontWeight: 700, color: 'primary.main', cursor: 'pointer' }}
+              onClick={() => setShowResetMessage(true)}
+            >
+              Forgot?
+            </Typography>
           </Box>
           <TextField fullWidth name='password' value={formData.password} onChange={handleChange}
             type={showPassword ? 'text' : 'password'} placeholder='Enter your password'
