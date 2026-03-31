@@ -104,7 +104,12 @@ const LoginPage = () => {
       });
     } catch (err: any) {
       sessionStorage.removeItem('pendingInviteToken');
-      setError(err.errors[0]?.message || 'Social login failed');
+      const code = err.errors?.[0]?.code;
+      if (code === 'session_exists' || code === 'identifier_already_signed_in') {
+        navigate('/scan');
+        return;
+      }
+      setError(err.errors?.[0]?.message || 'Social login failed');
     }
   };
 
@@ -123,6 +128,11 @@ const LoginPage = () => {
         setNeeds2FA(true);
       }
     } catch (err: any) {
+      const code = err.errors?.[0]?.code;
+      if (code === 'session_exists' || code === 'identifier_already_signed_in') {
+        navigate('/scan');
+        return;
+      }
       setError(err.errors?.[0]?.message || 'Invalid email or password');
     } finally {
       setLoading(false);
@@ -325,7 +335,7 @@ const LoginPage = () => {
             </IconButton>
           </Box>
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400 }}>
-            <FormContent />
+            {FormContent()}
           </Box>
         </Box>
       </Box>
@@ -342,7 +352,7 @@ const LoginPage = () => {
         </IconButton>
       </Box>
       <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 4 }}>
-        <FormContent />
+        {FormContent()}
       </Container>
     </Box>
   );

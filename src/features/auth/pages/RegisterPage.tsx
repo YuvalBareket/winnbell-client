@@ -341,7 +341,7 @@ const RegisterPage = () => {
             </IconButton>
           </Box>
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 420 }}>
-            <FormContent />
+            {FormContent()}
           </Box>
         </Box>
       </Box>
@@ -358,7 +358,7 @@ const RegisterPage = () => {
         </IconButton>
       </Box>
       <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <FormContent />
+        {FormContent()}
       </Container>
     </Box>
   );
