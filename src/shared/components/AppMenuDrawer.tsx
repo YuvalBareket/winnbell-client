@@ -39,6 +39,7 @@ import {
   ALPHA_WHITE_70,
   PRIMARY_MAIN,
 } from '../colors';
+import { getUserInitials, getRoleLabel, getRoleColor } from '../utils/string';
 
 interface Props {
   open: boolean;
@@ -70,12 +71,9 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     onClose();
   };
 
-  const initials = user?.fullName
-    ? user.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-    : '?';
-
-  const roleLabel = isAdmin ? 'Admin' : isBusiness ? 'Partner' : isManager ? 'Manager' : 'Member';
-  const roleColor = isAdmin ? '#7c3aed' : isBusiness ? '#10b981' : isManager ? '#f59e0b' : PRIMARY_MAIN;
+  const initials = getUserInitials(user?.fullName);
+  const roleLabel = getRoleLabel(isAdmin, isBusiness, isManager);
+  const roleColor = getRoleColor(isAdmin, isBusiness, isManager);
 
   const mainNavItems: NavItem[] = isAdmin
     ? [

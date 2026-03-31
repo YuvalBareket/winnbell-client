@@ -3,6 +3,7 @@ import { NotificationsNoneOutlined, MenuRounded } from '@mui/icons-material';
 import { useAppSelector } from '../../store/hook';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager } from '../../store/selectors/authSelectors';
 import { PRIMARY_MAIN, GRADIENT_PRIMARY, TEXT_PRIMARY } from '../colors';
+import { getUserInitials } from '../utils/string';
 
 interface Props {
   onMenuOpen: () => void;
@@ -13,10 +14,7 @@ const AppHeader = ({ onMenuOpen }: Props) => {
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
 
-  const roleLabel = isBusiness ? 'Partner' : isManager ? 'Manager' : null;
-  const initials = user?.fullName
-    ? user.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-    : '?';
+  const initials = getUserInitials(user?.fullName);
 
   return (
     <AppBar

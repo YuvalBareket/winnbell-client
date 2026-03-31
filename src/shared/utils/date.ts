@@ -58,3 +58,18 @@ export const formatTicketDate = (dateString: string) => {
     }),
   };
 };
+
+/** Format "2024-03" → "Mar '24" */
+export const formatMonth = (m: string): string => {
+  const [y, mo] = m.split('-');
+  const d = new Date(Number(y), Number(mo) - 1);
+  return d.toLocaleString('default', { month: 'short', year: '2-digit' });
+};
+
+/** Format date string → "5 Mar 2024" */
+export const formatDateShort = (d: string): string =>
+  new Date(d).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' });
+
+/** Format number as ILS currency */
+export const formatCurrencyILS = (n: number): string =>
+  new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(n);

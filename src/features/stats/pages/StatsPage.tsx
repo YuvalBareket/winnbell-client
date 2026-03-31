@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import {
   ConfirmationNumberOutlined, CheckCircleOutline, PercentOutlined,
-  BarChart as BarChartIcon, EmojiEvents, CalendarToday,
+  BarChart as BarChartIcon, EmojiEvents,
 } from '@mui/icons-material';
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar,
@@ -16,107 +16,19 @@ import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import { useBusinessStats } from '../hooks/useBusinessStats';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
-import type { DrawDataPoint } from '../api/stats.api';
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN,
 } from '../../../shared/colors';
+import { formatMonth, formatCurrencyILS } from '../../../shared/utils/date';
+import KpiCard from '../components/KpiCard';
+import DrawCard from '../components/DrawCard';
 
 const PIE_COLORS = ['#10b981', '#e2e8f0'];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const formatMonth = (m: string) => {
-  const [y, mo] = m.split('-');
-  const d = new Date(Number(y), Number(mo) - 1);
-  return d.toLocaleString('default', { month: 'short', year: '2-digit' });
-};
-
-const formatDate = (d: string) =>
-  new Date(d).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' });
-
-const formatCurrency = (n: number) =>
-  new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(n);
-
 const activationRate = (issued: number, activated: number) =>
   issued > 0 ? Math.round((activated / issued) * 100) : 0;
-
-// ─── KPI Card ────────────────────────────────────────────────────────────────
-
-const KpiCard = ({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string | number; color: string }) => (
-  <Paper elevation={0} sx={{ flex: 1, p: { xs: 2, sm: 2.5 }, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
-    <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      {icon}
-    </Box>
-    <Box>
-      <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-        {label}
-      </Typography>
-      <Typography variant='h5' fontWeight={800} lineHeight={1.2}>{value}</Typography>
-    </Box>
-  </Paper>
-);
-
-// ─── Draw performance card ────────────────────────────────────────────────────
-
-const DrawCard = ({ draw, selected, onClick }: { draw: DrawDataPoint; selected: boolean; onClick: () => void }) => {
-  const rate = activationRate(draw.issued, draw.activated);
-  const isPast = new Date(draw.draw_date) < new Date();
-  return (
-    <Paper
-      elevation={0}
-      onClick={onClick}
-      sx={{
-        p: 2.5, borderRadius: 3, cursor: 'pointer',
-        border: '2px solid', borderColor: selected ? PRIMARY_MAIN : 'divider',
-        bgcolor: selected ? `${PRIMARY_MAIN}08` : 'background.paper',
-        transition: 'all 0.15s ease',
-        '&:hover': { borderColor: PRIMARY_MAIN, bgcolor: `${PRIMARY_MAIN}05` },
-      }}
-    >
-      <Stack direction='row' justifyContent='space-between' alignItems='flex-start' mb={1.5}>
-        <Box flex={1} minWidth={0} pr={1}>
-          <Typography variant='body2' fontWeight={700} noWrap color={selected ? 'primary.main' : 'text.primary'}>
-            {draw.draw_name}
-          </Typography>
-          <Typography variant='h6' fontWeight={900} color={selected ? 'primary.main' : 'text.primary'} lineHeight={1.2}>
-            {formatCurrency(draw.prize_amount)}
-          </Typography>
-        </Box>
-        <Chip
-          label={isPast ? 'Completed' : 'Active'}
-          size='small'
-          sx={{
-            fontWeight: 700, fontSize: '0.65rem',
-            bgcolor: isPast ? 'action.hover' : '#dcfce7',
-            color: isPast ? 'text.secondary' : '#16a34a',
-          }}
-        />
-      </Stack>
-      <Stack direction='row' alignItems='center' spacing={0.5} mb={1.5}>
-        <CalendarToday sx={{ fontSize: 13, color: 'text.disabled' }} />
-        <Typography variant='caption' color='text.secondary' fontWeight={600}>
-          {formatDate(draw.draw_date)}
-        </Typography>
-      </Stack>
-      <Stack direction='row' spacing={2}>
-        <Box>
-          <Typography variant='caption' color='text.disabled' fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>Issued</Typography>
-          <Typography variant='subtitle2' fontWeight={800}>{draw.issued.toLocaleString()}</Typography>
-        </Box>
-        <Box>
-          <Typography variant='caption' color='text.disabled' fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>Activated</Typography>
-          <Typography variant='subtitle2' fontWeight={800}>{draw.activated.toLocaleString()}</Typography>
-        </Box>
-        <Box>
-          <Typography variant='caption' color='text.disabled' fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>Rate</Typography>
-          <Typography variant='subtitle2' fontWeight={800} color={rate >= 50 ? '#16a34a' : rate >= 25 ? '#d97706' : 'text.primary'}>
-            {rate}%
-          </Typography>
-        </Box>
-      </Stack>
-    </Paper>
-  );
-};
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
@@ -188,7 +100,7 @@ const StatsPage = () => {
                       <MenuItem value=''>All draws</MenuItem>
                       {draws.map((d) => (
                         <MenuItem key={d.draw_id} value={d.draw_id}>
-                          {d.draw_name} ({formatDate(d.draw_date)})
+                          {d.draw_name} ({formatDateShort(d.draw_date)})
                         </MenuItem>
                       ))}
                     </Select>
@@ -207,7 +119,7 @@ const StatsPage = () => {
               <Box>
                 <Typography variant='body2' fontWeight={700} color='primary.main'>{selectedDrawInfo.draw_name}</Typography>
                 <Typography variant='caption' color='text.secondary'>
-                  Prize: {formatCurrency(selectedDrawInfo.prize_amount)} · Draw date: {formatDate(selectedDrawInfo.draw_date)}
+                  Prize: {formatCurrencyILS(selectedDrawInfo.prize_amount)} · Draw date: {formatDateShort(selectedDrawInfo.draw_date)}
                 </Typography>
               </Box>
               <Chip label='Filtered' size='small' color='primary' sx={{ ml: 'auto', fontWeight: 700 }} />

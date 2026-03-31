@@ -15,6 +15,7 @@ import {
   GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING,
   TEXT_PRIMARY,
 } from '../colors';
+import { getUserInitials, getRoleLabel, getRoleColor } from '../utils/string';
 
 const AppSidebar = () => {
   const dispatch = useAppDispatch();
@@ -26,12 +27,9 @@ const AppSidebar = () => {
   const isAdmin = useAppSelector(selectIsAdmin);
   const { signOut } = useClerk();
 
-  const initials = user?.fullName
-    ? user.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-    : '?';
-
-  const roleLabel = isAdmin ? 'Admin' : isBusiness ? 'Partner' : isManager ? 'Manager' : 'Member';
-  const roleColor = isAdmin ? '#7c3aed' : isBusiness ? '#10b981' : isManager ? '#f59e0b' : PRIMARY_MAIN;
+  const initials = getUserInitials(user?.fullName);
+  const roleLabel = getRoleLabel(isAdmin, isBusiness, isManager);
+  const roleColor = getRoleColor(isAdmin, isBusiness, isManager);
 
   const mainNavItems = isAdmin ? adminNavItems : isBusiness ? businessNavItems : isManager ? managerNavItems : userNavItems;
 
