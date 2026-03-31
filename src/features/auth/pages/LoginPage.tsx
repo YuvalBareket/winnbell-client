@@ -48,15 +48,15 @@ const BrandPanel = () => (
       Win More,<br />Every Day
     </Typography>
     <Typography variant='body1' sx={{ opacity: 0.8, mb: 5, lineHeight: 1.7, maxWidth: 340 }}>
-      Join thousands of members earning tickets at local partner businesses and winning amazing weekly prizes.
+      Join thousands of members earning tickets at local partner businesses and entering monthly prize draws.
     </Typography>
 
     {/* Feature bullets */}
     <Stack spacing={2.5}>
       {[
         { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn tickets at local partner shops' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Enter weekly prize draws automatically' },
-        { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Win amazing prizes every week' },
+        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Enter monthly prize draws automatically' },
+        { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Win amazing prizes every month' },
       ].map((item, i) => (
         <Stack key={i} direction='row' alignItems='center' spacing={1.5}>
           <Box sx={{ width: 34, height: 34, borderRadius: 1.5, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -276,7 +276,7 @@ const LoginPage = () => {
         <Divider sx={{ mb: 4 }}>
           <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700, px: 1 }}>OR</Typography>
         </Divider>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <Stack direction={'row'} spacing={2}>
           <Button fullWidth variant='outlined' startIcon={<Google />} onClick={() => handleSocialLogin('oauth_google')} disabled={!termsAccepted}
             sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none' }}>
             Google

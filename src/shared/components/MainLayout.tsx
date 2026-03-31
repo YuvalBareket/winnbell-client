@@ -7,7 +7,7 @@ import AppMenuDrawer from './AppMenuDrawer';
 import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
 import { useAppSelector } from '../../store/hook';
-import { selectIsBusiness, selectBusinessIsActive } from '../../store/selectors/authSelectors';
+import { selectIsBusiness, selectBusinessIsActive, selectIsAdmin } from '../../store/selectors/authSelectors';
 import {
   BG_APP_GRADIENT,
   GRADIENT_PRIMARY,
@@ -22,6 +22,7 @@ const MainLayout = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
+  const isAdmin = useAppSelector(selectIsAdmin);
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const showSubscribeBanner = isBusinessAdmin && !businessIsActive;
 
@@ -98,8 +99,8 @@ const MainLayout = () => {
         <Outlet />
       </Box>
 
-      {/* Mobile bottom nav — hidden on desktop */}
-      <Paper
+      {/* Mobile bottom nav — hidden on desktop, hidden for admin */}
+      {!isAdmin && <Paper
         sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, display: { xs: 'block', md: 'none' }, overflow: 'visible' }}
         elevation={8}
       >
@@ -142,7 +143,7 @@ const MainLayout = () => {
             sx={{ '& .MuiBottomNavigationAction-label': { fontWeight: 700, fontSize: '0.7rem' } }}
           />
         </BottomNavigation>
-      </Paper>
+      </Paper>}
     </Box>
   );
 };

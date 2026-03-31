@@ -160,7 +160,7 @@ const LandingPage = () => {
               {
                 icon: <EmojiEvents sx={{ fontSize: 32, color: PRIMARY_MAIN }} />,
                 title: 'Win prizes',
-                body: 'At the end of the draw period, a winner is selected. More tickets = more chances to win.',
+                body: 'At the end of each draw period, one winner is selected at random from all eligible entries.',
               },
             ].map((step) => (
               <Box key={step.title} sx={{ flex: 1, textAlign: 'center', px: 1 }}>

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { selectIsAuthenticated } from '../../store/selectors/authSelectors';
 import { login } from '../../store/slices/authSlice';
@@ -10,16 +11,17 @@ import { syncUserFn } from '../../features/auth/api/auth.api';
 export const useClerkSync = () => {
   const { isSignedIn, getToken } = useAuth();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const syncing = useRef(false);
 
   useEffect(() => {
-    if (!isSignedIn || isAuthenticated || syncing.current) return;
+    const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
+    if (!isSignedIn || (isAuthenticated && !pendingInviteToken) || syncing.current) return;
 
     syncing.current = true;
 
     const pendingRole = sessionStorage.getItem('pendingRole');
-    const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
 
     getToken()
       .then((token) => {
@@ -30,6 +32,9 @@ export const useClerkSync = () => {
         sessionStorage.removeItem('pendingRole');
         sessionStorage.removeItem('pendingInviteToken');
         dispatch(login({ user: data.user, token: data.token }));
+        if (localStorage.getItem('pendingTicketCode')) {
+          navigate('/scan');
+        }
       })
       .catch(console.error)
       .finally(() => { syncing.current = false; });

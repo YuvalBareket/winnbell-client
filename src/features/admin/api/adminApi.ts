@@ -23,3 +23,9 @@ export const closeDraw = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/close`);
 export const pickWinner = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/pick-winner`);
+export const fetchAdminOverview = () => api.get('/admin/overview');
+export const fetchAllUsers = () => api.get('/admin/users');
+export const updateUserRole = (userId: number, role: string) =>
+  api.patch(`/admin/users/${userId}/role`, { role });
+export const toggleUserActive = (userId: number, is_active: boolean) =>
+  api.patch(`/admin/users/${userId}/active`, { is_active });

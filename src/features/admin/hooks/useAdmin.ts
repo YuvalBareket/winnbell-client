@@ -9,6 +9,10 @@ import {
   openDraw,
   closeDraw,
   pickWinner,
+  fetchAdminOverview,
+  fetchAllUsers,
+  updateUserRole,
+  toggleUserActive,
 } from '../api/adminApi';
 
 export const useAdminBusinesses = () => {
@@ -97,6 +101,48 @@ export const usePickWinner = () => {
     mutationFn: (drawId: number) => pickWinner(drawId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'draws-all'] });
+    },
+  });
+};
+
+export const useAdminOverview = () => {
+  return useQuery({
+    queryKey: ['admin', 'overview'],
+    queryFn: async () => {
+      const { data } = await fetchAdminOverview();
+      return data;
+    },
+  });
+};
+
+export const useAdminUsers = () => {
+  return useQuery({
+    queryKey: ['admin', 'users'],
+    queryFn: async () => {
+      const { data } = await fetchAllUsers();
+      return data;
+    },
+  });
+};
+
+export const useUpdateUserRole = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: number; role: string }) =>
+      updateUserRole(userId, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
+  });
+};
+
+export const useToggleUserActive = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, is_active }: { userId: number; is_active: boolean }) =>
+      toggleUserActive(userId, is_active),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
     },
   });
 };

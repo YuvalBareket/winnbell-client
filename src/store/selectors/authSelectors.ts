@@ -32,11 +32,10 @@ export const selectIsLocationManager = createSelector(
   (user) => user?.role === 'Business' && !!user.location_id,
 );
 
-// Case 3: Business Owner (Admin)
+// Case 3: Business Owner
 export const selectIsBusiness = createSelector(
   [selectCurrentUser],
-  (user) =>
-    user?.role === 'Admin' || (user?.role === 'Business' && !user.location_id),
+  (user) => user?.role === 'Business' && !user.location_id,
 );
 export const selectIsAdmin = createSelector(
   [selectCurrentUser],

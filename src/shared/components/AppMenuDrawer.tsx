@@ -79,11 +79,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
 
   const mainNavItems: NavItem[] = isAdmin
     ? [
-        { label: 'Admin Panel', icon: <AdminPanelSettingsOutlined />, path: '/admin' },
-        { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
-        { label: 'Scan Ticket', icon: <QrCodeScannerOutlined />, path: '/scan' },
-        { label: 'Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
-        { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
+        { label: 'Admin Dashboard', icon: <AdminPanelSettingsOutlined />, path: '/admin' },
       ]
     : isBusiness
     ? [

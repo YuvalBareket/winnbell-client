@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import {
   ArrowBackIosNew, Person, Mail, Lock, Visibility, VisibilityOff, Handshake,
-  Storefront, Google, Apple, ConfirmationNumber, EmojiEvents, CardGiftcard,
+  Storefront, Google, Apple, ConfirmationNumber, EmojiEvents, CardGiftcard, Warning,
 } from '@mui/icons-material';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSignUp } from '@clerk/clerk-react';
@@ -22,7 +22,7 @@ const BrandPanel = ({ isBusinessOwner, isLocationManager }: { isBusinessOwner: b
   const bullets = isBusinessOwner
     ? [
         { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Issue tickets to your customers instantly' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Run weekly prize draws effortlessly' },
+        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Run monthly prize draws effortlessly' },
         { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Grow foot traffic and customer loyalty' },
       ]
     : isLocationManager
@@ -33,8 +33,8 @@ const BrandPanel = ({ isBusinessOwner, isLocationManager }: { isBusinessOwner: b
       ]
     : [
         { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn tickets at local partner shops' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Enter weekly prize draws automatically' },
-        { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Win amazing prizes every week' },
+        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Enter monthly prize draws automatically' },
+        { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Win amazing prizes every month' },
       ];
 
   const headline = isBusinessOwner
@@ -47,7 +47,7 @@ const BrandPanel = ({ isBusinessOwner, isLocationManager }: { isBusinessOwner: b
     ? 'Partner with Winnbell and turn every purchase into a chance for your customers to win.'
     : isLocationManager
     ? 'Complete your onboarding to start managing your branch and issuing tickets.'
-    : 'Join thousands of members earning tickets at local partner businesses and winning amazing weekly prizes.';
+    : 'Join thousands of members earning tickets at local partner businesses and entering monthly prize draws.';
 
   return (
     <Box
@@ -120,6 +120,7 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [ageVerified, setAgeVerified] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -140,7 +141,7 @@ const RegisterPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!isLoaded || !formData.fullName || !formData.email || !formData.password || !termsAccepted) return;
+    if (!isLoaded || !formData.fullName || !formData.email || !formData.password || !termsAccepted || !ageVerified) return;
     setLoading(true);
     setError('');
     try {
@@ -182,10 +183,10 @@ const RegisterPage = () => {
   // ─── Form content (shared between mobile & desktop) ──────────────────────────
 
   const FormContent = () => (
-    <Stack sx={{          zoom: { xs: 1, md: 0.75 },
+    <Stack sx={{          zoom: { xs: 0.9, md: 0.75 },
 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: isDesktop ? 'flex-start' : 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: isDesktop ? 'flex-start' : 'center', mb: 2 }}>
         {!isDesktop && (
           <Paper elevation={0} sx={{
             width: 72, height: 72,
@@ -206,9 +207,9 @@ const RegisterPage = () => {
 
       {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
 
-      <Stack spacing={2.5}>
+      <Stack spacing={1.5}>
         <Box>
-          <Typography variant='subtitle2' sx={{ ml: 1, mb: 1, fontWeight: 700 }}>Full Name</Typography>
+          <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Full Name</Typography>
           <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
             InputProps={{
               startAdornment: (<InputAdornment position='start'><Person sx={{ color: 'text.secondary' }} /></InputAdornment>),
@@ -218,7 +219,7 @@ const RegisterPage = () => {
         </Box>
 
         <Box>
-          <Typography variant='subtitle2' sx={{ ml: 1, mb: 1, fontWeight: 700 }}>Email</Typography>
+          <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Email</Typography>
           <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
             InputProps={{
               startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
@@ -228,7 +229,7 @@ const RegisterPage = () => {
         </Box>
 
         <Box>
-          <Typography variant='subtitle2' sx={{ ml: 1, mb: 1, fontWeight: 700 }}>Password</Typography>
+          <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Password</Typography>
           <TextField fullWidth name='password' value={formData.password} onChange={handleChange}
             type={showPassword ? 'text' : 'password'} placeholder='••••••••'
             InputProps={{
@@ -245,24 +246,40 @@ const RegisterPage = () => {
           />
         </Box>
 
-        <FormControlLabel
-          control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
-          label={
-            <Typography variant='caption' color='text.secondary'>
-              I agree to the{' '}
-              <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
-                Terms of Service
-              </Typography>{' '}and{' '}
-              <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
-                Privacy Policy
+        <Stack spacing={0.5}>
+          <FormControlLabel
+            control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
+            label={
+              <Typography variant='caption' color='text.secondary'>
+                I agree to the{' '}
+                <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                  Terms of Service
+                </Typography>{' '}and{' '}
+                <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                  Privacy Policy
+                </Typography>
               </Typography>
-            </Typography>
-          }
-        />
+            }
+          />
 
-        <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted} disableElevation
+          <FormControlLabel
+            control={<Checkbox checked={ageVerified} onChange={(e) => setAgeVerified(e.target.checked)} size='small' />}
+            label={<Typography variant='caption' color='text.secondary'>I confirm that I am 18 years of age or older.</Typography>}
+          />
+
+          <Box sx={{ bgcolor: 'rgba(237,108,2,0.07)', border: '1px solid', borderColor: 'warning.light', borderRadius: 2, p: 1 }}>
+          <Stack direction='row' spacing={1} alignItems='flex-start'>
+            <Warning sx={{ fontSize: 14, color: 'warning.main', flexShrink: 0, mt: 0.25 }} />
+            <Typography variant='caption' sx={{ lineHeight: 1.6, color: 'text.secondary' }}>
+              <strong>Legal notice:</strong> Falsely declaring your age is a criminal offence. If a prize winner is found to be under 18, their winnings will be immediately cancelled.
+            </Typography>
+          </Stack>
+        </Box>
+        </Stack>
+
+        <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted || !ageVerified} disableElevation
           sx={{
-            py: 2, borderRadius: 3, fontSize: '1rem', fontWeight: 700,
+            py: 1.5, borderRadius: 3, fontSize: '1rem', fontWeight: 700,
             bgcolor: isLocationManager ? ROLE_MANAGER_BG : 'primary.main',
             boxShadow: SHADOW_PRIMARY_SOFT,
             '&:hover': { bgcolor: isLocationManager ? ROLE_MANAGER_HOVER : 'primary.dark' },
@@ -271,23 +288,23 @@ const RegisterPage = () => {
           {loading ? <CircularProgress size={24} color='inherit' /> : 'Create Account'}
         </Button>
 
-        <Divider sx={{ my: 1 }}>
+        <Divider sx={{ my: 0.5 }}>
           <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700 }}>OR</Typography>
         </Divider>
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('oauth_google')} startIcon={<Google />} disabled={!termsAccepted}
+        <Stack direction={'row'} spacing={2}>
+          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('oauth_google')} startIcon={<Google />} disabled={!termsAccepted || !ageVerified}
             sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT }}>
             Google
           </Button>
-          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('oauth_apple')} startIcon={<Apple />} disabled={!termsAccepted}
+          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('oauth_apple')} startIcon={<Apple />} disabled={!termsAccepted || !ageVerified}
             sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT }}>
             Apple
           </Button>
         </Stack>
       </Stack>
 
-      <Box sx={{ pt: 4, textAlign: 'center' }}>
+      <Box sx={{ pt: 2, textAlign: 'center' }}>
         <Typography variant='body2' color='text.secondary' fontWeight={600}>
           Already have an account?{' '}
           <Typography component='span' onClick={() => navigate(inviteToken ? `/login/?token=${inviteToken}` : '/login')}
@@ -335,7 +352,7 @@ const RegisterPage = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE }}>
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 1.5 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}>
           <ArrowBackIosNew fontSize='small' />
         </IconButton>

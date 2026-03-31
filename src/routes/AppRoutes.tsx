@@ -20,6 +20,9 @@ import RegisterPage from '../features/auth/pages/RegisterPage';
 import VerifyEmailPage from '../features/auth/pages/VerifyEmailPage';
 import SSOCallbackPage from '../features/auth/pages/SSOCallbackPage';
 
+// Tickets
+import PublicActivatePage from '../features/tickets/pages/PublicActivatePage';
+
 // Legal
 import TermsOfServicePage from '../features/legal/pages/TermsOfServicePage';
 import PrivacyPolicyPage from '../features/legal/pages/PrivacyPolicyPage';
@@ -64,11 +67,12 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* --- Public Routes --- */}
-      <Route path='/' element={isAuthenticated ? <Navigate to='/nearby' replace /> : <LandingPage />} />
+      <Route path='/' element={isAuthenticated ? <Navigate to={isAdmin ? '/admin' : '/nearby'} replace /> : <LandingPage />} />
       <Route path='/login' element={<LoginPage />} />
       <Route path='/register/:role?' element={<RegisterPage />} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
       <Route path='/sso-callback' element={<SSOCallbackPage />} />
+      <Route path='/activate' element={<PublicActivatePage />} />
       <Route path='/terms' element={<TermsOfServicePage />} />
       <Route path='/privacy' element={<PrivacyPolicyPage />} />
       <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
@@ -80,15 +84,22 @@ const AppRoutes = () => {
         <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
 
         <Route element={<MainLayout />}>
-          <Route
-            path='/nearby'
-            element={isBusinessAdmin ? <BusinessHubPage /> : <NearbyPage />}
-          />
-          <Route path='/scan' element={<RedeemPage />} />
-          <Route path='/tickets' element={<MyTicketsPage />} />
-          <Route path='/draws/history' element={<DrawHistoryPage />} />
-          <Route path='/stats' element={<StatsPage />} />
+          {/* Admin-only route */}
           {isAdmin && <Route path='/admin' element={<BusinessDashboard />} />}
+
+          {/* Business/User routes — not accessible to admin */}
+          {!isAdmin && (
+            <>
+              <Route path='/nearby' element={isBusinessAdmin ? <BusinessHubPage /> : <NearbyPage />} />
+              <Route path='/scan' element={<RedeemPage />} />
+              <Route path='/tickets' element={<MyTicketsPage />} />
+              <Route path='/draws/history' element={<DrawHistoryPage />} />
+              <Route path='/stats' element={<StatsPage />} />
+            </>
+          )}
+
+          {/* Redirect admin away from business pages */}
+          {isAdmin && <Route path='*' element={<Navigate to='/admin' replace />} />}
         </Route>
 
         {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}

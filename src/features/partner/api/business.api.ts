@@ -44,3 +44,18 @@ export const addLocation = async (
 export const deleteLocation = async (locationId: number): Promise<void> => {
   await api.delete(`/business/locations/${locationId}`);
 };
+
+export const removeLocationManager = async (locationId: number): Promise<void> => {
+  await api.delete(`/business/locations/${locationId}/manager`);
+};
+
+export const getUploadUrl = async (contentType: string): Promise<{ uploadUrl: string; key: string }> => {
+  const response = await api.get<{ uploadUrl: string; key: string }>('/business/upload-url', {
+    params: { contentType },
+  });
+  return response.data;
+};
+
+export const updateBusinessLogo = async (key: string): Promise<void> => {
+  await api.patch('/business/logo', { logo_url: key });
+};

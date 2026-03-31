@@ -1,6 +1,6 @@
 // client/src/features/partner/hooks/useInviteManager.ts
-import { useMutation } from '@tanstack/react-query';
-import { createInviteLink } from '../api/business.api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createInviteLink, removeLocationManager } from '../api/business.api';
 
 export const useInviteManager = () => {
   return useMutation({
@@ -11,6 +11,16 @@ export const useInviteManager = () => {
     },
     onError: (error: unknown) => {
       console.error('Failed to generate link:', error);
+    },
+  });
+};
+
+export const useRemoveManager = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (locationId: number) => removeLocationManager(locationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['business', 'my-details'] });
     },
   });
 };

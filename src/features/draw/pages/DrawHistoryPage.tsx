@@ -1,7 +1,7 @@
 import {
-  Box, Container, Typography, Paper, Stack, Chip, Skeleton, Avatar,
+  Box, Container, Typography, Paper, Stack, Chip, Skeleton,
 } from '@mui/material';
-import { EmojiEvents, CalendarToday, ConfirmationNumberOutlined, EmojiEventsOutlined, StorefrontOutlined } from '@mui/icons-material';
+import { EmojiEvents, CalendarToday, EmojiEventsOutlined, StorefrontOutlined, CardGiftcard } from '@mui/icons-material';
 import { useGetDrawHistory } from '../hooks/useGetDraws';
 import { formatCurrency } from '../../../shared/utils/date';
 import {
@@ -15,15 +15,18 @@ const formatDate = (d: string) =>
 
 const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
   const hasWinner = !!draw.winner_name;
+  const isBusinessWinner = hasWinner && !!draw.winner_business_name;
+  const isFreeTicketWinner = hasWinner && !draw.winner_business_name;
+
   return (
     <Paper
       elevation={0}
       sx={{
-        borderRadius: 3,
+        borderRadius: 2,
         border: '1px solid',
-        borderColor: hasWinner ? `${GOLD_TROPHY}44` : 'divider',
+        borderColor: 'divider',
         overflow: 'hidden',
-        bgcolor: hasWinner ? `${GOLD_TROPHY}08` : 'background.paper',
+        bgcolor: 'background.paper',
       }}
     >
       {/* Header */}
@@ -52,57 +55,113 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
         </Stack>
       </Box>
 
-      {/* Winner section */}
+      {/* Winner Story Block */}
       <Box sx={{ px: 2.5, pb: 2.5 }}>
-        <Box sx={{
-          p: 2,
-          borderRadius: 2.5,
-          bgcolor: hasWinner ? `${GOLD_TROPHY}14` : 'action.hover',
-          border: '1px solid',
-          borderColor: hasWinner ? `${GOLD_TROPHY}33` : 'divider',
-        }}>
-          {hasWinner ? (
-            <Stack direction='row' spacing={1.5} alignItems='center'>
-              <Avatar sx={{ width: 40, height: 40, bgcolor: GOLD_TROPHY, color: 'white', fontWeight: 800, fontSize: 18 }}>
-                <EmojiEvents sx={{ fontSize: 22 }} />
-              </Avatar>
-              <Box flex={1} minWidth={0}>
-                <Typography variant='caption' fontWeight={700} color='text.disabled' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                  Winner
-                </Typography>
-                <Typography variant='body2' fontWeight={800} color='text.primary' noWrap>
-                  {draw.winner_name}
-                </Typography>
-                {draw.winning_ticket_code && (
-                  <Stack direction='row' alignItems='center' spacing={0.5} mt={0.25}>
-                    <ConfirmationNumberOutlined sx={{ fontSize: 12, color: 'text.disabled' }} />
-                    <Typography variant='caption' color='text.disabled' fontWeight={600} sx={{ fontFamily: 'monospace', letterSpacing: 0.5 }}>
-                      {draw.winning_ticket_code}
-                    </Typography>
-                  </Stack>
-                )}
-                {draw.winner_business_name && (
-                  <Stack direction='row' alignItems='center' spacing={0.5} mt={0.25}>
-                    <StorefrontOutlined sx={{ fontSize: 12, color: 'text.disabled' }} />
-                    <Typography variant='caption' color='text.disabled' fontWeight={600} noWrap>
+        {hasWinner ? (
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
+              borderLeft: '4px solid',
+              borderLeftColor: isBusinessWinner ? PRIMARY_MAIN : '#10b981',
+            }}
+          >
+            {isBusinessWinner ? (
+              <Stack spacing={0.75}>
+                <Stack direction='row' alignItems='flex-start' spacing={1}>
+                  <StorefrontOutlined
+                    sx={{
+                      fontSize: 24,
+                      color: PRIMARY_MAIN,
+                      flexShrink: 0,
+                      mt: 0.25,
+                    }}
+                  />
+                  <Box flex={1} minWidth={0}>
+                    <Typography
+                      variant='h6'
+                      fontWeight={900}
+                      color='text.primary'
+                      sx={{ lineHeight: 1.2 }}
+                    >
                       {draw.winner_business_name}
-                      {draw.winner_location_name ? ` · ${draw.winner_location_name}` : ''}
                     </Typography>
-                  </Stack>
-                )}
-              </Box>
-            </Stack>
-          ) : (
-            <Stack direction='row' spacing={1.5} alignItems='center'>
-              <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <EmojiEventsOutlined sx={{ fontSize: 20, color: 'text.disabled' }} />
-              </Box>
-              <Typography variant='body2' color='text.disabled' fontWeight={600}>
-                No winner recorded
-              </Typography>
-            </Stack>
-          )}
-        </Box>
+                    {draw.winner_location_name && (
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        fontWeight={600}
+                        sx={{ mt: 0.25 }}
+                      >
+                        {draw.winner_location_name}
+                      </Typography>
+                    )}
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      fontStyle='italic'
+                      sx={{ mt: 0.75 }}
+                    >
+                      A regular purchase turned into a big win
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Stack>
+            ) : (
+              <Stack spacing={0.75}>
+                <Stack direction='row' alignItems='flex-start' spacing={1}>
+                  <CardGiftcard
+                    sx={{
+                      fontSize: 24,
+                      color: '#10b981',
+                      flexShrink: 0,
+                      mt: 0.25,
+                    }}
+                  />
+                  <Box flex={1} minWidth={0}>
+                    <Typography
+                      variant='h6'
+                      fontWeight={900}
+                      color='text.primary'
+                      sx={{ lineHeight: 1.2 }}
+                    >
+                      Won with a free weekly ticket!
+                    </Typography>
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      fontStyle='italic'
+                      sx={{ mt: 0.75 }}
+                    >
+                      No purchase needed — anyone can win
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Stack>
+            )}
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
+            <EmojiEventsOutlined sx={{ fontSize: 20, color: 'text.disabled', flexShrink: 0 }} />
+            <Typography variant='body2' color='text.disabled' fontWeight={600}>
+              No winner recorded
+            </Typography>
+          </Box>
+        )}
       </Box>
     </Paper>
   );

@@ -13,6 +13,7 @@ import {
 } from '../constants/navItems';
 import {
   GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING,
+  TEXT_PRIMARY,
 } from '../colors';
 
 const AppSidebar = () => {
@@ -56,25 +57,12 @@ const AppSidebar = () => {
       }}
     >
       {/* Brand */}
-      <Box sx={{ px: 3, pt: 3, pb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 32, height: 32,
-              borderRadius: '10px',
-              background: GRADIENT_PRIMARY,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <Typography sx={{ color: 'white', fontSize: 16, lineHeight: 1 }}>🔔</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
-            <Typography fontWeight={800} sx={{ fontSize: '1.1rem', color: TEXT_HEADING, letterSpacing: '-0.02em' }}>Winn</Typography>
-            <Typography fontWeight={800} sx={{ fontSize: '1.1rem', color: PRIMARY_MAIN, letterSpacing: '-0.02em' }}>bell</Typography>
-          </Box>
-        </Box>
-      </Box>
+      <Stack sx={{ px: 3, pt: 3, pb: 2 }} direction='row' alignItems='center' spacing={-1.2}>
+        <Box component='img' src='/winnbell_logo.png' alt='W' sx={{ height: 32, width: 'auto', objectFit: 'contain' }} />
+        <Typography sx={{ fontFamily: "'Damion', cursive", fontSize: '1.8rem', color: TEXT_PRIMARY, lineHeight: 1, mt: '4px' }}>
+          innbell
+        </Typography>
+      </Stack>
 
       {/* User identity */}
       <Box

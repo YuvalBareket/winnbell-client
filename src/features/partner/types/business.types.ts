@@ -41,6 +41,7 @@ export interface BusinessData {
   sector: string;
   description: string;
   terms_text: string;
+  logo_url: string | null;
   is_active: boolean;
   subscription_status: string | null;
   current_period_end: string | null;

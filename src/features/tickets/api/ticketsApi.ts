@@ -1,7 +1,9 @@
 import { api } from '../../../shared/api/client';
 
-export const redeemTicket = (code: string) =>
-  api.post('/tickets/redeem', { code });
+export const redeemTicket = async (code: string) => {
+  const { data } = await api.post('/tickets/redeem', { code });
+  return data;
+};
 export const activateFreeTicket = async () => {
   const { data } = await api.post('/tickets/activate-free');
   return data;

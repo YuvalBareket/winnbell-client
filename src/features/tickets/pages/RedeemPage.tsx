@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Container,
@@ -28,12 +28,15 @@ import {
   ChevronRight,
   ConfirmationNumber,
   EmojiEvents,
+  QrCodeScanner,
 } from '@mui/icons-material';
+import QRScannerModal from '../components/QRScannerModal';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import QRCode from 'react-qr-code';
 import { useNavigate } from 'react-router-dom';
 
 import {
+  selectIsAuthenticated,
   selectIsBusiness,
   selectIsLocationManager,
 } from '../../../store/selectors/authSelectors';
@@ -63,10 +66,13 @@ const RedeemPage = () => {
   const [code, setCode] = useState('');
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [activatedCode, setActivatedCode] = useState<string | null>(null);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
-
+const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const primaryColor = PRIMARY_MAIN;
 
   // Business owner locations
@@ -76,6 +82,54 @@ const RedeemPage = () => {
   // Mutations
   const redeemMutation = useRedeemTicket();
   const generateMutation = useGenerateTicket();
+
+  // Auto-activate pending code from QR scan flow (saved by PublicActivatePage before login)
+const didAutoActivate = useRef(false);
+
+  useEffect(() => {
+    // 1. Wait until we are sure the user is logged in
+    if (!isAuthenticated || didAutoActivate.current) return;
+
+    // 2. Business users should not auto-redeem codes
+    if (isBusiness) {
+      localStorage.removeItem('pendingTicketCode');
+      return;
+    }
+
+    const pending = localStorage.getItem('pendingTicketCode');
+    if (!pending) return;
+
+    // 3. Mark as attempted immediately
+    didAutoActivate.current = true;
+    localStorage.removeItem('pendingTicketCode');
+
+    // 4. Trigger mutation
+    redeemMutation.mutate(pending, {
+      onSuccess: () => {
+        setActivatedCode(pending);
+        setSuccessDialogOpen(true);
+      },
+      onError: (err: any) => {
+        setErrorMessage(err?.response?.data?.message || 'Activation failed.');
+        setErrorOpen(true);
+      },
+    });
+    // We removed 'redeemMutation.isIdle' from deps to keep it simple
+  }, [isAuthenticated, isBusiness]);
+  const handleScanSuccess = (scannedCode: string) => {
+    setScannerOpen(false);
+    redeemMutation.mutate(scannedCode, {
+      onSuccess: () => {
+        setActivatedCode(scannedCode);
+        setSuccessDialogOpen(true);
+      },
+      onError: (err: any) => {
+        const msg = err?.response?.data?.message || 'Invalid or already used ticket code.';
+        setErrorMessage(msg);
+        setErrorOpen(true);
+      },
+    });
+  };
 
   const handleActivate = () => {
     if (!code || code.length < 5) return;
@@ -88,6 +142,7 @@ const RedeemPage = () => {
       },
     });
   };
+
 
   const handleGenerate = () => {
     if (isBusinessAdmin && !selectedLocationId) return;
@@ -122,7 +177,7 @@ const RedeemPage = () => {
         <Stack alignItems='center' spacing={3}>
           <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 3, boxShadow: 1 }}>
             <QRCode
-              value={generatedCode}
+              value={`${window.location.origin}/activate?code=${generatedCode}`}
               size={180}
               style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
             />
@@ -401,6 +456,16 @@ const RedeemPage = () => {
       </Box>
       <Stack spacing={2}>
         <Button
+          variant='outlined'
+          fullWidth
+          startIcon={<QrCodeScanner />}
+          onClick={() => setScannerOpen(true)}
+          disabled={redeemMutation.isPending}
+          sx={{ height: 48, borderRadius: 3, fontWeight: 700 }}
+        >
+          Scan QR Code
+        </Button>
+        <Button
           variant='contained'
           fullWidth
           onClick={handleActivate}
@@ -460,8 +525,12 @@ const RedeemPage = () => {
 
   const Feedback = () => (
     <>
+      <QRScannerModal open={scannerOpen} onScan={handleScanSuccess} onClose={() => setScannerOpen(false)} />
       <Snackbar open={successOpen} autoHideDuration={4000} onClose={() => setSuccessOpen(false)}>
         <Alert severity='success' variant='filled'>Ticket Generated Successfully!</Alert>
+      </Snackbar>
+      <Snackbar open={errorOpen} autoHideDuration={5000} onClose={() => setErrorOpen(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert severity='error' variant='filled' onClose={() => setErrorOpen(false)}>{errorMessage}</Alert>
       </Snackbar>
 
       <Dialog

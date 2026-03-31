@@ -19,11 +19,12 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose }) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
-  if (!location) return null;
-
-  const sectorInfo = BUSINESS_SECTORS[location.sector] || BUSINESS_SECTORS.Retail;
+  const sectorInfo = location
+    ? BUSINESS_SECTORS[location.sector] || BUSINESS_SECTORS.Retail
+    : BUSINESS_SECTORS.Retail;
 
   const handleDirections = () => {
+    if (!location) return;
     const url = `https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`;
     window.open(url, '_blank');
   };
@@ -50,6 +51,7 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose }) => {
             },
       }}
     >
+      {location && <>
       {/* Drag handle — mobile only */}
       {!isDesktop && (
         <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1.5, pb: 0.5 }}>
@@ -201,6 +203,7 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose }) => {
           Get Directions
         </Button>
       </Box>
+      </>}
     </Drawer>
   );
 };

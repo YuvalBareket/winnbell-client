@@ -31,6 +31,7 @@ import { BUSINESS_SECTORS } from '../../admin/data';
 
 const NearbyPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSector, setSelectedSector] = useState<string | null>(null);
   // Use location_id as the state key to support multiple locations per business
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
 
@@ -45,11 +46,13 @@ const NearbyPage = () => {
   const selectedLocation =
     locations?.find((loc) => loc.location_id === selectedLocationId) || null;
 
-  // 4. Filter locations based on search term
+  // 4. Filter locations based on search term and sector
   const filteredLocations =
-    locations?.filter((loc) =>
-      loc.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
+    locations?.filter((loc) => {
+      const matchesSearch = loc.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSector = !selectedSector || loc.sector === selectedSector;
+      return matchesSearch && matchesSector;
+    }) || [];
 
   return (
     <Box
@@ -139,6 +142,30 @@ const NearbyPage = () => {
           </Typography>
         </Box>
 
+        {/* Sector filter chips */}
+        <Box sx={{ px: 2, pb: 1.5, display: 'flex', gap: 1, overflowX: 'auto', flexShrink: 0, '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
+          <Chip
+            label='All'
+            size='small'
+            onClick={() => setSelectedSector(null)}
+            sx={{ fontWeight: 700, flexShrink: 0, height: 28, bgcolor: !selectedSector ? 'primary.main' : 'action.hover', color: !selectedSector ? 'white' : 'text.secondary', border: 'none' }}
+          />
+          {Object.entries(BUSINESS_SECTORS)
+            .filter(([key]) => key !== 'Free')
+            .map(([key, info]) => {
+              const isActive = selectedSector === key;
+              return (
+                <Chip
+                  key={key}
+                  label={info.label}
+                  size='small'
+                  onClick={() => setSelectedSector(isActive ? null : key)}
+                  sx={{ fontWeight: 700, flexShrink: 0, height: 28, bgcolor: isActive ? info.color : 'action.hover', color: isActive ? 'white' : 'text.secondary', border: 'none' }}
+                />
+              );
+            })}
+        </Box>
+
         <Stack
           spacing={2}
           sx={{
@@ -158,24 +185,24 @@ const NearbyPage = () => {
             <Typography color='error' align='center' sx={{ p: 4 }}>Error loading nearby places.</Typography>
           )}
 
-          {/* Empty state — no search results */}
-          {!isLoading && !isError && filteredLocations.length === 0 && searchTerm.length > 0 && (
+          {/* Empty state — no filter results */}
+          {!isLoading && !isError && filteredLocations.length === 0 && (searchTerm.length > 0 || !!selectedSector) && (
             <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
               <SearchOff sx={{ fontSize: 56, color: 'text.disabled', mb: 1.5 }} />
               <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
-                No partners found for "{searchTerm}"
+                No partners found
               </Typography>
               <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5, mb: 2 }}>
-                Try a different name or clear the search.
+                Try adjusting your search or sector filter.
               </Typography>
-              <Button variant='outlined' size='small' sx={{ borderRadius: 2, fontWeight: 700 }} onClick={() => setSearchTerm('')}>
-                Clear Search
+              <Button variant='outlined' size='small' sx={{ borderRadius: 2, fontWeight: 700 }} onClick={() => { setSearchTerm(''); setSelectedSector(null); }}>
+                Clear Filters
               </Button>
             </Box>
           )}
 
           {/* Empty state — no nearby partners at all */}
-          {!isLoading && !isError && filteredLocations.length === 0 && searchTerm.length === 0 && (
+          {!isLoading && !isError && filteredLocations.length === 0 && searchTerm.length === 0 && !selectedSector && (
             <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
               <StorefrontIcon sx={{ fontSize: 56, color: 'text.disabled', mb: 1.5 }} />
               <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>

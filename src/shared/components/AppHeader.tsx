@@ -1,8 +1,8 @@
-import { AppBar, Toolbar, Typography, IconButton, Box, Avatar, Chip } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Box, Avatar, Chip, Stack } from '@mui/material';
 import { NotificationsNoneOutlined, MenuRounded } from '@mui/icons-material';
 import { useAppSelector } from '../../store/hook';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager } from '../../store/selectors/authSelectors';
-import { PRIMARY_MAIN, GRADIENT_PRIMARY } from '../colors';
+import { PRIMARY_MAIN, GRADIENT_PRIMARY, TEXT_PRIMARY } from '../colors';
 
 interface Props {
   onMenuOpen: () => void;
@@ -35,49 +35,13 @@ const AppHeader = ({ onMenuOpen }: Props) => {
 
         {/* Brand */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '10px',
-              background: GRADIENT_PRIMARY,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <Typography sx={{ color: 'white', fontSize: 16, lineHeight: 1 }}>🔔</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0}}>
-            <Typography
-              fontWeight={800}
-              sx={{ fontSize: '1.1rem', color: '#0e121b', letterSpacing: '-0.02em' }}
-            >
-              Winn
+          <Stack direction='row' alignItems='center' spacing={-1}>
+            <Box component='img' src='/winnbell_logo.png' alt='W' sx={{ height: 28, width: 'auto', objectFit: 'contain' }} />
+            <Typography sx={{ fontFamily: "'Damion', cursive", fontSize: '1.6rem', color: TEXT_PRIMARY, lineHeight: 1, mt: '4px' }}>
+              innbell
             </Typography>
-            <Typography
-              fontWeight={800}
-              sx={{ fontSize: '1.1rem', color: PRIMARY_MAIN, letterSpacing: '-0.02em' }}
-            >
-              bell
-            </Typography>
-          </Box>
-          {roleLabel && (
-            <Chip
-              label={roleLabel}
-              size='small'
-              sx={{
-                height: 20,
-                fontSize: '0.6rem',
-                fontWeight: 800,
-                bgcolor: 'rgba(25,93,230,0.08)',
-                color: PRIMARY_MAIN,
-                border: 'none',
-                letterSpacing: 0.3,
-              }}
-            />
-          )}
+          </Stack>
+        
         </Box>
 
         {/* Right actions */}

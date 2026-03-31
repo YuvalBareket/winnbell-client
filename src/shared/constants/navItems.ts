@@ -27,7 +27,7 @@ export const userNavItems: NavItem[] = [
 
 export const businessNavItems: NavItem[] = [
   { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
-  { label: 'Scan Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
+  { label: 'Generate Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
   { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
   { label: 'Subscription', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
@@ -35,17 +35,13 @@ export const businessNavItems: NavItem[] = [
 
 export const managerNavItems: NavItem[] = [
   { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
-  { label: 'Scan Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
+  { label: 'Generate Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
   { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
 ];
 
 export const adminNavItems: NavItem[] = [
-  { label: 'Admin Panel', Icon: AdminPanelSettingsOutlined, path: '/admin' },
-  { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
-  { label: 'Scan Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
-  { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
-  { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
+  { label: 'Admin Dashboard', Icon: AdminPanelSettingsOutlined, path: '/admin' },
 ];
 
 export const legalNavItems: NavItem[] = [
