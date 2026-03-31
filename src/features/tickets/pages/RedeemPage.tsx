@@ -234,6 +234,7 @@ const didAutoActivate = useRef(false);
                   setScannerOpen={setScannerOpen}
                   navigate={navigate}
                   primaryColor={primaryColor}
+                  hideScan
                 />
               )}
             </Paper>
@@ -259,52 +260,50 @@ const didAutoActivate = useRef(false);
     );
   }
 
-  // ─── Mobile layout (original) ────────────────────────────────────────────────
+  // ─── Mobile layout ──────────────────────────────────────────────────────────
 
   return (
-    <Box p={2} pt={0} sx={{ display: 'flex', flexDirection: 'column' }}>
-      <Container
-        maxWidth='sm'
-        sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: isBusiness ? 'stretch' : 'center', pb: 4 }}
-      >
-        {/* Visual section */}
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 138px)', px: 2, pb: 2 }}>
+      <Container maxWidth='sm' sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {isBusiness ? (
-          <Box sx={{ mb: 4 }}>
-            <BusinessVisual generatedCode={generatedCode} primaryColor={primaryColor} isDesktop={isDesktop} />
-          </Box>
+          // Business mobile layout: keep original full layout
+          <>
+            {/* Visual section */}
+            <Box sx={{ mb: 4 }}>
+              <BusinessVisual generatedCode={generatedCode} primaryColor={primaryColor} isDesktop={isDesktop} />
+            </Box>
+
+            {/* Header text */}
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Typography variant='h5' sx={{ fontWeight: 700, mb: 1 }}>
+                Create New Ticket
+              </Typography>
+              <Typography variant='body1' color='text.secondary'>
+                Generate a unique code for your customer to join the Winnbell draw.
+              </Typography>
+            </Box>
+
+            {/* Actions */}
+            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <BusinessActions
+                handleGenerate={handleGenerate}
+                generateMutation={generateMutation}
+                isBusinessAdmin={isBusinessAdmin}
+                selectedLocationId={selectedLocationId}
+                setSelectedLocationId={setSelectedLocationId}
+                locations={locations}
+                generatedCode={generatedCode}
+                setGeneratedCode={setGeneratedCode}
+                primaryColor={primaryColor}
+              />
+            </Box>
+          </>
         ) : (
-          <Box sx={{ mb: 4 }}>
-            <UserVisual primaryColor={primaryColor} />
-          </Box>
-        )}
-
-        {/* Header text */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography variant='h5' sx={{ fontWeight: 700, mb: 1 }}>
-            {isBusiness ? 'Create New Ticket' : 'Got a code?'}
-          </Typography>
-          <Typography variant='body1' color='text.secondary'>
-            {isBusiness
-              ? 'Generate a unique code for your customer to join the Winnbell draw.'
-              : 'Enter the code from your receipt to activate your ticket and join the draw.'}
-          </Typography>
-        </Box>
-
-        {/* Actions */}
-        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {isBusiness ? (
-            <BusinessActions
-              handleGenerate={handleGenerate}
-              generateMutation={generateMutation}
-              isBusinessAdmin={isBusinessAdmin}
-              selectedLocationId={selectedLocationId}
-              setSelectedLocationId={setSelectedLocationId}
-              locations={locations}
-              generatedCode={generatedCode}
-              setGeneratedCode={setGeneratedCode}
-              primaryColor={primaryColor}
-            />
-          ) : (
+          // User mobile layout
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pb: 9}}>
+            <Box sx={{ height: 180, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start',paddingTop:'10px' }}>
+              <UserVisual primaryColor={primaryColor} />
+            </Box>
             <UserActions
               code={code}
               setCode={setCode}
@@ -314,8 +313,8 @@ const didAutoActivate = useRef(false);
               navigate={navigate}
               primaryColor={primaryColor}
             />
-          )}
-        </Box>
+          </Box>
+        )}
       </Container>
 
       <RedeemFeedback

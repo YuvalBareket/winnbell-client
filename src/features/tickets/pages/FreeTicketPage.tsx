@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -10,17 +10,30 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LockIcon from '@mui/icons-material/Lock';
 import BoltIcon from '@mui/icons-material/Bolt';
 import { useNavigate } from 'react-router-dom';
 import { useFreeTicket } from '../hooks/useFreeTicket';
 import { AMBER_HOURGLASS, SHADOW_PRIMARY_MEDIUM } from '../../../shared/colors';
 
+const getNextSunday = (): Date => {
+  const now = new Date();
+  const daysUntilSunday = 7 - now.getDay(); // always 1–7 days ahead
+  const next = new Date(now);
+  next.setDate(now.getDate() + daysUntilSunday);
+  next.setHours(0, 0, 0, 0);
+  return next;
+};
+
+const formatNextDate = (dateStr: string | undefined): string => {
+  const date = dateStr ? new Date(dateStr) : getNextSunday();
+  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+};
+
 const FreeTicketPage: React.FC = () => {
   const navigate = useNavigate();
   const { status, activate, isActivating, isLoading } = useFreeTicket();
-  const [timeLeft, setTimeLeft] = useState<string>('00:00:00');
   const [successOpen, setSuccessOpen] = useState(false);
 
   const handleCloseSnackbar = (
@@ -36,30 +49,6 @@ const FreeTicketPage: React.FC = () => {
       onSuccess: () => setSuccessOpen(true),
     });
   };
-
-  useEffect(() => {
-    if (status?.canActivate || !status?.nextAvailableDate) return;
-
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const target = new Date(status.nextAvailableDate!).getTime();
-      const difference = target - now;
-
-      if (difference <= 0) {
-        setTimeLeft('00:00:00');
-        clearInterval(timer);
-      } else {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24) + days * 24;
-        const minutes = Math.floor((difference / 1000 / 60) % 60);
-        const seconds = Math.floor((difference / 1000) % 60);
-        const pad = (n: number) => n.toString().padStart(2, '0');
-        setTimeLeft(`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`);
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [status]);
 
   if (isLoading) {
     return (
@@ -131,36 +120,34 @@ const FreeTicketPage: React.FC = () => {
                 display: 'flex',
               }}
             >
-              <HourglassTopIcon sx={{ color: AMBER_HOURGLASS }} />
+              <CalendarMonthIcon sx={{ color: AMBER_HOURGLASS }} />
             </Box>
           )}
         </Box>
 
-        {/* Timer / Status */}
+        {/* Status / Next date */}
         <Box sx={{ mb: 4 }}>
           <Typography
             variant='caption'
-            sx={{
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              color: 'text.secondary',
-              letterSpacing: 1.5,
-            }}
+            sx={{ fontWeight: 700, textTransform: 'uppercase', color: 'text.secondary', letterSpacing: 1.5 }}
           >
-            {canActivate ? 'Ticket Status' : 'Available In'}
+            {canActivate ? 'Ticket Status' : 'Next Available'}
           </Typography>
-          <Typography
-            variant='h2'
-            sx={{
-              fontWeight: 900,
-              color: canActivate ? 'success.main' : 'primary.main',
-              fontFamily: 'monospace',
-              mt: 1,
-              fontSize: { xs: '2.5rem', sm: '3.75rem' },
-            }}
-          >
-            {canActivate ? 'READY' : timeLeft}
-          </Typography>
+          {canActivate ? (
+            <Typography
+              variant='h2'
+              sx={{ fontWeight: 900, color: 'success.main', fontFamily: 'monospace', mt: 1, fontSize: { xs: '2.5rem', sm: '3.75rem' } }}
+            >
+              READY
+            </Typography>
+          ) : (
+            <Typography
+              variant='h5'
+              sx={{ fontWeight: 800, color: 'primary.main', mt: 1 }}
+            >
+              {formatNextDate(status?.nextAvailableDate)}
+            </Typography>
+          )}
         </Box>
 
         {/* Description */}
@@ -169,10 +156,10 @@ const FreeTicketPage: React.FC = () => {
             {canActivate ? 'Your Ticket is Waiting!' : 'Entry Request Pending'}
           </Typography>
           <Typography variant='body1' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-            Winnbell rewards you with one free ticket every week.
+            Winnbell gives you one free ticket every week, from Sunday to Sunday.
             {canActivate
               ? ' Click below to claim your ticket and join the draw!'
-              : ' Come back when the timer hits zero to claim your ticket!'}
+              : ' Your next free ticket will be available on Sunday.'}
           </Typography>
         </Box>
       </Box>
@@ -201,7 +188,7 @@ const FreeTicketPage: React.FC = () => {
           variant='caption'
           sx={{ display: 'block', textAlign: 'center', mt: 2, color: 'text.secondary', fontWeight: 500 }}
         >
-          You can claim a new free ticket every 7 days.
+          One free ticket per week. Resets every Sunday.
         </Typography>
       </Box>
 

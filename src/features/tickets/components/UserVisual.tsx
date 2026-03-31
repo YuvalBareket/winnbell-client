@@ -9,8 +9,8 @@ interface UserVisualProps {
 const UserVisual: React.FC<UserVisualProps> = ({ primaryColor }) => (
   <Box
     sx={{
-      width: 192,
-      height: 192,
+      width: 160,
+      height: 160,
       position: 'relative',
       display: 'flex',
       alignItems: 'center',
@@ -30,8 +30,8 @@ const UserVisual: React.FC<UserVisualProps> = ({ primaryColor }) => (
     <Paper
       elevation={4}
       sx={{
-        width: 128,
-        height: 150,
+        width: 108,
+        height: 130,
         position: 'relative',
         zIndex: 10,
         transform: 'rotate(-3deg)',

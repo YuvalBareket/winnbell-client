@@ -8,6 +8,7 @@ import {
   Paper,
   CircularProgress,
   InputAdornment,
+  Divider,
 } from '@mui/material';
 import {
   Edit,
@@ -25,6 +26,7 @@ interface UserActionsProps {
   setScannerOpen: (open: boolean) => void;
   navigate: (path: string) => void;
   primaryColor: string;
+  hideScan?: boolean;
 }
 
 const UserActions: React.FC<UserActionsProps> = ({
@@ -35,8 +37,10 @@ const UserActions: React.FC<UserActionsProps> = ({
   setScannerOpen,
   navigate,
   primaryColor,
+  hideScan = false,
 }) => (
-  <Stack spacing={2}>
+  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    {/* Ticket Code Input */}
     <Box>
       <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 1, px: 0.5 }}>
         Ticket Code
@@ -71,71 +75,85 @@ const UserActions: React.FC<UserActionsProps> = ({
         }}
       />
     </Box>
-    <Stack spacing={2}>
-      <Button
-        variant='outlined'
-        fullWidth
-        startIcon={<QrCodeScanner />}
-        onClick={() => setScannerOpen(true)}
-        disabled={redeemMutation.isPending}
-        sx={{ height: 48, borderRadius: 3, fontWeight: 700 }}
-      >
-        Scan QR Code
-      </Button>
-      <Button
-        variant='contained'
-        fullWidth
-        onClick={handleActivate}
-        disabled={redeemMutation.isPending || code.length < 5}
-        endIcon={
-          redeemMutation.isPending ? (
-            <CircularProgress size={20} color='inherit' />
-          ) : (
-            <Bolt />
-          )
-        }
-        sx={{
-          bgcolor: primaryColor,
-          height: 56,
-          borderRadius: 3,
-          fontWeight: 700,
-          boxShadow: `${primaryColor}4D 0px 10px 15px -3px`,
-        }}
-      >
-        Activate Ticket
-      </Button>
 
-      <Paper
-        elevation={0}
-        onClick={() => navigate('/freeTicket')}
-        sx={{
-          p: 1,
-          px: 3,
-          borderRadius: 4,
-          bgcolor: `${primaryColor}0A`,
-          border: `1px solid ${primaryColor}`,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          transition: '0.2s',
-          '&:hover': { bgcolor: `${primaryColor}14`, transform: 'translateY(-2px)' },
-        }}
-      >
-        <Box sx={{ bgcolor: primaryColor, borderRadius: 2, p: 1, display: 'flex', color: 'white' }}>
-          <CardGiftcard fontSize='small' />
-        </Box>
-        <Stack flex={1}>
-          <Typography variant='body2' fontWeight={700}>Free Weekly Ticket</Typography>
-          <Typography variant='caption' color='text.secondary'>
-            Claim your 1 free entry for this week
-          </Typography>
-        </Stack>
-        <ChevronRight sx={{ color: primaryColor }} />
-      </Paper>
+    {/* Activate Ticket Button */}
+    <Button
+      variant='contained'
+      fullWidth
+      onClick={handleActivate}
+      disabled={redeemMutation.isPending || code.length < 5}
+      endIcon={
+        redeemMutation.isPending ? (
+          <CircularProgress size={20} color='inherit' />
+        ) : (
+          <Bolt />
+        )
+      }
+      sx={{
+        bgcolor: primaryColor,
+        height: 56,
+        borderRadius: 3,
+        fontWeight: 700,
+        boxShadow: `${primaryColor}4D 0px 10px 15px -3px`,
+      }}
+    >
+      Activate Ticket
+    </Button>
 
-    </Stack>
-  </Stack>
+    {!hideScan && (
+      <>
+        {/* Divider with "or" */}
+        <Divider sx={{ my: 1 }}>
+          <Typography variant='caption' color='text.secondary' fontWeight={600} sx={{ px: 1 }}>or</Typography>
+        </Divider>
+
+        {/* Scan QR Code Button */}
+        <Button
+          variant='outlined'
+          fullWidth
+          startIcon={<QrCodeScanner />}
+          onClick={() => setScannerOpen(true)}
+          disabled={redeemMutation.isPending}
+          sx={{ height: 48, borderRadius: 3, fontWeight: 700 }}
+        >
+          Scan QR Code
+        </Button>
+      </>
+    )}
+
+    {/* Divider */}
+    <Divider sx={{ my: 1 }} />
+
+    {/* Free Weekly Ticket Card */}
+    <Paper
+      elevation={0}
+      onClick={() => navigate('/freeTicket')}
+      sx={{
+        p: 1.5,
+        px: 2,
+        borderRadius: 3,
+        bgcolor: `${primaryColor}0A`,
+        border: `1px solid ${primaryColor}`,
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        transition: '0.2s',
+        '&:hover': { bgcolor: `${primaryColor}14`, transform: 'translateY(-2px)' },
+      }}
+    >
+      <Box sx={{ bgcolor: primaryColor, borderRadius: 1.5, p: 0.75, display: 'flex', color: 'white' }}>
+        <CardGiftcard fontSize='small' />
+      </Box>
+      <Stack flex={1} spacing={0.25}>
+        <Typography variant='body2' fontWeight={700} sx={{ lineHeight: 1.2 }}>Free Weekly Ticket</Typography>
+        <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.2 }}>
+          Claim 1 free entry
+        </Typography>
+      </Stack>
+      <ChevronRight sx={{ color: primaryColor, fontSize: 20 }} />
+    </Paper>
+  </Box>
 );
 
 export default UserActions;
