@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Container,
   Typography,
   Paper,
-  Stack,
   useMediaQuery,
   useTheme,
 } from '@mui/material';

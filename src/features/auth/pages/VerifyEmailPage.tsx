@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Box, Button, Typography, TextField, Container, Stack, Alert, CircularProgress, Paper,
 } from '@mui/material';
-import { ConfirmationNumber, MarkEmailRead } from '@mui/icons-material';
+import { MarkEmailRead } from '@mui/icons-material';
 import { BG_PAGE } from '../../../shared/colors';
 import { useSignUp } from '@clerk/clerk-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';

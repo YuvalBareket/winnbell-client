@@ -17,7 +17,7 @@ import type { BusinessTicket, UserTicket } from '../types/myTicket.types';
 const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
   const sectorInfo =
     BUSINESS_SECTORS[ticket.business_sector] || BUSINESS_SECTORS.Free;
-  const { date, time } = formatTicketDate(ticket.activated_at);
+  const { date, time } = formatTicketDate(ticket.activated_at ?? '');
 
   return (
     <Paper elevation={0} sx={rowStyle}>
@@ -59,7 +59,7 @@ const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
 
 // --- 2. BUSINESS TICKET COMPONENT ---
 const BusinessTicketRow = ({ ticket }: { ticket: BusinessTicket }) => {
-  const { date, time } = formatTicketDate(ticket.activated_at);
+  const { date, time } = formatTicketDate(ticket.activated_at ?? '');
 
   return (
     <Paper elevation={0} sx={rowStyle}>
@@ -104,7 +104,7 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
   const isBusinessOwner = useAppSelector(selectIsBusiness);
   const isLocation = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessOwner || isLocation;
-  const { data: tickets, isLoading } = useMyTickets(draw_id);
+  const { data: tickets, isLoading } = useMyTickets(draw_id ?? 0);
 
   if (!draw_id) return (
     <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>

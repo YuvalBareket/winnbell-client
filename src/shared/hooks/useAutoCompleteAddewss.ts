@@ -28,11 +28,7 @@ export const useAddressAutocomplete = () => {
     onSuccess: (data, text) => {
       if (text !== lastQueryRef.current) return;
 
-      const results = Array.isArray(data?.results)
-        ? data.results
-        : Array.isArray(data)
-          ? data
-          : [];
+      const results = Array.isArray(data) ? data : [];
 
       setOptions(results);
     },

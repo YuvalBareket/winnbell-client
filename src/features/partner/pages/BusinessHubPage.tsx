@@ -8,7 +8,6 @@ import {
   Skeleton,
   Snackbar,
   Alert,
-  Dialog,
 } from '@mui/material';
 import {
   AddBusiness,
@@ -33,7 +32,6 @@ import InviteManagerDialog from './components/InviteManagerDialog';
 import RemoveManagerDialog from './components/RemoveManagerDialog';
 import BusinessHeroSection from './components/BusinessHeroSection';
 import type { BusinessLocation } from '../types/business.types';
-import { BUSINESS_SECTORS } from '../../admin/data';
 import {
   BG_PAGE,
   ALPHA_WHITE_10,
@@ -136,7 +134,6 @@ const BusinessHubPage = () => {
     );
   }
 
-  const sectorUI = BUSINESS_SECTORS[business.sector] || BUSINESS_SECTORS.Retail;
   return (
     <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: { xs: 12, md: 6 } }}>
       <AppHeader onMenuOpen={() => setMenuOpen(true)} />

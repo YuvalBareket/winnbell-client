@@ -11,7 +11,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../shared/api/client';
-import { PRIMARY_MAIN, BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30 } from '../../../shared/colors';
+import { PRIMARY_MAIN, BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15 } from '../../../shared/colors';
 
 interface SubscriptionDetails {
   id: number;

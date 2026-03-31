@@ -11,7 +11,6 @@ import type { IDrawResult } from '../types';
 const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
   const hasWinner = !!draw.winner_name;
   const isBusinessWinner = hasWinner && !!draw.winner_business_name;
-  const isFreeTicketWinner = hasWinner && !draw.winner_business_name;
 
   return (
     <Paper

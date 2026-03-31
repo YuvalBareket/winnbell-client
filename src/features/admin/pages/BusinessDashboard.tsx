@@ -67,11 +67,7 @@ import GenerateTicketsModal from './components/GenerateTicketsModal';
 import { BUSINESS_SECTORS } from '../data';
 import {
   GRADIENT_HERO,
-  PRIMARY_MAIN,
   BG_PAGE,
-  ALPHA_WHITE_15,
-  ALPHA_WHITE_30,
-  ALPHA_WHITE_70,
   ALPHA_WHITE_80,
 } from '../../../shared/colors';
 
@@ -215,7 +211,7 @@ const BusinessDashboard: React.FC = () => {
   // Filter users
   const filteredUsers = useMemo(() => {
     if (!users) return [];
-    return users.filter((u) => {
+    return users.filter((u: any) => {
       const matchesSearch =
         u.full_name.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
         u.email.toLowerCase().includes(userSearchQuery.toLowerCase());
@@ -311,7 +307,7 @@ const BusinessDashboard: React.FC = () => {
                 {/* KPI Cards */}
                 <Grid container spacing={isMobile ? 1.5 : 2}>
                   {/* Total Users */}
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
                       <CardContent>
                         <Stack spacing={1} alignItems='flex-start'>
@@ -345,7 +341,7 @@ const BusinessDashboard: React.FC = () => {
                   </Grid>
 
                   {/* Active Businesses */}
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
                       <CardContent>
                         <Stack spacing={1} alignItems='flex-start'>
@@ -378,7 +374,7 @@ const BusinessDashboard: React.FC = () => {
                   </Grid>
 
                   {/* Active Subscriptions */}
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
                       <CardContent>
                         <Stack spacing={1} alignItems='flex-start'>
@@ -411,7 +407,7 @@ const BusinessDashboard: React.FC = () => {
                   </Grid>
 
                   {/* Current Draw Prize Pool */}
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
                       <CardContent>
                         <Stack spacing={1} alignItems='flex-start'>
@@ -554,7 +550,7 @@ const BusinessDashboard: React.FC = () => {
                   />
 
                   <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
-                    {['all', 'user', 'business'].map((role) => (
+                    {['all', 'user', 'business'].map((role: string) => (
                       <Chip
                         key={role}
                         label={role.charAt(0).toUpperCase() + role.slice(1)}
@@ -569,7 +565,7 @@ const BusinessDashboard: React.FC = () => {
                 {/* Users table / cards */}
                 {isMobile ? (
                   <Stack spacing={2}>
-                    {filteredUsers.map((user) => (
+                    {filteredUsers.map((user: any) => (
                       <Card
                         key={user.id}
                         elevation={0}
@@ -656,7 +652,7 @@ const BusinessDashboard: React.FC = () => {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {filteredUsers.map((user) => (
+                        {filteredUsers.map((user: any) => (
                           <TableRow key={user.id} hover>
                             <TableCell>{user.full_name}</TableCell>
                             <TableCell>{user.email}</TableCell>
@@ -1229,7 +1225,7 @@ const BusinessDashboard: React.FC = () => {
             {/* TAB 4: REVENUE */}
             <TabPanel value={tabValue} index={4}>
               <Grid container spacing={3}>
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
                     <CardContent>
                       <Stack spacing={1}>
@@ -1258,7 +1254,7 @@ const BusinessDashboard: React.FC = () => {
                   </Card>
                 </Grid>
 
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
                     <CardContent>
                       <Stack spacing={1}>
@@ -1290,7 +1286,7 @@ const BusinessDashboard: React.FC = () => {
                   </Card>
                 </Grid>
 
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
                     <CardContent>
                       <Stack spacing={1}>
@@ -1322,7 +1318,7 @@ const BusinessDashboard: React.FC = () => {
                   </Card>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
                     <CardContent>
                       <Stack spacing={2}>

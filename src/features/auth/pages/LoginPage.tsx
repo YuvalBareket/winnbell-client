@@ -11,7 +11,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignIn } from '@clerk/clerk-react';
 import {
-  BG_PAGE, BORDER_LIGHT, NEUTRAL_SOCIAL_TEXT, SHADOW_PRIMARY_SOFT,
+  BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
 } from '../../../shared/colors';
 

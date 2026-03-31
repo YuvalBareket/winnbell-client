@@ -32,14 +32,13 @@ import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsA
 import { useClerk } from '@clerk/clerk-react';
 import {
   GRADIENT_HERO,
-  GRADIENT_PRIMARY,
   ALPHA_WHITE_15,
   ALPHA_WHITE_20,
   ALPHA_WHITE_30,
   ALPHA_WHITE_70,
   PRIMARY_MAIN,
 } from '../colors';
-import { getUserInitials, getRoleLabel, getRoleColor } from '../utils/string';
+import { getUserInitials, getRoleLabel } from '../utils/string';
 
 interface Props {
   open: boolean;
@@ -73,7 +72,6 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
 
   const initials = getUserInitials(user?.fullName);
   const roleLabel = getRoleLabel(isAdmin, isBusiness, isManager);
-  const roleColor = getRoleColor(isAdmin, isBusiness, isManager);
 
   const mainNavItems: NavItem[] = isAdmin
     ? [

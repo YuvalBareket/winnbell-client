@@ -19,16 +19,11 @@ import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN,
 } from '../../../shared/colors';
-import { formatMonth, formatCurrencyILS } from '../../../shared/utils/date';
+import { formatMonth, formatCurrencyILS, formatDateShort } from '../../../shared/utils/date';
 import KpiCard from '../components/KpiCard';
 import DrawCard from '../components/DrawCard';
 
 const PIE_COLORS = ['#10b981', '#e2e8f0'];
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const activationRate = (issued: number, activated: number) =>
-  issued > 0 ? Math.round((activated / issued) * 100) : 0;
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 

@@ -11,7 +11,7 @@ import type { UserTicket, BusinessTicket } from '../types/myTicket.types';
 const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
   const sectorInfo =
     BUSINESS_SECTORS[ticket.business_sector] || BUSINESS_SECTORS.Free;
-  const { date, time } = formatTicketDate(ticket.activated_at);
+  const { date } = formatTicketDate(ticket.activated_at ?? '');
 
   return (
     <Paper elevation={0} sx={rowStyle}>
@@ -33,10 +33,7 @@ const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
             variant='caption'
             sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}
           >
-            {date} •{' '}
-            <Box component='span' sx={{ color: 'text.disabled' }}>
-              {time}
-            </Box>
+            {date}
           </Typography>
         </Box>
       </Box>
@@ -47,7 +44,7 @@ const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
 
 // --- Sub-Component: BUSINESS ROW ---
 const BusinessTicketRow = ({ ticket }: { ticket: BusinessTicket }) => {
-  const { date, time } = formatTicketDate(ticket.activated_at);
+  const { date } = formatTicketDate(ticket.activated_at ?? '');
 
   return (
     <Paper elevation={0} sx={rowStyle}>
@@ -82,7 +79,7 @@ const BusinessTicketRow = ({ ticket }: { ticket: BusinessTicket }) => {
 
 // --- Main Component ---
 export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
-  const { data: tickets, isLoading } = useMyTickets(draw_id);
+  const { data: tickets, isLoading } = useMyTickets(draw_id ?? 0);
   const isBusiness = useAppSelector(selectIsBusiness);
 
   if (!draw_id) return null;

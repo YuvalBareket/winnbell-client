@@ -24,7 +24,7 @@ const iconBoxStyle = {
 };
 
 export const BusinessTicketRow = ({ ticket }: { ticket: BusinessTicket }) => {
-  const { date, time } = formatTicketDate(ticket.activated_at);
+  const { date, time } = formatTicketDate(ticket.activated_at ?? '');
 
   return (
     <Paper elevation={0} sx={rowStyle}>

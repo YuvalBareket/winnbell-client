@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -8,7 +8,6 @@ import {
   Container,
   IconButton,
   Paper,
-  Chip,
   LinearProgress,
   InputAdornment,
 } from '@mui/material';
@@ -380,8 +379,8 @@ const BusinessProfilePage = () => {
                               value={value ? { label: value, lat: 0, lon: 0 } : null}
                               onSelect={(selected) => {
                                 onChange(selected?.label || '');
-                                setValue(`locations.${index}.lat`, selected?.lat || null);
-                                setValue(`locations.${index}.lon`, selected?.lon || null);
+                                setValue(`locations.${index}.lat`, selected?.lat as unknown as null);
+                                setValue(`locations.${index}.lon`, selected?.lon as unknown as null);
                               }}
                             />
                           )}

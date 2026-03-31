@@ -9,7 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../shared/api/client';
 import {
-  GRADIENT_HERO, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
+  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
 } from '../../../shared/colors';
 
 const FEATURES = [

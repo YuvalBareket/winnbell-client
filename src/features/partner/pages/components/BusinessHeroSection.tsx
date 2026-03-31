@@ -24,7 +24,7 @@ interface BusinessHeroSectionProps {
   business: BusinessData;
   onLogoClick: () => void;
   isUploading: boolean;
-  logoFileInputRef: React.RefObject<HTMLInputElement>;
+  logoFileInputRef: React.RefObject<HTMLInputElement | null>;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onEditClick?: () => void;
 }

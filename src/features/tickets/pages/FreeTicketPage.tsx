@@ -24,7 +24,7 @@ const FreeTicketPage: React.FC = () => {
   const [successOpen, setSuccessOpen] = useState(false);
 
   const handleCloseSnackbar = (
-    event?: React.SyntheticEvent | Event,
+    _event?: React.SyntheticEvent | Event,
     reason?: string,
   ) => {
     if (reason === 'clickaway') return;

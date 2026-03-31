@@ -1,8 +1,8 @@
-import { AppBar, Toolbar, Typography, IconButton, Box, Avatar, Chip, Stack } from '@mui/material';
-import { NotificationsNoneOutlined, MenuRounded } from '@mui/icons-material';
+import { AppBar, Toolbar, Typography, IconButton, Box, Avatar, Stack } from '@mui/material';
+import { NotificationsNoneOutlined } from '@mui/icons-material';
 import { useAppSelector } from '../../store/hook';
-import { selectCurrentUser, selectIsBusiness, selectIsLocationManager } from '../../store/selectors/authSelectors';
-import { PRIMARY_MAIN, GRADIENT_PRIMARY, TEXT_PRIMARY } from '../colors';
+import { selectCurrentUser } from '../../store/selectors/authSelectors';
+import { GRADIENT_PRIMARY, TEXT_PRIMARY } from '../colors';
 import { getUserInitials } from '../utils/string';
 
 interface Props {
@@ -11,8 +11,6 @@ interface Props {
 
 const AppHeader = ({ onMenuOpen }: Props) => {
   const user = useAppSelector(selectCurrentUser);
-  const isBusiness = useAppSelector(selectIsBusiness);
-  const isManager = useAppSelector(selectIsLocationManager);
 
   const initials = getUserInitials(user?.fullName);
 
