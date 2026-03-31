@@ -239,6 +239,7 @@ const NearbyPage = () => {
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar
+                      src={partner.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${partner.logo_url}` : undefined}
                       sx={{
                         width: 56,
                         height: 56,
@@ -249,7 +250,7 @@ const NearbyPage = () => {
                         '& svg': { fontSize: 28 },
                       }}
                     >
-                      {sectorInfo.icon}
+                      {!partner.logo_url && sectorInfo.icon}
                     </Avatar>
 
                     <Box>

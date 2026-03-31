@@ -56,22 +56,20 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
             <Box
               onClick={onLogoClick}
               sx={{
-                position: 'relative', width: 64, height: 64, borderRadius: 2,
+                position: 'relative', width: 72, height: 72, borderRadius: '50%',
                 cursor: 'pointer', flexShrink: 0,
                 '&:hover .logo-overlay': { opacity: 1 },
               }}
             >
               <Avatar
-                variant='square'
                 src={business.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${business.logo_url}` : undefined}
                 sx={{
-                  width: 64, height: 64,
+                  width: 72, height: 72,
                   bgcolor: ALPHA_WHITE_15,
                   color: 'white',
                   fontWeight: 900,
                   fontSize: 28,
-                  borderRadius: 2,
-                  border: `1px solid ${ALPHA_WHITE_30}`,
+                  border: `2px solid ${ALPHA_WHITE_30}`,
                 }}
               >
                 {business.name[0]}
@@ -79,7 +77,7 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
               <Box
                 className='logo-overlay'
                 sx={{
-                  position: 'absolute', inset: 0, borderRadius: 2,
+                  position: 'absolute', inset: 0, borderRadius: '50%',
                   bgcolor: 'rgba(0,0,0,0.45)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   opacity: isUploading ? 1 : 0,

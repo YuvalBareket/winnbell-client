@@ -1,4 +1,4 @@
-import { Box, Typography, Stack, Paper, Chip, Skeleton, Button } from '@mui/material';
+import { Box, Typography, Stack, Paper, Chip, Skeleton, Button, Avatar } from '@mui/material';
 import { Circle, Person, Storefront, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -18,11 +18,15 @@ const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
   const sectorInfo =
     BUSINESS_SECTORS[ticket.business_sector] || BUSINESS_SECTORS.Free;
   const { date, time } = formatTicketDate(ticket.activated_at ?? '');
-
   return (
     <Paper elevation={0} sx={rowStyle}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Box sx={iconBoxStyle}>{sectorInfo.icon}</Box>
+        <Avatar
+          src={ticket.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${ticket.logo_url}` : undefined}
+          sx={{ ...iconBoxStyle, bgcolor: sectorInfo.bgColor, color: sectorInfo.color, '& svg': { fontSize: 28 } }}
+        >
+          {!ticket.logo_url && sectorInfo.icon}
+        </Avatar>
         <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
           <Typography
             variant='subtitle1'

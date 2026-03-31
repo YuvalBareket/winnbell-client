@@ -1,4 +1,4 @@
-import { Box, Typography, Stack, Paper, Chip, Skeleton } from '@mui/material';
+import { Box, Typography, Stack, Paper, Chip, Skeleton, Avatar } from '@mui/material';
 import { Circle, Storefront, Person } from '@mui/icons-material';
 import { formatTicketDate } from '../../../shared/utils/date';
 import { BUSINESS_SECTORS } from '../../admin/data';
@@ -16,7 +16,12 @@ const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
   return (
     <Paper elevation={0} sx={rowStyle}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Box sx={iconBoxStyle}>{sectorInfo.icon}</Box>
+        <Avatar
+          src={ticket.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${ticket.logo_url}` : undefined}
+          sx={{ ...iconBoxStyle, bgcolor: sectorInfo.bgColor, color: sectorInfo.color, '& svg': { fontSize: 28 } }}
+        >
+          {!ticket.logo_url && sectorInfo.icon}
+        </Avatar>
         <Box>
           <Typography
             variant='subtitle1'

@@ -31,6 +31,7 @@ import AddLocationDialog from './components/AddLocationDialog';
 import InviteManagerDialog from './components/InviteManagerDialog';
 import RemoveManagerDialog from './components/RemoveManagerDialog';
 import BusinessHeroSection from './components/BusinessHeroSection';
+import LogoCropDialog from './components/LogoCropDialog';
 import type { BusinessLocation } from '../types/business.types';
 import {
   BG_PAGE,
@@ -48,6 +49,7 @@ const BusinessHubPage = () => {
   const { mutate: updateBusiness, isPending: isUpdatingTerms } = useUpdateBusiness();
   const { upload: uploadLogo, isUploading: isUploadingLogo, error: logoError, clearError: clearLogoError } = useUploadBusinessLogo();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editingTerms, setEditingTerms] = useState(false);
   const [termsValue, setTermsValue] = useState('');
@@ -146,7 +148,10 @@ const BusinessHubPage = () => {
         logoFileInputRef={fileInputRef}
         onFileChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) uploadLogo(file);
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => setCropSrc(reader.result as string);
+          reader.readAsDataURL(file);
           e.target.value = '';
         }}
         onEditClick={() => setBusinessDrawerOpen(true)}
@@ -289,6 +294,18 @@ const BusinessHubPage = () => {
         inviteUrl={inviteLink}
         onCopyLink={() => setSnackbar({ open: true, message: 'Link copied to clipboard!', severity: 'success' })}
       />
+
+      {cropSrc && (
+        <LogoCropDialog
+          open={!!cropSrc}
+          imageSrc={cropSrc}
+          onClose={() => setCropSrc(null)}
+          onConfirm={(file) => {
+            setCropSrc(null);
+            uploadLogo(file);
+          }}
+        />
+      )}
 
       <RemoveManagerDialog
         open={!!removeManagerLocationId}

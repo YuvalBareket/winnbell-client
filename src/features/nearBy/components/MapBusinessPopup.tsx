@@ -84,7 +84,7 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose }) => {
         }}
       >
         <Avatar
-          src={location.logo_url ?? undefined}
+          src={location.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${location.logo_url}` : undefined}
           variant='rounded'
           sx={{
             width: 72,

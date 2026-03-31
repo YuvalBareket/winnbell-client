@@ -1,9 +1,10 @@
-import { AppBar, Toolbar, Typography, IconButton, Box, Avatar, Stack } from '@mui/material';
-import { NotificationsNoneOutlined } from '@mui/icons-material';
+import { AppBar, Toolbar, Typography, IconButton, Box, Avatar, Stack, Tooltip, CircularProgress } from '@mui/material';
+import { NotificationsNoneOutlined, NotificationsActiveOutlined } from '@mui/icons-material';
 import { useAppSelector } from '../../store/hook';
 import { selectCurrentUser } from '../../store/selectors/authSelectors';
 import { GRADIENT_PRIMARY, TEXT_PRIMARY } from '../colors';
 import { getUserInitials } from '../utils/string';
+import { useNotifications } from '../../features/notifications/useNotifications';
 
 interface Props {
   onMenuOpen: () => void;
@@ -11,8 +12,8 @@ interface Props {
 
 const AppHeader = ({ onMenuOpen }: Props) => {
   const user = useAppSelector(selectCurrentUser);
-
   const initials = getUserInitials(user?.fullName);
+  const { subscribe, unsubscribe, isPending, isSupported, isSubscribed, permission } = useNotifications();
 
   return (
     <AppBar
@@ -42,19 +43,29 @@ const AppHeader = ({ onMenuOpen }: Props) => {
 
         {/* Right actions */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <IconButton
-            size='small'
-            sx={{
-              color: 'text.secondary',
-              bgcolor: 'rgba(0,0,0,0.04)',
-              borderRadius: '10px',
-              width: { xs: 40, md: 36 },
-              height: { xs: 40, md: 36 },
-              '&:hover': { bgcolor: 'rgba(0,0,0,0.08)' },
-            }}
-          >
-            <NotificationsNoneOutlined sx={{ fontSize: 20 }} />
-          </IconButton>
+          {isSupported && (
+            <Tooltip title={isSubscribed ? 'Turn off notifications' : 'Enable notifications'}>
+              <IconButton
+                size='small'
+                onClick={() => isSubscribed ? unsubscribe() : subscribe()}
+                disabled={isPending || permission === 'denied'}
+                sx={{
+                  color: isSubscribed ? 'primary.main' : 'text.secondary',
+                  bgcolor: isSubscribed ? 'primary.main' + '18' : 'rgba(0,0,0,0.04)',
+                  borderRadius: '10px',
+                  width: { xs: 40, md: 36 },
+                  height: { xs: 40, md: 36 },
+                  '&:hover': { bgcolor: isSubscribed ? 'primary.main' + '28' : 'rgba(0,0,0,0.08)' },
+                }}
+              >
+                {isPending
+                  ? <CircularProgress size={18} color='inherit' />
+                  : isSubscribed
+                    ? <NotificationsActiveOutlined sx={{ fontSize: 20 }} />
+                    : <NotificationsNoneOutlined sx={{ fontSize: 20 }} />}
+              </IconButton>
+            </Tooltip>
+          )}
 
           <IconButton
             onClick={onMenuOpen}
