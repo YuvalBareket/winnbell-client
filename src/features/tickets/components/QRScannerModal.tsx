@@ -21,26 +21,38 @@ const QRScannerModal: React.FC<Props> = ({ open, onScan, onClose }) => {
     didScan.current = false;
     setCamError('');
 
-    const scanner = new Html5Qrcode(SCANNER_ID);
-    scannerRef.current = scanner;
+    let scanner: Html5Qrcode | null = null;
 
-    scanner
-      .start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 240, height: 240 } },
-        (decoded) => {
-          if (didScan.current) return;
-          didScan.current = true;
-          scanner.stop().catch(() => {}).finally(() => {
-            onScan(decoded.trim().toUpperCase());
-          });
-        },
-        () => {},
-      )
-      .catch(() => setCamError('Camera access denied. Please allow camera permission and try again.'));
+    const startScanner = () => {
+      try {
+        scanner = new Html5Qrcode(SCANNER_ID);
+        scannerRef.current = scanner;
+
+        scanner
+          .start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 240, height: 240 } },
+            (decoded) => {
+              if (didScan.current) return;
+              didScan.current = true;
+              scanner!.stop().catch(() => {}).finally(() => {
+                onScan(decoded.trim().toUpperCase());
+              });
+            },
+            () => {},
+          )
+          .catch(() => setCamError('Camera access denied. Please allow camera permission and try again.'));
+      } catch {
+        setCamError('Could not start scanner. Please try again.');
+      }
+    };
+
+    // Delay to let the Dialog finish rendering the DOM element
+    const timer = setTimeout(startScanner, 300);
 
     return () => {
-      scanner.stop().catch(() => {});
+      clearTimeout(timer);
+      scanner?.stop().catch(() => {});
     };
   }, [open]);
 
