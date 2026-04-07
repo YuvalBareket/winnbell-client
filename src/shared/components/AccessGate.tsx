@@ -75,15 +75,7 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
         The page you're looking for doesn't exist or has been moved.
       </Typography>
 
-      <Button
-        variant="outlined"
-        size="small"
-        href="/"
-        sx={{ textTransform: 'none', borderRadius: 2, color: 'text.secondary', borderColor: '#ccc' }}
-      >
-        Go back home
-      </Button>
-
+    
       {/* Hidden password field — revealed on triple-click of "404" */}
       {showInput && (
         <Box
