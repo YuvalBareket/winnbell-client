@@ -162,13 +162,12 @@ const BusinessHubPage = () => {
           {/* Onboarding banner — shown when not yet subscribed */}
           {!business.is_active && (
             <Paper
-              elevation={0}
+              elevation={3}
               sx={{
                 p: 2.5,
                 borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'warning.main',
-                bgcolor: 'rgba(237,108,2,0.05)',
+                border: '1px solid #00000021',
+                backgroundColor:'white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
