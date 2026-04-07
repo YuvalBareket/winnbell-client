@@ -8,7 +8,7 @@ import { selectIsAuthenticated } from '../../store/selectors/authSelectors';
 const DISMISSED_KEY = 'notif_prompt_dismissed';
 
 const NotificationPrompt = () => {
-  const { subscribe, isSubscribing, isSupported, permission } = useNotifications();
+  const { subscribe, isPending: isSubscribing, isSupported, permission } = useNotifications();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const [dismissed, setDismissed] = useState(() => !!localStorage.getItem(DISMISSED_KEY));
 

@@ -12,6 +12,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectManifest: {
         swSrc: 'src/sw.ts',
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
       manifest: {
         name: 'Winnbell',
@@ -43,6 +44,20 @@ export default defineConfig({
       },
     }),
   ],
+
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-mui': ['@mui/material', '@mui/icons-material'],
+          'vendor-redux': ['@reduxjs/toolkit', 'react-redux', 'redux-persist'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-clerk': ['@clerk/clerk-react'],
+        },
+      },
+    },
+  },
 
   server: {
     host: true,
