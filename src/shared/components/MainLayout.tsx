@@ -72,7 +72,7 @@ const MainLayout = () => {
               bgcolor: 'rgba(237,108,2,0.08)',
               border: '1px solid',
               borderColor: 'warning.light',
-              display: 'flex',
+              display: { xs: 'flex', md: 'none' },
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: 1.5,
