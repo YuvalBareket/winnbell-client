@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /register
+Allow: /terms
+Allow: /privacy
+
+# Keep authenticated app pages private
+Disallow: /scan
+Disallow: /tickets
+Disallow: /nearby
+Disallow: /draws
+Disallow: /stats
+Disallow: /admin
+Disallow: /business
+Disallow: /subscription
+
+Sitemap: https://winnbell.com/sitemap.xml
