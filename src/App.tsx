@@ -6,6 +6,7 @@ import { store, persistor } from './store/store'; // Import persistor
 import { theme } from './shared/theme';
 import AppRoutes from './routes/AppRoutes';
 import { ClerkProvider } from '@clerk/clerk-react';
+import AccessGate from './shared/components/AccessGate';
 
 // Optional: A simple loading spinner while Redux rehydrates
 const LoadingState = () => (
@@ -17,18 +18,20 @@ const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 function App() {
   return (
-    <Provider store={store}>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY} allowedRedirectOrigins={['http://localhost:8081', 'https://winnbell-client.vercel.app', 'https://winnbell.com', 'https://www.winnbell.com']}>
-      <PersistGate loading={<LoadingState />} persistor={persistor}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </ThemeProvider>
-      </PersistGate>
-      </ClerkProvider>
-    </Provider>
+    <AccessGate>
+      <Provider store={store}>
+        <ClerkProvider publishableKey={PUBLISHABLE_KEY} allowedRedirectOrigins={['http://localhost:8081', 'https://winnbell-client.vercel.app', 'https://winnbell.com', 'https://www.winnbell.com']}>
+        <PersistGate loading={<LoadingState />} persistor={persistor}>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </ThemeProvider>
+        </PersistGate>
+        </ClerkProvider>
+      </Provider>
+    </AccessGate>
   );
 }
 
