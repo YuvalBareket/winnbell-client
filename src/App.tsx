@@ -18,7 +18,7 @@ const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 function App() {
   return (
     <Provider store={store}>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY} allowedRedirectOrigins={['http://localhost:8081', 'https://winnbell-client.vercel.app']}>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY} allowedRedirectOrigins={['http://localhost:8081', 'https://winnbell-client.vercel.app', 'https://winnbell.com', 'https://www.winnbell.com']}>
       <PersistGate loading={<LoadingState />} persistor={persistor}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
