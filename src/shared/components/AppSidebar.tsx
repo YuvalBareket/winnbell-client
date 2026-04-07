@@ -6,11 +6,15 @@ import { Logout } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { logout } from '../../store/slices/authSlice';
-import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin } from '../../store/selectors/authSelectors';
+import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl } from '../../store/selectors/authSelectors';
 import { useClerk } from '@clerk/clerk-react';
 import {
-  userNavItems, businessNavItems, managerNavItems, adminNavItems, legalNavItems,
+  userNavItems, managerNavItems, adminNavItems, legalNavItems, type NavItem,
 } from '../constants/navItems';
+import {
+  BusinessOutlined, QrCodeScannerOutlined, ConfirmationNumberOutlined,
+  BarChartOutlined, ReceiptLongOutlined,
+} from '@mui/icons-material';
 import {
   GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING,
   TEXT_PRIMARY,
@@ -25,11 +29,22 @@ const AppSidebar = () => {
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
   const isAdmin = useAppSelector(selectIsAdmin);
+  const businessIsActive = useAppSelector(selectBusinessIsActive);
+  const businessLogoUrl = useAppSelector(selectBusinessLogoUrl);
+  console.log(user)
   const { signOut } = useClerk();
 
   const initials = getUserInitials(user?.fullName);
   const roleLabel = getRoleLabel(isAdmin, isBusiness, isManager);
   const roleColor = getRoleColor(isAdmin, isBusiness, isManager);
+
+  const businessNavItems: NavItem[] = [
+    { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
+    { label: 'Generate Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
+    { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
+    { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
+    { label: 'Subscription', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
+  ];
 
   const mainNavItems = isAdmin ? adminNavItems : isBusiness ? businessNavItems : isManager ? managerNavItems : userNavItems;
 
@@ -72,6 +87,7 @@ const AppSidebar = () => {
         }}
       >
         <Avatar
+          src={businessLogoUrl ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${businessLogoUrl}` : undefined}
           sx={{
             width: 36, height: 36,
             background: GRADIENT_PRIMARY,

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
-import { selectIsAuthenticated } from '../../store/selectors/authSelectors';
+import { selectIsAuthenticated, selectCurrentUser, selectIsBusiness } from '../../store/selectors/authSelectors';
 import { login } from '../../store/slices/authSlice';
 import { syncUserFn } from '../../features/auth/api/auth.api';
 
@@ -13,11 +13,14 @@ export const useClerkSync = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const currentUser = useAppSelector(selectCurrentUser);
+  const isBusiness = useAppSelector(selectIsBusiness);
+  const needsResync = isAuthenticated && isBusiness && currentUser?.businessLogoUrl === undefined;
   const syncing = useRef(false);
 
   useEffect(() => {
     const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
-    if (!isSignedIn || (isAuthenticated && !pendingInviteToken) || syncing.current) return;
+    if (!isSignedIn || (isAuthenticated && !needsResync && !pendingInviteToken) || syncing.current) return;
 
     syncing.current = true;
 
@@ -38,5 +41,5 @@ export const useClerkSync = () => {
       })
       .catch(console.error)
       .finally(() => { syncing.current = false; });
-  }, [isSignedIn, isAuthenticated]);
+  }, [isSignedIn, isAuthenticated, needsResync]);
 };

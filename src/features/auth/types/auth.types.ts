@@ -9,6 +9,7 @@ export interface User {
   business_id?: number | null;
   requiresBusinessSetup?: boolean;
   businessIsActive?: boolean;
+  businessLogoUrl?: string | null;
   created_at: string;
 }
 

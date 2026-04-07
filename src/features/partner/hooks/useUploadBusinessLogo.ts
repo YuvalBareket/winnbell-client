@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getUploadUrl, updateBusinessLogo } from '../api/business.api';
+import { useAppDispatch } from '../../../store/hook';
+import { updateBusinessUser } from '../../../store/slices/authSlice';
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB original file
 const MAX_DIMENSION = 512; // px — logos are displayed small, 512 is plenty
@@ -40,6 +42,7 @@ const convertToWebP = (file: File): Promise<File> =>
 
 export const useUploadBusinessLogo = () => {
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,6 +68,7 @@ export const useUploadBusinessLogo = () => {
       });
 
       await updateBusinessLogo(key);
+      dispatch(updateBusinessUser({ businessLogoUrl: key }));
       queryClient.invalidateQueries({ queryKey: ['business', 'my-details'] });
     } catch {
       setError('Failed to upload image. Please try again.');

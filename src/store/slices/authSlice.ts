@@ -49,9 +49,15 @@ export const authSlice = createSlice({
         state.user.businessIsActive = true;
       }
     },
+    updateBusinessUser: (state, action: PayloadAction<{ businessIsActive?: boolean; businessLogoUrl?: string | null }>) => {
+      if (state.user) {
+        if (action.payload.businessIsActive !== undefined) state.user.businessIsActive = action.payload.businessIsActive;
+        if (action.payload.businessLogoUrl !== undefined) state.user.businessLogoUrl = action.payload.businessLogoUrl;
+      }
+    },
   },
 });
 
-export const { login, logout, setLoading, setError, setUserLocation, clearBusinessSetup, setBusinessActive } =
+export const { login, logout, setLoading, setError, setUserLocation, clearBusinessSetup, setBusinessActive, updateBusinessUser } =
   authSlice.actions;
 export default authSlice.reducer;

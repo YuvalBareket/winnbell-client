@@ -17,6 +17,10 @@ export const selectBusinessIsActive = createSelector(
   [selectAuthState],
   (auth) => auth.user?.businessIsActive ?? false,
 );
+export const selectBusinessLogoUrl = createSelector(
+  [selectAuthState],
+  (auth) => auth.user?.businessLogoUrl ?? null,
+);
 export const selectCurrentUser = createSelector(
   [selectAuthState],
   (auth) => auth.user,

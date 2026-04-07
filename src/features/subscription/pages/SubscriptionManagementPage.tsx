@@ -326,7 +326,7 @@ export default function SubscriptionManagementPage() {
                         Current prize pool
                       </Typography>
                       <Typography variant='h5' fontWeight={900} color='primary.main' sx={{ fontSize: { xs: '1.75rem', md: '2rem' } }}>
-                        ${sub.prize_amount?.toFixed(2)}
+                        ${Number(sub?.prize_amount ?? 0).toFixed(2)}
                       </Typography>
                     </Box>
                   </Stack>
