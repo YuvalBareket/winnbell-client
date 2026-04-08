@@ -56,9 +56,9 @@ const MainLayout = () => {
           display: 'flex',
           flexDirection: 'column',
           pt: topPadding,
-          pb: { xs: '70px', md: 4 },
-          ml: { xs: 0, md: '268px' },
-          width: { xs: '100%', md: 'calc(100% - 268px)' },
+          pb: { xs: '70px', md: isNearby ? 0 : 4 },
+          ml: { xs: 0, md: '240px' },
+          width: { xs: '100%', md: 'calc(100% - 240px)' },
         }}
       >
         {showSubscribeBanner && (

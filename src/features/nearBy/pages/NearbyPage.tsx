@@ -26,8 +26,18 @@ import { useCurrentLocation } from '../hooks/useCurrentLocation';
 import BusinessMap from '../components/BusinessMap';
 import type { RootState } from '../../../store/store';
 import MapBusinessPopup from '../components/MapBusinessPopup';
-import { useNearbyBusinesses } from '../hooks/useCreateBusiness';
+import { useNearbyWithZoom } from '../hooks/useNearbyWithZoom';
 import { BUSINESS_SECTORS } from '../../admin/data';
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 const NearbyPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,27 +48,26 @@ const NearbyPage = () => {
   // 1. Get Current Location (Updates Redux)
   const { refreshLocation } = useCurrentLocation();
 
-  // 2. Pull Location and Fetch Data via React Query
+  // 2. Pull Location and Fetch Data
   const { userLocation } = useSelector((state: RootState) => state.auth);
-  const { data: locations, isLoading, isError } = useNearbyBusinesses();
+  const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyWithZoom();
 
   // 3. Find the specific location object for the popup
   const selectedLocation =
-    locations?.find((loc) => loc.location_id === selectedLocationId) || null;
+    locations.find((loc) => loc.location_id === selectedLocationId) || null;
 
   // 4. Filter locations based on search term and sector
-  const filteredLocations =
-    locations?.filter((loc) => {
-      const matchesSearch = loc.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesSector = !selectedSector || loc.sector === selectedSector;
-      return matchesSearch && matchesSector;
-    }) || [];
+  const filteredLocations = locations.filter((loc) => {
+    const matchesSearch = loc.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSector = !selectedSector || loc.sector === selectedSector;
+    return matchesSearch && matchesSector;
+  });
 
   return (
     <Box
       sx={{
         width: '100%',
-        height: { xs: 'calc(100dvh - 60px)', md: 'calc(100dvh / 0.9)' },
+        height: { xs: 'calc(100dvh - 60px)', md: '100dvh' },
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
         overflow: 'hidden',
@@ -79,6 +88,7 @@ const NearbyPage = () => {
           locations={filteredLocations}
           userLocation={userLocation}
           onBusinessClick={(id) => setSelectedLocationId(id)}
+          onViewportChange={onViewportChange}
         />
 
         {/* Floating Search Bar */}
@@ -120,9 +130,9 @@ const NearbyPage = () => {
       <Paper
         elevation={0}
         sx={{
-          flex: { xs: 1, md: 'none' },
+          flex: { xs: 1, md: '0 0 380px' },
           width: { md: '380px' },
-          flexShrink: { md: 0 },
+          height: { md: '100%' },
           mt: { xs: -3, md: 0 },
           borderTopLeftRadius: { xs: 24, md: 0 },
           borderTopRightRadius: { xs: 24, md: 0 },
@@ -137,9 +147,12 @@ const NearbyPage = () => {
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pb: 2 }}>
           <Typography variant='h6' sx={{ fontWeight: 700 }}>Partners List</Typography>
-          <Typography variant='subtitle2' color='primary' sx={{ fontWeight: 700 }}>
-            {isLoading ? 'Loading...' : `${filteredLocations.length} Found`}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {isFetching && !isLoading && <CircularProgress size={14} thickness={5} />}
+            <Typography variant='subtitle2' color='primary' sx={{ fontWeight: 700 }}>
+              {filteredLocations.length} Found
+            </Typography>
+          </Box>
         </Box>
 
         {/* Sector filter chips */}
@@ -170,18 +183,19 @@ const NearbyPage = () => {
           spacing={2}
           sx={{
             px: 2,
-            pb: 12,
+            pb: { xs: 12, md: 3 },
             overflowY: 'auto',
             flex: 1,
             '&::-webkit-scrollbar': { display: 'none' },
             scrollbarWidth: 'none',
           }}
         >
+          {/* Initial load spinner — only when no data yet */}
           {isLoading && (
             <Box display='flex' justifyContent='center' p={4}><CircularProgress /></Box>
           )}
 
-          {isError && (
+          {isError && !isLoading && (
             <Typography color='error' align='center' sx={{ p: 4 }}>Error loading nearby places.</Typography>
           )}
 
@@ -214,8 +228,7 @@ const NearbyPage = () => {
             </Box>
           )}
 
-          {!isLoading &&
-            filteredLocations.map((partner) => {
+          {filteredLocations.map((partner) => {
               const sectorInfo = BUSINESS_SECTORS[partner.sector] || BUSINESS_SECTORS.Retail;
 
               return (
@@ -260,7 +273,9 @@ const NearbyPage = () => {
 
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
                         <Typography variant='caption' sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                          {partner.distance_km ? `${partner.distance_km.toFixed(1)} km away` : sectorInfo.label}
+                          {userLocation
+                            ? `${haversineKm(userLocation.latitude, userLocation.longitude, partner.latitude, partner.longitude).toFixed(1)} km away`
+                            : sectorInfo.label}
                         </Typography>
                         <Chip
                           icon={<CheckCircle sx={{ fontSize: '12px !important' }} />}

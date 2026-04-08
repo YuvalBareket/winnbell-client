@@ -67,13 +67,30 @@ type Props = {
   locations: NearbyLocation[];
   onBusinessClick?: (locationId: number) => void;
   userLocation?: { latitude: number; longitude: number } | null;
+  onViewportChange?: (lat: number, lon: number, radiusKm: number) => void;
 };
 
-export default function BusinessMap({ locations, onBusinessClick, userLocation }: Props) {
+function getViewportCircle(map: maplibregl.Map): { lat: number; lon: number; radiusKm: number } {
+  const center = map.getCenter();
+  const bounds = map.getBounds();
+  const ne = bounds.getNorthEast();
+  const R = 6371;
+  const lat1 = center.lat * (Math.PI / 180);
+  const lat2 = ne.lat * (Math.PI / 180);
+  const dLat = lat2 - lat1;
+  const dLon = (ne.lng - center.lng) * (Math.PI / 180);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return { lat: center.lat, lon: center.lng, radiusKm: Math.ceil(dist) };
+}
+
+export default function BusinessMap({ locations, onBusinessClick, userLocation, onViewportChange }: Props) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const markersByLocRef = useRef<Map<number, maplibregl.Marker>>(new Map());
   const userMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const onViewportChangeRef = useRef(onViewportChange);
+  onViewportChangeRef.current = onViewportChange;
 
   // Initialize map
   useEffect(() => {
@@ -89,7 +106,15 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation }
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
     mapRef.current = map;
 
-    map.on('load', () => setEnglishLabels(map));
+    map.on('load', () => {
+      setEnglishLabels(map);
+      const v = getViewportCircle(map);
+      onViewportChangeRef.current?.(v.lat, v.lon, v.radiusKm);
+    });
+    map.on('moveend', () => {
+      const v = getViewportCircle(map);
+      onViewportChangeRef.current?.(v.lat, v.lon, v.radiusKm);
+    });
 
     return () => {
       markersByLocRef.current.forEach((m) => m.remove());

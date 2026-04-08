@@ -31,7 +31,6 @@ const AppSidebar = () => {
   const isAdmin = useAppSelector(selectIsAdmin);
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const businessLogoUrl = useAppSelector(selectBusinessLogoUrl);
-  console.log(user)
   const { signOut } = useClerk();
 
   const initials = getUserInitials(user?.fullName);

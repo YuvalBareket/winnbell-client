@@ -22,4 +22,5 @@ export interface ILocationCoords {
 
 export interface INearbyParams extends ILocationCoords {
   radius?: number;
+  minRadius?: number;
 }
