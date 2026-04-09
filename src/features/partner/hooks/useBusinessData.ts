@@ -1,13 +1,13 @@
-// client/src/features/partner/hooks/useBusinessData.ts
 import { useQuery } from '@tanstack/react-query';
 import { fetchMyBusinessDetails } from '../api/business.api';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useBusinessData = (enabled: boolean = true) => {
   return useQuery({
-    queryKey: ['business', 'my-details'],
+    queryKey: queryKeys.business.myDetails,
     queryFn: fetchMyBusinessDetails,
-    // Refetch when the window is refocused to keep branch status (like manager invites) updated
-    refetchOnWindowFocus: true,
-    enabled
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: true, // keep manager invite status up-to-date
+    enabled,
   });
 };

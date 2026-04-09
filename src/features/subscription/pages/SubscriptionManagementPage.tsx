@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 import {
   Box, Typography, Paper, Stack, Chip, Button, Divider, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Alert,
@@ -46,8 +47,9 @@ export default function SubscriptionManagementPage() {
   const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean } | null>(null);
 
   const { data: sub, isLoading, isError } = useQuery({
-    queryKey: ['subscription'],
+    queryKey: queryKeys.subscription.all,
     queryFn: fetchSubscription,
+    staleTime: 60_000,
   });
 
   const { mutate: doCancel, isPending: cancelling } = useMutation({
@@ -55,8 +57,8 @@ export default function SubscriptionManagementPage() {
     onSuccess: (data) => {
       setCancelResult(data);
       setConfirmOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      queryClient.invalidateQueries({ queryKey: ['myBusiness'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.subscription.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.business.myDetails });
     },
     onError: (err: any) => {
       setCancelError(err.response?.data?.error ?? 'Cancellation failed. Please try again.');
@@ -68,8 +70,8 @@ export default function SubscriptionManagementPage() {
     mutationFn: () => api.post('/business/subscription/resume').then(r => r.data),
     onSuccess: () => {
       setCancelResult(null);
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
-      queryClient.invalidateQueries({ queryKey: ['myBusiness'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.subscription.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.business.myDetails });
     },
     onError: (err: any) => {
       setCancelError(err.response?.data?.error ?? 'Could not resume subscription. Please try again.');

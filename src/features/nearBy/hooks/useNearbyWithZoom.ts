@@ -31,21 +31,6 @@ function isLargelyLoaded(lat: number, lon: number, radius: number, fetched: Fetc
   );
 }
 
-// Find the closest already-fetched circle (for ring optimization when zooming out from same area)
-function findClosestCircle(lat: number, lon: number, fetched: FetchedCircle[]): FetchedCircle | null {
-  if (fetched.length === 0) return null;
-  let best: FetchedCircle | null = null;
-  let bestDist = Infinity;
-  for (const f of fetched) {
-    const d = haversineKm(lat, lon, f.lat, f.lon);
-    if (d < bestDist) {
-      bestDist = d;
-      best = f;
-    }
-  }
-  return best;
-}
-
 export function useNearbyWithZoom() {
   const accumulatedRef = useRef<Map<number, NearbyLocation>>(new Map());
   const [locations, setLocations] = useState<NearbyLocation[]>([]);
@@ -56,13 +41,13 @@ export function useNearbyWithZoom() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fetchingRef = useRef(false);
 
-  const doFetch = useCallback(async (lat: number, lon: number, radius: number, minRadius: number) => {
+  const doFetch = useCallback(async (lat: number, lon: number, radius: number) => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     setIsFetching(true);
     setIsError(false);
     try {
-      const results = await getNearbyBusinesses({ latitude: lat, longitude: lon, radius, minRadius });
+      const results = await getNearbyBusinesses({ latitude: lat, longitude: lon, radius });
       results.forEach((loc) => accumulatedRef.current.set(loc.location_id, loc));
       setLocations(Array.from(accumulatedRef.current.values()));
       fetchedCirclesRef.current.push({ lat, lon, radius });
@@ -82,15 +67,7 @@ export function useNearbyWithZoom() {
         if (isCovered(lat, lon, radiusKm, fetchedCirclesRef.current)) return;
         if (isLargelyLoaded(lat, lon, radiusKm, fetchedCirclesRef.current)) return;
 
-        const closest = findClosestCircle(lat, lon, fetchedCirclesRef.current);
-        // If there's a nearby fetched circle (within 1km) and new radius is bigger → ring fetch
-        const canDoRing =
-          closest !== null &&
-          haversineKm(lat, lon, closest.lat, closest.lon) < 1 &&
-          radiusKm > closest.radius;
-
-        const minRadius = canDoRing ? closest!.radius : 0;
-        doFetch(lat, lon, radiusKm, minRadius);
+        doFetch(lat, lon, radiusKm);
       }, 350);
     },
     [doFetch],

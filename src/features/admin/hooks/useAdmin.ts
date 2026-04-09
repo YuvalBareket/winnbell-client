@@ -14,24 +14,27 @@ import {
   updateUserRole,
   toggleUserActive,
 } from '../api/adminApi';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useAdminBusinesses = () => {
   return useQuery({
-    queryKey: ['admin', 'businesses'],
+    queryKey: queryKeys.admin.businesses,
     queryFn: async () => {
       const { data } = await fetchBusinesses();
       return data;
     },
+    staleTime: 2 * 60_000,
   });
 };
 
 export const useActiveDraws = () => {
   return useQuery({
-    queryKey: ['admin', 'draws'],
+    queryKey: queryKeys.admin.draws,
     queryFn: async () => {
       const { data } = await fetchActiveDraws();
       return data;
     },
+    staleTime: 30_000,
   });
 };
 
@@ -40,26 +43,29 @@ export const useGenerateTickets = () => {
   return useMutation({
     mutationFn: generateTickets,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'businesses'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses });
     },
   });
 };
+
 export const useCreateBusiness = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createBusiness,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'businesses'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses });
     },
   });
 };
+
 export const useAllDraws = () => {
   return useQuery({
-    queryKey: ['admin', 'draws-all'],
+    queryKey: queryKeys.admin.drawsAll,
     queryFn: async () => {
       const { data } = await fetchAllDraws();
       return data;
     },
+    staleTime: 30_000,
   });
 };
 
@@ -68,8 +74,9 @@ export const useCreateDraw = () => {
   return useMutation({
     mutationFn: createDraw,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draws-all'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draws'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
+      queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
     },
   });
 };
@@ -79,8 +86,9 @@ export const useOpenDraw = () => {
   return useMutation({
     mutationFn: (drawId: number) => openDraw(drawId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draws-all'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draws'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
+      queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
     },
   });
 };
@@ -90,7 +98,9 @@ export const useCloseDraw = () => {
   return useMutation({
     mutationFn: (drawId: number) => closeDraw(drawId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draws-all'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
+      queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
     },
   });
 };
@@ -100,28 +110,31 @@ export const usePickWinner = () => {
   return useMutation({
     mutationFn: (drawId: number) => pickWinner(drawId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draws-all'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
     },
   });
 };
 
 export const useAdminOverview = () => {
   return useQuery({
-    queryKey: ['admin', 'overview'],
+    queryKey: queryKeys.admin.overview,
     queryFn: async () => {
       const { data } = await fetchAdminOverview();
       return data;
     },
+    staleTime: 2 * 60_000,
   });
 };
 
 export const useAdminUsers = () => {
   return useQuery({
-    queryKey: ['admin', 'users'],
+    queryKey: queryKeys.admin.users,
     queryFn: async () => {
       const { data } = await fetchAllUsers();
       return data;
     },
+    staleTime: 2 * 60_000,
   });
 };
 
@@ -131,7 +144,7 @@ export const useUpdateUserRole = () => {
     mutationFn: ({ userId, role }: { userId: number; role: string }) =>
       updateUserRole(userId, role),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
     },
   });
 };
@@ -142,7 +155,7 @@ export const useToggleUserActive = () => {
     mutationFn: ({ userId, is_active }: { userId: number; is_active: boolean }) =>
       toggleUserActive(userId, is_active),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
     },
   });
 };

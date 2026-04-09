@@ -1,24 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchBusinesses, generateTickets } from '../api/adminApi';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useAdminBusinesses = () => {
   return useQuery({
-    queryKey: ['admin', 'businesses'],
+    queryKey: queryKeys.admin.businesses,
     queryFn: async () => {
       const { data } = await fetchBusinesses();
       return data;
     },
+    staleTime: 2 * 60_000,
   });
 };
 
 export const useGenerateTickets = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: generateTickets,
     onSuccess: () => {
-      // Invalidate and refetch so the table stats update immediately
-      queryClient.invalidateQueries({ queryKey: ['admin', 'businesses'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses });
     },
   });
 };
