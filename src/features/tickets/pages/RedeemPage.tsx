@@ -17,7 +17,6 @@ import {
   selectIsAuthenticated,
   selectIsBusiness,
   selectIsLocationManager,
-  selectBusinessIsActive,
 } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
 import { useRedeemTicket } from '../hooks/useTickets';
@@ -42,7 +41,6 @@ const RedeemPage = () => {
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isLocationManager = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessAdmin || isLocationManager;
-  const businessIsActive = useAppSelector(selectBusinessIsActive);
   const navigate = useNavigate();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
@@ -67,7 +65,7 @@ const RedeemPage = () => {
   // Subscription and draw state
   const { data: subscription } = useSubscription(isBusinessAdmin);
   const drawIsUpcoming = isBusinessAdmin && subscription?.draw_status === 'Upcoming';
-  const drawIsActive = isBusinessAdmin && subscription?.draw_status === 'Active';
+
   const hasNoActiveDraw = isBusinessAdmin && !subscription?.draw_id;
 
   // Preparation completeness
