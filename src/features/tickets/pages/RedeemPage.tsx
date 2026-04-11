@@ -17,11 +17,13 @@ import {
   selectIsAuthenticated,
   selectIsBusiness,
   selectIsLocationManager,
+  selectBusinessIsActive,
 } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
 import { useRedeemTicket } from '../hooks/useTickets';
 import { useGenerateTicket } from '../hooks/useGenerateTicket';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
+import { useSubscription } from '../../subscription/hooks/useSubscription';
 import {
   PRIMARY_MAIN,
   GRADIENT_HERO,
@@ -34,11 +36,13 @@ import UserVisual from '../components/UserVisual';
 import BusinessActions from '../components/BusinessActions';
 import UserActions from '../components/UserActions';
 import RedeemFeedback from '../components/RedeemFeedback';
+import DrawPreparationView from '../components/DrawPreparationView';
 
 const RedeemPage = () => {
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isLocationManager = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessAdmin || isLocationManager;
+  const businessIsActive = useAppSelector(selectBusinessIsActive);
   const navigate = useNavigate();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
@@ -53,12 +57,22 @@ const RedeemPage = () => {
   const [activatedCode, setActivatedCode] = useState<string | null>(null);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
-const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const primaryColor = PRIMARY_MAIN;
 
   // Business owner locations
   const { data: businessData } = useBusinessData(isBusinessAdmin);
   const locations = isBusinessAdmin ? (businessData?.locations ?? []) : [];
+
+  // Subscription and draw state
+  const { data: subscription } = useSubscription(isBusinessAdmin);
+  const drawIsUpcoming = isBusinessAdmin && subscription?.draw_status === 'Upcoming';
+  const drawIsActive = isBusinessAdmin && subscription?.draw_status === 'Active';
+  const hasNoActiveDraw = isBusinessAdmin && !subscription?.draw_id;
+
+  // Preparation completeness
+  const hasDescription = !!(businessData?.description?.trim());
+  const hasLocations = (businessData?.locations?.length ?? 0) > 0;
 
   // Mutations
   const redeemMutation = useRedeemTicket();
@@ -139,6 +153,10 @@ const didAutoActivate = useRef(false);
   // ─── Desktop layout ─────────────────────────────────────────────────────────
 
   if (isDesktop) {
+    if (isBusiness && (drawIsUpcoming || hasNoActiveDraw)) {
+      return <DrawPreparationView subscription={subscription} hasDescription={hasDescription} hasLocations={hasLocations} isDesktop={true} />;
+    }
+
     return (
       <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: 6 }}>
         {/* Hero */}
@@ -261,6 +279,10 @@ const didAutoActivate = useRef(false);
   }
 
   // ─── Mobile layout ──────────────────────────────────────────────────────────
+
+  if (isBusiness && (drawIsUpcoming || hasNoActiveDraw)) {
+    return <DrawPreparationView subscription={subscription} hasDescription={hasDescription} hasLocations={hasLocations} isDesktop={false} />;
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 138px)', px: 2, pb: 2 }}>

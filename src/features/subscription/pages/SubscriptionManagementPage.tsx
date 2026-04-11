@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 import {
   Box, Typography, Paper, Stack, Chip, Button, Divider, CircularProgress,
@@ -13,24 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../shared/api/client';
 import { PRIMARY_MAIN, BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15 } from '../../../shared/colors';
-
-interface SubscriptionDetails {
-  id: number;
-  status: string;
-  current_period_end: string | null;
-  cancel_at_period_end: boolean;
-  stripe_subscription_id: string;
-  draw_id: number | null;
-  draw_name: string | null;
-  draw_date: string | null;
-  draw_status: string | null;
-  prize_amount: number | null;
-}
-
-const fetchSubscription = async (): Promise<SubscriptionDetails> => {
-  const { data } = await api.get('/business/subscription');
-  return data;
-};
+import { useSubscription } from '../hooks/useSubscription';
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   Active:    { bg: 'rgba(46,125,50,0.1)',   color: '#2e7d32' },
@@ -46,11 +29,7 @@ export default function SubscriptionManagementPage() {
   const [cancelError, setCancelError] = useState('');
   const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean } | null>(null);
 
-  const { data: sub, isLoading, isError } = useQuery({
-    queryKey: queryKeys.subscription.all,
-    queryFn: fetchSubscription,
-    staleTime: 60_000,
-  });
+  const { data: sub, isLoading, isError } = useSubscription();
 
   const { mutate: doCancel, isPending: cancelling } = useMutation({
     mutationFn: () => api.post('/business/subscription/cancel').then(r => r.data),

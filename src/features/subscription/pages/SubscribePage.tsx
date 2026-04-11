@@ -14,7 +14,7 @@ import {
 
 const FEATURES = [
   { icon: <ConfirmationNumber />, text: 'Issue unlimited tickets to your customers' },
-  { icon: <EmojiEvents />,        text: 'Enter monthly prize draws and grow your prize pool' },
+  { icon: <EmojiEvents />,        text: 'Enter the next monthly prize draw and grow your prize pool' },
   { icon: <Storefront />,         text: 'Appear on the Winnbell map so customers can find you' },
   { icon: <Groups />,             text: 'Assign branch managers to run your locations' },
 ];
@@ -216,11 +216,11 @@ const SubscribePage = () => {
                   '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.45)' },
                 }}
               >
-                {loading ? <CircularProgress size={24} color='inherit' /> : 'Subscribe & Activate'}
+                {loading ? <CircularProgress size={24} color='inherit' /> : 'Subscribe & Join Next Draw'}
               </Button>
 
               <Typography variant='caption' color='text.disabled' textAlign='center' display='block' mt={1.5}>
-                You will be redirected to Stripe's secure checkout. Your business activates immediately after payment.
+                You will be redirected to Stripe's secure checkout. After payment you'll be entered into the next monthly draw and can start issuing tickets once it opens.
               </Typography>
 
               <Button

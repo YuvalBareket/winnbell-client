@@ -160,7 +160,7 @@ const BusinessHubPage = () => {
       <Container maxWidth='md' sx={{ mt: -5 }}>
         <Stack spacing={3}>
           {/* Onboarding banner — shown when not yet subscribed */}
-          {!business.is_active && (
+          {!business.is_subscribed && (
             <Paper
               elevation={3}
               sx={{

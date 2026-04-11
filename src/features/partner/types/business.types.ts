@@ -42,7 +42,8 @@ export interface BusinessData {
   description: string;
   terms_text: string;
   logo_url: string | null;
-  is_active: boolean;
+  is_subscribed: boolean;
+  is_participating: boolean;
   subscription_status: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;

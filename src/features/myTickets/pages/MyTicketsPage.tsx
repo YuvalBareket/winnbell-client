@@ -5,6 +5,9 @@ import { DrawSwiper } from '../../draw/components/DrawSwiper';
 import { useState } from 'react';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
+import { useSubscription } from '../../subscription/hooks/useSubscription';
+import { useBusinessData } from '../../partner/hooks/useBusinessData';
+import DrawPreparationView from '../../tickets/components/DrawPreparationView';
 import {
   BG_PAGE,
   GRADIENT_HERO,
@@ -19,6 +22,26 @@ const MyTicketsPage = () => {
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
   const isBusinessUser = isBusiness || isManager;
+
+  const { data: subscription } = useSubscription(isBusiness);
+  const { data: businessData } = useBusinessData(isBusiness);
+  const drawIsUpcoming = isBusiness && subscription?.draw_status === 'Upcoming';
+  const hasNoActiveDraw = isBusiness && !!subscription && !subscription.draw_id;
+  const showPreparation = isBusiness && (drawIsUpcoming || hasNoActiveDraw);
+
+  const hasDescription = !!(businessData?.description?.trim());
+  const hasLocations = (businessData?.locations?.length ?? 0) > 0;
+
+  if (showPreparation) {
+    return (
+      <DrawPreparationView
+        subscription={subscription}
+        hasDescription={hasDescription}
+        hasLocations={hasLocations}
+        isDesktop={isDesktop}
+      />
+    );
+  }
 
   if (isDesktop) {
     return (
