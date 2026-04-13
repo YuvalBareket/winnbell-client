@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../shared/constants/queryKeys';
 import {
   Box, Typography, Paper, Stack, Chip, Button, Divider, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Alert,
@@ -11,9 +9,10 @@ import {
   Lock, LockOpen,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../../shared/api/client';
 import { PRIMARY_MAIN, BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15 } from '../../../shared/colors';
 import { useSubscription } from '../hooks/useSubscription';
+import { useCancelSubscription } from '../hooks/useCancelSubscription';
+import { useResumeSubscription } from '../hooks/useResumeSubscription';
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   Active:    { bg: 'rgba(46,125,50,0.1)',   color: '#2e7d32' },
@@ -24,35 +23,28 @@ const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
 
 export default function SubscriptionManagementPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelError, setCancelError] = useState('');
   const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean } | null>(null);
 
   const { data: sub, isLoading, isError } = useSubscription();
 
-  const { mutate: doCancel, isPending: cancelling } = useMutation({
-    mutationFn: () => api.post('/business/subscription/cancel').then(r => r.data),
+  const { mutate: doCancel, isPending: cancelling } = useCancelSubscription({
     onSuccess: (data) => {
       setCancelResult(data);
       setConfirmOpen(false);
-      queryClient.invalidateQueries({ queryKey: queryKeys.subscription.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.business.myDetails });
     },
-    onError: (err: any) => {
+    onError: (err) => {
       setCancelError(err.response?.data?.error ?? 'Cancellation failed. Please try again.');
       setConfirmOpen(false);
     },
   });
 
-  const { mutate: doResume, isPending: resuming } = useMutation({
-    mutationFn: () => api.post('/business/subscription/resume').then(r => r.data),
+  const { mutate: doResume, isPending: resuming } = useResumeSubscription({
     onSuccess: () => {
       setCancelResult(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.subscription.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.business.myDetails });
     },
-    onError: (err: any) => {
+    onError: (err) => {
       setCancelError(err.response?.data?.error ?? 'Could not resume subscription. Please try again.');
     },
   });
