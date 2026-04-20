@@ -23,6 +23,7 @@ import { useRedeemTicket } from '../hooks/useTickets';
 import { useGenerateTicket } from '../hooks/useGenerateTicket';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { useSubscription } from '../../subscription/hooks/useSubscription';
+import { useEntryMode } from '../hooks/useEntryMode';
 import {
   PRIMARY_MAIN,
   GRADIENT_HERO,
@@ -36,6 +37,8 @@ import BusinessActions from '../components/BusinessActions';
 import UserActions from '../components/UserActions';
 import RedeemFeedback from '../components/RedeemFeedback';
 import DrawPreparationView from '../components/DrawPreparationView';
+import ReceiptEntryForm from '../components/ReceiptEntryForm';
+import type { EntryMode } from '../../partner/types/business.types';
 
 const RedeemPage = () => {
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
@@ -64,6 +67,13 @@ const RedeemPage = () => {
 
   // Subscription and draw state
   const { data: subscription } = useSubscription(isBusinessAdmin);
+
+  // Entry mode — lightweight single-field fetch for user side,
+  // business users always stay in 'code' mode (they generate, not submit receipts).
+  const { data: entryModeData } = useEntryMode();
+  const entryMode: EntryMode = isBusiness
+    ? 'code'
+    : (entryModeData?.entry_mode ?? 'receipt');
   const drawIsUpcoming = isBusinessAdmin && subscription?.draw_status === 'Upcoming';
 
   const hasNoActiveDraw = isBusinessAdmin && !subscription?.draw_id;
@@ -183,12 +193,14 @@ const didAutoActivate = useRef(false);
               </Box>
               <Box >
                 <Typography variant='h5' fontWeight={800}>
-                  {isBusiness ? 'Generate Ticket' : 'Activate Ticket'}
+                  {isBusiness ? 'Generate Ticket' : entryMode === 'receipt' ? 'Submit Receipt' : 'Activate Ticket'}
                 </Typography>
                 <Typography variant='body2' sx={{ opacity: 0.75, mt: 0.25 }}>
                   {isBusiness
                     ? 'Create a unique code for your customer to enter the draw'
-                    : 'Enter your code from the receipt to join the draw'}
+                    : entryMode === 'receipt'
+                      ? 'Submit your receipt details to enter the draw'
+                      : 'Enter your code from the receipt to join the draw'}
                 </Typography>
               </Box>
             </Box>
@@ -221,12 +233,14 @@ const didAutoActivate = useRef(false);
             >
               <Box sx={{ mb: 3 }}>
                 <Typography variant='h6' fontWeight={800} sx={{ mb: 0.5 }}>
-                  {isBusiness ? 'Create New Ticket' : 'Got a code?'}
+                  {isBusiness ? 'Create New Ticket' : entryMode === 'receipt' ? 'Submit your receipt' : 'Got a code?'}
                 </Typography>
                 <Typography variant='body2' color='text.secondary'>
                   {isBusiness
                     ? 'Generate a unique code for your customer to join the Winnbell draw.'
-                    : 'Enter the code from your receipt to activate your ticket and join the draw.'}
+                    : entryMode === 'receipt'
+                      ? 'Enter your receipt details below to submit your entry for the draw.'
+                      : 'Enter the code from your receipt to activate your ticket and join the draw.'}
                 </Typography>
               </Box>
               {isBusiness ? (
@@ -241,6 +255,8 @@ const didAutoActivate = useRef(false);
                   setGeneratedCode={setGeneratedCode}
                   primaryColor={primaryColor}
                 />
+              ) : entryMode === 'receipt' ? (
+                <ReceiptEntryForm primaryColor={primaryColor} />
               ) : (
                 <UserActions
                   code={code}
@@ -324,15 +340,19 @@ const didAutoActivate = useRef(false);
             <Box sx={{ height: 180, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start',paddingTop:'10px' }}>
               <UserVisual primaryColor={primaryColor} />
             </Box>
-            <UserActions
-              code={code}
-              setCode={setCode}
-              redeemMutation={redeemMutation}
-              handleActivate={handleActivate}
-              setScannerOpen={setScannerOpen}
-              navigate={navigate}
-              primaryColor={primaryColor}
-            />
+            {entryMode === 'receipt' ? (
+              <ReceiptEntryForm primaryColor={primaryColor} />
+            ) : (
+              <UserActions
+                code={code}
+                setCode={setCode}
+                redeemMutation={redeemMutation}
+                handleActivate={handleActivate}
+                setScannerOpen={setScannerOpen}
+                navigate={navigate}
+                primaryColor={primaryColor}
+              />
+            )}
           </Box>
         )}
       </Container>

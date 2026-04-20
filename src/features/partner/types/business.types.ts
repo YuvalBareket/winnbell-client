@@ -35,6 +35,10 @@ export interface BusinessLocation {
   is_active: boolean;
 }
 
+// 'code' = MVP: business generates codes, customers activate them
+// 'receipt' = v2: customers self-submit receipt identifier + amount
+export type EntryMode = 'code' | 'receipt';
+
 export interface BusinessData {
   id: number;
   name: string;
@@ -44,6 +48,8 @@ export interface BusinessData {
   logo_url: string | null;
   is_subscribed: boolean;
   is_participating: boolean;
+  entry_mode: EntryMode;
+  entry_cap: number | null;  // NULL = unlimited
   subscription_status: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;

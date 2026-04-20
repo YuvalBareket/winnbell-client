@@ -96,7 +96,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
       ]
     : [
         { label: 'Nearby Partners', icon: <StorefrontOutlined />, path: '/nearby' },
-        { label: 'Scan QR Code', icon: <QrCodeScannerOutlined />, path: '/scan' },
+        { label: 'Submit Receipt', icon: <ReceiptLongOutlined />, path: '/scan' },
         { label: 'My Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Draw History', icon: <EmojiEventsOutlined />, path: '/draws/history' },
       ];

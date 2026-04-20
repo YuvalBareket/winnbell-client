@@ -47,4 +47,9 @@ export const queryKeys = {
       ['tickets', 'mine', drawId ?? 'all']                    as const,
     freeStatus: ['tickets', 'free-status']                    as const,
   },
+
+  // ─── Participating businesses (v2 entry) ──────────────────────────────────
+  participating: {
+    all: ['participating'] as const,
+  },
 } as const;

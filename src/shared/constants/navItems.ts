@@ -20,7 +20,7 @@ export interface NavItem {
 
 export const userNavItems: NavItem[] = [
   { label: 'Nearby Partners', Icon: StorefrontOutlined, path: '/nearby' },
-  { label: 'Scan QR Code', Icon: QrCodeScannerOutlined, path: '/scan' },
+  { label: 'Submit Receipt', Icon: ReceiptLongOutlined, path: '/scan' },
   { label: 'My Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Draw History', Icon: EmojiEventsOutlined, path: '/draws/history' },
 ];

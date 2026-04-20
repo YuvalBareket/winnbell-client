@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Paper, BottomNavigation, BottomNavigationAction, Button, Typography, Stack } from '@mui/material';
 import { ConfirmationNumber, Storefront, Warning, CreditCard } from '@mui/icons-material';
-import QrCodeIcon from '@mui/icons-material/QrCode';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AppMenuDrawer from './AppMenuDrawer';
 import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
@@ -131,7 +131,7 @@ const MainLayout = () => {
                   transition: 'background 0.2s, box-shadow 0.2s',
                 }}
               >
-                <QrCodeIcon sx={{ color: location.pathname === '/scan' ? 'white' : NEUTRAL_INACTIVE_ICON, fontSize: 26 }} />
+                <ReceiptLongIcon sx={{ color: location.pathname === '/scan' ? 'white' : NEUTRAL_INACTIVE_ICON, fontSize: 26 }} />
               </Box>
             }
             sx={{ '& .MuiBottomNavigationAction-label': { fontWeight: 700, fontSize: '0.7rem', mt: '4px' } }}
