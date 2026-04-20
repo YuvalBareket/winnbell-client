@@ -60,6 +60,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [nearbyLocations, setNearbyLocations] = useState<NearbyLocation[]>([]);
   const [receiptIdentifier, setReceiptIdentifier] = useState('');
   const [transactionAmount, setTransactionAmount] = useState('');
+  const [purchaseDate, setPurchaseDate] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [receiptFirstKeystrokeAt, setReceiptFirstKeystrokeAt] = useState<number | null>(null);
   const [receiptLastKeystrokeAt, setReceiptLastKeystrokeAt] = useState<number | null>(null);
@@ -166,11 +167,17 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // ──────────────────────────────────────────────────
   // Validation
   // ──────────────────────────────────────────────────
+  const today = new Date().toISOString().split('T')[0];
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const purchaseDateTooOld = purchaseDate !== '' && purchaseDate < sevenDaysAgo;
+
   const isFormValid =
     selectedLocation &&
     receiptIdentifier.trim().length > 0 &&
     transactionAmount.trim().length > 0 &&
     parseFloat(transactionAmount) > 0 &&
+    purchaseDate !== '' &&
+    !purchaseDateTooOld &&
     (!showImageUpload || receiptImageUrl !== null);
 
   // ──────────────────────────────────────────────────
@@ -217,6 +224,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       locationId: selectedLocation.location_id,
       receiptIdentifier: receiptIdentifier.trim(),
       transactionAmount: amount,
+      transactionDate: purchaseDate,
       receiptImageUrl: receiptImageUrl ?? undefined,
       typingDurationMs,
       receiptInputMethod,
@@ -464,10 +472,30 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Typography sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '1.05rem', lineHeight: 1 }}>£</Typography>
+                  <Typography sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '1.05rem', lineHeight: 1 }}>$</Typography>
                 </InputAdornment>
               ),
             }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2.5,
+                '&.Mui-focused fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
+              },
+              '& .MuiInputLabel-root.Mui-focused': { color: primaryColor || PRIMARY_MAIN },
+            }}
+          />
+
+          {/* Purchase Date */}
+          <TextField
+            fullWidth
+            label="Date of purchase"
+            type="date"
+            value={purchaseDate}
+            onChange={(e) => setPurchaseDate(e.target.value)}
+            inputProps={{ max: today, min: sevenDaysAgo }}
+            InputLabelProps={{ shrink: true }}
+            error={purchaseDateTooOld}
+            helperText={purchaseDateTooOld ? 'Receipt is older than 7 days and cannot be accepted.' : ''}
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2.5,

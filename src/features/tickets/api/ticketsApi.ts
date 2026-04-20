@@ -56,6 +56,7 @@ export interface ReceiptEntryPayload {
   locationId: number;
   receiptIdentifier: string;
   transactionAmount: number;
+  transactionDate: string; // ISO date string (YYYY-MM-DD)
   receiptImageUrl?: string;
   typingDurationMs?: number;
   receiptInputMethod?: 'typed' | 'pasted';

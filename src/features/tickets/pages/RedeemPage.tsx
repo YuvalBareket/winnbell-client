@@ -306,7 +306,7 @@ const didAutoActivate = useRef(false);
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 138px)', px: 2, pb: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', px: 1, pb: 2 }}>
       <Container maxWidth='sm' sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {isBusiness ? (
           // Business mobile layout: keep original full layout
@@ -349,10 +349,10 @@ const didAutoActivate = useRef(false);
             transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
             style={{ display: 'flex', flexDirection: 'column' }}
           >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pb: 9}}>
-              <Box sx={{ height: 180, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start',paddingTop:'10px' }}>
-                <UserVisual primaryColor={primaryColor} />
-              </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pb: 9 }}>
+            <Box sx={{ height: 180, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '10px' }}>
+              <UserVisual primaryColor={primaryColor} />
+            </Box>
             {entryMode === 'receipt' ? (
               <ReceiptEntryForm primaryColor={primaryColor} />
             ) : (
@@ -366,7 +366,7 @@ const didAutoActivate = useRef(false);
                 primaryColor={primaryColor}
               />
             )}
-            </Box>
+          </Box>
           </motion.div>
         )}
       </Container>
