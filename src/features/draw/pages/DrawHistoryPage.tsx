@@ -2,10 +2,10 @@ import {
   Box, Container, Typography, Paper, Stack, Skeleton,
 } from '@mui/material';
 import { EmojiEvents, EmojiEventsOutlined } from '@mui/icons-material';
+import EmptyState from '../../../shared/components/EmptyState';
 import { useGetDrawHistory } from '../hooks/useGetDraws';
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
-  PRIMARY_MAIN,
 } from '../../../shared/colors';
 import DrawHistoryCard from '../components/DrawHistoryCard';
 
@@ -49,14 +49,12 @@ const DrawHistoryPage = () => {
         )}
 
         {!isLoading && !isError && (!history || history.length === 0) && (
-          <Paper elevation={0} sx={{ p: 6, borderRadius: 3, border: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
-            <Box sx={{ width: 72, height: 72, borderRadius: '50%', bgcolor: `${PRIMARY_MAIN}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5 }}>
-              <EmojiEventsOutlined sx={{ fontSize: 36, color: PRIMARY_MAIN }} />
-            </Box>
-            <Typography variant='h6' fontWeight={700} color='text.primary' mb={0.75}>No past draws yet</Typography>
-            <Typography variant='body2' color='text.secondary'>
-              Completed draws and their winners will appear here.
-            </Typography>
+          <Paper elevation={0} sx={{ p: 0, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+            <EmptyState
+              icon={<EmojiEventsOutlined />}
+              title='No draws yet'
+              description='Draws appear here once they&#39;ve closed and a winner has been selected'
+            />
           </Paper>
         )}
 

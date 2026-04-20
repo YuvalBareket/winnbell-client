@@ -1,5 +1,5 @@
-import { Box, Container, Paper, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { ConfirmationNumberOutlined } from '@mui/icons-material';
+import { Box, Container, Paper, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { ConfirmationNumber } from '@mui/icons-material';
 import { ActiveTicketsList } from '../components/ActiveTicketsList';
 import { DrawSwiper } from '../../draw/components/DrawSwiper';
 import { useState } from 'react';
@@ -47,49 +47,31 @@ const MyTicketsPage = () => {
     return (
       <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: 6 }}>
         {/* Hero */}
-        <Box
-          sx={{
-            background: GRADIENT_HERO,
-            pt: 3,
-            pb: 9,
-            px: 3,
-            color: 'white',
-            borderRadius: '0 0 32px 32px',
-          }}
-        >
+        <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
           <Container maxWidth='lg'>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Box
-                sx={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 2,
-                  bgcolor: ALPHA_WHITE_15,
-                  border: `1px solid ${ALPHA_WHITE_30}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <ConfirmationNumberOutlined sx={{ color: 'white', fontSize: 26 }} />
+            <Stack direction='row' alignItems='center' spacing={2}>
+              <Box sx={{
+                width: 52, height: 52, borderRadius: 2,
+                bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <ConfirmationNumber sx={{ color: 'white', fontSize: 28 }} />
               </Box>
               <Box>
                 <Typography variant='h5' fontWeight={800}>
                   {isBusinessUser ? 'Distributed Tickets' : 'My Tickets'}
                 </Typography>
-                <Typography variant='body2' sx={{ opacity: 0.75, mt: 0.25 }}>
-                  {isBusinessUser
-                    ? 'Track all distributed tickets by draw'
-                    : 'Your entries for all active draws'}
+                <Typography variant='body2' sx={{ opacity: 0.75 }}>
+                  {isBusinessUser ? 'Track all distributed tickets by draw' : 'Your entries for all active draws'}
                 </Typography>
               </Box>
-            </Box>
+            </Stack>
           </Container>
         </Box>
 
         <Container maxWidth='lg' sx={{ mt: -5 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '264px 1fr', gap: 3, alignItems: 'flex-start' }}>
-            {/* Left: Draw selector panel */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 3, alignItems: 'flex-start' }}>
+            {/* Draw selector */}
             <Paper
               elevation={0}
               sx={{
@@ -101,21 +83,8 @@ const MyTicketsPage = () => {
                 top: 24,
               }}
             >
-              <Box
-                sx={{
-                  px: 2,
-                  py: 1.5,
-                  borderBottom: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: 'background.default',
-                }}
-              >
-                <Typography
-                  variant='caption'
-                  fontWeight={700}
-                  color='text.disabled'
-                  sx={{ textTransform: 'uppercase', letterSpacing: 1 }}
-                >
+              <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Typography variant='caption' fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 1, color: 'text.secondary' }}>
                   Active Draws
                 </Typography>
               </Box>
@@ -126,7 +95,7 @@ const MyTicketsPage = () => {
               />
             </Paper>
 
-            {/* Right: Ticket list panel */}
+            {/* Ticket list */}
             <Paper
               elevation={0}
               sx={{
@@ -145,13 +114,18 @@ const MyTicketsPage = () => {
     );
   }
 
-  // Mobile: original swiper + list flow
+  // Mobile
   return (
-    <Box>
-      <DrawSwiper
-        draw_id={activeDrawId}
-        onDrawChange={(id) => setActiveDrawId(id)}
-      />
+    <Box sx={{ minHeight: '100vh' }}>
+      {/* Hero */}
+   
+      <Box sx={{ pt:2}}>
+        <DrawSwiper
+          draw_id={activeDrawId}
+          onDrawChange={(id) => setActiveDrawId(id)}
+        />
+      </Box>
+
       <ActiveTicketsList draw_id={activeDrawId} />
     </Box>
   );

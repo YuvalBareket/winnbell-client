@@ -17,18 +17,15 @@ const AppHeader = ({ onMenuOpen }: Props) => {
 
   return (
     <AppBar
-      position='fixed'
+      position='static'
       elevation={0}
       sx={{
         bgcolor: 'transparent',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
         boxShadow: 'none',
-        zIndex: 1200,
         display: { xs: 'flex', md: 'none' },
       }}
     >
-      <Toolbar sx={{ justifyContent: 'space-between', px: 2, minHeight: '56px !important' }}>
+      <Toolbar sx={{ justifyContent: 'space-between', px: 2.5, minHeight: '60px !important' }}>
 
         {/* Brand */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -56,6 +53,7 @@ const AppHeader = ({ onMenuOpen }: Props) => {
                   width: { xs: 40, md: 36 },
                   height: { xs: 40, md: 36 },
                   '&:hover': { bgcolor: isSubscribed ? 'primary.main' + '28' : 'rgba(0,0,0,0.08)' },
+                  '&:active': { transform: 'scale(0.93)', transition: 'transform 150ms ease-out' },
                 }}
               >
                 {isPending
@@ -74,6 +72,7 @@ const AppHeader = ({ onMenuOpen }: Props) => {
               p: 0,
               ml: 0.5,
               '&:hover': { bgcolor: 'transparent' },
+              '&:active': { transform: 'scale(0.93)', transition: 'transform 150ms ease-out' },
             }}
           >
             <Avatar
@@ -84,7 +83,7 @@ const AppHeader = ({ onMenuOpen }: Props) => {
                 color: 'white',
                 fontWeight: 800,
                 fontSize: 13,
-                borderRadius: '10px',
+                borderRadius: '12px',
               }}
             >
               {initials}

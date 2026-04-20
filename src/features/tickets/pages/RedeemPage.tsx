@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import {
   Box,
   Container,
@@ -208,9 +209,14 @@ const didAutoActivate = useRef(false);
         </Box>
 
         <Container maxWidth='lg' sx={{ mt: -5 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, alignItems: 'flex-start' }}>
-            {/* Left panel: visual */}
-            <Paper
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
+          >
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, alignItems: 'flex-start' }}>
+              {/* Left panel: visual */}
+              <Paper
               elevation={0}
               sx={{
                 borderRadius: 3, border: '1px solid', borderColor: 'divider',
@@ -269,8 +275,9 @@ const didAutoActivate = useRef(false);
                   hideScan
                 />
               )}
-            </Paper>
-          </Box>
+              </Paper>
+            </Box>
+          </motion.div>
         </Container>
 
         <RedeemFeedback
@@ -336,10 +343,16 @@ const didAutoActivate = useRef(false);
           </>
         ) : (
           // User mobile layout
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pb: 9}}>
-            <Box sx={{ height: 180, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start',paddingTop:'10px' }}>
-              <UserVisual primaryColor={primaryColor} />
-            </Box>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
+            style={{ display: 'flex', flexDirection: 'column' }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pb: 9}}>
+              <Box sx={{ height: 180, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start',paddingTop:'10px' }}>
+                <UserVisual primaryColor={primaryColor} />
+              </Box>
             {entryMode === 'receipt' ? (
               <ReceiptEntryForm primaryColor={primaryColor} />
             ) : (
@@ -353,7 +366,8 @@ const didAutoActivate = useRef(false);
                 primaryColor={primaryColor}
               />
             )}
-          </Box>
+            </Box>
+          </motion.div>
         )}
       </Container>
 

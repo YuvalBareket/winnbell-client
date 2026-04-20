@@ -198,6 +198,8 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose }) => {
             fontWeight: 800,
             fontSize: '0.95rem',
             boxShadow: `0 8px 20px ${PRIMARY_MAIN}33`,
+            transition: 'transform 160ms ease-out, box-shadow 160ms ease-out',
+            '&:active': { transform: 'scale(0.97)' },
           }}
         >
           Get Directions

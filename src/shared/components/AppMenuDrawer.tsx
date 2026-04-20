@@ -31,12 +31,14 @@ import { logout } from '../../store/slices/authSlice';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl } from '../../store/selectors/authSelectors';
 import { useClerk } from '@clerk/clerk-react';
 import {
-  GRADIENT_HERO,
   ALPHA_WHITE_15,
   ALPHA_WHITE_20,
   ALPHA_WHITE_30,
   ALPHA_WHITE_70,
   PRIMARY_MAIN,
+  GRADIENT_HERO_WARM,
+  TEXT_TERTIARY,
+  ALPHA_PRIMARY_06,
 } from '../colors';
 import { getUserInitials, getRoleLabel } from '../utils/string';
 
@@ -112,55 +114,75 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
       open={open}
       onClose={onClose}
       PaperProps={{
-        sx: { width: { xs: '85vw', sm: 300 }, maxWidth: 300, borderTopLeftRadius: 20, borderBottomLeftRadius: 20, overflow: 'hidden' },
+        sx: {
+          width: { xs: '85vw', sm: 320 },
+          maxWidth: 320,
+          borderTopLeftRadius: 24,
+          borderBottomLeftRadius: 24,
+          overflow: 'hidden',
+          boxShadow: '-8px 0 40px rgba(0,0,0,0.12)',
+        },
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
         {/* Hero header */}
-        <Box sx={{ background: GRADIENT_HERO, px: 3, pt: 5, pb: 3.5, position: 'relative', overflow: 'hidden' }}>
-          {/* Decorative orb */}
+        <Box sx={{
+          background: GRADIENT_HERO_WARM,
+          px: 3, pt: 5.5, pb: 4,
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {/* Decorative orbs */}
           <Box sx={{
-            position: 'absolute', top: -40, right: -40,
-            width: 140, height: 140,
-            bgcolor: ALPHA_WHITE_10_CIRCLE,
+            position: 'absolute', top: -50, right: -50,
+            width: 160, height: 160,
+            background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
+            borderRadius: '50%',
+          }} />
+          <Box sx={{
+            position: 'absolute', bottom: -30, left: -20,
+            width: 100, height: 100,
+            background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
             borderRadius: '50%',
           }} />
 
-          <Stack direction='row' spacing={2} alignItems='center'>
+          <Stack direction='row' spacing={2} alignItems='center' sx={{ position: 'relative', zIndex: 1 }}>
             <Avatar
               src={businessLogoUrl ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${businessLogoUrl}` : undefined}
               sx={{
-                width: 54,
-                height: 54,
+                width: 56,
+                height: 56,
                 background: ALPHA_WHITE_20,
                 color: 'white',
                 fontWeight: 800,
-                fontSize: 18,
+                fontSize: 19,
                 border: `2px solid ${ALPHA_WHITE_30}`,
-                backdropFilter: 'blur(8px)',
+                backdropFilter: 'blur(12px)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
               }}
             >
               {initials}
             </Avatar>
             <Box sx={{ overflow: 'hidden', flex: 1 }}>
-              <Typography fontWeight={800} fontSize='0.95rem' color='white' noWrap>
+              <Typography fontWeight={800} fontSize='1rem' color='white' noWrap sx={{ letterSpacing: '-0.01em' }}>
                 {user?.fullName || 'Welcome'}
               </Typography>
-              <Typography variant='caption' sx={{ color: ALPHA_WHITE_70, display: 'block' }} noWrap>
+              <Typography variant='caption' sx={{ color: ALPHA_WHITE_70, display: 'block', mt: 0.2 }} noWrap>
                 {user?.email}
               </Typography>
               <Chip
                 label={roleLabel}
                 size='small'
                 sx={{
-                  mt: 0.5,
-                  height: 18,
+                  mt: 0.75,
+                  height: 20,
                   fontSize: '0.6rem',
                   fontWeight: 800,
                   bgcolor: ALPHA_WHITE_15,
                   color: 'white',
                   border: `1px solid ${ALPHA_WHITE_20}`,
+                  backdropFilter: 'blur(8px)',
+                  borderRadius: '6px',
                   '& .MuiChip-label': { px: 1 },
                 }}
               />
@@ -169,9 +191,9 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         </Box>
 
         {/* Main nav */}
-        <Box sx={{ px: 1.5, pt: 2 }}>
-          <Typography variant='caption' fontWeight={700} color='text.disabled'
-            sx={{ px: 1, textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.5 }}>
+        <Box sx={{ px: 2, pt: 2.5 }}>
+          <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
+            sx={{ px: 1, textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', mb: 0.75, fontSize: '0.63rem' }}>
             Navigation
           </Typography>
           <List disablePadding>
@@ -180,35 +202,47 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                 key={item.path}
                 onClick={() => handleNav(item.path)}
                 sx={{
-                  borderRadius: 2,
-                  mb: 0.5,
-                  py: 1,
-                  '&:hover': { bgcolor: 'rgba(25,93,230,0.06)' },
+                  borderRadius: 2.5,
+                  mb: 0.3,
+                  py: 1.1,
+                  px: 1.5,
+                  transition: 'all 0.15s ease',
+                  '&:hover': {
+                    bgcolor: ALPHA_PRIMARY_06,
+                    transform: 'translateX(3px)',
+                  },
                   '&:hover .nav-icon': { color: PRIMARY_MAIN },
+                  '&:hover .nav-chevron': { opacity: 1, transform: 'translateX(2px)' },
                 }}
               >
                 <ListItemIcon
                   className='nav-icon'
-                  sx={{ minWidth: 36, color: 'text.secondary', transition: 'color 0.15s' }}
+                  sx={{ minWidth: 36, color: 'text.secondary', transition: 'color 0.15s ease' }}
                 >
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText
                   primary={item.label}
-                  primaryTypographyProps={{ fontWeight: 600, fontSize: 14 }}
+                  primaryTypographyProps={{ fontWeight: 600, fontSize: '0.88rem', letterSpacing: '-0.01em' }}
                 />
-                <ChevronRight sx={{ fontSize: 16, color: 'text.disabled' }} />
+                <ChevronRight
+                  className='nav-chevron'
+                  sx={{
+                    fontSize: 16, color: 'text.disabled',
+                    opacity: 0.4, transition: 'all 0.15s ease',
+                  }}
+                />
               </ListItemButton>
             ))}
           </List>
         </Box>
 
-        <Divider sx={{ mx: 2, my: 1.5 }} />
+        <Divider sx={{ mx: 3, my: 1.5 }} />
 
         {/* Legal / support */}
-        <Box sx={{ px: 1.5 }}>
-          <Typography variant='caption' fontWeight={700} color='text.disabled'
-            sx={{ px: 1, textTransform: 'uppercase', letterSpacing: 1, display: 'block', mb: 0.5 }}>
+        <Box sx={{ px: 2 }}>
+          <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
+            sx={{ px: 1, textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', mb: 0.75, fontSize: '0.63rem' }}>
             Support
           </Typography>
           <List disablePadding>
@@ -216,14 +250,18 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
               <ListItemButton
                 key={item.path}
                 onClick={() => handleNav(item.path)}
-                sx={{ borderRadius: 2, mb: 0.5, py: 1.25, '&:hover': { bgcolor: 'rgba(0,0,0,0.03)' } }}
+                sx={{
+                  borderRadius: 2.5, mb: 0.3, py: 1.1, px: 1.5,
+                  transition: 'all 0.15s ease',
+                  '&:hover': { bgcolor: 'rgba(0,0,0,0.03)', transform: 'translateX(3px)' },
+                }}
               >
-                <ListItemIcon sx={{ minWidth: 36, color: 'text.disabled' }}>
+                <ListItemIcon sx={{ minWidth: 36, color: TEXT_TERTIARY }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText
                   primary={item.label}
-                  primaryTypographyProps={{ fontWeight: 500, fontSize: 13, color: 'text.secondary' }}
+                  primaryTypographyProps={{ fontWeight: 500, fontSize: '0.84rem', color: 'text.secondary' }}
                 />
               </ListItemButton>
             ))}
@@ -234,14 +272,16 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         <Box sx={{ flex: 1 }} />
 
         {/* App version + logout */}
-        <Box sx={{ px: 1.5, pb: 3 }}>
-          <Divider sx={{ mb: 1.5 }} />
+        <Box sx={{ px: 2, pb: 3.5 }}>
+          <Divider sx={{ mb: 2 }} />
           <ListItemButton
             onClick={handleLogout}
             sx={{
-              borderRadius: 2,
+              borderRadius: 2.5,
               color: 'error.main',
-              py: 1,
+              py: 1.1,
+              px: 1.5,
+              transition: 'all 0.15s ease',
               '&:hover': { bgcolor: 'rgba(211,47,47,0.06)' },
             }}
           >
@@ -250,19 +290,16 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
             </ListItemIcon>
             <ListItemText
               primary='Log out'
-              primaryTypographyProps={{ fontWeight: 700, fontSize: 14 }}
+              primaryTypographyProps={{ fontWeight: 700, fontSize: '0.88rem' }}
             />
           </ListItemButton>
-          <Typography variant='caption' color='text.disabled' sx={{ px: 1, mt: 1, display: 'block' }}>
-            Winnbell v1.0 · © 2026
+          <Typography variant='caption' color={TEXT_TERTIARY} sx={{ px: 1.5, mt: 1.5, display: 'block', fontSize: '0.68rem' }}>
+            Winnbell v1.0 · {new Date().getFullYear()}
           </Typography>
         </Box>
       </Box>
     </Drawer>
   );
 };
-
-// local constant to avoid TS issues with inline rgba in sx
-const ALPHA_WHITE_10_CIRCLE = 'rgba(255,255,255,0.08)';
 
 export default AppMenuDrawer;

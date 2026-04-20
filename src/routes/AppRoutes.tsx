@@ -73,16 +73,10 @@ const AppRoutes = () => {
       <Route path='/verify-email' element={<VerifyEmailPage />} />
       <Route path='/sso-callback' element={<SSOCallbackPage />} />
       <Route path='/activate' element={<PublicActivatePage />} />
-      <Route path='/terms' element={<TermsOfServicePage />} />
-      <Route path='/privacy' element={<PrivacyPolicyPage />} />
       <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
-      <Route path='/subscribe' element={<SubscribePage />} />
-      <Route path='/subscription/success' element={<SubscriptionSuccessPage />} />
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>
-        <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
-
         <Route element={<MainLayout />}>
           {/* Admin-only route */}
           {isAdmin && <Route path='/admin' element={<BusinessDashboard />} />}
@@ -95,8 +89,15 @@ const AppRoutes = () => {
               <Route path='/tickets' element={<MyTicketsPage />} />
               <Route path='/draws/history' element={<DrawHistoryPage />} />
               <Route path='/stats' element={<StatsPage />} />
+              <Route path='/subscribe' element={<SubscribePage />} />
+              <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
+              <Route path='/subscription/success' element={<SubscriptionSuccessPage />} />
             </>
           )}
+
+          {/* Legal — available to all authenticated users */}
+          <Route path='/terms' element={<TermsOfServicePage />} />
+          <Route path='/privacy' element={<PrivacyPolicyPage />} />
 
           {/* Redirect admin away from business pages */}
           {isAdmin && <Route path='*' element={<Navigate to='/admin' replace />} />}

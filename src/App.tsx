@@ -1,4 +1,4 @@
-import { ThemeProvider, CssBaseline, CircularProgress, Box } from '@mui/material';
+import { ThemeProvider, CssBaseline, Box, LinearProgress } from '@mui/material';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react'; // Import Gate
@@ -8,10 +8,40 @@ import AppRoutes from './routes/AppRoutes';
 import { ClerkProvider } from '@clerk/clerk-react';
 import AccessGate from './shared/components/AccessGate';
 
-// Optional: A simple loading spinner while Redux rehydrates
+// Branded splash screen while Redux rehydrates
 const LoadingState = () => (
-  <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
-    <CircularProgress />
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
+      alignItems: 'center',
+      justifyContent: 'center',
+      bgcolor: 'background.default',
+    }}
+  >
+    <Box
+      component="img"
+      src="/winnbell_logo.png"
+      alt="Winnbell"
+      sx={{
+        width: 80,
+        height: 'auto',
+        animation: 'winnbell-pulse 1.5s ease-in-out infinite',
+        '@keyframes winnbell-pulse': {
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.05)' },
+          '100%': { transform: 'scale(1)' },
+        },
+      }}
+    />
+    <LinearProgress
+      sx={{
+        width: 120,
+        borderRadius: 4,
+        mt: 2,
+      }}
+    />
   </Box>
 );
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;

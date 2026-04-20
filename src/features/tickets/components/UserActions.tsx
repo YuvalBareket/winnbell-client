@@ -17,6 +17,7 @@ import {
   CardGiftcard,
   ChevronRight,
 } from '@mui/icons-material';
+import { GRADIENT_PRIMARY, SHADOW_PRIMARY_SOFT } from '../../../shared/colors';
 
 interface UserActionsProps {
   code: string;
@@ -90,11 +91,14 @@ const UserActions: React.FC<UserActionsProps> = ({
         )
       }
       sx={{
-        bgcolor: primaryColor,
-        height: 56,
+        background: GRADIENT_PRIMARY,
+        height: 52,
         borderRadius: 3,
-        fontWeight: 700,
-        boxShadow: `${primaryColor}4D 0px 10px 15px -3px`,
+        fontSize: '1rem',
+        fontWeight: 800,
+        boxShadow: SHADOW_PRIMARY_SOFT,
+        transition: 'transform 160ms ease-out',
+        '&:active': { transform: 'scale(0.97)', transition: 'transform 160ms ease-out' },
       }}
     >
       Activate Ticket
@@ -138,8 +142,9 @@ const UserActions: React.FC<UserActionsProps> = ({
         display: 'flex',
         alignItems: 'center',
         gap: 1.5,
-        transition: '0.2s',
+        transition: 'background-color 150ms ease-out, box-shadow 150ms ease-out, transform 150ms ease-out',
         '&:hover': { bgcolor: `${primaryColor}14`, transform: 'translateY(-2px)' },
+        '&:active': { transform: 'scale(0.97)' },
       }}
     >
       <Box sx={{ bgcolor: primaryColor, borderRadius: 1.5, p: 0.75, display: 'flex', color: 'white' }}>

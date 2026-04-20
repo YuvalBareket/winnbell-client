@@ -63,6 +63,11 @@ const BusinessActions: React.FC<BusinessActionsProps> = ({
         fontWeight: 800,
         bgcolor: primaryColor,
         boxShadow: `0 8px 20px ${primaryColor}4D`,
+        transition: 'box-shadow 160ms ease-out',
+        '&:active': {
+          transform: 'scale(0.97)',
+          transition: 'transform 160ms ease-out',
+        },
       }}
     >
       {generatedCode ? 'Generate New Code' : 'Generate Ticket'}
@@ -102,10 +107,14 @@ const BusinessActions: React.FC<BusinessActionsProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1.5,
-                  transition: 'all 0.15s ease',
+                  transition: 'border-color 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out',
                   '&:hover': {
                     borderColor: isSelected ? primaryColor : `${primaryColor}66`,
                     bgcolor: `${primaryColor}05`,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  },
+                  '&:active': {
+                    transform: 'scale(0.97)',
                   },
                 }}
               >
@@ -119,7 +128,7 @@ const BusinessActions: React.FC<BusinessActionsProps> = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
-                    transition: 'background 0.15s ease',
+                    transition: 'background-color 150ms ease-out',
                   }}
                 >
                   <Storefront sx={{ fontSize: 18, color: isSelected ? 'white' : primaryColor }} />

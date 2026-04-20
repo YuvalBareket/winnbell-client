@@ -18,7 +18,7 @@ import {
   Typography,
   Zoom,
 } from '@mui/material';
-import { CardGiftcard, CloudUpload, ChevronRight, Close, ConfirmationNumber, EmojiEvents, ReceiptOutlined, StorefrontOutlined, Visibility, AddCircleOutline } from '@mui/icons-material';
+import { AccessTime, CardGiftcard, CloudUpload, ChevronRight, Close, ConfirmationNumber, EmojiEvents, ReceiptOutlined, StorefrontOutlined, Visibility, AddCircleOutline } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import { PRIMARY_MAIN, GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
@@ -234,20 +234,37 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       {riskLevel.isThrottled && (
         <Box
           sx={{
-            display: 'flex', alignItems: 'flex-start', gap: 2,
-            p: 2.5, borderRadius: 3,
-            background: 'linear-gradient(135deg, #fff7ed 0%, #fff1e6 100%)',
-            border: '1px solid #fed7aa',
-            boxShadow: '0 2px 12px rgba(234,88,12,0.08)',
+            p: 3,
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            gap: 1.5,
           }}
         >
-          <Box sx={{ fontSize: '1.5rem', lineHeight: 1, mt: 0.25 }}>⏳</Box>
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              bgcolor: 'action.hover',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <AccessTime sx={{ fontSize: 26, color: 'text.secondary' }} />
+          </Box>
           <Box>
-            <Typography variant="body2" sx={{ fontWeight: 700, color: '#c2410c', mb: 0.25 }}>
+            <Typography variant="subtitle2" fontWeight={700} color="text.primary" sx={{ mb: 0.5 }}>
               Daily entry limit reached
             </Typography>
-            <Typography variant="caption" sx={{ color: '#ea580c', lineHeight: 1.5 }}>
-              You've used your entries for today. Come back tomorrow to keep playing!
+            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+              You've used your entries for today. Come back tomorrow — or claim your free weekly ticket below.
             </Typography>
           </Box>
         </Box>
@@ -485,7 +502,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                   borderColor: receiptImageUrl ? '#16a34a' : `${primaryColor || PRIMARY_MAIN}50`,
                   bgcolor: receiptImageUrl ? '#f0fdf4' : `${primaryColor || PRIMARY_MAIN}06`,
                   cursor: receiptImageUpload.isUploading ? 'wait' : 'pointer',
-                  transition: 'all 0.2s',
+                  transition: 'border-color 150ms ease-out, background-color 150ms ease-out',
                   '&:hover': {
                     borderColor: receiptImageUrl ? '#16a34a' : primaryColor || PRIMARY_MAIN,
                     bgcolor: receiptImageUrl ? '#dcfce7' : `${primaryColor || PRIMARY_MAIN}10`,
@@ -587,14 +604,14 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               textTransform: 'none',
               bgcolor: primaryColor || PRIMARY_MAIN,
               boxShadow: `0 4px 20px ${primaryColor || PRIMARY_MAIN}45`,
-              transition: 'all 0.2s',
+              transition: 'transform 160ms ease-out, box-shadow 160ms ease-out, filter 160ms ease-out',
               '&:hover': {
                 bgcolor: primaryColor || PRIMARY_MAIN,
                 filter: 'brightness(0.9)',
                 boxShadow: `0 6px 24px ${primaryColor || PRIMARY_MAIN}55`,
                 transform: 'translateY(-1px)',
               },
-              '&:active': { transform: 'translateY(0)' },
+              '&:active': { transform: 'scale(0.97)' },
               '&:disabled': { opacity: 0.45, boxShadow: 'none', transform: 'none' },
             }}
           >
@@ -623,8 +640,9 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           border: `1px solid ${primaryColor || PRIMARY_MAIN}`,
           cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 1.5,
-          transition: '0.2s',
+          transition: 'background-color 150ms ease-out, transform 150ms ease-out',
           '&:hover': { bgcolor: `${primaryColor || PRIMARY_MAIN}14`, transform: 'translateY(-2px)' },
+          '&:active': { transform: 'scale(0.97)' },
         }}
       >
         <Box sx={{ bgcolor: primaryColor || PRIMARY_MAIN, borderRadius: 1.5, p: 0.75, display: 'flex', color: 'white' }}>
@@ -725,14 +743,14 @@ const LocationCard: React.FC<LocationCardProps> = ({ location, primaryColor, onS
       p: 1.75, mb: 1, borderRadius: 2.5,
       border: '1px solid', borderColor: 'divider',
       bgcolor: 'background.paper',
-      cursor: 'pointer', transition: 'all 0.15s',
+      cursor: 'pointer', transition: 'border-color 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out, transform 150ms ease-out',
       '&:hover': {
         borderColor: primaryColor || PRIMARY_MAIN,
         bgcolor: `${primaryColor || PRIMARY_MAIN}06`,
         transform: 'translateY(-1px)',
         boxShadow: `0 4px 12px ${primaryColor || PRIMARY_MAIN}20`,
       },
-      '&:active': { transform: 'translateY(0)' },
+      '&:active': { transform: 'scale(0.97)' },
     }}
   >
     <Box sx={{
@@ -768,14 +786,14 @@ const NearbyLocationCard: React.FC<NearbyLocationCardProps> = ({ location, prima
       p: 1.75, mb: 1, borderRadius: 2.5,
       border: '1px solid', borderColor: 'divider',
       bgcolor: 'background.paper',
-      cursor: 'pointer', transition: 'all 0.15s',
+      cursor: 'pointer', transition: 'border-color 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out, transform 150ms ease-out',
       '&:hover': {
         borderColor: primaryColor || PRIMARY_MAIN,
         bgcolor: `${primaryColor || PRIMARY_MAIN}06`,
         transform: 'translateY(-1px)',
         boxShadow: `0 4px 12px ${primaryColor || PRIMARY_MAIN}20`,
       },
-      '&:active': { transform: 'translateY(0)' },
+      '&:active': { transform: 'scale(0.97)' },
     }}
   >
     <Box sx={{

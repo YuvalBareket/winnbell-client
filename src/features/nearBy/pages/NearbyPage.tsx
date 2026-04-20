@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Box,
   Typography,
@@ -38,6 +39,15 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
     Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
+
+const listItemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.22, ease: [0.23, 1, 0.32, 1] as [number, number, number, number], delay: i * 0.05 },
+  }),
+};
 
 const NearbyPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -120,6 +130,7 @@ const NearbyPage = () => {
             boxShadow: 3,
             zIndex: 11,
             '&:hover': { bgcolor: 'background.paper' },
+            '&:active': { transform: 'scale(0.93)', transition: 'transform 160ms ease-out' },
           }}
         >
           <MyLocation color='primary' />
@@ -228,28 +239,28 @@ const NearbyPage = () => {
             </Box>
           )}
 
-          {filteredLocations.map((partner) => {
+          {filteredLocations.map((partner, index) => {
               const sectorInfo = BUSINESS_SECTORS[partner.sector] || BUSINESS_SECTORS.Retail;
 
               return (
-                <Paper
-                  key={partner.location_id}
-                  elevation={0}
-                  onClick={() => setSelectedLocationId(partner.location_id)}
-                  sx={{
-                    p: 2,
-                    borderRadius: 3,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    cursor: 'pointer',
-                    transition: 'transform 0.1s, background-color 0.2s',
-                    '&:active': { transform: 'scale(0.98)' },
-                    '&:hover': { bgcolor: 'rgba(0,0,0,0.01)' },
-                  }}
-                >
+                <motion.div key={partner.location_id} custom={index} variants={listItemVariants} initial="hidden" animate="visible">
+                  <Paper
+                    elevation={0}
+                    onClick={() => setSelectedLocationId(partner.location_id)}
+                    sx={{
+                      p: 2,
+                      borderRadius: 3,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer',
+                      transition: 'transform 160ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out',
+                      '&:active': { transform: 'scale(0.97)' },
+                      '&:hover': { bgcolor: 'rgba(0,0,0,0.01)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
+                    }}
+                  >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar
                       src={partner.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${partner.logo_url}` : undefined}
@@ -308,7 +319,8 @@ const NearbyPage = () => {
                     <Directions color='primary' />
                     <Typography variant='caption' sx={{ fontWeight: 700, color: 'primary.main', lineHeight: 1 }}>Go</Typography>
                   </Button>
-                </Paper>
+                  </Paper>
+                </motion.div>
               );
             })}
         </Stack>
