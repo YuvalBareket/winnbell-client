@@ -147,7 +147,6 @@ const MainLayout = () => {
           elevation={0}
         >
           <BottomNavigation
-            showLabels
             value={location.pathname}
             onChange={(_, newValue) => navigate(newValue)}
             sx={{
@@ -174,13 +173,11 @@ const MainLayout = () => {
           >
             <BottomNavigationAction
               value='/nearby'
-              label='Nearby'
               icon={<Storefront />}
             />
 
             <BottomNavigationAction
               value='/scan'
-              label='Scan'
               icon={
                 <Box
                   sx={{
@@ -206,7 +203,6 @@ const MainLayout = () => {
 
             <BottomNavigationAction
               value='/tickets'
-              label='Tickets'
               icon={<ConfirmationNumber />}
             />
           </BottomNavigation>
