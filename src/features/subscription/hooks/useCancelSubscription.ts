@@ -3,7 +3,7 @@ import { queryKeys } from '../../../shared/constants/queryKeys';
 import { cancelSubscription } from '../api/subscription.api';
 
 export const useCancelSubscription = (callbacks?: {
-  onSuccess?: (data: { removedFromDraw: boolean }) => void;
+  onSuccess?: (data: { removedFromDraw: boolean; refundType: 'full' | 'partial_40' | 'none'; refundAmount: number }) => void;
   onError?: (error: any) => void;
 }) => {
   const queryClient = useQueryClient();

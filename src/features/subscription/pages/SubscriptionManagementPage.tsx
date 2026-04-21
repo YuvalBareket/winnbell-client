@@ -25,7 +25,7 @@ export default function SubscriptionManagementPage() {
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelError, setCancelError] = useState('');
-  const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean } | null>(null);
+  const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'partial_40' | 'none'; refundAmount: number } | null>(null);
 
   const { data: sub, isLoading, isError } = useSubscription();
 
@@ -52,8 +52,9 @@ export default function SubscriptionManagementPage() {
   const isDrawLocked = (() => {
     if (!sub?.draw_date) return false;
     const drawDate = new Date(sub.draw_date);
-    const lockDate = new Date(drawDate.getFullYear(), drawDate.getMonth(), 1);
-    return new Date() >= lockDate || sub.draw_status !== 'Upcoming';
+    const cutoffDate = new Date(drawDate);
+    cutoffDate.setDate(cutoffDate.getDate() - 7);
+    return new Date() >= cutoffDate || sub.draw_status !== 'Upcoming';
   })();
 
   const periodEndLabel = sub?.current_period_end
@@ -65,9 +66,22 @@ export default function SubscriptionManagementPage() {
     : null;
 
   const cancelDeadline = (() => {
+    if (!sub?.draw_date) return null;
+    const drawDate = new Date(sub.draw_date);
+    const cutoffDate = new Date(drawDate);
+    cutoffDate.setDate(cutoffDate.getDate() - 7);
+    return cutoffDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+  })();
+
+  const cancellationRefundPreview = (() => {
+    if (!sub?.draw_date || sub.draw_status !== 'Upcoming') return 'none';
+    const drawDate = new Date(sub.draw_date);
+    const cutoffDate = new Date(drawDate);
+    cutoffDate.setDate(cutoffDate.getDate() - 7);
     const now = new Date();
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    return lastDay.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+    if (now < cutoffDate) return 'full';
+    if (now < drawDate) return 'partial_40';
+    return 'none';
   })();
 
   if (isLoading) {
@@ -120,6 +134,7 @@ export default function SubscriptionManagementPage() {
             </Box>
           </Stack>
         </Container>
+        
       </Box>
 
       <Container maxWidth='lg' sx={{ mt: -3 }}>
@@ -127,14 +142,20 @@ export default function SubscriptionManagementPage() {
 
         {cancelResult && (
           <Alert
-            severity='info'
+            severity={cancelResult.refundType === 'full' ? 'success' : cancelResult.refundType === 'partial_40' ? 'warning' : 'info'}
             icon={<Cancel />}
             sx={{ mb: 3, borderRadius: 3 }}
             onClose={() => setCancelResult(null)}
           >
-            {cancelResult.removedFromDraw
-              ? 'Done! Your subscription has been cancelled. Your entry fee has been returned to the prize pool and you have been removed from the upcoming draw.'
-              : "Done! Your subscription has been cancelled. Your spot in this month's draw is still secured and your plan stays active until the end of the current period."}
+            {cancelResult.refundType === 'full' && (
+              <>Subscription cancelled. You've been removed from the draw and a <strong>full refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
+            )}
+            {cancelResult.refundType === 'partial_40' && (
+              <>Subscription cancelled. You've been removed from the draw and a <strong>40% refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
+            )}
+            {cancelResult.refundType === 'none' && (
+              <>Subscription cancelled. The draw has already commenced — your entry remains and no refund applies.</>
+            )}
           </Alert>
         )}
 
@@ -198,14 +219,11 @@ export default function SubscriptionManagementPage() {
                           {sub.cancel_at_period_end ? 'Cancels on' : 'Renews on'}
                         </Typography>
                         <Typography variant='h6' fontWeight={800} color='text.primary'>{periodEndLabel}</Typography>
+                        <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
+                          {sub.cancel_at_period_end ? 'Your access continues until this date — no further charges' : 'Your next payment will be charged on this date'}
+                        </Typography>
                       </Box>
                     )}
-                    <Box>
-                      <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
-                        Cancel deadline
-                      </Typography>
-                      <Typography variant='body2' fontWeight={700}>{cancelDeadline}</Typography>
-                    </Box>
                   </Stack>
 
                   {sub.cancel_at_period_end && (
@@ -228,7 +246,7 @@ export default function SubscriptionManagementPage() {
                     onClick={() => setConfirmOpen(true)}
                     sx={{ borderRadius: 3, fontWeight: 700, py: 1.75 }}
                   >
-                    Cancel Subscription
+                    Cancel my subscription
                   </Button>
                 )}
 
@@ -274,7 +292,7 @@ export default function SubscriptionManagementPage() {
                   </Stack>
                   <Chip
                     icon={isDrawLocked ? <Lock sx={{ fontSize: '14px !important' }} /> : <LockOpen sx={{ fontSize: '14px !important' }} />}
-                    label={isDrawLocked ? 'Spot secured' : 'Flexible'}
+                    label={isDrawLocked ? 'Your spot is locked in' : 'Can still cancel entry'}
                     size='small'
                     sx={{
                       fontWeight: 700,
@@ -304,13 +322,9 @@ export default function SubscriptionManagementPage() {
                     </Box>
                   </Stack>
 
-                  {isDrawLocked ? (
+                  {isDrawLocked && (
                     <Alert severity='success' icon={<Lock />} sx={{ borderRadius: 2 }}>
                       Your entry is confirmed. You are in this draw.
-                    </Alert>
-                  ) : (
-                    <Alert severity='info' icon={<LockOpen />} sx={{ borderRadius: 2 }}>
-                      Entries are open until <strong>{cancelDeadline}</strong>.
                     </Alert>
                   )}
                 </Box>
@@ -340,28 +354,26 @@ export default function SubscriptionManagementPage() {
         <DialogTitle sx={{ fontWeight: 800 }}>Are you sure you want to cancel?</DialogTitle>
         <DialogContent>
           <Stack spacing={1.5}>
-            {isDrawLocked ? (
+            {cancellationRefundPreview === 'full' && (
               <>
                 <DialogContentText>
-                  Your plan will stay active until <strong>{periodEndLabel}</strong> and then end. You will not be charged again.
+                  You'll be removed from the upcoming draw and your full payment will be refunded. Your subscription ends immediately.
                 </DialogContentText>
-                <DialogContentText>
-                  You are already entered in this month's draw and that will not change. After your plan ends you will not be added to future draws.
-                </DialogContentText>
+                <Alert severity='info' icon={<LockOpen />} sx={{ borderRadius: 2, mt: 1.5 }}>
+                  You can cancel and get a full refund until <strong>{cancelDeadline}</strong>. After that, only a 40% refund applies.
+                </Alert>
               </>
-            ) : (
+            )}
+            {cancellationRefundPreview === 'partial_40' && (
+              <DialogContentText>
+                The free cancellation window has passed. You'll be removed from the draw, but only 40% of your payment will be refunded. 60% stays in the prize pool.
+              </DialogContentText>
+            )}
+            {cancellationRefundPreview === 'none' && (
               <>
                 <DialogContentText>
-                  Your plan will stay active until <strong>{periodEndLabel}</strong> and then end. You will not be charged again.
+                  The draw has already started — your entry is locked in and no refund is available. Cancelling now only stops future monthly charges. Your plan stays active until <strong>{periodEndLabel}</strong>.
                 </DialogContentText>
-                <DialogContentText>
-                  Since the draw has not started yet, your entry will also be removed and your fee will be returned to the prize pool.
-                </DialogContentText>
-                {sub.draw_id && (
-                  <Alert severity='warning' sx={{ borderRadius: 2 }}>
-                    The draw closes on <strong>{cancelDeadline}</strong>. After that date your entry is confirmed and cannot be removed.
-                  </Alert>
-                )}
               </>
             )}
           </Stack>
