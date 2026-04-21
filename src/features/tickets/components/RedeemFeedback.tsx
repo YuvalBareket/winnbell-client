@@ -93,21 +93,7 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
             <Typography variant='body1' sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, lineHeight: 1.6 }}>
               Your ticket has been activated.<br />Good luck in the draw!
             </Typography>
-            {activatedCode && (
-              <Box
-                sx={{
-                  bgcolor: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: 3, px: 4, py: 2.5, mb: 5, display: 'inline-block',
-                }}
-              >
-                <Typography variant='caption' sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 2, display: 'block', mb: 0.5 }}>
-                  Ticket Code
-                </Typography>
-                <Typography variant='h4' fontWeight={900} sx={{ color: 'white', fontFamily: 'monospace', letterSpacing: 4 }}>
-                  {activatedCode}
-                </Typography>
-              </Box>
-            )}
+          
             <Stack spacing={2}>
               <Button
                 variant='contained'

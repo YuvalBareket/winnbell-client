@@ -35,6 +35,7 @@ const PublicActivatePage = () => {
   const [isChecking, setIsChecking] = useState(true);
 
   const code = searchParams.get('code')?.trim().toUpperCase() ?? null;
+  const isPromo = code?.startsWith('PROMO_') ?? false;
 
   useEffect(() => {
     // 1. If we have a code, save it immediately
@@ -106,15 +107,15 @@ const PublicActivatePage = () => {
           <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, border: `2px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
             <CheckCircle sx={{ fontSize: 32 }} />
           </Box>
-          <Typography variant='h6' fontWeight={800}>Ticket Scanned!</Typography>
-          <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>Sign in to activate your entry</Typography>
+          <Typography variant='h6' fontWeight={800}>{isPromo ? 'Promotional Entry!' : 'Ticket Scanned!'}</Typography>
+          <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>{isPromo ? 'Sign in to claim your free draw entry' : 'Sign in to activate your entry'}</Typography>
         </Box>
 
         <Box sx={{ px: 3, pt: 3, pb: 3, textAlign: 'center' }}>
           <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-            Your ticket code
+            {isPromo ? 'Promo Code' : 'Your ticket code'}
           </Typography>
-          
+
           <Box sx={{ mt: 1, mb: 2.5,ml:0.5, display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: `${PRIMARY_MAIN}10`, border: `1px solid ${PRIMARY_MAIN}30`, borderRadius: 2, px: 2.5, py: 1 }}>
             <ConfirmationNumber sx={{ fontSize: 16, color: PRIMARY_MAIN }} />
             <Typography variant='h6' fontWeight={900} sx={{ fontFamily: 'monospace', color: PRIMARY_MAIN, letterSpacing: 3 }}>
@@ -123,26 +124,28 @@ const PublicActivatePage = () => {
           </Box>
 
           <Typography variant='body2' color='text.secondary' sx={{ mb: 3, lineHeight: 1.6 }}>
-            Create a free account or sign in. We'll activate your ticket automatically as soon as you're in.
+            {isPromo
+              ? "Create a free account or sign in. We'll enter you into the current draw automatically."
+              : "Create a free account or sign in. We'll activate your ticket automatically as soon as you're in."}
           </Typography>
 
           <Stack spacing={1.5}>
-            <Button 
-              variant='contained' 
-              size='large' 
-              fullWidth 
+            <Button
+              variant='contained'
+              size='large'
+              fullWidth
               startIcon={<PersonAdd />}
-              onClick={() => navigate('/register/user')} 
+              onClick={() => navigate('/register/user')}
               sx={{ borderRadius: 3, fontWeight: 800, py: 1.5 }}
             >
               Create Free Account
             </Button>
-            <Button 
-              variant='outlined' 
-              size='large' 
-              fullWidth 
+            <Button
+              variant='outlined'
+              size='large'
+              fullWidth
               startIcon={<Login />}
-              onClick={() => navigate('/login')} 
+              onClick={() => navigate('/login')}
               sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}
             >
               Sign In
@@ -150,7 +153,9 @@ const PublicActivatePage = () => {
           </Stack>
 
           <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 2 }}>
-            Your ticket code is saved. It will activate the moment you sign in.
+            {isPromo
+              ? 'Your promo code is saved. We\'ll enter you into the draw the moment you sign in.'
+              : 'Your ticket code is saved. It will activate the moment you sign in.'}
           </Typography>
         </Box>
       </Paper>

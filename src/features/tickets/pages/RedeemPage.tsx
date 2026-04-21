@@ -22,6 +22,7 @@ import {
 import { useAppSelector } from '../../../store/hook';
 import { useRedeemTicket } from '../hooks/useTickets';
 import { useGenerateTicket } from '../hooks/useGenerateTicket';
+import { useActivatePromotional } from '../hooks/useActivatePromotional';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { useSubscription } from '../../subscription/hooks/useSubscription';
 import { useEntryMode } from '../hooks/useEntryMode';
@@ -86,6 +87,7 @@ const RedeemPage = () => {
   // Mutations
   const redeemMutation = useRedeemTicket();
   const generateMutation = useGenerateTicket();
+  const promoMutation = useActivatePromotional();
 
   // Auto-activate pending code from QR scan flow (saved by PublicActivatePage before login)
 const didAutoActivate = useRef(false);
@@ -107,17 +109,30 @@ const didAutoActivate = useRef(false);
     didAutoActivate.current = true;
     localStorage.removeItem('pendingTicketCode');
 
-    // 4. Trigger mutation
-    redeemMutation.mutate(pending, {
-      onSuccess: () => {
-        setActivatedCode(pending);
-        setSuccessDialogOpen(true);
-      },
-      onError: (err: any) => {
-        setErrorMessage(err?.response?.data?.message || 'Activation failed.');
-        setErrorOpen(true);
-      },
-    });
+    // 4. Trigger mutation — promo codes use a separate endpoint
+    if (pending.startsWith('PROMO_')) {
+      promoMutation.mutate(pending, {
+        onSuccess: () => {
+          setActivatedCode(pending);
+          setSuccessDialogOpen(true);
+        },
+        onError: (err: any) => {
+          setErrorMessage(err?.response?.data?.message || 'Promotional entry failed.');
+          setErrorOpen(true);
+        },
+      });
+    } else {
+      redeemMutation.mutate(pending, {
+        onSuccess: () => {
+          setActivatedCode(pending);
+          setSuccessDialogOpen(true);
+        },
+        onError: (err: any) => {
+          setErrorMessage(err?.response?.data?.message || 'Activation failed.');
+          setErrorOpen(true);
+        },
+      });
+    }
     // We removed 'redeemMutation.isIdle' from deps to keep it simple
   }, [isAuthenticated, isBusiness]);
   const handleScanSuccess = (scannedCode: string) => {
