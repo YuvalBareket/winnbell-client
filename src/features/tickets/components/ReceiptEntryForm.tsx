@@ -18,7 +18,7 @@ import {
   Typography,
   Zoom,
 } from '@mui/material';
-import { AccessTime, CardGiftcard, CloudUpload, ChevronRight, Close, ConfirmationNumber, EmojiEvents, ReceiptOutlined, StorefrontOutlined, Visibility, AddCircleOutline } from '@mui/icons-material';
+import { AccessTime, CardGiftcard, CloudUpload, ChevronRight, Close, ConfirmationNumber, EmojiEvents, InfoOutlined, ReceiptOutlined, StorefrontOutlined, Visibility, AddCircleOutline } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import { PRIMARY_MAIN, GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
@@ -43,6 +43,7 @@ const toParticipating = (n: NearbyLocation): ParticipatingLocation => ({
   business_name: n.name,
   sector: n.sector,
   logo_url: n.logo_url,
+  min_transaction_amount: null,
 });
 
 const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
@@ -403,6 +404,25 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           >
             Change
           </Button>
+        </Box>
+      )}
+
+      {/* ── Threshold info banner ──────────────────────── */}
+      {selectedLocation && selectedLocation.min_transaction_amount && !successDialogOpen && (
+        <Box
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 1.5,
+            px: 2, py: 1.25, mb: 2, borderRadius: 2,
+            bgcolor: `${primaryColor || PRIMARY_MAIN}08`,
+            border: `1px solid ${primaryColor || PRIMARY_MAIN}20`,
+          }}
+        >
+          <InfoOutlined sx={{ color: primaryColor || PRIMARY_MAIN, fontSize: 18, flexShrink: 0 }} />
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, lineHeight: 1.4 }}>
+            Earn 1 entry per ${selectedLocation.min_transaction_amount} spent
+            {' '}&middot;{' '}
+            ${selectedLocation.min_transaction_amount * 2} = 2 entries
+          </Typography>
         </Box>
       )}
 

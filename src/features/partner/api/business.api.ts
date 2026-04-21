@@ -8,6 +8,10 @@ import type {
   UpdateLocationInput,
 } from '../types/business.types';
 
+export interface UpdateCampaignSettingsInput {
+  min_transaction_amount: number | null;
+}
+
 export const setupBusinessProfile = async (data: BusinessSetupInput): Promise<{ businessId: number }> => {
   const response = await api.post<{ businessId: number }>('/business/setup', data);
   return response.data;
@@ -58,4 +62,8 @@ export const getUploadUrl = async (contentType: string): Promise<{ uploadUrl: st
 
 export const updateBusinessLogo = async (key: string): Promise<void> => {
   await api.patch('/business/logo', { logo_url: key });
+};
+
+export const updateCampaignSettingsApi = async (data: UpdateCampaignSettingsInput): Promise<void> => {
+  await api.patch('/business/campaign-settings', data);
 };

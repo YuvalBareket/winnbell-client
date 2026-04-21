@@ -29,3 +29,5 @@ export const updateUserRole = (userId: number, role: string) =>
   api.patch(`/admin/users/${userId}/role`, { role });
 export const toggleUserActive = (userId: number, is_active: boolean) =>
   api.patch(`/admin/users/${userId}/active`, { is_active });
+export const fetchDrawBusinesses = (drawId: number) =>
+  api.get(`/admin/draws/${drawId}/businesses`);

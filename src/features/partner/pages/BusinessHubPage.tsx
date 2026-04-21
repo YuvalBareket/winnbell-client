@@ -20,13 +20,13 @@ import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { useBusinessData } from '../hooks/useBusinessData';
 import { useAddLocation } from '../hooks/useAddLocation';
-import { useUpdateBusiness } from '../hooks/useUpdateBusiness';
 import { useInviteManager, useRemoveManager } from '../hooks/useInviteManager';
 import EditLocationModal from './components/EditLocationModal';
 import EditBusinessDrawer from './components/EditBusinessDrawer';
 import CampaignCard from './components/CampaignCard';
 import LocationCard from './components/LocationCard';
 import { useUploadBusinessLogo } from '../hooks/useUploadBusinessLogo';
+import { useUpdateCampaignSettings } from '../hooks/useUpdateCampaignSettings';
 import AddLocationDialog from './components/AddLocationDialog';
 import InviteManagerDialog from './components/InviteManagerDialog';
 import RemoveManagerDialog from './components/RemoveManagerDialog';
@@ -46,13 +46,11 @@ const BusinessHubPage = () => {
   const { mutateAsync: generateInvite, isPending: isInviting } = useInviteManager();
   const { mutate: doRemoveManager, isPending: isRemoving } = useRemoveManager();
   const { mutate: doAddLocation, isPending: isAddingLocation } = useAddLocation();
-  const { mutate: updateBusiness, isPending: isUpdatingTerms } = useUpdateBusiness();
+  const { mutate: updateCampaignSettings, isPending: isUpdatingSettings } = useUpdateCampaignSettings();
   const { upload: uploadLogo, isUploading: isUploadingLogo, error: logoError, clearError: clearLogoError } = useUploadBusinessLogo();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [editingTerms, setEditingTerms] = useState(false);
-  const [termsValue, setTermsValue] = useState('');
   const [editingLocation, setEditingLocation] = useState<BusinessLocation | null>(null);
   const [businessDrawerOpen, setBusinessDrawerOpen] = useState(false);
   const [addLocationOpen, setAddLocationOpen] = useState(false);
@@ -201,12 +199,8 @@ const BusinessHubPage = () => {
           {/* Campaign card */}
           <CampaignCard
             business={business}
-            editingTerms={editingTerms}
-            setEditingTerms={setEditingTerms}
-            termsValue={termsValue}
-            setTermsValue={setTermsValue}
-            updateBusiness={updateBusiness}
-            isUpdatingTerms={isUpdatingTerms}
+            updateCampaignSettings={updateCampaignSettings}
+            isUpdatingSettings={isUpdatingSettings}
           />
 
           {/* Branch Management */}

@@ -49,7 +49,9 @@ export interface BusinessData {
   is_subscribed: boolean;
   is_participating: boolean;
   entry_mode: EntryMode;
-  entry_cap: number | null;  // NULL = unlimited
+  entry_cap: number | null;              // NULL = falls back to global cap
+  min_transaction_amount: number | null; // NULL = no minimum
+  global_entry_cap: number | null;       // platform ceiling set by admin
   subscription_status: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;

@@ -13,6 +13,7 @@ import {
   fetchAllUsers,
   updateUserRole,
   toggleUserActive,
+  fetchDrawBusinesses,
 } from '../api/adminApi';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
@@ -146,6 +147,21 @@ export const useUpdateUserRole = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
     },
+  });
+};
+
+export const useDrawBusinesses = (drawId: number | null) => {
+  return useQuery({
+    queryKey: ['admin', 'draw-businesses', drawId],
+    queryFn: async () => {
+      const { data } = await fetchDrawBusinesses(drawId!);
+      return data as Array<{
+        id: number; name: string; sector: string; logo_url: string | null;
+        fee_at_entry: number; contribution_amount: number; joined_at: string;
+      }>;
+    },
+    enabled: drawId !== null,
+    staleTime: 60_000,
   });
 };
 

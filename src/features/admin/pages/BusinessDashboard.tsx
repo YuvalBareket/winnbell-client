@@ -40,6 +40,8 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockIcon from '@mui/icons-material/Lock';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -60,6 +62,7 @@ import {
   useAdminUsers,
   useUpdateUserRole,
   useToggleUserActive,
+  useDrawBusinesses,
 } from '../hooks/useAdmin';
 import CreateBusinessModal from './components/CreateBusinessModal';
 import CreateDrawModal from './components/CreateDrawModal';
@@ -102,6 +105,30 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+const DrawBusinessesPanel: React.FC<{ drawId: number }> = ({ drawId }) => {
+  const { data, isLoading } = useDrawBusinesses(drawId);
+  if (isLoading) return <Box sx={{ p: 2 }}><Skeleton variant='rectangular' height={60} /></Box>;
+  if (!data?.length) return <Box sx={{ p: 2 }}><Typography variant='body2' color='text.secondary'>No businesses enrolled in this draw.</Typography></Box>;
+  return (
+    <Box sx={{ px: 3, pb: 2, bgcolor: BG_PAGE }}>
+      <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 1 }}>
+        Participating Businesses ({data.length})
+      </Typography>
+      <Stack spacing={0.5}>
+        {data.map((b) => (
+          <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
+            <Stack direction='row' spacing={2} alignItems='center'>
+              <Typography variant='caption' color='text.secondary'>Fee: ILS {Number(b.fee_at_entry).toLocaleString()}</Typography>
+              <Typography variant='caption' color='text.secondary'>Contribution: ILS {Number(b.contribution_amount).toLocaleString()}</Typography>
+            </Stack>
+          </Box>
+        ))}
+      </Stack>
+    </Box>
+  );
+};
+
 const BusinessDashboard: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -129,6 +156,7 @@ const BusinessDashboard: React.FC = () => {
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState<number | null>(null);
   const [selectedRole, setSelectedRole] = useState('user');
 
+  const [expandedDrawId, setExpandedDrawId] = useState<number | null>(null);
   const [snackError, setSnackError] = useState('');
   const [snackSuccess, setSnackSuccess] = useState('');
 
@@ -1037,89 +1065,41 @@ const BusinessDashboard: React.FC = () => {
                 {isMobile ? (
                   <Stack spacing={2}>
                     {draws?.map((draw) => (
-                      <Card
-                        key={draw.id}
-                        elevation={0}
-                        sx={{ border: '1px solid', borderColor: 'divider' }}
-                      >
+                      <Card key={draw.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
                         <CardContent>
                           <Stack spacing={2}>
-                            <Box>
-                              <Typography variant='subtitle2' fontWeight={700}>
-                                {draw.name}
-                              </Typography>
-                              <Typography variant='caption' color='text.secondary'>
-                                Prize: ILS{' '}
-                                {Number(draw.prize_amount ?? 0).toLocaleString()}
-                              </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <Box>
+                                <Typography variant='subtitle2' fontWeight={700}>{draw.name}</Typography>
+                                <Typography variant='caption' color='text.secondary'>Prize: ILS {Number(draw.prize_amount ?? 0).toLocaleString()}</Typography>
+                              </Box>
+                              <IconButton size='small' onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}>
+                                {expandedDrawId === draw.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                              </IconButton>
                             </Box>
 
                             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                              <Chip
-                                label={draw.status}
-                                size='small'
-                                color={
-                                  STATUS_COLORS[draw.status?.toLowerCase()] ??
-                                  'default'
-                                }
-                              />
-                              <Typography
-                                variant='caption'
-                                sx={{
-                                  alignSelf: 'center',
-                                  color: 'text.secondary',
-                                }}
-                              >
+                              <Chip label={draw.status} size='small' color={STATUS_COLORS[draw.status?.toLowerCase()] ?? 'default'} />
+                              <Typography variant='caption' sx={{ alignSelf: 'center', color: 'text.secondary' }}>
                                 {new Date(draw.draw_date).toLocaleDateString()}
                               </Typography>
-                              {draw.status?.toUpperCase() === 'CLOSED' &&
-                                draw.winner_user_id && (
-                                  <Chip
-                                    label='Winner Selected'
-                                    size='small'
-                                    color='success'
-                                  />
-                                )}
+                              {draw.status?.toUpperCase() === 'CLOSED' && draw.winner_user_id && (
+                                <Chip label='Winner Selected' size='small' color='success' />
+                              )}
                             </Box>
+
+                            {expandedDrawId === draw.id && <DrawBusinessesPanel drawId={draw.id} />}
 
                             <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
                               {draw.status?.toUpperCase() === 'UPCOMING' && (
-                                <Button
-                                  size='small'
-                                  variant='contained'
-                                  color='success'
-                                  startIcon={<LockOpenIcon />}
-                                  onClick={() => setConfirmOpen(draw.id)}
-                                  fullWidth
-                                >
-                                  Open
-                                </Button>
+                                <Button size='small' variant='contained' color='success' startIcon={<LockOpenIcon />} onClick={() => setConfirmOpen(draw.id)} fullWidth>Open</Button>
                               )}
                               {draw.status?.toUpperCase() === 'OPEN' && (
-                                <Button
-                                  size='small'
-                                  variant='outlined'
-                                  color='warning'
-                                  startIcon={<LockIcon />}
-                                  onClick={() => setConfirmClose(draw.id)}
-                                  fullWidth
-                                >
-                                  Close
-                                </Button>
+                                <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} onClick={() => setConfirmClose(draw.id)} fullWidth>Close</Button>
                               )}
-                              {draw.status?.toUpperCase() === 'CLOSED' &&
-                                !draw.winner_user_id && (
-                                  <Button
-                                    size='small'
-                                    variant='contained'
-                                    color='secondary'
-                                    startIcon={<EmojiEventsIcon />}
-                                    onClick={() => setConfirmPick(draw.id)}
-                                    fullWidth
-                                  >
-                                    Pick Winner
-                                  </Button>
-                                )}
+                              {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
+                                <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={() => setConfirmPick(draw.id)} fullWidth>Pick Winner</Button>
+                              )}
                             </Stack>
                           </Stack>
                         </CardContent>
@@ -1144,76 +1124,50 @@ const BusinessDashboard: React.FC = () => {
                       </TableHead>
                       <TableBody>
                         {draws?.map((draw) => (
-                          <TableRow key={draw.id} hover>
-                            <TableCell sx={{ fontWeight: 600 }}>{draw.name}</TableCell>
-                            <TableCell>
-                              ILS{' '}
-                              {Number(draw.prize_amount ?? 0).toLocaleString()}
-                            </TableCell>
-                            <TableCell>
-                              {new Date(draw.draw_date).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                label={draw.status}
-                                size='small'
-                                color={
-                                  STATUS_COLORS[draw.status?.toLowerCase()] ??
-                                  'default'
-                                }
-                              />
-                            </TableCell>
-                            <TableCell align='right'>
-                              <Stack
-                                direction='row'
-                                spacing={1}
-                                justifyContent='flex-end'
-                              >
-                                {draw.status?.toUpperCase() === 'UPCOMING' && (
-                                  <Button
-                                    size='small'
-                                    variant='contained'
-                                    color='success'
-                                    startIcon={<LockOpenIcon />}
-                                    onClick={() => setConfirmOpen(draw.id)}
-                                  >
-                                    Open
-                                  </Button>
-                                )}
-                                {draw.status?.toUpperCase() === 'OPEN' && (
-                                  <Button
-                                    size='small'
-                                    variant='outlined'
-                                    color='warning'
-                                    startIcon={<LockIcon />}
-                                    onClick={() => setConfirmClose(draw.id)}
-                                  >
-                                    Close
-                                  </Button>
-                                )}
-                                {draw.status?.toUpperCase() === 'CLOSED' &&
-                                  !draw.winner_user_id && (
-                                    <Button
-                                      size='small'
-                                      variant='contained'
-                                      color='secondary'
-                                      startIcon={<EmojiEventsIcon />}
-                                      onClick={() => setConfirmPick(draw.id)}
-                                    >
-                                      Pick Winner
-                                    </Button>
+                          <React.Fragment key={draw.id}>
+                            <TableRow
+                              hover
+                              sx={{ cursor: 'pointer', '& > *': { borderBottom: expandedDrawId === draw.id ? 'none' : undefined } }}
+                              onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}
+                            >
+                              <TableCell sx={{ fontWeight: 600 }}>
+                                <Stack direction='row' alignItems='center' spacing={0.5}>
+                                  <IconButton size='small' sx={{ p: 0.25 }}>
+                                    {expandedDrawId === draw.id ? <KeyboardArrowUpIcon fontSize='small' /> : <KeyboardArrowDownIcon fontSize='small' />}
+                                  </IconButton>
+                                  {draw.name}
+                                </Stack>
+                              </TableCell>
+                              <TableCell>ILS {Number(draw.prize_amount ?? 0).toLocaleString()}</TableCell>
+                              <TableCell>{new Date(draw.draw_date).toLocaleDateString()}</TableCell>
+                              <TableCell>
+                                <Chip label={draw.status} size='small' color={STATUS_COLORS[draw.status?.toLowerCase()] ?? 'default'} />
+                              </TableCell>
+                              <TableCell align='right' onClick={(e) => e.stopPropagation()}>
+                                <Stack direction='row' spacing={1} justifyContent='flex-end'>
+                                  {draw.status?.toUpperCase() === 'UPCOMING' && (
+                                    <Button size='small' variant='contained' color='success' startIcon={<LockOpenIcon />} onClick={() => setConfirmOpen(draw.id)}>Open</Button>
                                   )}
-                                {draw.status?.toUpperCase() === 'CLOSED' &&
-                                  draw.winner_user_id && (
-                                    <Chip
-                                      label='Winner Selected'
-                                      size='small'
-                                      color='success'
-                                    />
+                                  {draw.status?.toUpperCase() === 'OPEN' && (
+                                    <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} onClick={() => setConfirmClose(draw.id)}>Close</Button>
                                   )}
-                              </Stack>
-                            </TableCell>
-                          </TableRow>
+                                  {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
+                                    <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={() => setConfirmPick(draw.id)}>Pick Winner</Button>
+                                  )}
+                                  {draw.status?.toUpperCase() === 'CLOSED' && draw.winner_user_id && (
+                                    <Chip label='Winner Selected' size='small' color='success' />
+                                  )}
+                                </Stack>
+                              </TableCell>
+                            </TableRow>
+                            {expandedDrawId === draw.id && (
+                              <TableRow>
+                                <TableCell colSpan={5} sx={{ p: 0 }}>
+                                  <DrawBusinessesPanel drawId={draw.id} />
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </React.Fragment>
                         ))}
                       </TableBody>
                     </Table>
