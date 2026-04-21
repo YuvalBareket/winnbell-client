@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box, Button, Typography, Paper, Stack, Chip, CircularProgress,
-  List, ListItem, ListItemIcon, ListItemText, Divider,
+  Divider, Skeleton, IconButton,
 } from '@mui/material';
 import {
-  CheckCircle, ConfirmationNumber, EmojiEvents, Storefront, CreditCard, Groups,
+  ConfirmationNumber, EmojiEvents, Storefront, CreditCard, Groups, Remove, Add,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../shared/api/client';
@@ -19,16 +19,56 @@ const FEATURES = [
   { icon: <Groups />,             text: 'Assign branch managers to run your locations' },
 ];
 
+const TIER_MAP: Record<number, number> = {
+  250:  250,
+  500:  490,
+  750:  720,
+  1000: 940,
+  1250: 1150,
+  1500: 1350,
+  1750: 1540,
+  2000: 1720,
+  2250: 1890,
+  2500: 2000,
+};
+
 const SubscribePage = () => {
   const navigate = useNavigate();
+  const [selectedTier, setSelectedTier] = useState(500);
+  const [locationCount, setLocationCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Fetch location count on mount
+  useEffect(() => {
+    const fetchLocationCount = async () => {
+      try {
+        const { data } = await api.get('/business/my-business');
+        const count = data.locations?.length || 1;
+        setLocationCount(count);
+      } catch (err) {
+        setLocationCount(1);
+      }
+    };
+    fetchLocationCount();
+  }, []);
+
+  // Calculate pricing
+  const pricePerLocation = TIER_MAP[selectedTier] ?? 0;
+  const effectiveLocationCount = locationCount || 1;
+  const totalMonthly = pricePerLocation * effectiveLocationCount;
+  const basePricePerLocation = TIER_MAP[250];
+  const savingsPercent = selectedTier > 250
+    ? Math.round((1 - (pricePerLocation / (selectedTier / 250 * basePricePerLocation))) * 100)
+    : 0;
 
   const handleSubscribe = async () => {
     setLoading(true);
     setError('');
     try {
-      const { data } = await api.post<{ url: string }>('/business/subscription/checkout');
+      const { data } = await api.post<{ url: string }>('/business/subscription/checkout', {
+        entries_per_location: selectedTier,
+      });
       window.location.href = data.url;
     } catch (err: any) {
       const msg = err.response?.data?.error ?? '';
@@ -48,13 +88,13 @@ const SubscribePage = () => {
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
         // On desktop both panels fill the full viewport height
-        '& > *': { minHeight: { md: '100vh' } },
+        '& > *': { minHeight: { md: '100vh' }, alignItems: 'stretch' },
       }}
     >
       {/* ── Left: Brand panel ── */}
       <Box
         sx={{
-          width: { xs: '100%', md: '52%' },
+          width: { xs: '100%', md: '45%' },
           background: GRADIENT_HERO,
           display: 'flex',
           flexDirection: 'column',
@@ -126,7 +166,7 @@ const SubscribePage = () => {
         </Typography>
       </Box>
 
-      {/* ── Right: Pricing card ── */}
+      {/* ── Right: Tier selection & pricing ── */}
       <Box
         sx={{
           flex: 1,
@@ -134,11 +174,11 @@ const SubscribePage = () => {
           alignItems: 'center',
           justifyContent: 'center',
           bgcolor: 'background.default',
-          p: { xs: 3, sm: 4, md: '5vh 6vw' },
+          p: { xs: 3, sm: 4, md: '4vh 4vw' },
           overflowY: 'auto',
         }}
       >
-        <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: 460, md: 480 } }}>
+        <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: 520, md: 560 } }}>
           <Paper
             elevation={0}
             sx={{
@@ -166,40 +206,170 @@ const SubscribePage = () => {
                 </Typography>
               </Stack>
               <Typography variant='h4' fontWeight={900} color='text.primary' lineHeight={1}>
-                Monthly
+                Choose Your Tier
               </Typography>
               <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                Cancel any time before the 1st of the following month
+                Select entries per location each month
               </Typography>
             </Box>
 
-            {/* Features */}
-            <Box sx={{ px: { xs: 3, md: 4 }, py: 3 }}>
-              <List dense disablePadding>
-                {FEATURES.map((f, i) => (
-                  <ListItem key={i} disableGutters sx={{ py: 0.75, alignItems: 'flex-start' }}>
-                    <ListItemIcon sx={{ minWidth: 30, mt: 0.25 }}>
-                      <CheckCircle sx={{ fontSize: 17, color: 'success.main' }} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={f.text}
-                      primaryTypographyProps={{ variant: 'body2', fontWeight: 500, color: 'text.secondary' }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
+            {/* Section 1: Entries stepper */}
+            <Box sx={{ px: { xs: 3, md: 4 }, py: { xs: 3, md: 4 } }}>
+              <Typography variant='h6' fontWeight={700} color='text.primary' mb={0.5}>
+                How many entries per location?
+              </Typography>
+              <Typography variant='caption' color='text.secondary' display='block' mb={3}>
+                per month
+              </Typography>
+
+              {/* Stepper control */}
+              <Stack direction='row' alignItems='center' justifyContent='center' spacing={2}>
+                <IconButton
+                  onClick={() => setSelectedTier(Math.max(250, selectedTier - 250))}
+                  disabled={selectedTier === 250}
+                  sx={{
+                    width: 52,
+                    height: 52,
+                    border: '2px solid',
+                    borderColor: selectedTier === 250 ? 'divider' : 'divider',
+                    borderRadius: 2,
+                    opacity: selectedTier === 250 ? 0.4 : 1,
+                  }}
+                >
+                  <Remove />
+                </IconButton>
+
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography
+                    variant='h4'
+                    fontWeight={900}
+                    color='text.primary'
+                    sx={{
+                      minWidth: { xs: 160, md: 220 },
+                    }}
+                  >
+                    {selectedTier.toLocaleString()} entries
+                  </Typography>
+                  <Stack direction='row' alignItems='center' justifyContent='center' spacing={1} mt={1}>
+                    <Typography variant='body2' color='text.secondary'>
+                      ${pricePerLocation} per location/month
+                    </Typography>
+                    {savingsPercent > 0 && (
+                      <Chip
+                        label={`Save ${savingsPercent}%`}
+                        color='success'
+                        size='small'
+                        variant='outlined'
+                      />
+                    )}
+                  </Stack>
+                </Box>
+
+                <IconButton
+                  onClick={() => setSelectedTier(Math.min(2500, selectedTier + 250))}
+                  disabled={selectedTier === 2500}
+                  sx={{
+                    width: 52,
+                    height: 52,
+                    border: '2px solid',
+                    borderColor: selectedTier === 2500 ? 'divider' : 'divider',
+                    borderRadius: 2,
+                    opacity: selectedTier === 2500 ? 0.4 : 1,
+                  }}
+                >
+                  <Add />
+                </IconButton>
+              </Stack>
             </Box>
 
             <Divider />
 
-            {/* CTA */}
-            <Box sx={{ px: { xs: 3, md: 4 }, py: { xs: 3, md: 3.5 } }}>
+            {/* Section 2: Price breakdown card */}
+            <Box sx={{ px: { xs: 3, md: 4 }, py: { xs: 3, md: 4 } }}>
+              <Box
+                sx={{
+                  bgcolor: 'rgba(25,93,230,0.06)',
+                  borderRadius: 2.5,
+                  p: 3,
+                  mb: 3,
+                }}
+              >
+                <Stack spacing={2}>
+                  {/* Entries per location */}
+                  <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                    <Typography variant='body2' color='text.secondary'>
+                      Entries per location
+                    </Typography>
+                    <Typography variant='body2' fontWeight={700} color='text.primary'>
+                      {selectedTier.toLocaleString()} / mo
+                    </Typography>
+                  </Stack>
+
+                  {/* Your locations */}
+                  <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                    <Typography variant='body2' color='text.secondary'>
+                      Your locations
+                    </Typography>
+                    {locationCount === null ? (
+                      <Skeleton width={40} height={20} />
+                    ) : (
+                      <Typography variant='body2' fontWeight={700} color='text.primary'>
+                        {effectiveLocationCount}
+                      </Typography>
+                    )}
+                  </Stack>
+
+                  {/* Price per location / mo */}
+                  <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                    <Typography variant='body2' color='text.secondary'>
+                      Price per location
+                    </Typography>
+                    <Typography variant='body2' fontWeight={700} color='text.primary'>
+                      ${pricePerLocation.toLocaleString()}
+                    </Typography>
+                  </Stack>
+
+                  <Divider sx={{ my: 1 }} />
+
+                  {/* Total monthly */}
+                  <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                    <Typography variant='body2' fontWeight={700} color='text.primary'>
+                      Total per month
+                    </Typography>
+                    <Typography
+                      variant='h5'
+                      fontWeight={900}
+                      sx={{
+                        background: 'linear-gradient(135deg, #195DE2 0%, #7FA6FF 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      ${totalMonthly.toFixed(0)}
+                    </Typography>
+                  </Stack>
+                </Stack>
+              </Box>
+
+              {/* Savings caption */}
+              {savingsPercent > 0 && (
+                <Typography
+                  variant='caption'
+                  sx={{ color: 'success.main', display: 'block', mb: 3, textAlign: 'center', lineHeight: 1.6 }}
+                >
+                  {savingsPercent}% savings vs. base rate
+                </Typography>
+              )}
+
+              {/* Error */}
               {error && (
                 <Typography variant='body2' color='error' textAlign='center' mb={2}>
                   {error}
                 </Typography>
               )}
 
+              {/* Subscribe button */}
               <Button
                 fullWidth
                 variant='contained'

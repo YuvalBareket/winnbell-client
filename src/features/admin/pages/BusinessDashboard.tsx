@@ -119,8 +119,8 @@ const DrawBusinessesPanel: React.FC<{ drawId: number }> = ({ drawId }) => {
           <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
             <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
             <Stack direction='row' spacing={2} alignItems='center'>
-              <Typography variant='caption' color='text.secondary'>Fee: ILS {Number(b.fee_at_entry).toLocaleString()}</Typography>
-              <Typography variant='caption' color='text.secondary'>Contribution: ILS {Number(b.contribution_amount).toLocaleString()}</Typography>
+              <Typography variant='caption' color='text.secondary'>Fee: ${Number(b.fee_at_entry).toLocaleString()}</Typography>
+              <Typography variant='caption' color='text.secondary'>Contribution: ${Number(b.contribution_amount).toLocaleString()}</Typography>
             </Stack>
           </Box>
         ))}
@@ -427,7 +427,7 @@ const BusinessDashboard: React.FC = () => {
                             {overview?.subscriptions?.active_subs ?? 0}
                           </Typography>
                           <Typography variant='caption' color='text.secondary'>
-                            ILS {Number(overview?.subscriptions?.total_fees ?? 0).toLocaleString()} monthly
+                            ${Number(overview?.subscriptions?.total_fees ?? 0).toLocaleString()} monthly
                           </Typography>
                         </Stack>
                       </CardContent>
@@ -457,7 +457,7 @@ const BusinessDashboard: React.FC = () => {
                             Current Draw Prize
                           </Typography>
                           <Typography variant='h6' fontWeight={700}>
-                            ILS {Number(overview?.currentDraw?.prize_pool ?? 0).toLocaleString()}
+                            ${Number(overview?.currentDraw?.prize_pool ?? 0).toLocaleString()}
                           </Typography>
                           <Typography variant='caption' color='text.secondary'>
                             {overview?.currentDraw?.name ?? 'No active draw'}
@@ -487,7 +487,7 @@ const BusinessDashboard: React.FC = () => {
                               {currentOpenDraw.name}
                             </Typography>
                             <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                              Prize Pool: ILS {Number(currentOpenDraw.prize_amount ?? 0).toLocaleString()}
+                              Prize Pool: ${Number(currentOpenDraw.prize_amount ?? 0).toLocaleString()}
                             </Typography>
                             <Typography variant='body2' color='text.secondary'>
                               Draw Date: {new Date(currentOpenDraw.draw_date).toLocaleDateString()}
@@ -1071,7 +1071,7 @@ const BusinessDashboard: React.FC = () => {
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                               <Box>
                                 <Typography variant='subtitle2' fontWeight={700}>{draw.name}</Typography>
-                                <Typography variant='caption' color='text.secondary'>Prize: ILS {Number(draw.prize_amount ?? 0).toLocaleString()}</Typography>
+                                <Typography variant='caption' color='text.secondary'>Prize: ${Number(draw.prize_amount ?? 0).toLocaleString()}</Typography>
                               </Box>
                               <IconButton size='small' onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}>
                                 {expandedDrawId === draw.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
@@ -1138,7 +1138,7 @@ const BusinessDashboard: React.FC = () => {
                                   {draw.name}
                                 </Stack>
                               </TableCell>
-                              <TableCell>ILS {Number(draw.prize_amount ?? 0).toLocaleString()}</TableCell>
+                              <TableCell>${Number(draw.prize_amount ?? 0).toLocaleString()}</TableCell>
                               <TableCell>{new Date(draw.draw_date).toLocaleDateString()}</TableCell>
                               <TableCell>
                                 <Chip label={draw.status} size='small' color={STATUS_COLORS[draw.status?.toLowerCase()] ?? 'default'} />
@@ -1410,7 +1410,7 @@ const BusinessDashboard: React.FC = () => {
             )}
             <Typography variant='body2' color='text.secondary'>
               Prize pool:{' '}
-              <strong>ILS {Number(winnerResult?.prizePool ?? 0).toLocaleString()}</strong>
+              <strong>${Number(winnerResult?.prizePool ?? 0).toLocaleString()}</strong>
             </Typography>
           </Stack>
         </DialogContent>

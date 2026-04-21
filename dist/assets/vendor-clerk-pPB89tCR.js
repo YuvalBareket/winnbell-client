@@ -1,4 +1,4 @@
-import{a as un,r as y,R as l,b as cn}from"./vendor-mui-BUAXZdhG.js";var dn=class jt extends Error{static kind="ClerkError";clerkError=!0;code;longMessage;docsUrl;cause;get name(){return this.constructor.name}constructor(t){super(new.target.formatMessage(new.target.kind,t.message,t.code,t.docsUrl),{cause:t.cause}),Object.setPrototypeOf(this,jt.prototype),this.code=t.code,this.docsUrl=t.docsUrl,this.longMessage=t.longMessage,this.cause=t.cause}toString(){return`[${this.name}]
+import{a as un,r as y,R as l,b as cn}from"./vendor-mui-Byb8Vq_l.js";var dn=class jt extends Error{static kind="ClerkError";clerkError=!0;code;longMessage;docsUrl;cause;get name(){return this.constructor.name}constructor(t){super(new.target.formatMessage(new.target.kind,t.message,t.code,t.docsUrl),{cause:t.cause}),Object.setPrototypeOf(this,jt.prototype),this.code=t.code,this.docsUrl=t.docsUrl,this.longMessage=t.longMessage,this.cause=t.cause}toString(){return`[${this.name}]
 Message:${this.message}`}static formatMessage(t,s,i,n){const r="Clerk:",o=new RegExp(r.replace(" ","\\s*"),"i");return s=s.replace(o,""),s=`${r} ${s.trim()}
 
 (code="${i}")

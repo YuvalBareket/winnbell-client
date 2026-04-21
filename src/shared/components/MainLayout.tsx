@@ -30,7 +30,7 @@ const MainLayout = () => {
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isAdmin = useAppSelector(selectIsAdmin);
   const businessIsActive = useAppSelector(selectBusinessIsActive);
-  const showSubscribeBanner = isBusinessAdmin && !businessIsActive;
+  const showSubscribeBanner = isBusinessAdmin && !businessIsActive && location.pathname !== '/subscribe';
 
   const isNearby = location.pathname === '/nearby';
   const topPadding = { xs: 0, md: 0 };

@@ -20,6 +20,7 @@ import {
   LocationOn,
   CheckCircle,
   ConfirmationNumber,
+  AttachMoney,
 } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
@@ -53,7 +54,7 @@ const BusinessProfilePage = () => {
       businessName: user?.fullName || '',
       businessSector: '',
       description: '',
-      terms_text: '',
+      min_transaction_amount: null as number | null,
       locations: [{ name: 'Main Branch', address: '', lat: null, lon: null }],
     },
   });
@@ -72,7 +73,7 @@ const BusinessProfilePage = () => {
   };
 
   const goNext = async () => {
-    const valid = await trigger(['businessName', 'businessSector', 'description', 'terms_text']);
+    const valid = await trigger(['businessName', 'businessSector', 'description']);
     if (valid) setStep(1);
   };
 
@@ -278,21 +279,26 @@ const BusinessProfilePage = () => {
                   )}
                 />
 
-                {/* Ticket terms */}
+                {/* Minimum transaction amount */}
                 <Controller
-                  name='terms_text'
+                  name='min_transaction_amount'
                   control={control}
-                  rules={{ required: 'Draw terms are required' }}
-                  render={({ field, fieldState: { error } }) => (
+                  render={({ field }) => (
                     <TextField
-                      {...field}
                       fullWidth
-                      multiline
-                      rows={2}
-                      label='How customers earn tickets'
-                      error={!!error}
-                      helperText={error?.message || 'e.g. "Spend $20 or more to receive a ticket"'}
-                      placeholder='Explain how a customer qualifies for a ticket...'
+                      type='number'
+                      label='Minimum spend to earn an entry'
+                      placeholder='e.g. 20'
+                      helperText='Leave empty if there is no minimum spend required'
+                      value={field.value ?? ''}
+                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position='start'>
+                            <AttachMoney sx={{ color: 'text.disabled', fontSize: 20 }} />
+                          </InputAdornment>
+                        ),
+                      }}
                       sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'white' } }}
                     />
                   )}
