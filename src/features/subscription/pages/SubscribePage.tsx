@@ -36,7 +36,6 @@ const TIER_MAP: Record<number, number> = {
 };
 
 const TIER_KEYS = Object.keys(TIER_MAP).map(Number).sort((a, b) => a - b);
-const MIN_TIER = TIER_KEYS[0];
 const MAX_TIER = TIER_KEYS[TIER_KEYS.length - 1];
 
 const SubscribePage = () => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box, Button, Typography, Container, Stack, Alert, CircularProgress, Paper,
   IconButton, useMediaQuery, useTheme, TextField,
@@ -84,7 +84,7 @@ const VerifyEmailPage = () => {
 
   // Resend cooldown countdown
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
     if (resendCooldown > 0) {
       timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
     }

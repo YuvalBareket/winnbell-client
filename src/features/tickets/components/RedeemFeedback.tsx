@@ -44,7 +44,6 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
   errorMessage,
   successDialogOpen,
   setSuccessDialogOpen,
-  activatedCode,
   navigate,
   primaryColor,
 }) => (
