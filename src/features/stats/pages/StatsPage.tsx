@@ -19,7 +19,7 @@ import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN,
 } from '../../../shared/colors';
-import { formatMonth, formatCurrencyILS, formatDateShort } from '../../../shared/utils/date';
+import { formatMonth, formatCurrency, formatDateShort } from '../../../shared/utils/date';
 import KpiCard from '../components/KpiCard';
 import DrawCard from '../components/DrawCard';
 
@@ -114,7 +114,7 @@ const StatsPage = () => {
               <Box>
                 <Typography variant='body2' fontWeight={700} color='primary.main'>{selectedDrawInfo.draw_name}</Typography>
                 <Typography variant='caption' color='text.secondary'>
-                  Prize: {formatCurrencyILS(selectedDrawInfo.prize_amount)} · Draw date: {formatDateShort(selectedDrawInfo.draw_date)}
+                  Prize: {formatCurrency(selectedDrawInfo.prize_amount)} · Draw date: {formatDateShort(selectedDrawInfo.draw_date)}
                 </Typography>
               </Box>
               <Chip label='Filtered' size='small' color='primary' sx={{ ml: 'auto', fontWeight: 700 }} />

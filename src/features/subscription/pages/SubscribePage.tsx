@@ -22,15 +22,22 @@ const FEATURES = [
 const TIER_MAP: Record<number, number> = {
   250:  250,
   500:  490,
-  750:  720,
-  1000: 940,
-  1250: 1150,
-  1500: 1350,
-  1750: 1540,
-  2000: 1720,
-  2250: 1890,
-  2500: 2000,
+  750:  730,
+  1000: 920,
+  1250: 1140,
+  1500: 1360,
+  1750: 1500,
+  2000: 1710,
+  2250: 1910,
+  2500: 2050,
+    2750: 2250,
+  3000: 2460,
+
 };
+
+const TIER_KEYS = Object.keys(TIER_MAP).map(Number).sort((a, b) => a - b);
+const MIN_TIER = TIER_KEYS[0];
+const MAX_TIER = TIER_KEYS[TIER_KEYS.length - 1];
 
 const SubscribePage = () => {
   const navigate = useNavigate();
@@ -57,10 +64,10 @@ const SubscribePage = () => {
   const pricePerLocation = TIER_MAP[selectedTier] ?? 0;
   const effectiveLocationCount = locationCount || 1;
   const totalMonthly = pricePerLocation * effectiveLocationCount;
-  const basePricePerLocation = TIER_MAP[250];
-  const savingsPercent = selectedTier > 250
-    ? Math.round((1 - (pricePerLocation / (selectedTier / 250 * basePricePerLocation))) * 100)
-    : 0;
+
+  const currentIndex = TIER_KEYS.indexOf(selectedTier);
+  const atMin = currentIndex === 0;
+  const atMax = currentIndex === TIER_KEYS.length - 1;
 
   const handleSubscribe = async () => {
     setLoading(true);
@@ -225,57 +232,26 @@ const SubscribePage = () => {
               {/* Stepper control */}
               <Stack direction='row' alignItems='center' justifyContent='center' spacing={2}>
                 <IconButton
-                  onClick={() => setSelectedTier(Math.max(250, selectedTier - 250))}
-                  disabled={selectedTier === 250}
-                  sx={{
-                    width: 52,
-                    height: 52,
-                    border: '2px solid',
-                    borderColor: selectedTier === 250 ? 'divider' : 'divider',
-                    borderRadius: 2,
-                    opacity: selectedTier === 250 ? 0.4 : 1,
-                  }}
+                  onClick={() => setSelectedTier(TIER_KEYS[currentIndex - 1])}
+                  disabled={atMin}
+                  sx={{ width: 52, height: 52, border: '2px solid', borderColor: 'divider', borderRadius: 2, opacity: atMin ? 0.4 : 1 }}
                 >
                   <Remove />
                 </IconButton>
 
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography
-                    variant='h4'
-                    fontWeight={900}
-                    color='text.primary'
-                    sx={{
-                      minWidth: { xs: 160, md: 220 },
-                    }}
-                  >
+                  <Typography variant='h4' fontWeight={900} color='text.primary' sx={{ minWidth: { xs: 160, md: 220 } }}>
                     {selectedTier.toLocaleString()} entries
                   </Typography>
-                  <Stack direction='row' alignItems='center' justifyContent='center' spacing={1} mt={1}>
-                    <Typography variant='body2' color='text.secondary'>
-                      ${pricePerLocation} per location/month
-                    </Typography>
-                    {savingsPercent > 0 && (
-                      <Chip
-                        label={`Save ${savingsPercent}%`}
-                        color='success'
-                        size='small'
-                        variant='outlined'
-                      />
-                    )}
-                  </Stack>
+                  <Typography variant='body2' color='text.secondary' mt={1}>
+                    ${pricePerLocation.toLocaleString()} per location/month
+                  </Typography>
                 </Box>
 
                 <IconButton
-                  onClick={() => setSelectedTier(Math.min(2500, selectedTier + 250))}
-                  disabled={selectedTier === 2500}
-                  sx={{
-                    width: 52,
-                    height: 52,
-                    border: '2px solid',
-                    borderColor: selectedTier === 2500 ? 'divider' : 'divider',
-                    borderRadius: 2,
-                    opacity: selectedTier === 2500 ? 0.4 : 1,
-                  }}
+                  onClick={() => setSelectedTier(TIER_KEYS[currentIndex + 1])}
+                  disabled={atMax}
+                  sx={{ width: 52, height: 52, border: '2px solid', borderColor: 'divider', borderRadius: 2, opacity: atMax ? 0.4 : 1 }}
                 >
                   <Add />
                 </IconButton>
@@ -352,13 +328,20 @@ const SubscribePage = () => {
                 </Stack>
               </Box>
 
-              {/* Savings caption */}
-              {savingsPercent > 0 && (
+              {/* Support message at max tier */}
+              {atMax && (
                 <Typography
-                  variant='caption'
-                  sx={{ color: 'success.main', display: 'block', mb: 3, textAlign: 'center', lineHeight: 1.6 }}
+                  variant='body2'
+                  textAlign='center'
+                  sx={{ mb: 3, color: 'text.secondary', lineHeight: 1.6 }}
                 >
-                  {savingsPercent}% savings vs. base rate
+                  Need more than {MAX_TIER.toLocaleString()} entries?{' '}
+                  <Typography component='span' variant='body2' sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}
+                    onClick={() => window.location.href = 'mailto:support@winnbell.com'}
+                  >
+                    Contact our support team
+                  </Typography>
+                  {' '}for a custom plan.
                 </Typography>
               )}
 

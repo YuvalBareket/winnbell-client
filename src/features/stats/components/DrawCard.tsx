@@ -1,7 +1,7 @@
 import { Paper, Box, Typography, Stack, Chip } from '@mui/material';
 import { CalendarToday } from '@mui/icons-material';
 import { PRIMARY_MAIN } from '../../../shared/colors';
-import { formatCurrencyILS, formatDateShort } from '../../../shared/utils/date';
+import { formatCurrency, formatDateShort } from '../../../shared/utils/date';
 import type { DrawDataPoint } from '../api/stats.api';
 
 const activationRate = (issued: number, activated: number) =>
@@ -28,7 +28,7 @@ const DrawCard = ({ draw, selected, onClick }: { draw: DrawDataPoint; selected: 
             {draw.draw_name}
           </Typography>
           <Typography variant='h6' fontWeight={900} color={selected ? 'primary.main' : 'text.primary'} lineHeight={1.2}>
-            {formatCurrencyILS(draw.prize_amount)}
+            {formatCurrency(draw.prize_amount)}
           </Typography>
         </Box>
         <Chip

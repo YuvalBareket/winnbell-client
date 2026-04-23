@@ -61,7 +61,7 @@ export const getUploadUrl = async (contentType: string): Promise<{ uploadUrl: st
 };
 
 export const updateBusinessLogo = async (key: string): Promise<void> => {
-  await api.patch('/business/logo', { logo_url: key });
+  await api.patch('/business/logo', { key });
 };
 
 export const updateCampaignSettingsApi = async (data: UpdateCampaignSettingsInput): Promise<void> => {

@@ -1230,8 +1230,7 @@ const BusinessDashboard: React.FC = () => {
                           Monthly Revenue
                         </Typography>
                         <Typography variant='h5' fontWeight={700}>
-                          ILS{' '}
-                          {Number(
+                          ${Number(
                             overview?.subscriptions?.total_fees ?? 0
                           ).toLocaleString()}
                         </Typography>
@@ -1262,8 +1261,7 @@ const BusinessDashboard: React.FC = () => {
                           Prize Pool
                         </Typography>
                         <Typography variant='h5' fontWeight={700}>
-                          ILS{' '}
-                          {Number(
+                          ${Number(
                             overview?.currentDraw?.prize_pool ?? 0
                           ).toLocaleString()}
                         </Typography>
@@ -1287,8 +1285,7 @@ const BusinessDashboard: React.FC = () => {
                         </Typography>
                         <Typography variant='body2' color='text.secondary' sx={{ mt: 2 }}>
                           <strong>Current Status:</strong> {overview?.subscriptions?.active_subs ?? 0} active
-                          business subscriptions contributing ILS{' '}
-                          {Number(overview?.subscriptions?.total_fees ?? 0).toLocaleString()} per month to
+                          business subscriptions contributing ${Number(overview?.subscriptions?.total_fees ?? 0).toLocaleString()} per month to
                           the draw pool.
                         </Typography>
                       </Stack>
