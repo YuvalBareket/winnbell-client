@@ -110,7 +110,7 @@ const didAutoActivate = useRef(false);
     localStorage.removeItem('pendingTicketCode');
 
     // 4. Trigger mutation — promo codes use a separate endpoint
-    if (pending.startsWith('PROMO_')) {
+    if (pending.startsWith('PROMO')) {
       promoMutation.mutate(pending, {
         onSuccess: () => {
           setActivatedCode(pending);

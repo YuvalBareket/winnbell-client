@@ -14,7 +14,10 @@ import {
   updateUserRole,
   toggleUserActive,
   fetchDrawBusinesses,
+  fetchAdminAnalytics,
+  fetchLocationBreakdown,
 } from '../api/adminApi';
+import type { AdminAnalytics, LocationBreakdownPage } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useAdminBusinesses = () => {
@@ -173,5 +176,33 @@ export const useToggleUserActive = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
     },
+  });
+};
+
+export const useAdminAnalytics = (businessId?: number | null) => {
+  return useQuery({
+    queryKey: ['admin', 'analytics', businessId ?? null],
+    queryFn: async () => {
+      const { data } = await fetchAdminAnalytics(businessId);
+      return data as AdminAnalytics;
+    },
+    staleTime: 5 * 60_000,
+  });
+};
+
+export const useLocationBreakdown = (params: {
+  businessId?: number | null;
+  search: string;
+  page: number;
+  limit: number;
+}) => {
+  return useQuery({
+    queryKey: ['admin', 'locations', params.businessId ?? null, params.search, params.page, params.limit],
+    queryFn: async () => {
+      const { data } = await fetchLocationBreakdown(params);
+      return data as LocationBreakdownPage;
+    },
+    staleTime: 2 * 60_000,
+    placeholderData: (prev) => prev,
   });
 };

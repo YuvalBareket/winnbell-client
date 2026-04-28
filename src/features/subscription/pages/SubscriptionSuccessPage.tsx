@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Box, Typography, Button, Paper, Stack, CircularProgress } from '@mui/material';
 import { CheckCircle, Storefront } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAppDispatch } from '../../../store/hook';
 import { setBusinessActive } from '../../../store/slices/authSlice';
 import { api } from '../../../shared/api/client';
@@ -10,26 +11,22 @@ const SubscriptionSuccessPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [searchParams] = useSearchParams();
-  const [verifying, setVerifying] = useState(true);
-  const [error, setError] = useState('');
+  const sessionId = searchParams.get('session_id');
 
+  const { isPending: verifying, isSuccess, isError } = useQuery({
+    queryKey: ['subscription', 'verify-session', sessionId],
+    queryFn: () => api.post('/business/subscription/verify-session', { sessionId }).then(r => r.data),
+    enabled: !!sessionId,
+    retry: false,
+    staleTime: Infinity,
+  });
+
+  // Dispatch Redux action once verification succeeds (side effect, not a fetch)
   useEffect(() => {
-    const sessionId = searchParams.get('session_id');
-    if (!sessionId) {
-      setVerifying(false);
-      return;
-    }
+    if (isSuccess) dispatch(setBusinessActive());
+  }, [isSuccess, dispatch]);
 
-    api.post('/business/subscription/verify-session', { sessionId })
-      .then(() => {
-        dispatch(setBusinessActive());
-      })
-      .catch((err) => {
-        console.error('Verify session error:', err);
-        setError('Could not confirm your subscription. Please contact support if the issue persists.');
-      })
-      .finally(() => setVerifying(false));
-  }, []);
+  const error = isError ? 'Could not confirm your subscription. Please contact support if the issue persists.' : '';
 
   if (verifying) {
     return (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Box, Button, Typography, Paper, Stack, Chip, CircularProgress,
   Divider, Skeleton, IconButton,
@@ -11,6 +11,7 @@ import { api } from '../../../shared/api/client';
 import {
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
 } from '../../../shared/colors';
+import { useBusinessData } from '../../partner/hooks/useBusinessData';
 
 const FEATURES = [
   { icon: <ConfirmationNumber />, text: 'Issue unlimited tickets to your customers' },
@@ -41,23 +42,11 @@ const MAX_TIER = TIER_KEYS[TIER_KEYS.length - 1];
 const SubscribePage = () => {
   const navigate = useNavigate();
   const [selectedTier, setSelectedTier] = useState(500);
-  const [locationCount, setLocationCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch location count on mount
-  useEffect(() => {
-    const fetchLocationCount = async () => {
-      try {
-        const { data } = await api.get('/business/my-business');
-        const count = data.locations?.length || 1;
-        setLocationCount(count);
-      } catch (err) {
-        setLocationCount(1);
-      }
-    };
-    fetchLocationCount();
-  }, []);
+  const { data: businessData } = useBusinessData();
+  const locationCount = businessData?.locations?.length ?? null;
 
   // Calculate pricing
   const pricePerLocation = TIER_MAP[selectedTier] ?? 0;

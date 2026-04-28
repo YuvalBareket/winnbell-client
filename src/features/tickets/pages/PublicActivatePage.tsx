@@ -35,8 +35,7 @@ const PublicActivatePage = () => {
   const [isChecking, setIsChecking] = useState(true);
 
   const code = searchParams.get('code')?.trim().toUpperCase() ?? null;
-  const isPromo = code?.startsWith('PROMO_') ?? false;
-
+  const isPromo = code?.startsWith('PROMO') ?? false;
   useEffect(() => {
     // 1. If we have a code, save it immediately
     if (code) {

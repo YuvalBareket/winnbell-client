@@ -42,3 +42,67 @@ export interface CreateDrawInput {
   prize_percentage?: number;
   draw_date: string;
 }
+
+export interface LocationBreakdownRow {
+  business_id: number;
+  business_name: string;
+  entry_cap: number | null;
+  threshold: number | null;
+  location_id: number;
+  location_name: string;
+  address: string | null;
+  total_tickets: number;
+  activated: number;
+  quarantined: number;
+  receipt_tickets: number;
+  code_tickets: number;
+  avg_transaction: number | null;
+  pct_just_above_threshold: number | null;
+}
+
+export interface LocationBreakdownPage {
+  rows: LocationBreakdownRow[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface AdminAnalytics {
+  entrySourceMix: {
+    code: number;
+    receipt: number;
+    free: number;
+    promo: number;
+    total: number;
+  };
+  amoe: {
+    total_requests: number;
+    approved: number;
+    rejected: number;
+    weekly_limit_count: number;
+    campaign_ended_count: number;
+  };
+  fraud: {
+    high_risk: number;
+    medium_risk: number;
+    low_risk: number;
+  };
+  validation: {
+    quarantined: number;
+    accepted: number;
+    total: number;
+    quarantine_reasons: { reason: string; count: number }[];
+  };
+  repeatBehavior: {
+    users_with_submissions: number;
+    avg_submissions_per_user: number;
+    users_2_plus: number;
+    multi_business_users: number;
+  };
+  userGrowth: {
+    new_this_week: number;
+    new_this_month: number;
+    total: number;
+  };
+}

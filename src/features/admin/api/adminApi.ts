@@ -31,3 +31,22 @@ export const toggleUserActive = (userId: number, is_active: boolean) =>
   api.patch(`/admin/users/${userId}/active`, { is_active });
 export const fetchDrawBusinesses = (drawId: number) =>
   api.get(`/admin/draws/${drawId}/businesses`);
+export const fetchAdminAnalytics = (businessId?: number | null) =>
+  api.get('/admin/analytics', { params: businessId ? { businessId } : undefined });
+
+export const fetchLocationBreakdown = (params: {
+  businessId?: number | null;
+  search?: string;
+  page: number;
+  limit: number;
+}) => {
+  const { businessId, search, page, limit } = params;
+  return api.get('/admin/analytics/locations', {
+    params: {
+      ...(businessId ? { businessId } : {}),
+      ...(search ? { search } : {}),
+      page,
+      limit,
+    },
+  });
+};
