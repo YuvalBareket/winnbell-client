@@ -196,7 +196,9 @@ export default function SubscriptionManagementPage() {
                       <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
                         Current Plan
                       </Typography>
-                      <Typography variant='h6' fontWeight={800} lineHeight={1.2}>Partner Monthly Plan</Typography>
+                      <Typography variant='h6' fontWeight={800} lineHeight={1.2}>
+                        Partner {sub.billing_interval === 'yearly' ? 'Yearly' : 'Monthly'} Plan
+                      </Typography>
                     </Box>
                   </Stack>
                   <Chip

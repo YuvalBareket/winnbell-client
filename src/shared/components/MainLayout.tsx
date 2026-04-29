@@ -8,7 +8,7 @@ import AppMenuDrawer from './AppMenuDrawer';
 import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
 import { useAppSelector } from '../../store/hook';
-import { selectIsBusiness, selectBusinessIsActive, selectIsAdmin } from '../../store/selectors/authSelectors';
+import { selectIsBusiness, selectBusinessIsActive, selectIsAdmin, selectIsLocationManager } from '../../store/selectors/authSelectors';
 import {
   BG_APP_GRADIENT,
   GRADIENT_PRIMARY,
@@ -28,13 +28,18 @@ const MainLayout = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
+  const isManager = useAppSelector(selectIsLocationManager);
   const isAdmin = useAppSelector(selectIsAdmin);
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const showSubscribeBanner = isBusinessAdmin && !businessIsActive && location.pathname !== '/subscribe';
 
+  const isBusinessOrManager = isBusinessAdmin || isManager;
+  // Business/manager users use /activity as their mobile home; regular users use /scan
+  const mobileMainPath = isBusinessOrManager ? '/activity' : '/scan';
   const isNearby = location.pathname === '/nearby';
+  const isActivity = location.pathname === '/activity';
   const topPadding = { xs: 0, md: 0 };
-  const scanActive = location.pathname === '/scan';
+  const scanActive = location.pathname === mobileMainPath;
 
   return (
     <Box
@@ -50,8 +55,8 @@ const MainLayout = () => {
       {/* Desktop persistent sidebar */}
       <AppSidebar />
 
-      {/* Mobile header — hidden on desktop */}
-      {!isNearby && <AppHeader onMenuOpen={() => setMenuOpen(true)} />}
+      {/* Mobile header — hidden on desktop, hidden on pages with their own hero */}
+      {!isNearby && !isActivity && <AppHeader onMenuOpen={() => setMenuOpen(true)} />}
 
       {/* Mobile drawer */}
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -177,7 +182,7 @@ const MainLayout = () => {
             />
 
             <BottomNavigationAction
-              value='/scan'
+              value={mobileMainPath}
               icon={
                 <Box
                   sx={{

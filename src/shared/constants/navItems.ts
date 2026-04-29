@@ -1,7 +1,6 @@
 import type { ElementType } from 'react';
 import {
   StorefrontOutlined,
-  QrCodeScannerOutlined,
   ConfirmationNumberOutlined,
   BusinessOutlined,
   BarChartOutlined,
@@ -10,6 +9,7 @@ import {
   PrivacyTipOutlined,
   EmojiEventsOutlined,
   AdminPanelSettingsOutlined,
+  FeedOutlined,
 } from '@mui/icons-material';
 
 export interface NavItem {
@@ -27,7 +27,7 @@ export const userNavItems: NavItem[] = [
 
 export const businessNavItems: NavItem[] = [
   { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
-  { label: 'Generate Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
+  { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
   { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
   { label: 'Subscription', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
@@ -35,7 +35,7 @@ export const businessNavItems: NavItem[] = [
 
 export const managerNavItems: NavItem[] = [
   { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
-  { label: 'Generate Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
+  { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
   { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
 ];

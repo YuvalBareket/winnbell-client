@@ -42,6 +42,7 @@ const MAX_TIER = TIER_KEYS[TIER_KEYS.length - 1];
 const SubscribePage = () => {
   const navigate = useNavigate();
   const [selectedTier, setSelectedTier] = useState(500);
+  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -51,7 +52,9 @@ const SubscribePage = () => {
   // Calculate pricing
   const pricePerLocation = TIER_MAP[selectedTier] ?? 0;
   const effectiveLocationCount = locationCount || 1;
+  const yearlyPricePerLocation = pricePerLocation * 12;
   const totalMonthly = pricePerLocation * effectiveLocationCount;
+  const totalYearly = yearlyPricePerLocation * effectiveLocationCount;
 
   const currentIndex = TIER_KEYS.indexOf(selectedTier);
   const atMin = currentIndex === 0;
@@ -63,6 +66,7 @@ const SubscribePage = () => {
     try {
       const { data } = await api.post<{ url: string }>('/business/subscription/checkout', {
         entries_per_location: selectedTier,
+        billing_interval: billingInterval,
       });
       window.location.href = data.url;
     } catch (err: any) {
@@ -208,6 +212,38 @@ const SubscribePage = () => {
               </Typography>
             </Box>
 
+            {/* Billing interval toggle */}
+            <Box sx={{ px: { xs: 3, md: 4 }, pt: 3, pb: 0 }}>
+              <Stack direction='row' alignItems='center' justifyContent='center' spacing={0} sx={{ bgcolor: 'action.hover', borderRadius: 2.5, p: 0.5 }}>
+                <Box
+                  onClick={() => setBillingInterval('monthly')}
+                  sx={{
+                    flex: 1, textAlign: 'center', py: 1, px: 2, borderRadius: 2, cursor: 'pointer', transition: 'all 0.15s',
+                    bgcolor: billingInterval === 'monthly' ? 'background.paper' : 'transparent',
+                    boxShadow: billingInterval === 'monthly' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                  }}
+                >
+                  <Typography variant='body2' fontWeight={700} color={billingInterval === 'monthly' ? 'text.primary' : 'text.secondary'}>
+                    Monthly
+                  </Typography>
+                </Box>
+                <Box
+                  onClick={() => setBillingInterval('yearly')}
+                  sx={{
+                    flex: 1, textAlign: 'center', py: 1, px: 2, borderRadius: 2, cursor: 'pointer', transition: 'all 0.15s',
+                    bgcolor: billingInterval === 'yearly' ? 'background.paper' : 'transparent',
+                    boxShadow: billingInterval === 'yearly' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                  }}
+                >
+                  <Stack direction='row' alignItems='center' justifyContent='center' spacing={0.75}>
+                    <Typography variant='body2' fontWeight={700} color={billingInterval === 'yearly' ? 'text.primary' : 'text.secondary'}>
+                      Yearly
+                    </Typography>
+                  </Stack>
+                </Box>
+              </Stack>
+            </Box>
+
             {/* Section 1: Entries stepper */}
             <Box sx={{ px: { xs: 3, md: 4 }, py: { xs: 3, md: 4 } }}>
               <Typography variant='h6' fontWeight={700} color='text.primary' mb={0.5}>
@@ -283,22 +319,24 @@ const SubscribePage = () => {
                     )}
                   </Stack>
 
-                  {/* Price per location / mo */}
+                  {/* Price per location */}
                   <Stack direction='row' justifyContent='space-between' alignItems='center'>
                     <Typography variant='body2' color='text.secondary'>
                       Price per location
                     </Typography>
                     <Typography variant='body2' fontWeight={700} color='text.primary'>
-                      ${pricePerLocation.toLocaleString()}
+                      {billingInterval === 'yearly'
+                        ? `$${yearlyPricePerLocation.toLocaleString()}/yr`
+                        : `$${pricePerLocation.toLocaleString()}`}
                     </Typography>
                   </Stack>
 
                   <Divider sx={{ my: 1 }} />
 
-                  {/* Total monthly */}
+                  {/* Total */}
                   <Stack direction='row' justifyContent='space-between' alignItems='center'>
                     <Typography variant='body2' fontWeight={700} color='text.primary'>
-                      Total per month
+                      {billingInterval === 'yearly' ? 'Total per year' : 'Total per month'}
                     </Typography>
                     <Typography
                       variant='h5'
@@ -310,7 +348,7 @@ const SubscribePage = () => {
                         WebkitTextFillColor: 'transparent',
                       }}
                     >
-                      ${totalMonthly.toFixed(0)}
+                      {billingInterval === 'yearly' ? `$${totalYearly.toFixed(0)}` : `$${totalMonthly.toFixed(0)}`}
                     </Typography>
                   </Stack>
                 </Stack>
@@ -361,7 +399,9 @@ const SubscribePage = () => {
               </Button>
 
               <Typography variant='caption' color='text.disabled' textAlign='center' display='block' mt={1.5}>
-                You will be redirected to Stripe's secure checkout. After payment you'll be entered into the next monthly draw and can start issuing tickets once it opens.
+                {billingInterval === 'yearly'
+                  ? "You'll be redirected to Stripe's secure checkout. Yearly plan covers 12 monthly draws — pay once, stay enrolled all year."
+                  : "You will be redirected to Stripe's secure checkout. After payment you'll be entered into the next monthly draw and can start issuing tickets once it opens."}
               </Typography>
 
               <Button

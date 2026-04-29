@@ -41,9 +41,7 @@ export const formatCurrency = (amount: number): string => {
 export const formatTicketDate = (dateString: string) => {
   if (!dateString) return { date: 'N/A', time: 'N/A' };
 
-  // Remove the 'Z' if it exists so JavaScript treats it as local 'Wall Time'
-  const localString = dateString.replace('Z', '');
-  const date = new Date(localString);
+  const date = new Date(dateString);
 
   return {
     date: date.toLocaleDateString('en-US', {

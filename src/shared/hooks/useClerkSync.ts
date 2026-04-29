@@ -37,6 +37,8 @@ export const useClerkSync = () => {
         dispatch(login({ user: data.user, token: data.token }));
         if (localStorage.getItem('pendingTicketCode')) {
           navigate('/scan');
+        } else if (data.user.role === 'Business' || data.user.location_id != null) {
+          navigate('/activity');
         }
       })
       .catch(console.error)

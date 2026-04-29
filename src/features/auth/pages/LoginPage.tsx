@@ -100,13 +100,13 @@ const LoginPage = () => {
       await signIn.authenticateWithRedirect({
         strategy: provider,
         redirectUrl: '/sso-callback',
-        redirectUrlComplete: '/scan',
+        redirectUrlComplete: '/nearby',
       });
     } catch (err: any) {
       sessionStorage.removeItem('pendingInviteToken');
       const code = err.errors?.[0]?.code;
       if (code === 'session_exists' || code === 'identifier_already_signed_in') {
-        navigate('/scan');
+        navigate('/nearby');
         return;
       }
       setError(err.errors?.[0]?.message || 'Social login failed');
@@ -122,7 +122,7 @@ const LoginPage = () => {
       if (result.status === 'complete') {
         if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
-        navigate('/scan');
+        navigate('/nearby');
       } else if (result.status === 'needs_second_factor') {
         await signIn.prepareSecondFactor({ strategy: 'email_code' });
         setNeeds2FA(true);
@@ -130,7 +130,7 @@ const LoginPage = () => {
     } catch (err: any) {
       const code = err.errors?.[0]?.code;
       if (code === 'session_exists' || code === 'identifier_already_signed_in') {
-        navigate('/scan');
+        navigate('/nearby');
         return;
       }
       setError(err.errors?.[0]?.message || 'Invalid email or password');
@@ -148,7 +148,7 @@ const LoginPage = () => {
       if (result.status === 'complete') {
         if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
-        navigate('/scan');
+        navigate('/nearby');
       }
     } catch (err: any) {
       setError(err.errors?.[0]?.message || 'Invalid code');

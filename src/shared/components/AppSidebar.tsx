@@ -12,8 +12,8 @@ import {
   userNavItems, managerNavItems, adminNavItems, legalNavItems, type NavItem,
 } from '../constants/navItems';
 import {
-  BusinessOutlined, QrCodeScannerOutlined, ConfirmationNumberOutlined,
-  BarChartOutlined, ReceiptLongOutlined,
+  BusinessOutlined, ConfirmationNumberOutlined,
+  BarChartOutlined, ReceiptLongOutlined, FeedOutlined,
 } from '@mui/icons-material';
 import {
   GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING,
@@ -40,7 +40,7 @@ const AppSidebar = () => {
 
   const businessNavItems: NavItem[] = [
     { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
-    { label: 'Generate Ticket', Icon: QrCodeScannerOutlined, path: '/scan' },
+    { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
     { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
     { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
     { label: 'Subscription', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },

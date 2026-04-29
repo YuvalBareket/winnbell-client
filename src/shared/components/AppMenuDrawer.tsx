@@ -15,7 +15,6 @@ import {
   Logout,
   ConfirmationNumberOutlined,
   StorefrontOutlined,
-  QrCodeScannerOutlined,
   BusinessOutlined,
   BarChartOutlined,
   ReceiptLongOutlined,
@@ -24,6 +23,7 @@ import {
   ChevronRight,
   EmojiEventsOutlined,
   AdminPanelSettingsOutlined,
+  FeedOutlined,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
@@ -84,7 +84,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     : isBusiness
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
-        { label: 'Scan Ticket', icon: <QrCodeScannerOutlined />, path: '/scan' },
+        { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
         { label: 'Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
         { label: 'Subscription', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
@@ -92,7 +92,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     : isManager
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
-        { label: 'Scan Ticket', icon: <QrCodeScannerOutlined />, path: '/scan' },
+        { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
         { label: 'Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
       ]
