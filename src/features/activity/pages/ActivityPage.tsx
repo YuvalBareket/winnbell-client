@@ -355,6 +355,13 @@ const ActivityPage = () => {
                               {item.receipt_identifier_masked}
                             </Typography>
                           )}
+                          {item.entries_earned > 1 && (
+                            <Chip
+                              label={`×${item.entries_earned} entries`}
+                              size='small'
+                              sx={{ fontWeight: 700, height: 20, fontSize: '0.65rem', bgcolor: '#ede9fe', color: '#6d28d9' }}
+                            />
+                          )}
                         </Stack>
 
                         {/* Right: timestamp and status pill */}

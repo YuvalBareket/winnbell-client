@@ -67,6 +67,7 @@ export interface ReceiptEntryResponse {
   success: boolean;
   ticketId: number;
   code: string;
+  entries_earned: number;
 }
 
 export const submitReceiptEntry = (payload: ReceiptEntryPayload): Promise<ReceiptEntryResponse> =>

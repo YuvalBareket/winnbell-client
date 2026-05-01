@@ -71,6 +71,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
+  const [submittedEntries, setSubmittedEntries] = useState<number>(1);
 
   // ──────────────────────────────────────────────────
   // Hooks
@@ -83,6 +84,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const submitReceiptEntry = useSubmitReceiptEntry({
     onSuccess: (data) => {
       setSubmittedCode(data.code ?? null);
+      setSubmittedEntries(data.entries_earned ?? 1);
       setSuccessDialogOpen(true);
       setReceiptIdentifier('');
       setTransactionAmount('');
@@ -731,7 +733,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 You're In!
               </Typography>
               <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, lineHeight: 1.6 }}>
-                Your entry is in the draw.<br />Good luck!
+                {submittedEntries > 1
+                  ? <><strong style={{ color: 'white' }}>{submittedEntries} entries</strong> added to the draw.<br />Good luck!</>
+                  : <>Your entry is in the draw.<br />Good luck!</>
+                }
               </Typography>
               {submittedCode && (
                 <Box sx={{
@@ -739,7 +744,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                   borderRadius: 3, px: 4, py: 2.5, mb: 5, display: 'inline-block',
                 }}>
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 2, display: 'block', mb: 0.5 }}>
-                    Entry Code
+                    {submittedEntries > 1 ? `Entry Code (+${submittedEntries - 1} more)` : 'Entry Code'}
                   </Typography>
                   <Typography variant="h4" fontWeight={900} sx={{ color: 'white', fontFamily: 'monospace', letterSpacing: 4 }}>
                     {submittedCode}
