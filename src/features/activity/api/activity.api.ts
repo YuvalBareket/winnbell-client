@@ -13,6 +13,7 @@ export interface ActivityItem {
   receipt_identifier_masked: string | null;
   entry_source: string;
   status: 'active' | 'under_review';
+  quarantine_reason: string | null;
   created_at: string;
 }
 
@@ -23,6 +24,10 @@ export interface ActivityResult {
 }
 
 export type DateRange = 'today' | '7d' | '30d';
+
+export const setTicketQualification = async (ticketId: number, disqualify: boolean): Promise<void> => {
+  await api.patch(`/business/tickets/${ticketId}/qualify`, { disqualify });
+};
 
 export const fetchActivity = async (params: {
   location_id?: number;

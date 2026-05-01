@@ -1,38 +1,43 @@
 import { api } from '../../../shared/api/client';
 
 export interface StatsSummary {
-  total_issued: number;
-  total_activated: number;
-  activation_rate: number;
+  total_entries: number;
+  total_revenue: number;
+  avg_transaction: number;
 }
 
 export interface DailyDataPoint {
   date: string;
-  issued: number;
-  activated: number;
+  entries: number;
+  revenue: number;
 }
 
 export interface MonthlyDataPoint {
   month: string;     // "yyyy-MM"
-  issued: number;
-  activated: number;
+  entries: number;
+  revenue: number;
 }
 
 export interface LocationDataPoint {
   location_id: number;
   location_name: string;
-  issued: number;
-  activated: number;
+  entries: number;
+  revenue: number;
 }
 
 export interface DrawDataPoint {
   draw_id: number;
   draw_name: string;
-  prize_amount: number;
   draw_date: string;
   draw_status: string;
-  issued: number;
-  activated: number;
+  entries: number;
+  revenue: number;
+}
+
+export interface CustomerGrowthPoint {
+  month: string;
+  new_customers: number;
+  total_customers: number;
 }
 
 export interface BusinessStatsData {
@@ -41,6 +46,7 @@ export interface BusinessStatsData {
   monthly: MonthlyDataPoint[];
   locations: LocationDataPoint[];
   draws: DrawDataPoint[];
+  customer_growth: CustomerGrowthPoint[];
 }
 
 export const fetchBusinessStats = async (
