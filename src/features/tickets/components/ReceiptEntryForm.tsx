@@ -18,7 +18,7 @@ import {
   Typography,
   Zoom,
 } from '@mui/material';
-import { AccessTime, CardGiftcard, CloudUpload, ChevronRight, Close, ConfirmationNumber, EmojiEvents, InfoOutlined, ReceiptOutlined, StorefrontOutlined, Visibility, AddCircleOutline } from '@mui/icons-material';
+import { AccessTime, CardGiftcard, CloudUpload, ChevronRight, Close, ConfirmationNumber, EmojiEvents, ReceiptOutlined, StorefrontOutlined, Visibility, AddCircleOutline } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import { PRIMARY_MAIN, GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
@@ -71,7 +71,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
-  const [submittedEntries, setSubmittedEntries] = useState<number>(1);
 
   // ──────────────────────────────────────────────────
   // Hooks
@@ -84,7 +83,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const submitReceiptEntry = useSubmitReceiptEntry({
     onSuccess: (data) => {
       setSubmittedCode(data.code ?? null);
-      setSubmittedEntries(data.entries_earned ?? 1);
       setSuccessDialogOpen(true);
       setReceiptIdentifier('');
       setTransactionAmount('');
@@ -409,25 +407,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </Box>
       )}
 
-      {/* ── Threshold info banner ──────────────────────── */}
-      {selectedLocation && selectedLocation.min_transaction_amount && !successDialogOpen && (
-        <Box
-          sx={{
-            display: 'flex', alignItems: 'center', gap: 1.5,
-            px: 2, py: 1.25, mb: 2, borderRadius: 2,
-            bgcolor: `${primaryColor || PRIMARY_MAIN}08`,
-            border: `1px solid ${primaryColor || PRIMARY_MAIN}20`,
-          }}
-        >
-          <InfoOutlined sx={{ color: primaryColor || PRIMARY_MAIN, fontSize: 18, flexShrink: 0 }} />
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, lineHeight: 1.4 }}>
-            Earn 1 entry per ${selectedLocation.min_transaction_amount} spent
-            {' '}&middot;{' '}
-            ${selectedLocation.min_transaction_amount * 2} = 2 entries
-          </Typography>
-        </Box>
-      )}
-
       {/* ── Receipt fields ───────────────────────────── */}
       <Collapse in={Boolean(selectedLocation) && !successDialogOpen}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -733,10 +712,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 You're In!
               </Typography>
               <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, lineHeight: 1.6 }}>
-                {submittedEntries > 1
-                  ? <><strong style={{ color: 'white' }}>{submittedEntries} entries</strong> added to the draw.<br />Good luck!</>
-                  : <>Your entry is in the draw.<br />Good luck!</>
-                }
+                Your entry is in the draw.<br />Good luck!
               </Typography>
               {submittedCode && (
                 <Box sx={{
@@ -744,7 +720,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                   borderRadius: 3, px: 4, py: 2.5, mb: 5, display: 'inline-block',
                 }}>
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 2, display: 'block', mb: 0.5 }}>
-                    {submittedEntries > 1 ? `Entry Code (+${submittedEntries - 1} more)` : 'Entry Code'}
+                    Entry Code
                   </Typography>
                   <Typography variant="h4" fontWeight={900} sx={{ color: 'white', fontFamily: 'monospace', letterSpacing: 4 }}>
                     {submittedCode}

@@ -14,7 +14,6 @@ export interface ActivityItem {
   entry_source: string;
   status: 'active' | 'under_review';
   quarantine_reason: string | null;
-  entries_earned: number;
   created_at: string;
 }
 
