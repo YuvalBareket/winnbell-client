@@ -12,6 +12,7 @@ export interface NearbyLocation {
   description: string;
   terms_text: string;
   logo_url: string | null;
+  receipt_example_image_url: string | null;
   distance_km: number;
 }
 

@@ -10,6 +10,7 @@ import type {
 
 export interface UpdateCampaignSettingsInput {
   min_transaction_amount: number | null;
+  receipt_example_image_url?: string | null;
 }
 
 export const setupBusinessProfile = async (data: BusinessSetupInput): Promise<{ businessId: number }> => {

@@ -8,6 +8,7 @@ import {
   Collapse,
   Dialog,
   DialogContent,
+  DialogTitle,
   Divider,
   Fade,
   IconButton,
@@ -18,7 +19,7 @@ import {
   Typography,
   Zoom,
 } from '@mui/material';
-import { AccessTime, CardGiftcard, CloudUpload, ChevronRight, Close, ConfirmationNumber, EmojiEvents, ReceiptOutlined, StorefrontOutlined, Visibility, AddCircleOutline } from '@mui/icons-material';
+import { AccessTime, CardGiftcard, CloudUpload, ChevronRight, Close, ConfirmationNumber, EmojiEvents, ReceiptOutlined, StorefrontOutlined, AddCircleOutline, Visibility } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import { PRIMARY_MAIN, GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
@@ -43,6 +44,7 @@ const toParticipating = (n: NearbyLocation): ParticipatingLocation => ({
   business_name: n.name,
   sector: n.sector,
   logo_url: n.logo_url,
+  receipt_example_image_url: n.receipt_example_image_url,
   min_transaction_amount: null,
 });
 
@@ -71,6 +73,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
+  const [exampleOpen, setExampleOpen] = useState(false);
 
   // ──────────────────────────────────────────────────
   // Hooks
@@ -367,45 +370,77 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
 
       {/* ── Selected location pill ───────────────────── */}
       {selectedLocation && !successDialogOpen && (
-        <Box
-          sx={{
-            display: 'flex', alignItems: 'center', gap: 1.5,
-            px: 2, py: 1.5, mb: 3, borderRadius: 2.5,
-            bgcolor: `${primaryColor || PRIMARY_MAIN}10`,
-            border: `1.5px solid ${primaryColor || PRIMARY_MAIN}30`,
-          }}
-        >
+        <>
           <Box
             sx={{
-              width: 36, height: 36, borderRadius: 1.5, flexShrink: 0,
-              bgcolor: primaryColor || PRIMARY_MAIN,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              display: 'flex', alignItems: 'center', gap: 1.5,
+              px: 2, py: 1.5, mb: 3, borderRadius: 2.5,
+              bgcolor: `${primaryColor || PRIMARY_MAIN}10`,
+              border: `1.5px solid ${primaryColor || PRIMARY_MAIN}30`,
             }}
           >
-            <StorefrontOutlined sx={{ color: '#fff', fontSize: 18 }} />
+            <Box
+              sx={{
+                width: 36, height: 36, borderRadius: 1.5, flexShrink: 0,
+                bgcolor: primaryColor || PRIMARY_MAIN,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <StorefrontOutlined sx={{ color: '#fff', fontSize: 18 }} />
+            </Box>
+            <Box flex={1} minWidth={0}>
+              <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.2 }}>
+                {selectedLocation.business_name}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+                {selectedLocation.address}
+              </Typography>
+            </Box>
+            <Button
+              size="small"
+              onClick={handleChangeLocation}
+              sx={{
+                color: primaryColor || PRIMARY_MAIN, fontWeight: 700,
+                fontSize: '0.75rem', minWidth: 'auto', px: 1.5,
+                borderRadius: 1.5,
+                '&:hover': { bgcolor: `${primaryColor || PRIMARY_MAIN}15` },
+              }}
+            >
+              Change
+            </Button>
           </Box>
-          <Box flex={1} minWidth={0}>
-            <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.2 }}>
-              {selectedLocation.business_name}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
-              {selectedLocation.address}
-            </Typography>
-          </Box>
-          <Button
-            size="small"
-            onClick={handleChangeLocation}
-            sx={{
-              color: primaryColor || PRIMARY_MAIN, fontWeight: 700,
-              fontSize: '0.75rem', minWidth: 'auto', px: 1.5,
-              borderRadius: 1.5,
-              '&:hover': { bgcolor: `${primaryColor || PRIMARY_MAIN}15` },
-            }}
-          >
-            Change
-          </Button>
-        </Box>
+
+        </>
       )}
+
+      {/* ── Receipt example dialog ──────────────────── */}
+      <Dialog open={exampleOpen} onClose={() => setExampleOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle
+          sx={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            fontWeight: 800, fontSize: '1.1rem', color: 'text.primary',
+            borderBottom: '1px solid', borderColor: 'divider',
+          }}
+        >
+          Receipt Example
+          <IconButton
+            onClick={() => setExampleOpen(false)}
+            size="small"
+            sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover' } }}
+          >
+            <Close fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 2, bgcolor: '#fff' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5, fontWeight: 500 }}>
+            Use this to find the unique number on your receipt
+          </Typography>
+          {selectedLocation?.receipt_example_image_url && (
+            <Box component="img" src={selectedLocation.receipt_example_image_url} alt="Receipt example"
+              sx={{ display: 'block', width: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: 1.5 }} />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* ── Receipt fields ───────────────────────────── */}
       <Collapse in={Boolean(selectedLocation) && !successDialogOpen}>
@@ -446,7 +481,20 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               setReceiptLastKeystrokeAt(now);
             }}
             onPaste={() => setReceiptWasPasted(true)}
-            helperText='Find this on your receipt — may say "Receipt #" or "Order #"'
+            helperText={
+              <Box component="span">
+                Find this on your receipt — may say "Receipt #" or "Order #"
+                {selectedLocation?.receipt_example_image_url && (
+                  <>
+                    {' · '}
+                    <Box component="span" onClick={() => setExampleOpen(true)}
+                      sx={{ color: primaryColor || PRIMARY_MAIN, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}>
+                      Can't find it? See example
+                    </Box>
+                  </>
+                )}
+              </Box>
+            }
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">

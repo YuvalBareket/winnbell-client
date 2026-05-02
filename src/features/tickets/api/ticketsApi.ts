@@ -48,6 +48,7 @@ export interface ParticipatingLocation {
   sector: string;
   logo_url: string | null;
   min_transaction_amount: number | null;
+  receipt_example_image_url: string | null;
 }
 
 export const searchParticipatingLocations = (q: string): Promise<ParticipatingLocation[]> =>
