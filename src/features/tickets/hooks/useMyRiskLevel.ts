@@ -11,6 +11,8 @@ export const useMyRiskLevel = () => {
   return {
     requiresImage: data?.requiresImage ?? false,
     isThrottled: data?.isThrottled ?? false,
+    drawEntryCount: data?.drawEntryCount ?? 0,
+    isDrawCapped: (data?.drawEntryCount ?? 0) >= 30,
     refetch,
   };
 };

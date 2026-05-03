@@ -242,8 +242,25 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
+      {/* ── Draw cap reached ─────────────────────────── */}
+      {riskLevel.isDrawCapped && (
+        <Box sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 1.5 }}>
+          <Box sx={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #195DE2 0%, #7FA6FF 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <EmojiEvents sx={{ fontSize: 28, color: 'white' }} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" fontWeight={800} color="text.primary" sx={{ mb: 0.5 }}>
+              You're maxed out for this draw! 🎉
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+              You've submitted all <strong>30 entries</strong> for this draw. That's the maximum — sit back and wait for the results. Good luck!
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
       {/* ── Daily Limit ─────────────────────────────── */}
-      {riskLevel.isThrottled && (
+      {!riskLevel.isDrawCapped && riskLevel.isThrottled && (
         <Box
           sx={{
             p: 3,
@@ -282,7 +299,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </Box>
       )}
 
-      {!riskLevel.isThrottled && <>
+      {!riskLevel.isDrawCapped && !riskLevel.isThrottled && <>
 
       {/* ── Step 1: Select Business ─────────────────── */}
       {!selectedLocation && (
@@ -705,6 +722,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       </Collapse>
 
       </>}
+
 
       {/* ── Free Weekly Ticket ──────────────────────── */}
       <Divider sx={{ my: 1 }} />

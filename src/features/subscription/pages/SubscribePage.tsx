@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import {
   ConfirmationNumber, EmojiEvents, Storefront, CreditCard, Groups, Remove, Add,
-  CloudUpload, UndoOutlined, DeleteOutlineOutlined, Check, ArrowBack,
+  CloudUpload, UndoOutlined, DeleteOutlineOutlined, Check, ArrowBack, Edit,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -159,10 +159,12 @@ const SubscribePage = () => {
     const img = imgRef.current;
     if (!canvas || !img) return;
     const ctx = canvas.getContext('2d')!;
+    ctx.globalAlpha = 1;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.3;
+    ctx.strokeStyle = '#FFD600';
+    ctx.lineWidth = 10;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     const drawPath = (pts: { x: number; y: number }[]) => {
@@ -253,8 +255,7 @@ const SubscribePage = () => {
       const blob = await new Promise<Blob>((res) =>
         canvasRef.current!.toBlob((b) => res(b!), 'image/jpeg', 0.92),
       );
-      const { uploadUrl } = await getUploadUrl('image/jpeg');
-      const publicUrl = uploadUrl.split('?')[0];
+      const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg');
       await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
       await updateCampaignSettingsApi({ min_transaction_amount: savedThreshold, receipt_example_image_url: publicUrl });
       setImgFile(null);
@@ -505,7 +506,35 @@ const SubscribePage = () => {
                 <motion.div key='step-2' initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
                   <Box sx={{ px: { xs: 3, md: 4 }, py: { xs: 3, md: 4 } }}>
 
-                    {!imgFile ? (
+                    {!imgFile && businessData?.receipt_example_image_url ? (
+                      <>
+                        {/* Already uploaded — show preview */}
+                        <Box sx={{ borderRadius: 2.5, overflow: 'hidden', border: '1px solid', borderColor: 'divider', mb: 2, lineHeight: 0 }}>
+                          <Box component='img' src={businessData.receipt_example_image_url} alt='Current receipt example'
+                            sx={{ display: 'block', width: '100%', maxHeight: 320, objectFit: 'contain' }} />
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 2, p: 1.5, mb: 2.5 }}>
+                          <Check sx={{ fontSize: 18, color: 'success.main', flexShrink: 0 }} />
+                          <Typography variant='body2' fontWeight={600} color='success.main'>
+                            Receipt example already uploaded
+                          </Typography>
+                        </Box>
+
+                        <Button fullWidth variant='contained' size='large' onClick={() => setStep(3)}
+                          sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', mb: 1.5, boxShadow: '0 4px 14px rgba(25,93,230,0.3)' }}>
+                          Looks good, continue →
+                        </Button>
+
+                        <input ref={fileInputRef} type='file' accept='image/*' hidden
+                          onChange={(e) => { if (e.target.files?.[0]) setImgFile(e.target.files[0]); }} />
+
+                        <Button fullWidth variant='outlined' size='small' startIcon={<Edit />} onClick={() => fileInputRef.current?.click()}
+                          sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>
+                          Replace image
+                        </Button>
+                      </>
+                    ) : !imgFile ? (
                       <>
                         {/* Upload zone */}
                         <Box

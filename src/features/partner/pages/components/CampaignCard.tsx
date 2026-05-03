@@ -125,10 +125,12 @@ const CampaignCard = ({
     const img = imgRef.current;
     if (!canvas || !img) return;
     const ctx = canvas.getContext('2d')!;
+    ctx.globalAlpha = 1;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.3;
+    ctx.strokeStyle = '#FFD600';
+    ctx.lineWidth = 10;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     const drawPath = (pts: { x: number; y: number }[]) => {
@@ -215,8 +217,7 @@ const CampaignCard = ({
       const blob = await new Promise<Blob>((res) =>
         canvasRef.current!.toBlob((b) => res(b!), 'image/jpeg', 0.92),
       );
-      const { uploadUrl } = await getUploadUrl('image/jpeg');
-      const publicUrl = uploadUrl.split('?')[0];
+      const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg');
       await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
       updateCampaignSettings?.({
         min_transaction_amount: business.min_transaction_amount,

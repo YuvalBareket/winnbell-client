@@ -79,6 +79,7 @@ export const getReceiptUploadUrl = (): Promise<{ uploadUrl: string; publicUrl: s
 export interface RiskLevelResponse {
   requiresImage: boolean;
   isThrottled: boolean;
+  drawEntryCount: number;
 }
 
 export const getMyRiskLevel = (): Promise<RiskLevelResponse> =>
