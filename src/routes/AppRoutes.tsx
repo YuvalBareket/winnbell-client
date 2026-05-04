@@ -70,7 +70,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* --- Public Routes --- */}
-      <Route path='/' element={isAuthenticated ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/nearby'} replace /> : <LandingPage />} />
+      <Route path='/' element={isAuthenticated ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace /> : <LandingPage />} />
       <Route path='/login' element={<LoginPage />} />
       <Route path='/register/:role?' element={<RegisterPage />} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
