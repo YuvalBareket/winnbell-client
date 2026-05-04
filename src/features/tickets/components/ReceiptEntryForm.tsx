@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDebounce } from '../../../shared/hooks/useDebounce';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -59,7 +60,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // ──────────────────────────────────────────────────
   const [selectedLocation, setSelectedLocation] = useState<ParticipatingLocation | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedTerm, setDebouncedTerm] = useState('');
   const [nearbyLocations, setNearbyLocations] = useState<NearbyLocation[]>([]);
   const [receiptIdentifier, setReceiptIdentifier] = useState('');
   const [transactionAmount, setTransactionAmount] = useState('');
@@ -74,6 +74,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [exampleOpen, setExampleOpen] = useState(false);
+
+  const debouncedTerm = useDebounce(searchTerm, 350);
 
   // ──────────────────────────────────────────────────
   // Hooks
@@ -109,16 +111,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       onError?.(message);
     },
   });
-
-  // ──────────────────────────────────────────────────
-  // Debounce search term (350ms)
-  // ──────────────────────────────────────────────────
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedTerm(searchTerm);
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
   // ──────────────────────────────────────────────────
   // Fetch nearby locations on mount

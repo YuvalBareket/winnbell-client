@@ -11,16 +11,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
-const formatRelativeTime = (dateStr: string): string => {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} hr ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days} day${days !== 1 ? 's' : ''} ago`;
-};
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
@@ -28,7 +18,7 @@ import { fetchActivity, setTicketQualification, type DateRange, type ActivityIte
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN,
 } from '../../../shared/colors';
-import { formatCurrency } from '../../../shared/utils/date';
+import { formatCurrency, formatRelativeTime } from '../../../shared/utils/date';
 import KpiCard from '../../stats/components/KpiCard';
 
 const ActivityPage = () => {
@@ -176,8 +166,7 @@ const ActivityPage = () => {
               sx={{
                 p: 2,
                 borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'warning.light',
+             
                 bgcolor: 'white',
                 display: 'flex',
                 alignItems: 'center',

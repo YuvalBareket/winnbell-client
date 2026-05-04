@@ -5,8 +5,9 @@ import {
 } from '@mui/material';
 import {
   ConfirmationNumber, EmojiEvents, Storefront, CreditCard, Groups, Remove, Add,
-  CloudUpload, UndoOutlined, DeleteOutlineOutlined, Check, ArrowBack, Edit,
+  Check, ArrowBack, Edit,
 } from '@mui/icons-material';
+import CanvasAnnotationEditor from '../../../shared/components/CanvasAnnotationEditor';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../../shared/api/client';
@@ -142,130 +143,21 @@ const SubscribePage = () => {
 
   // ── STEP 2 — canvas marker ─────────────────────────────────────────────────
   const [imgFile, setImgFile] = useState<File | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Use refs for drawing state to avoid stale closures in pointer handlers
-  const pathsRef = useRef<{ x: number; y: number }[][]>([]);
-  const currentPathRef = useRef<{ x: number; y: number }[]>([]);
-  const isDrawingRef = useRef(false);
-  const [pathCount, setPathCount] = useState(0); // drives undo button disabled state
-  const [isSavingExample, setIsSavingExample] = useState(false);
-
-  const redrawCanvas = () => {
-    const canvas = canvasRef.current;
-    const img = imgRef.current;
-    if (!canvas || !img) return;
-    const ctx = canvas.getContext('2d')!;
-    ctx.globalAlpha = 1;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    ctx.globalAlpha = 0.3;
-    ctx.strokeStyle = '#FFD600';
-    ctx.lineWidth = 10;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    const drawPath = (pts: { x: number; y: number }[]) => {
-      if (pts.length < 2) return;
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-      ctx.stroke();
-    };
-    pathsRef.current.forEach(drawPath);
-    if (currentPathRef.current.length > 1) drawPath(currentPathRef.current);
-  };
-
-  // Load image onto canvas with correct aspect ratio
-  useEffect(() => {
-    if (!imgFile) return;
-    const img = new Image();
-    img.onload = () => {
-      imgRef.current = img;
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const containerW = canvasContainerRef.current?.clientWidth || 480;
-      const maxH = 380;
-      const scale = Math.min(containerW / img.width, maxH / img.height);
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      pathsRef.current = [];
-      currentPathRef.current = [];
-      setPathCount(0);
-      redrawCanvas();
-    };
-    img.src = URL.createObjectURL(imgFile);
-  }, [imgFile]);
-
-  const getCanvasPos = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    const rect = canvasRef.current!.getBoundingClientRect();
-    // Scale from display size to canvas pixel size
-    const scaleX = canvasRef.current!.width / rect.width;
-    const scaleY = canvasRef.current!.height / rect.height;
-    const client = 'touches' in e ? e.touches[0] : e;
-    return {
-      x: (client.clientX - rect.left) * scaleX,
-      y: (client.clientY - rect.top) * scaleY,
-    };
-  };
-
-  const handlePointerDown = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!imgFile) return;
-    isDrawingRef.current = true;
-    currentPathRef.current = [getCanvasPos(e)];
-  };
-
-  const handlePointerMove = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawingRef.current) return;
-    if ('touches' in e) e.preventDefault();
-    currentPathRef.current = [...currentPathRef.current, getCanvasPos(e)];
-    redrawCanvas();
-  };
-
-  const handlePointerUp = () => {
-    if (!isDrawingRef.current) return;
-    isDrawingRef.current = false;
-    if (currentPathRef.current.length > 1) {
-      pathsRef.current = [...pathsRef.current, currentPathRef.current];
-      setPathCount(pathsRef.current.length);
-    }
-    currentPathRef.current = [];
-    redrawCanvas();
-  };
-
-  const handleUndo = () => {
-    pathsRef.current = pathsRef.current.slice(0, -1);
-    setPathCount(pathsRef.current.length);
-    redrawCanvas();
-  };
-
-  const handleClearAll = () => {
-    pathsRef.current = [];
-    currentPathRef.current = [];
-    setPathCount(0);
-    redrawCanvas();
-  };
-
-  const handleSaveExample = async () => {
-    if (!canvasRef.current || !imgFile) return;
-    setIsSavingExample(true);
+  const handleSaveReceipt = async (blob: Blob) => {
+    setIsSaving(true);
     try {
-      const blob = await new Promise<Blob>((res) =>
-        canvasRef.current!.toBlob((b) => res(b!), 'image/jpeg', 0.92),
-      );
       const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg');
       await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
       await updateCampaignSettingsApi({ min_transaction_amount: savedThreshold, receipt_example_image_url: publicUrl });
       setImgFile(null);
-      pathsRef.current = [];
-      setPathCount(0);
       setStep(3);
     } catch (err) {
       console.error('Failed to save receipt example:', err);
     } finally {
-      setIsSavingExample(false);
+      setIsSaving(false);
     }
   };
 
@@ -534,91 +426,26 @@ const SubscribePage = () => {
                           Replace image
                         </Button>
                       </>
-                    ) : !imgFile ? (
-                      <>
-                        {/* Upload zone */}
-                        <Box
-                          onClick={() => fileInputRef.current?.click()}
-                          sx={{
-                            border: '2px dashed', borderColor: 'divider', borderRadius: 3,
-                            minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            textAlign: 'center', cursor: 'pointer', mb: 3,
-                            transition: 'all 0.18s',
-                            '&:hover': { borderColor: 'primary.main', bgcolor: 'rgba(25,93,230,0.03)' },
-                            '&:active': { transform: 'scale(0.99)' },
-                          }}
-                        >
-                          <Stack alignItems='center' spacing={1.5} sx={{ p: 4 }}>
-                            <Box sx={{ width: 56, height: 56, borderRadius: 2.5, bgcolor: 'rgba(25,93,230,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <CloudUpload sx={{ fontSize: 28, color: 'primary.main' }} />
-                            </Box>
-                            <Typography variant='body1' fontWeight={800} color='text.primary'>
-                              Upload a receipt photo
-                            </Typography>
-                            <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5, maxWidth: 280 }}>
-                              Take a photo of any receipt from your store — then you'll mark where the receipt number is
-                            </Typography>
-                          </Stack>
-                        </Box>
-
-                        <input ref={fileInputRef} type='file' accept='image/*' hidden
-                          onChange={(e) => { if (e.target.files?.[0]) setImgFile(e.target.files[0]); }} />
-
-                        <Button fullWidth variant='text' onClick={() => setStep(3)}
-                          sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
-                          Skip for now
-                        </Button>
-                      </>
                     ) : (
                       <>
-                        {/* Instruction */}
-                        <Box sx={{ bgcolor: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 2, p: 1.75, mb: 2, display: 'flex', alignItems: 'flex-start', gap: 1.25 }}>
-                          <Typography sx={{ fontSize: '1rem', lineHeight: 1, mt: 0.1 }}>✏️</Typography>
-                          <Typography variant='body2' sx={{ color: '#b91c1c', fontWeight: 600, lineHeight: 1.5 }}>
-                            Draw over the receipt number with your finger or mouse to highlight it for customers
-                          </Typography>
-                        </Box>
-
-                        {/* Canvas */}
-                        <Box ref={canvasContainerRef} sx={{ borderRadius: 2.5, overflow: 'hidden', border: '1px solid', borderColor: 'divider', mb: 2, lineHeight: 0 }}>
-                          <canvas
-                            ref={canvasRef}
-                            onMouseDown={handlePointerDown}
-                            onMouseMove={handlePointerMove}
-                            onMouseUp={handlePointerUp}
-                            onMouseLeave={handlePointerUp}
-                            onTouchStart={handlePointerDown}
-                            onTouchMove={handlePointerMove}
-                            onTouchEnd={handlePointerUp}
-                            style={{ display: 'block', width: '100%', cursor: 'crosshair', touchAction: 'none' }}
-                          />
-                        </Box>
-
-                        {/* Undo / Clear */}
-                        <Stack direction='row' spacing={1} sx={{ mb: 3 }}>
-                          <Button variant='outlined' size='small' startIcon={<UndoOutlined />} onClick={handleUndo}
-                            disabled={pathCount === 0} sx={{ flex: 1, textTransform: 'none', borderRadius: 2, fontWeight: 700 }}>
-                            Undo
+                        <CanvasAnnotationEditor
+                          imgFile={imgFile}
+                          onFileSelect={(file) => setImgFile(file)}
+                          onSave={handleSaveReceipt}
+                          isSaving={isSaving}
+                        />
+                        {!imgFile && (
+                          <Button fullWidth variant='text' onClick={() => setStep(3)}
+                            sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
+                            Skip for now
                           </Button>
-                          <Button variant='outlined' size='small' startIcon={<DeleteOutlineOutlined />} onClick={handleClearAll}
-                            disabled={pathCount === 0} sx={{ flex: 1, textTransform: 'none', borderRadius: 2, fontWeight: 700 }}>
-                            Clear
+                        )}
+                        {imgFile && (
+                          <Button fullWidth variant='text' onClick={() => { setImgFile(null); setStep(3); }}
+                            sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
+                            Skip for now
                           </Button>
-                          <Button variant='outlined' size='small' onClick={() => { setImgFile(null); pathsRef.current = []; setPathCount(0); }}
-                            sx={{ flex: 1, textTransform: 'none', borderRadius: 2, fontWeight: 700 }}>
-                            New photo
-                          </Button>
-                        </Stack>
-
-                        <Button fullWidth variant='contained' size='large' onClick={handleSaveExample} disabled={isSavingExample}
-                          sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', mb: 1.5, boxShadow: '0 4px 14px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.4)' } }}>
-                          {isSavingExample ? <CircularProgress size={22} color='inherit' /> : 'Save & Continue →'}
-                        </Button>
-
-                        <Button fullWidth variant='text' onClick={() => { setImgFile(null); pathsRef.current = []; setPathCount(0); setStep(3); }}
-                          sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
-                          Skip for now
-                        </Button>
+                        )}
                       </>
                     )}
                   </Box>
