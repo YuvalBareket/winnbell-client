@@ -9,7 +9,7 @@ export interface BusinessSetupInput {
   businessName: string;
   businessSector: string;
   description: string;
-  min_transaction_amount: number | null;
+  min_transaction_amount?: number | null;
   locations: LocationInput[];
 }
 

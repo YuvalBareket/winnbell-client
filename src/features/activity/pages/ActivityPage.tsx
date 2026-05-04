@@ -7,7 +7,9 @@ import {
 import {
   ReceiptLongOutlined, AttachMoneyOutlined, ConfirmationNumberOutlined,
   FeedOutlined, QrCodeScannerOutlined, CardGiftcardOutlined, BlockOutlined, CheckCircleOutline,
+  RocketLaunch,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
 const formatRelativeTime = (dateStr: string): string => {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -30,6 +32,7 @@ import { formatCurrency } from '../../../shared/utils/date';
 import KpiCard from '../../stats/components/KpiCard';
 
 const ActivityPage = () => {
+  const navigate = useNavigate();
   const user = useAppSelector(selectCurrentUser);
   const isLocationManager = !!user?.location_id;
   const queryClient = useQueryClient();
@@ -164,6 +167,49 @@ const ActivityPage = () => {
 
       <Container maxWidth='lg' sx={{ mt: -5 }}>
         <Stack spacing={3}>
+
+          {/* Not-live banner — business admin only, until subscribed */}
+          {!isLocationManager && !bizData?.is_subscribed && bizData && (
+            <Paper
+              elevation={0}
+              onClick={() => navigate('/subscribe')}
+              sx={{
+                p: 2,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'warning.light',
+                bgcolor: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+                cursor: 'pointer',
+              }}
+            >
+              <Stack direction='row' alignItems='center' spacing={1.5} minWidth={0}>
+                <RocketLaunch sx={{ color: 'warning.main', fontSize: 22, flexShrink: 0 }} />
+                <Box minWidth={0}>
+                  <Typography variant='body2' fontWeight={700} color='warning.dark'>
+                    Your business isn't live yet
+                  </Typography>
+                  <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'none', sm: 'block' } }}>
+                    Customers can't find you until you subscribe — tap to get started.
+                  </Typography>
+                  <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'block', sm: 'none' } }}>
+                    Tap to subscribe and go live
+                  </Typography>
+                </Box>
+              </Stack>
+              <Button
+                size='small'
+                variant='contained'
+                onClick={(e) => { e.stopPropagation(); navigate('/subscribe'); }}
+                sx={{ borderRadius: 2, fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' }, whiteSpace: 'nowrap' }}
+              >
+                Subscribe
+              </Button>
+            </Paper>
+          )}
 
           {/* Filters — top priority */}
           <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'white' }}>

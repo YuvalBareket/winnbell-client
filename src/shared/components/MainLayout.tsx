@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Box, Paper, BottomNavigation, BottomNavigationAction, Button, Typography, Stack } from '@mui/material';
-import { ConfirmationNumber, Storefront, Warning, CreditCard } from '@mui/icons-material';
+import { Box, Paper, BottomNavigation, BottomNavigationAction } from '@mui/material';
+import { ConfirmationNumber, Storefront } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AppMenuDrawer from './AppMenuDrawer';
 import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
 import { useAppSelector } from '../../store/hook';
-import { selectIsBusiness, selectBusinessIsActive, selectIsAdmin, selectIsLocationManager } from '../../store/selectors/authSelectors';
+import { selectIsBusiness, selectIsAdmin, selectIsLocationManager } from '../../store/selectors/authSelectors';
 import {
   BG_APP_GRADIENT,
   GRADIENT_PRIMARY,
@@ -30,9 +30,6 @@ const MainLayout = () => {
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
   const isAdmin = useAppSelector(selectIsAdmin);
-  const businessIsActive = useAppSelector(selectBusinessIsActive);
-  const showSubscribeBanner = isBusinessAdmin && !businessIsActive && location.pathname !== '/subscribe';
-
   const isBusinessOrManager = isBusinessAdmin || isManager;
   // Business/manager users use /activity as their mobile home; regular users use /scan
   const mobileMainPath = isBusinessOrManager ? '/activity' : '/scan';
@@ -74,50 +71,6 @@ const MainLayout = () => {
           transition: 'margin 0.3s ease',
         }}
       >
-        {showSubscribeBanner && (
-          <Box
-            sx={{
-              mx: { xs: 2, md: 3 },
-              mt: { xs: 1, md: 2 },
-              mb: 1,
-              p: 1.5,
-              borderRadius: 3,
-              bgcolor: 'rgba(237,108,2,0.07)',
-              border: '1px solid',
-              borderColor: 'rgba(237,108,2,0.2)',
-              display: { xs: 'flex', md: 'none' },
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 1.5,
-              flexWrap: 'wrap',
-              backdropFilter: 'blur(8px)',
-            }}
-          >
-            <Stack direction='row' alignItems='center' spacing={1} flex={1} minWidth={0}>
-              <Warning sx={{ color: 'warning.main', fontSize: 20, flexShrink: 0 }} />
-              <Typography variant='body2' fontWeight={600} color='warning.dark' noWrap>
-                Your business is not live yet. Subscribe to appear on the map
-              </Typography>
-            </Stack>
-            <Button
-              size='small'
-              variant='contained'
-              startIcon={<CreditCard sx={{ fontSize: '16px !important' }} />}
-              onClick={() => navigate('/subscribe')}
-              sx={{
-                bgcolor: 'warning.main',
-                '&:hover': { bgcolor: 'warning.dark' },
-                borderRadius: 2.5,
-                fontWeight: 800,
-                flexShrink: 0,
-                fontSize: '0.75rem',
-                boxShadow: '0 2px 8px rgba(237,108,2,0.3)',
-              }}
-            >
-              Subscribe
-            </Button>
-          </Box>
-        )}
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

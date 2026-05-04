@@ -126,6 +126,7 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
             <Edit />
           </IconButton>
         </Stack>
+
       </Container>
     </Box>
   );

@@ -157,16 +157,16 @@ const BusinessHubPage = () => {
 
       <Container maxWidth='md' sx={{ mt: -5 }}>
         <Stack spacing={3}>
-          {/* Onboarding banner — shown when not yet subscribed */}
+          {/* Onboarding banner — shown when not yet subscribed, desktop only */}
           {!business.is_subscribed && (
             <Paper
               elevation={3}
               sx={{
+                display: 'flex',
                 p: 2.5,
                 borderRadius: 3,
                 border: '1px solid #00000021',
                 backgroundColor:'white',
-                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: 2,
@@ -175,23 +175,26 @@ const BusinessHubPage = () => {
             >
               <Stack direction='row' alignItems='center' spacing={1.5} flex={1} minWidth={0}>
                 <Warning sx={{ color: 'warning.main', flexShrink: 0 }} />
-                <Box>
+                <Box minWidth={0}>
                   <Typography variant='body2' fontWeight={700} color='warning.dark'>
                     Complete your onboarding
                   </Typography>
-                  <Typography variant='caption' color='text.secondary'>
+                  <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'none', sm: 'block' } }}>
                     Your business isn't live yet. Subscribe to appear on the map and start issuing tickets.
+                  </Typography>
+                  <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'block', sm: 'none' } }}>
+                    Subscribe to go live on the map
                   </Typography>
                 </Box>
               </Stack>
               <Button
                 variant='contained'
                 size='small'
-                startIcon={<CreditCard />}
+                startIcon={<CreditCard sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
                 onClick={() => navigate('/subscribe')}
                 sx={{ borderRadius: 2, fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
               >
-                Subscribe Now
+                Subscribe
               </Button>
             </Paper>
           )}

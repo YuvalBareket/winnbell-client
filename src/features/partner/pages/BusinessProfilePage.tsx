@@ -20,7 +20,6 @@ import {
   LocationOn,
   CheckCircle,
   ConfirmationNumber,
-  AttachMoney,
 } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
@@ -54,7 +53,6 @@ const BusinessProfilePage = () => {
       businessName: user?.fullName || '',
       businessSector: '',
       description: '',
-      min_transaction_amount: null as number | null,
       locations: [{ name: 'Main Branch', address: '', lat: null, lon: null }],
     },
   });
@@ -274,31 +272,6 @@ const BusinessProfilePage = () => {
                       error={!!error}
                       helperText={error?.message}
                       placeholder='Describe what you offer and what makes you special...'
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'white' } }}
-                    />
-                  )}
-                />
-
-                {/* Minimum transaction amount */}
-                <Controller
-                  name='min_transaction_amount'
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      fullWidth
-                      type='number'
-                      label='Minimum spend to earn an entry'
-                      placeholder='e.g. 20'
-                      helperText='Leave empty if there is no minimum spend required'
-                      value={field.value ?? ''}
-                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position='start'>
-                            <AttachMoney sx={{ color: 'text.disabled', fontSize: 20 }} />
-                          </InputAdornment>
-                        ),
-                      }}
                       sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'white' } }}
                     />
                   )}
