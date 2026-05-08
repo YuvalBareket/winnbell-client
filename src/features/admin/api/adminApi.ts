@@ -1,5 +1,6 @@
 import { api } from '../../../shared/api/client';
 import type {
+  AdminUser,
   BusinessStats,
   CreateBusinessInput,
   CreateDrawInput,
@@ -24,7 +25,10 @@ export const closeDraw = (drawId: number) =>
 export const pickWinner = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/pick-winner`);
 export const fetchAdminOverview = () => api.get('/admin/overview');
-export const fetchAllUsers = () => api.get('/admin/users');
+export const fetchAllUsers = () => api.get<AdminUser[]>('/admin/users');
+export const setUserRiskScore = async (userId: number, riskScore: number): Promise<void> => {
+  await api.patch(`/admin/users/${userId}/risk`, { risk_score: riskScore });
+};
 export const updateUserRole = (userId: number, role: string) =>
   api.patch(`/admin/users/${userId}/role`, { role });
 export const toggleUserActive = (userId: number, is_active: boolean) =>

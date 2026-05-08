@@ -16,8 +16,9 @@ import {
   fetchDrawBusinesses,
   fetchAdminAnalytics,
   fetchLocationBreakdown,
+  setUserRiskScore,
 } from '../api/adminApi';
-import type { AdminAnalytics, LocationBreakdownPage } from '../types/admin.types';
+import type { AdminAnalytics, AdminUser, LocationBreakdownPage } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useAdminBusinesses = () => {
@@ -136,9 +137,20 @@ export const useAdminUsers = () => {
     queryKey: queryKeys.admin.users,
     queryFn: async () => {
       const { data } = await fetchAllUsers();
-      return data;
+      return data as AdminUser[];
     },
     staleTime: 2 * 60_000,
+  });
+};
+
+export const useSetUserRisk = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, riskScore }: { userId: number; riskScore: number }) =>
+      setUserRiskScore(userId, riskScore),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
+    },
   });
 };
 

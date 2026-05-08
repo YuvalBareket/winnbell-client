@@ -22,7 +22,7 @@ const STEPS = [
   {
     num: '02',
     title: 'Submit your receipt',
-    body: 'Scan the QR code or enter your receipt details to earn a free ticket for the current prize draw.',
+    body: 'Scan the QR code or enter your receipt details to earn a free entry for the current campaign.',
   },
   {
     num: '03',
@@ -38,7 +38,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How are winners chosen?',
-    a: 'Winners are selected randomly from all eligible tickets in the draw pool. Every ticket has an equal chance.',
+    a: 'Winners are selected randomly from all eligible entries in the campaign pool. Every entry has an equal chance.',
   },
   {
     q: 'How do businesses benefit?',
@@ -145,8 +145,8 @@ const LandingPage = () => {
               fontWeight: 400,
             }}
           >
-            Shop at local businesses, submit your receipt, and collect free tickets
-            for the monthly prize draw. No catch, no cost.
+            Shop at local businesses, submit your receipt, and collect free entries
+            for the monthly campaign. No catch, no cost.
           </Typography>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent='center' alignItems='center'>
@@ -166,7 +166,7 @@ const LandingPage = () => {
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' },
               }}
             >
-              Start collecting tickets
+              Start collecting entries
             </Button>
             <Button
               variant='text'

@@ -21,19 +21,19 @@ import {
 const BrandPanel = ({ isBusinessOwner, isLocationManager }: { isBusinessOwner: boolean; isLocationManager: boolean }) => {
   const bullets = isBusinessOwner
     ? [
-        { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Issue tickets to your customers instantly' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Run monthly prize draws effortlessly' },
+        { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Issue entries to your customers instantly' },
+        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Run monthly campaigns effortlessly' },
         { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Grow foot traffic and customer loyalty' },
       ]
     : isLocationManager
     ? [
-        { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Scan and validate customer tickets' },
+        { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Scan and validate customer entries' },
         { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Manage your branch operations' },
         { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Track performance and engagement' },
       ]
     : [
-        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn tickets at local partner shops' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Enter monthly prize draws automatically' },
+        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local partner shops' },
+        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Enter monthly campaigns automatically' },
         { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Win amazing prizes every month' },
       ];
 
@@ -46,8 +46,8 @@ const BrandPanel = ({ isBusinessOwner, isLocationManager }: { isBusinessOwner: b
   const tagline = isBusinessOwner
     ? 'Partner with Winnbell and turn every purchase into a chance for your customers to win.'
     : isLocationManager
-    ? 'Complete your onboarding to start managing your branch and issuing tickets.'
-    : 'Join thousands of members earning tickets at local partner businesses and entering monthly prize draws.';
+    ? 'Complete your onboarding to start managing your branch and issuing entries.'
+    : 'Join thousands of members earning entries at local partner businesses and winning monthly campaigns.';
 
   return (
     <Box
@@ -177,7 +177,7 @@ const RegisterPage = () => {
   const roleSubtitle = isLocationManager
     ? 'Complete your profile to manage your branch.'
     : isBusinessOwner
-    ? 'Register your brand to start issuing tickets.'
+    ? 'Register your brand to start issuing entries.'
     : 'Create an account to start winning.';
 
   // ─── Form content (shared between mobile & desktop) ──────────────────────────

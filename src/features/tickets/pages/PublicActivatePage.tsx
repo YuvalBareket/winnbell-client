@@ -69,7 +69,7 @@ const PublicActivatePage = () => {
       }}>
         <CircularProgress size={40} sx={{ mb: 2, color: PRIMARY_MAIN }} />
         <Typography variant="body2" color="text.secondary" fontWeight={600}>
-          Securing your ticket...
+          Securing your entry...
         </Typography>
       </Box>
     );
@@ -83,7 +83,7 @@ const PublicActivatePage = () => {
           <ErrorOutline sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
           <Typography variant='h6' fontWeight={800} mb={1}>Invalid Link</Typography>
           <Typography variant='body2' color='text.secondary'>
-            This link doesn't contain a valid ticket code. Please scan the QR code on your receipt again.
+            This link doesn't contain a valid entry code. Please scan the QR code on your receipt again.
           </Typography>
           <Button 
             variant="contained" 
@@ -106,13 +106,13 @@ const PublicActivatePage = () => {
           <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, border: `2px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
             <CheckCircle sx={{ fontSize: 32 }} />
           </Box>
-          <Typography variant='h6' fontWeight={800}>{isPromo ? 'Promotional Entry!' : 'Ticket Scanned!'}</Typography>
-          <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>{isPromo ? 'Sign in to claim your free draw entry' : 'Sign in to activate your entry'}</Typography>
+          <Typography variant='h6' fontWeight={800}>{isPromo ? 'Promotional Entry!' : 'Entry Scanned!'}</Typography>
+          <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>{isPromo ? 'Sign in to claim your free campaign entry' : 'Sign in to activate your entry'}</Typography>
         </Box>
 
         <Box sx={{ px: 3, pt: 3, pb: 3, textAlign: 'center' }}>
           <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-            {isPromo ? 'Promo Code' : 'Your ticket code'}
+            {isPromo ? 'Promo Code' : 'Your entry code'}
           </Typography>
 
           <Box sx={{ mt: 1, mb: 2.5,ml:0.5, display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: `${PRIMARY_MAIN}10`, border: `1px solid ${PRIMARY_MAIN}30`, borderRadius: 2, px: 2.5, py: 1 }}>
@@ -124,8 +124,8 @@ const PublicActivatePage = () => {
 
           <Typography variant='body2' color='text.secondary' sx={{ mb: 3, lineHeight: 1.6 }}>
             {isPromo
-              ? "Create a free account or sign in. We'll enter you into the current draw automatically."
-              : "Create a free account or sign in. We'll activate your ticket automatically as soon as you're in."}
+              ? "Create a free account or sign in. We'll enter you into the current campaign automatically."
+              : "Create a free account or sign in. We'll activate your entry automatically as soon as you're in."}
           </Typography>
 
           <Stack spacing={1.5}>
@@ -153,8 +153,8 @@ const PublicActivatePage = () => {
 
           <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 2 }}>
             {isPromo
-              ? 'Your promo code is saved. We\'ll enter you into the draw the moment you sign in.'
-              : 'Your ticket code is saved. It will activate the moment you sign in.'}
+              ? 'Your promo code is saved. We\'ll enter you into the campaign the moment you sign in.'
+              : 'Your entry code is saved. It will activate the moment you sign in.'}
           </Typography>
         </Box>
       </Paper>

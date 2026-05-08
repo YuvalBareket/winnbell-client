@@ -68,6 +68,8 @@ export interface ReceiptEntryResponse {
   success: boolean;
   ticketId: number;
   code: string;
+  tickets: Array<{ ticketId: number; code: string }>;
+  entryCount: number;
 }
 
 export const submitReceiptEntry = (payload: ReceiptEntryPayload): Promise<ReceiptEntryResponse> =>

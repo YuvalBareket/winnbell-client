@@ -51,8 +51,8 @@ export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwipe
         <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_PRIMARY_10, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
           <EmojiEventsOutlined sx={{ fontSize: 32, color: 'primary.main' }} />
         </Box>
-        <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>No active draws right now</Typography>
-        <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>Check back soon. New draws are added regularly.</Typography>
+        <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>No active campaigns right now</Typography>
+        <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>Check back soon. New campaigns are added regularly.</Typography>
       </Box>
     );
   }
@@ -103,7 +103,7 @@ export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwipe
               <Stack direction='row' alignItems='center' spacing={0.5}>
                 <Schedule sx={{ fontSize: 12, color: 'text.disabled' }} />
                 <Typography variant='caption' color='text.disabled' fontWeight={600}>
-                  {daysLeft <= 0 ? 'Drawing Today' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
+                  {daysLeft <= 0 ? 'Campaign ends today' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
                 </Typography>
               </Stack>
             </Box>

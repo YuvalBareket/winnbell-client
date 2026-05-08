@@ -21,14 +21,14 @@ export interface NavItem {
 export const userNavItems: NavItem[] = [
   { label: 'Nearby Partners', Icon: StorefrontOutlined, path: '/nearby' },
   { label: 'Submit Receipt', Icon: ReceiptLongOutlined, path: '/scan' },
-  { label: 'My Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
-  { label: 'Draw History', Icon: EmojiEventsOutlined, path: '/draws/history' },
+  { label: 'My Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
+  { label: 'Campaign History', Icon: EmojiEventsOutlined, path: '/draws/history' },
 ];
 
 export const businessNavItems: NavItem[] = [
   { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
   { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
-  { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
+  { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
   { label: 'Subscription', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
 ];
@@ -36,7 +36,7 @@ export const businessNavItems: NavItem[] = [
 export const managerNavItems: NavItem[] = [
   { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
   { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
-  { label: 'Tickets', Icon: ConfirmationNumberOutlined, path: '/tickets' },
+  { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
 ];
 

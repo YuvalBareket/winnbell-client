@@ -33,6 +33,7 @@ import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 interface ReceiptEntryFormProps {
   primaryColor: string;
   preselectedBusinessId?: number;
+  preselectedLocation?: NearbyLocation;
   onSuccess?: (ticketId: number) => void;
   onError?: (message: string) => void;
 }
@@ -52,6 +53,7 @@ const toParticipating = (n: NearbyLocation): ParticipatingLocation => ({
 const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   primaryColor,
   preselectedBusinessId,
+  preselectedLocation,
   onSuccess,
   onError,
 }) => {
@@ -73,6 +75,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
+  const [submittedEntryCount, setSubmittedEntryCount] = useState<number>(1);
   const [exampleOpen, setExampleOpen] = useState(false);
 
   const debouncedTerm = useDebounce(searchTerm, 350);
@@ -88,6 +91,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const submitReceiptEntry = useSubmitReceiptEntry({
     onSuccess: (data) => {
       setSubmittedCode(data.code ?? null);
+      setSubmittedEntryCount(data.entryCount ?? 1);
       setSuccessDialogOpen(true);
       setReceiptIdentifier('');
       setTransactionAmount('');
@@ -140,20 +144,25 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
 
   // Auto-select location if preselected
   useEffect(() => {
-    if (preselectedBusinessId && !selectedLocation) {
-      // Try to find in nearby locations first
+    if (selectedLocation) return;
+    // If full location object was passed directly (e.g. from NearBy drawer), use it immediately
+    if (preselectedLocation) {
+      setSelectedLocation(toParticipating(preselectedLocation));
+      return;
+    }
+    // Fallback: try to find by ID in nearby/search results
+    if (preselectedBusinessId) {
       const nearbyMatch = nearbyLocations.find((loc) => loc.id === preselectedBusinessId);
       if (nearbyMatch) {
         setSelectedLocation(toParticipating(nearbyMatch));
         return;
       }
-      // Try to find in search results
       const searchMatch = searchResults.find((loc) => loc.business_id === preselectedBusinessId);
       if (searchMatch) {
         setSelectedLocation(searchMatch);
       }
     }
-  }, [preselectedBusinessId, nearbyLocations, searchResults, selectedLocation]);
+  }, [preselectedLocation, preselectedBusinessId, nearbyLocations, searchResults, selectedLocation]);
 
   // ──────────────────────────────────────────────────
   // Derived state
@@ -242,10 +251,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           </Box>
           <Box>
             <Typography variant="subtitle1" fontWeight={800} color="text.primary" sx={{ mb: 0.5 }}>
-              You're maxed out for this draw! 🎉
+              You're maxed out for this campaign! 🎉
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-              You've submitted all <strong>30 entries</strong> for this draw. That's the maximum — sit back and wait for the results. Good luck!
+              You've submitted all <strong>30 entries</strong> for this campaign. That's the maximum — sit back and wait for the results. Good luck!
             </Typography>
           </Box>
         </Box>
@@ -285,7 +294,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               Daily entry limit reached
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-              You've used your entries for today. Come back tomorrow — or claim your free weekly ticket below.
+              You've used your entries for today. Come back tomorrow — or claim your free weekly entry below.
             </Typography>
           </Box>
         </Box>
@@ -543,6 +552,22 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             }}
           />
 
+          {/* Entry count preview */}
+          {selectedLocation?.min_transaction_amount && parseFloat(transactionAmount) > 0 && (() => {
+            const min = selectedLocation.min_transaction_amount!;
+            const count = Math.min(Math.floor(parseFloat(transactionAmount) / min), 10);
+            if (count <= 0) return null;
+            return (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 0.5 }}>
+                <Typography variant="caption" color="text.secondary">
+                  {count === 1
+                    ? `Earns 1 entry (min $${min})`
+                    : `Earns ${count} entries ($${min} each)`}
+                </Typography>
+              </Box>
+            );
+          })()}
+
           {/* Purchase Date */}
           <TextField
             fullWidth
@@ -736,7 +761,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           <CardGiftcard fontSize="small" />
         </Box>
         <Stack flex={1} spacing={0.25}>
-          <Typography variant="body2" fontWeight={700} sx={{ lineHeight: 1.2 }}>Free Weekly Ticket</Typography>
+          <Typography variant="body2" fontWeight={700} sx={{ lineHeight: 1.2 }}>Free Weekly Entry</Typography>
           <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2 }}>Claim 1 free entry</Typography>
         </Stack>
         <ChevronRight sx={{ color: primaryColor || PRIMARY_MAIN, fontSize: 20 }} />
@@ -770,12 +795,14 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 You're In!
               </Typography>
               <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, lineHeight: 1.6 }}>
-                Your entry is in the draw.<br />Good luck!
+                {submittedEntryCount > 1
+                  ? `You earned ${submittedEntryCount} entries in the campaign!`
+                  : 'Your entry is in the campaign.'}<br />Good luck!
               </Typography>
               {submittedCode && (
                 <Box sx={{
                   bgcolor: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: 3, px: 4, py: 2.5, mb: 5, display: 'inline-block',
+                  borderRadius: 3, px: 4, py: 2.5, mb: submittedEntryCount > 1 ? 1 : 5, display: 'inline-block',
                 }}>
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 2, display: 'block', mb: 0.5 }}>
                     Entry Code
@@ -785,6 +812,11 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                   </Typography>
                 </Box>
               )}
+              {submittedEntryCount > 1 && (
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', mb: 4, display: 'block' }}>
+                  + {submittedEntryCount - 1} more {submittedEntryCount - 1 === 1 ? 'entry' : 'entries'} added
+                </Typography>
+              )}
               <Stack spacing={2}>
                 <Button
                   variant="contained"
@@ -793,7 +825,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                   onClick={() => { setSuccessDialogOpen(false); navigate('/tickets'); }}
                   sx={{ bgcolor: 'white', color: primaryColor, fontWeight: 800, borderRadius: 3, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
                 >
-                  View My Tickets
+                  View My Entries
                 </Button>
                 <Button
                   variant="text"

@@ -84,9 +84,9 @@ const StatsPage = () => {
                 )}
                 {draws.length > 0 && (
                   <FormControl size='small' sx={{ minWidth: 200 }}>
-                    <InputLabel>All draws</InputLabel>
-                    <Select value={selectedDraw} label='All draws' onChange={(e) => setSelectedDraw(e.target.value as number | '')}>
-                      <MenuItem value=''>All draws</MenuItem>
+                    <InputLabel>All campaigns</InputLabel>
+                    <Select value={selectedDraw} label='All campaigns' onChange={(e) => setSelectedDraw(e.target.value as number | '')}>
+                      <MenuItem value=''>All campaigns</MenuItem>
                       {draws.map((d) => (
                         <MenuItem key={d.draw_id} value={d.draw_id}>
                           {d.draw_name} ({formatDateShort(d.draw_date)})
@@ -182,7 +182,7 @@ const StatsPage = () => {
             </Stack>
             {isLoading ? <Skeleton variant='rounded' height={220} /> : (stats?.daily?.length ?? 0) === 0 ? (
               <Box sx={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Typography color='text.disabled'>No ticket activity in the last 30 days</Typography>
+                <Typography color='text.disabled'>No entry activity in the last 30 days</Typography>
               </Box>
             ) : (
               <ResponsiveContainer width='100%' height={220}>
@@ -202,7 +202,7 @@ const StatsPage = () => {
           {(isBusiness || isManager) && (
             <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
               <Typography variant='subtitle1' fontWeight={700} mb={2}>
-                {isBusiness ? 'Tickets by Branch' : 'Ticket Breakdown'}
+                {isBusiness ? 'Entries by Branch' : 'Entry Breakdown'}
               </Typography>
               {isLoading ? <Skeleton variant='rounded' height={220} /> : (stats?.locations?.length ?? 0) === 0 ? (
                 <Box sx={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

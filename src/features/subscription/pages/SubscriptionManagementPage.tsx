@@ -148,13 +148,13 @@ export default function SubscriptionManagementPage() {
             onClose={() => setCancelResult(null)}
           >
             {cancelResult.refundType === 'full' && (
-              <>Subscription cancelled. You've been removed from the draw and a <strong>full refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
+              <>Subscription cancelled. You've been removed from the campaign and a <strong>full refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
             )}
             {cancelResult.refundType === 'partial_40' && (
-              <>Subscription cancelled. You've been removed from the draw and a <strong>40% refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
+              <>Subscription cancelled. You've been removed from the campaign and a <strong>40% refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
             )}
             {cancelResult.refundType === 'none' && (
-              <>Subscription cancelled. The draw has already commenced — your entry remains and no refund applies.</>
+              <>Subscription cancelled. The campaign has already commenced — your entry remains and no refund applies.</>
             )}
           </Alert>
         )}
@@ -287,7 +287,7 @@ export default function SubscriptionManagementPage() {
                     </Box>
                     <Box flex={1}>
                       <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        Next Draw
+                        Next Campaign
                       </Typography>
                       <Typography variant='h6' fontWeight={800} lineHeight={1.2}>{sub.draw_name}</Typography>
                     </Box>
@@ -309,7 +309,7 @@ export default function SubscriptionManagementPage() {
                   <Stack spacing={2} mb={2.5}>
                     <Box>
                       <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
-                        Draw date
+                        Campaign date
                       </Typography>
                       <Typography variant='body2' fontWeight={700}>{drawDateLabel}</Typography>
                     </Box>
@@ -326,7 +326,7 @@ export default function SubscriptionManagementPage() {
 
                   {isDrawLocked && (
                     <Alert severity='success' icon={<Lock />} sx={{ borderRadius: 2 }}>
-                      Your entry is confirmed. You are in this draw.
+                      Your entry is confirmed. You are in this campaign.
                     </Alert>
                   )}
                 </Box>
@@ -341,9 +341,9 @@ export default function SubscriptionManagementPage() {
                 }}
               >
                 <EmojiEvents sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
-                <Typography variant='body1' fontWeight={700} color='text.secondary'>No upcoming draw</Typography>
+                <Typography variant='body1' fontWeight={700} color='text.secondary'>No upcoming campaign</Typography>
                 <Typography variant='body2' color='text.disabled' sx={{ mt: 1 }}>
-                  You are not enrolled in any upcoming draw yet.
+                  You are not enrolled in any upcoming campaign yet.
                 </Typography>
               </Paper>
             )}
@@ -359,7 +359,7 @@ export default function SubscriptionManagementPage() {
             {cancellationRefundPreview === 'full' && (
               <>
                 <DialogContentText>
-                  You'll be removed from the upcoming draw and your full payment will be refunded. Your subscription ends immediately.
+                  You'll be removed from the upcoming campaign and your full payment will be refunded. Your subscription ends immediately.
                 </DialogContentText>
                 <Alert severity='info' icon={<LockOpen />} sx={{ borderRadius: 2, mt: 1.5 }}>
                   You can cancel and get a full refund until <strong>{cancelDeadline}</strong>. After that, only a 40% refund applies.
@@ -368,13 +368,13 @@ export default function SubscriptionManagementPage() {
             )}
             {cancellationRefundPreview === 'partial_40' && (
               <DialogContentText>
-                The free cancellation window has passed. You'll be removed from the draw, but only 40% of your payment will be refunded. 60% stays in the prize pool.
+                The free cancellation window has passed. You'll be removed from the campaign, but only 40% of your payment will be refunded. 60% stays in the prize pool.
               </DialogContentText>
             )}
             {cancellationRefundPreview === 'none' && (
               <>
                 <DialogContentText>
-                  The draw has already started — your entry is locked in and no refund is available. Cancelling now only stops future monthly charges. Your plan stays active until <strong>{periodEndLabel}</strong>.
+                  The campaign has already started — your entry is locked in and no refund is available. Cancelling now only stops future monthly charges. Your plan stays active until <strong>{periodEndLabel}</strong>.
                 </DialogContentText>
               </>
             )}

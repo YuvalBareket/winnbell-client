@@ -1,5 +1,20 @@
 // src/features/admin/types/index.ts
 
+export interface AdminUser {
+  id: number;
+  full_name: string;
+  email: string;
+  role: string;
+  is_active: boolean;
+  is_email_verified: boolean;
+  created_at: string;
+  risk_score: number;
+  risk_last_flagged_at: string | null;
+  business_id: number | null;
+  business_name: string | null;
+  business_active: boolean | null;
+}
+
 export interface BusinessStats {
   id: number;
   name: string;
@@ -13,7 +28,6 @@ export interface Draw {
   id: number;
   name: string;
   prize_amount: number;
-  prize_percentage: number;
   draw_date: string;
   status: 'Upcoming' | 'Open' | 'Closed';
   winner_user_id?: number;
@@ -38,8 +52,7 @@ export interface CreateBusinessInput {
 
 export interface CreateDrawInput {
   name: string;
-  prize_amount?: number;
-  prize_percentage?: number;
+  prize_amount: number;
   draw_date: string;
 }
 

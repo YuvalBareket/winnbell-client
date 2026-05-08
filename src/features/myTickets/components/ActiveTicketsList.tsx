@@ -1,4 +1,4 @@
-import { Box, Typography, Stack, Chip, Skeleton, Avatar } from '@mui/material';
+import { Box, Typography, Stack, Chip, Skeleton, Avatar, LinearProgress } from '@mui/material';
 import { Circle, Person, Storefront, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import EmptyState from '../../../shared/components/EmptyState';
@@ -77,7 +77,7 @@ const UserTicketRow = ({ ticket, index }: { ticket: UserTicket; index: number })
             noWrap
             sx={{ fontWeight: 700, lineHeight: 1.2 }}
           >
-            {ticket.business_name ?? 'Free weekly ticket'}
+            {ticket.business_name ?? 'Free weekly entry'}
           </Typography>
           {ticket.location_name && (
             <Typography variant='caption' sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', lineHeight: 1.4 }}>
@@ -152,82 +152,103 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
   const isBusinessOwner = useAppSelector(selectIsBusiness);
   const isLocation = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessOwner || isLocation;
-  const { data: tickets, isLoading } = useMyTickets(draw_id ?? 0);
+  const { data: tickets, effectiveCount, isLoading } = useMyTickets(draw_id ?? 0);
 
   const ticketCount = tickets?.length ?? 0;
+  const CAP = 30;
+  const progress = Math.min((effectiveCount / CAP) * 100, 100);
+  const isMaxed = effectiveCount >= CAP;
+  const progressColor = isMaxed ? '#2e7d32' : effectiveCount >= 20 ? '#ed6c02' : '#195DE2';
 
   if (!draw_id) return (
     <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
       <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'rgba(25,93,230,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
         <ConfirmationNumberOutlined sx={{ fontSize: 32, color: 'primary.main' }} />
       </Box>
-      <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>Select a draw</Typography>
-      <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>Choose a draw from the list to see tickets</Typography>
+      <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>Select a campaign</Typography>
+      <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>Choose a campaign from the list to see entries</Typography>
     </Box>
   );
 
   return (
     <>
-      {/* Ticket count hero stat */}
-      <Box
-        sx={{
-          px: 3,
-          pt: 0,
-          pb: 2,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-        }}
-      >
-        <Box>
-          <Typography
-            variant='caption'
-            sx={{
-              color: 'text.disabled',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              fontSize: '0.65rem',
-            }}
-          >
-            {isBusiness ? 'Distributed' : 'Your Entries'}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+      {/* Entry count + progress */}
+      <Box sx={{ px: 3, pt: 0, pb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: isBusiness ? 0 : 1.5 }}>
+          <Box>
+            <Typography
+              variant='caption'
+              sx={{ color: 'text.disabled', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.65rem' }}
+            >
+              {isBusiness ? 'Distributed' : 'Your Entries'}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+              {isLoading ? (
+                <Skeleton width={60} height={44} />
+              ) : (
+                <>
+                  <Typography variant='h3' sx={{ fontWeight: 900, color: progressColor, lineHeight: 1, letterSpacing: '-0.03em', transition: 'color 0.3s' }}>
+                    {isBusiness ? ticketCount : effectiveCount}
+                  </Typography>
+                  {!isBusiness && (
+                    <Typography variant='body1' sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                      / {CAP}
+                    </Typography>
+                  )}
+                  {isBusiness && (
+                    <Typography variant='body1' sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                      {ticketCount !== 1 ? 'entries' : 'entry'}
+                    </Typography>
+                  )}
+                </>
+              )}
+            </Box>
+          </Box>
+
+          {!isBusiness && !isLoading && (
+            <Typography variant='caption' sx={{ fontWeight: 700, color: progressColor, pb: 0.5, transition: 'color 0.3s' }}>
+              {isMaxed ? '🎉 Maxed out!' : `${CAP - effectiveCount} slots left`}
+            </Typography>
+          )}
+          {isBusiness && (
+            <Typography variant='caption' sx={{ fontWeight: 600, color: 'text.disabled', pb: 0.5 }}>
+              All locations
+            </Typography>
+          )}
+        </Box>
+
+        {/* Progress bar — users only */}
+        {!isBusiness && (
+          <Box>
             {isLoading ? (
-              <Skeleton width={60} height={44} />
+              <Skeleton variant='rounded' height={8} sx={{ borderRadius: 4 }} />
             ) : (
-              <>
-                <Typography
-                  variant='h3'
-                  sx={{
-                    fontWeight: 900,
-                    color: PRIMARY_MAIN,
-                    lineHeight: 1,
-                    letterSpacing: '-0.03em',
-                  }}
-                >
-                  {ticketCount}
-                </Typography>
-                <Typography
-                  variant='body1'
-                  sx={{ fontWeight: 700, color: 'text.secondary' }}
-                >
-                  ticket{ticketCount !== 1 ? 's' : ''}
-                </Typography>
-              </>
+              <LinearProgress
+                variant='determinate'
+                value={progress}
+                sx={{
+                  height: 8,
+                  borderRadius: 4,
+                  bgcolor: 'rgba(0,0,0,0.06)',
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 4,
+                    bgcolor: progressColor,
+                    transition: 'background-color 0.3s, transform 0.6s ease',
+                  },
+                }}
+              />
+            )}
+            {!isLoading && (
+              <Typography variant='caption' color='text.disabled' sx={{ mt: 0.75, display: 'block', fontWeight: 500 }}>
+                {isMaxed
+                  ? 'You have the maximum entries for this campaign. Good luck!'
+                  : effectiveCount === 0
+                    ? 'Submit receipts, use promo codes, or claim your free weekly entry.'
+                    : `You have ${CAP - effectiveCount} more entries available — don't leave them unclaimed!`}
+              </Typography>
             )}
           </Box>
-        </Box>
-        <Typography
-          variant='caption'
-          sx={{
-            fontWeight: 600,
-            color: 'text.disabled',
-            pb: 0.5,
-          }}
-        >
-          {isBusiness ? 'All locations' : ''}
-        </Typography>
+        )}
       </Box>
 
       {/* Ticket list */}
@@ -248,16 +269,16 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
               <StorefrontOutlined sx={{ fontSize: 32, color: 'text.disabled' }} />
             </Box>
             <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
-              No tickets distributed yet
+              No entries distributed yet
             </Typography>
             <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
-              Tickets will appear here once customers activate them at your location.
+              Entries will appear here once customers activate them at your location.
             </Typography>
           </Box>
         ) : (
           <EmptyState
             icon={<ConfirmationNumberOutlined />}
-            title='No tickets yet'
+            title='No entries yet'
             description='Submit a receipt at a partner business to earn your first entry'
             actionLabel='Scan a receipt'
             onAction={() => navigate('/scan')}

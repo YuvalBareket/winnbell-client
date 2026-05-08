@@ -101,7 +101,7 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
         }}
       >
         <Typography variant='h6' sx={{ fontWeight: 700 }}>
-          {'My Active Tickets'}
+          {'My Active Entries'}
         </Typography>
         <Typography
           variant='body2'
@@ -129,7 +129,7 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
         ) : (
           <Box sx={{ py: 4, textAlign: 'center', opacity: 0.6 }}>
             <Typography variant='body2'>
-              No tickets found for this draw.
+              No entries found for this campaign.
             </Typography>
           </Box>
         )}

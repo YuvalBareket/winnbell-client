@@ -109,7 +109,7 @@ const BusinessProfilePage = () => {
           Set Up Your<br />Business
         </Typography>
         <Typography variant='body1' sx={{ opacity: 0.85, lineHeight: 1.7, maxWidth: 320, display: { xs: 'none', md: 'block' } }}>
-          You are just a few steps away from appearing on the Winnbell map and issuing tickets to your customers.
+          You are just a few steps away from appearing on the Winnbell map and issuing entries to your customers.
         </Typography>
 
         {/* Step indicators */}

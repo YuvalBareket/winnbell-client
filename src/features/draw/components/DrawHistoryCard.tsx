@@ -122,7 +122,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
                       color='text.primary'
                       sx={{ lineHeight: 1.2 }}
                     >
-                      Won with a free weekly ticket!
+                      Won with a free weekly entry!
                     </Typography>
                     <Typography
                       variant='body2'

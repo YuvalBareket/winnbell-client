@@ -180,7 +180,7 @@ const BusinessHubPage = () => {
                     Complete your onboarding
                   </Typography>
                   <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'none', sm: 'block' } }}>
-                    Your business isn't live yet. Subscribe to appear on the map and start issuing tickets.
+                    Your business isn't live yet. Subscribe to appear on the map and start issuing entries.
                   </Typography>
                   <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'block', sm: 'none' } }}>
                     Subscribe to go live on the map
@@ -237,7 +237,7 @@ const BusinessHubPage = () => {
                 <AddBusiness sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
                 <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>No locations yet</Typography>
                 <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
-                  Add your first branch to start issuing tickets.
+                  Add your first branch to start issuing entries.
                 </Typography>
                 <Button
                   variant='contained'

@@ -53,6 +53,9 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import EditIcon from '@mui/icons-material/Edit';
 import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import GppBadIcon from '@mui/icons-material/GppBad';
+import WarningIcon from '@mui/icons-material/Warning';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import {
   useAdminBusinesses,
   useAllDraws,
@@ -66,7 +69,9 @@ import {
   useDrawBusinesses,
   useAdminAnalytics,
   useLocationBreakdown,
+  useSetUserRisk,
 } from '../hooks/useAdmin';
+import type { AdminUser } from '../types/admin.types';
 import CreateBusinessModal from './components/CreateBusinessModal';
 import CreateDrawModal from './components/CreateDrawModal';
 import GenerateTicketsModal from './components/GenerateTicketsModal';
@@ -111,7 +116,7 @@ function TabPanel(props: TabPanelProps) {
 const DrawBusinessesPanel: React.FC<{ drawId: number }> = ({ drawId }) => {
   const { data, isLoading } = useDrawBusinesses(drawId);
   if (isLoading) return <Box sx={{ p: 2 }}><Skeleton variant='rectangular' height={60} /></Box>;
-  if (!data?.length) return <Box sx={{ p: 2 }}><Typography variant='body2' color='text.secondary'>No businesses enrolled in this draw.</Typography></Box>;
+  if (!data?.length) return <Box sx={{ p: 2 }}><Typography variant='body2' color='text.secondary'>No businesses enrolled in this campaign.</Typography></Box>;
   return (
     <Box sx={{ px: 3, pb: 2, bgcolor: BG_PAGE }}>
       <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 1 }}>
@@ -121,10 +126,7 @@ const DrawBusinessesPanel: React.FC<{ drawId: number }> = ({ drawId }) => {
         {data.map((b) => (
           <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
             <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
-            <Stack direction='row' spacing={2} alignItems='center'>
-              <Typography variant='caption' color='text.secondary'>Fee: ${Number(b.fee_at_entry).toLocaleString()}</Typography>
-              <Typography variant='caption' color='text.secondary'>Contribution: ${Number(b.contribution_amount).toLocaleString()}</Typography>
-            </Stack>
+            <Typography variant='caption' color='text.secondary'>Fee: ${Number(b.fee_at_entry).toLocaleString()}</Typography>
           </Box>
         ))}
       </Stack>
@@ -156,8 +158,10 @@ const BusinessDashboard: React.FC = () => {
   // Users tab state
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('all');
+  const [userRiskFilter, setUserRiskFilter] = useState('all');
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState<number | null>(null);
   const [selectedRole, setSelectedRole] = useState('user');
+  const [riskConfirmUser, setRiskConfirmUser] = useState<{ id: number; name: string; action: 'disqualify' | 'clear' } | null>(null);
 
   const [expandedDrawId, setExpandedDrawId] = useState<number | null>(null);
   const [snackError, setSnackError] = useState('');
@@ -189,15 +193,16 @@ const BusinessDashboard: React.FC = () => {
   const pickWinner = usePickWinner();
   const updateUserRole = useUpdateUserRole();
   const toggleUserActive = useToggleUserActive();
+  const setUserRisk = useSetUserRisk();
 
   // Draw action handlers
   const handleOpenDraw = async () => {
     if (!confirmOpen) return;
     try {
       await openDraw.mutateAsync(confirmOpen);
-      setSnackSuccess('Draw opened successfully');
+      setSnackSuccess('Campaign opened successfully');
     } catch (e: any) {
-      setSnackError(e?.response?.data?.message ?? 'Failed to open draw');
+      setSnackError(e?.response?.data?.message ?? 'Failed to open campaign');
     }
     setConfirmOpen(null);
   };
@@ -206,9 +211,9 @@ const BusinessDashboard: React.FC = () => {
     if (!confirmClose) return;
     try {
       await closeDraw.mutateAsync(confirmClose);
-      setSnackSuccess('Draw closed successfully');
+      setSnackSuccess('Campaign closed successfully');
     } catch (e: any) {
-      setSnackError(e?.response?.data?.message ?? 'Failed to close draw');
+      setSnackError(e?.response?.data?.message ?? 'Failed to close campaign');
     }
     setConfirmClose(null);
   };
@@ -253,18 +258,40 @@ const BusinessDashboard: React.FC = () => {
     }
   };
 
+  // Risk action handler
+  const handleConfirmRiskAction = async () => {
+    if (!riskConfirmUser) return;
+    const riskScore = riskConfirmUser.action === 'disqualify' ? 20 : 0;
+    try {
+      await setUserRisk.mutateAsync({ userId: riskConfirmUser.id, riskScore });
+      setSnackSuccess(
+        riskConfirmUser.action === 'disqualify'
+          ? `${riskConfirmUser.name} has been disqualified`
+          : `Flag cleared for ${riskConfirmUser.name}`,
+      );
+    } catch (e: any) {
+      setSnackError(e?.response?.data?.message ?? 'Failed to update risk score');
+    }
+    setRiskConfirmUser(null);
+  };
+
   // Filter users
   const filteredUsers = useMemo(() => {
     if (!users) return [];
-    return users.filter((u: any) => {
+    return users.filter((u: AdminUser) => {
       const matchesSearch =
         u.full_name.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
         u.email.toLowerCase().includes(userSearchQuery.toLowerCase());
       const matchesRole =
         userRoleFilter === 'all' || u.role.toLowerCase() === userRoleFilter;
-      return matchesSearch && matchesRole;
+      const matchesRisk =
+        userRiskFilter === 'all' ||
+        (userRiskFilter === 'high' && u.risk_score >= 20) ||
+        (userRiskFilter === 'medium' && u.risk_score >= 10 && u.risk_score < 20) ||
+        (userRiskFilter === 'low' && u.risk_score < 10);
+      return matchesSearch && matchesRole && matchesRisk;
     });
-  }, [users, userSearchQuery, userRoleFilter]);
+  }, [users, userSearchQuery, userRoleFilter, userRiskFilter]);
 
   // Get current open draw
   const currentOpenDraw = draws?.find((d) => d.status?.toUpperCase() === 'OPEN');
@@ -304,7 +331,7 @@ const BusinessDashboard: React.FC = () => {
             variant={isMobile ? 'body2' : 'body1'}
             sx={{ opacity: ALPHA_WHITE_80 }}
           >
-            Manage businesses, draws, users, and subscriptions
+            Manage businesses, campaigns, users, and subscriptions
           </Typography>
         </Container>
       </Box>
@@ -339,7 +366,7 @@ const BusinessDashboard: React.FC = () => {
               <Tab label='Overview' />
               <Tab label='Users' />
               <Tab label='Businesses' />
-              <Tab label='Draws' />
+              <Tab label='Campaigns' />
               <Tab label='Revenue' />
               <Tab label='Analytics' />
             </Tabs>
@@ -472,13 +499,13 @@ const BusinessDashboard: React.FC = () => {
                             <EmojiEventsIcon />
                           </Box>
                           <Typography variant='body2' color='text.secondary'>
-                            Current Draw Prize
+                            Current Campaign Prize
                           </Typography>
                           <Typography variant='h6' fontWeight={700}>
                             ${Number(overview?.currentDraw?.prize_pool ?? 0).toLocaleString()}
                           </Typography>
                           <Typography variant='caption' color='text.secondary'>
-                            {overview?.currentDraw?.name ?? 'No active draw'}
+                            {overview?.currentDraw?.name ?? 'No active campaign'}
                           </Typography>
                         </Stack>
                       </CardContent>
@@ -524,7 +551,7 @@ const BusinessDashboard: React.FC = () => {
                             }}
                           >
                             <Typography variant='body2' fontWeight={500}>
-                              Ticket Activation
+                              Entry Activation
                             </Typography>
                             <Typography variant='body2' color='text.secondary'>
                               {overview?.currentDrawTickets?.activated ?? 0} /{' '}
@@ -562,7 +589,7 @@ const BusinessDashboard: React.FC = () => {
                   </Card>
                 ) : (
                   <Alert severity='info'>
-                    No active draw. Create and open a draw in the <strong>Draws</strong> tab to start a raffle.
+                    No active campaign. Create and open a campaign in the <strong>Campaigns</strong> tab to start a raffle.
                   </Alert>
                 )}
               </Stack>
@@ -571,6 +598,16 @@ const BusinessDashboard: React.FC = () => {
             {/* TAB 1: USERS */}
             <TabPanel value={tabValue} index={1}>
               <Stack spacing={3}>
+                {/* Flagged users banner */}
+                {(() => {
+                  const flaggedCount = (users ?? []).filter((u: AdminUser) => u.risk_score >= 20).length;
+                  return flaggedCount > 0 ? (
+                    <Alert severity='error'>
+                      <strong>{flaggedCount} {flaggedCount === 1 ? 'user' : 'users'} flagged for review</strong> — risk score &ge; 15. Their draw entries are quarantined.
+                    </Alert>
+                  ) : null;
+                })()}
+
                 {/* Search and filters */}
                 <Box
                   sx={{
@@ -607,6 +644,25 @@ const BusinessDashboard: React.FC = () => {
                     ))}
                   </Stack>
                 </Box>
+
+                {/* Risk filter chips */}
+                <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
+                  {[
+                    { key: 'all', label: 'All' },
+                    { key: 'high', label: 'High Risk' },
+                    { key: 'medium', label: 'Medium Risk' },
+                    { key: 'low', label: 'Low Risk' },
+                  ].map((item) => (
+                    <Chip
+                      key={item.key}
+                      label={item.label}
+                      onClick={() => setUserRiskFilter(item.key)}
+                      variant={userRiskFilter === item.key ? 'filled' : 'outlined'}
+                      size='small'
+                      color={item.key === 'high' ? 'error' : item.key === 'medium' ? 'warning' : item.key === 'low' ? 'success' : 'default'}
+                    />
+                  ))}
+                </Stack>
 
                 {/* Users table / cards */}
                 {isMobile ? (
@@ -694,76 +750,122 @@ const BusinessDashboard: React.FC = () => {
                           <TableCell>Role</TableCell>
                           <TableCell>Status</TableCell>
                           <TableCell>Business</TableCell>
+                          <TableCell>Risk</TableCell>
                           <TableCell align='right'>Actions</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {filteredUsers.map((user: any) => (
-                          <TableRow key={user.id} hover>
-                            <TableCell>{user.full_name}</TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                              <Chip
-                                label={user.role}
-                                size='small'
-                                color={ROLE_COLORS[user.role.toLowerCase()] || 'default'}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                label={user.is_active ? 'Active' : 'Inactive'}
-                                size='small'
-                                variant={user.is_active ? 'filled' : 'outlined'}
-                                color={user.is_active ? 'success' : 'default'}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              {user.business_name ? (
-                                <Typography variant='body2'>{user.business_name}</Typography>
-                              ) : (
-                                <Typography variant='body2' color='text.secondary'>
-                                  —
-                                </Typography>
-                              )}
-                            </TableCell>
-                            <TableCell align='right'>
-                              <Stack direction='row' spacing={0.5} justifyContent='flex-end'>
-                                {user.role.toLowerCase() !== 'admin' && (
-                                  <Tooltip title='Change role'>
-                                    <IconButton
-                                      size='small'
-                                      onClick={() => {
-                                        setSelectedRole(user.role.toLowerCase());
-                                        setUserRoleDialogOpen(user.id);
-                                      }}
-                                    >
-                                      <EditIcon fontSize='small' />
-                                    </IconButton>
-                                  </Tooltip>
+                        {filteredUsers.map((user: AdminUser) => {
+                          const isDisqualified = user.risk_score >= 20;
+                          const riskChipColor: 'error' | 'warning' | 'success' =
+                            user.risk_score >= 20 ? 'error' : user.risk_score >= 10 ? 'warning' : 'success';
+                          const riskLabel = user.risk_score >= 20 ? 'HIGH' : user.risk_score >= 10 ? 'MEDIUM' : 'LOW';
+                          const RiskIcon = user.risk_score >= 20 ? GppBadIcon : user.risk_score >= 10 ? WarningIcon : VerifiedUserIcon;
+                          return (
+                            <TableRow key={user.id} hover>
+                              <TableCell>{user.full_name}</TableCell>
+                              <TableCell>{user.email}</TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={user.role}
+                                  size='small'
+                                  color={ROLE_COLORS[user.role.toLowerCase()] || 'default'}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={user.is_active ? 'Active' : 'Inactive'}
+                                  size='small'
+                                  variant={user.is_active ? 'filled' : 'outlined'}
+                                  color={user.is_active ? 'success' : 'default'}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                {user.business_name ? (
+                                  <Typography variant='body2'>{user.business_name}</Typography>
+                                ) : (
+                                  <Typography variant='body2' color='text.secondary'>
+                                    —
+                                  </Typography>
                                 )}
-                                <Tooltip
-                                  title={
-                                    user.is_active ? 'Deactivate' : 'Activate'
-                                  }
-                                >
-                                  <IconButton
+                              </TableCell>
+                              <TableCell>
+                                <Stack direction='row' spacing={0.5} alignItems='center'>
+                                  <Chip
+                                    icon={<RiskIcon />}
+                                    label={riskLabel}
                                     size='small'
-                                    color={user.is_active ? 'default' : 'error'}
-                                    onClick={() =>
-                                      handleToggleUserActive(user.id, user.is_active)
+                                    color={riskChipColor}
+                                  />
+                                  <Typography variant='caption' color='text.secondary'>
+                                    {user.risk_score}
+                                  </Typography>
+                                </Stack>
+                              </TableCell>
+                              <TableCell align='right'>
+                                <Stack direction='row' spacing={0.5} justifyContent='flex-end'>
+                                  {user.role.toLowerCase() !== 'admin' && (
+                                    <Tooltip title='Change role'>
+                                      <IconButton
+                                        size='small'
+                                        onClick={() => {
+                                          setSelectedRole(user.role.toLowerCase());
+                                          setUserRoleDialogOpen(user.id);
+                                        }}
+                                      >
+                                        <EditIcon fontSize='small' />
+                                      </IconButton>
+                                    </Tooltip>
+                                  )}
+                                  <Tooltip
+                                    title={
+                                      user.is_active ? 'Deactivate' : 'Activate'
                                     }
                                   >
-                                    {user.is_active ? (
-                                      <CheckCircleIcon fontSize='small' />
-                                    ) : (
-                                      <BlockIcon fontSize='small' />
-                                    )}
-                                  </IconButton>
-                                </Tooltip>
-                              </Stack>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                    <IconButton
+                                      size='small'
+                                      color={user.is_active ? 'default' : 'error'}
+                                      onClick={() =>
+                                        handleToggleUserActive(user.id, user.is_active)
+                                      }
+                                    >
+                                      {user.is_active ? (
+                                        <CheckCircleIcon fontSize='small' />
+                                      ) : (
+                                        <BlockIcon fontSize='small' />
+                                      )}
+                                    </IconButton>
+                                  </Tooltip>
+                                  {!isDisqualified ? (
+                                    <Tooltip title='Disqualify user'>
+                                      <IconButton
+                                        size='small'
+                                        color='error'
+                                        onClick={() =>
+                                          setRiskConfirmUser({ id: user.id, name: user.full_name, action: 'disqualify' })
+                                        }
+                                      >
+                                        <BlockIcon fontSize='small' />
+                                      </IconButton>
+                                    </Tooltip>
+                                  ) : (
+                                    <Tooltip title='Clear flag & restore entries'>
+                                      <IconButton
+                                        size='small'
+                                        color='success'
+                                        onClick={() =>
+                                          setRiskConfirmUser({ id: user.id, name: user.full_name, action: 'clear' })
+                                        }
+                                      >
+                                        <CheckCircleIcon fontSize='small' />
+                                      </IconButton>
+                                    </Tooltip>
+                                  )}
+                                </Stack>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </TableContainer>
@@ -805,6 +907,38 @@ const BusinessDashboard: React.FC = () => {
                     disabled={updateUserRole.isPending}
                   >
                     {updateUserRole.isPending ? 'Updating...' : 'Update'}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+
+              {/* Risk action confirmation dialog */}
+              <Dialog
+                open={!!riskConfirmUser}
+                onClose={() => setRiskConfirmUser(null)}
+              >
+                <DialogTitle>
+                  {riskConfirmUser?.action === 'disqualify' ? 'Disqualify User?' : 'Clear Flag?'}
+                </DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    {riskConfirmUser?.action === 'disqualify'
+                      ? `Disqualify ${riskConfirmUser.name}? This will quarantine all their current campaign entries. They can no longer submit until their score is cleared.`
+                      : `Clear flag for ${riskConfirmUser?.name}? This will restore their entries and reset their risk score to 0.`}
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setRiskConfirmUser(null)}>Cancel</Button>
+                  <Button
+                    variant='contained'
+                    color={riskConfirmUser?.action === 'disqualify' ? 'error' : 'success'}
+                    onClick={handleConfirmRiskAction}
+                    disabled={setUserRisk.isPending}
+                  >
+                    {setUserRisk.isPending
+                      ? 'Updating...'
+                      : riskConfirmUser?.action === 'disqualify'
+                      ? 'Disqualify'
+                      : 'Clear Flag'}
                   </Button>
                 </DialogActions>
               </Dialog>
@@ -953,7 +1087,7 @@ const BusinessDashboard: React.FC = () => {
                                 size='small'
                                 onClick={() => setSelectedBusinessId(biz.id)}
                               >
-                                Generate Tickets
+                                Generate Entries
                               </Button>
                             </Stack>
                           </CardContent>
@@ -1076,7 +1210,7 @@ const BusinessDashboard: React.FC = () => {
                     startIcon={<AddIcon />}
                     onClick={() => setIsDrawModalOpen(true)}
                   >
-                    New Draw
+                    New Campaign
                   </Button>
                 </Box>
 
@@ -1297,14 +1431,12 @@ const BusinessDashboard: React.FC = () => {
                         </Typography>
                         <Typography variant='body2' color='text.secondary'>
                           Winnbell operates on a subscription model where each business pays a monthly
-                          subscription fee. These fees are aggregated and form the prize pool for the
-                          active raffle draw. As more businesses subscribe, the prize pool grows,
-                          increasing the value of winning a ticket.
+                          subscription fee. The prize amount for each campaign is set directly by admin
+                          when creating the campaign, independent of subscription revenue.
                         </Typography>
                         <Typography variant='body2' color='text.secondary' sx={{ mt: 2 }}>
                           <strong>Current Status:</strong> {overview?.subscriptions?.active_subs ?? 0} active
-                          business subscriptions contributing ${Number(overview?.subscriptions?.total_fees ?? 0).toLocaleString()} per month to
-                          the draw pool.
+                          business subscriptions generating ${Number(overview?.subscriptions?.total_fees ?? 0).toLocaleString()} per month in subscription revenue.
                         </Typography>
                       </Stack>
                     </CardContent>
@@ -1567,7 +1699,7 @@ const BusinessDashboard: React.FC = () => {
                     <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
                       <CardContent sx={{ pb: 0 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                          <Typography variant='subtitle1' fontWeight={700}>Tickets by Location</Typography>
+                          <Typography variant='subtitle1' fontWeight={700}>Entries by Location</Typography>
                           <TextField
                             size='small'
                             placeholder='Search business or location…'
@@ -1710,10 +1842,10 @@ const BusinessDashboard: React.FC = () => {
 
       {/* Draw action confirmations */}
       <Dialog open={!!confirmOpen} onClose={() => setConfirmOpen(null)}>
-        <DialogTitle>Open Draw?</DialogTitle>
+        <DialogTitle>Open Campaign?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Opening this draw will allow businesses to generate tickets and users to activate
+            Opening this campaign will allow businesses to generate entries and users to activate
             them. Make sure you're ready before proceeding.
           </DialogContentText>
         </DialogContent>
@@ -1725,16 +1857,16 @@ const BusinessDashboard: React.FC = () => {
             onClick={handleOpenDraw}
             disabled={openDraw.isPending}
           >
-            {openDraw.isPending ? 'Opening...' : 'Open Draw'}
+            {openDraw.isPending ? 'Opening...' : 'Open Campaign'}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={!!confirmClose} onClose={() => setConfirmClose(null)}>
-        <DialogTitle>Close Draw?</DialogTitle>
+        <DialogTitle>Close Campaign?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Closing this draw will prevent any new tickets from being counted. You can pick a
+            Closing this campaign will prevent any new entries from being counted. You can pick a
             winner after closing.
           </DialogContentText>
         </DialogContent>
@@ -1746,7 +1878,7 @@ const BusinessDashboard: React.FC = () => {
             onClick={handleCloseDraw}
             disabled={closeDraw.isPending}
           >
-            {closeDraw.isPending ? 'Closing...' : 'Close Draw'}
+            {closeDraw.isPending ? 'Closing...' : 'Close Campaign'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1755,7 +1887,7 @@ const BusinessDashboard: React.FC = () => {
         <DialogTitle>Pick a Winner?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            This will randomly select a winner from all activated tickets in this draw. This
+            This will randomly select a winner from all activated entries in this campaign. This
             action cannot be undone.
           </DialogContentText>
         </DialogContent>
@@ -1789,7 +1921,7 @@ const BusinessDashboard: React.FC = () => {
               {winnerResult?.winnerName}
             </Typography>
             <Typography variant='body2' color='text.secondary'>
-              Winning ticket: <strong>{winnerResult?.ticketCode}</strong>
+              Winning entry: <strong>{winnerResult?.ticketCode}</strong>
             </Typography>
             {winnerResult?.businessName && (
               <Typography variant='body2' color='text.secondary'>

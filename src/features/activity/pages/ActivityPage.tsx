@@ -2,19 +2,18 @@ import { useState, useEffect } from 'react';
 import {
   Box, Container, Typography, Paper, Stack, MenuItem, Select,
   FormControl, InputLabel, Skeleton, Alert, Chip, Button, ToggleButton, ToggleButtonGroup,
-  IconButton, Tooltip, CircularProgress,
 } from '@mui/material';
 import {
   ReceiptLongOutlined, AttachMoneyOutlined, ConfirmationNumberOutlined,
-  FeedOutlined, QrCodeScannerOutlined, CardGiftcardOutlined, BlockOutlined, CheckCircleOutline,
+  FeedOutlined, QrCodeScannerOutlined, CardGiftcardOutlined,
   RocketLaunch,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
-import { fetchActivity, setTicketQualification, type DateRange, type ActivityItem } from '../api/activity.api';
+import { fetchActivity, type DateRange, type ActivityItem } from '../api/activity.api';
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN,
 } from '../../../shared/colors';
@@ -25,20 +24,11 @@ const ActivityPage = () => {
   const navigate = useNavigate();
   const user = useAppSelector(selectCurrentUser);
   const isLocationManager = !!user?.location_id;
-  const queryClient = useQueryClient();
 
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
   const [dateRange, setDateRange] = useState<DateRange>('today');
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [pages, setPages] = useState<ActivityItem[][]>([]);
-
-  const qualifyMutation = useMutation({
-    mutationFn: ({ ticketId, disqualify }: { ticketId: number; disqualify: boolean }) =>
-      setTicketQualification(ticketId, disqualify),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['business', 'activity'] });
-    },
-  });
 
   const { data: bizData } = useBusinessData(true);
   const locations = bizData?.locations ?? [];
@@ -100,10 +90,8 @@ const ActivityPage = () => {
     }
   };
 
-  const getStatusColor = (status: string, quarantine_reason?: string | null) => {
+  const getStatusColor = (status: string) => {
     if (status === 'active') return { dot: '#10b981', text: 'Active', bg: '#ecfdf5', fg: '#065f46' };
-    if (status === 'under_review' && quarantine_reason === 'business_review')
-      return { dot: '#ef4444', text: 'Disqualified', bg: '#fef2f2', fg: '#991b1b' };
     if (status === 'under_review') return { dot: '#f59e0b', text: 'Under Review', bg: '#fffbeb', fg: '#92400e' };
     return { dot: '#999', text: status, bg: '#f3f4f6', fg: '#6b7280' };
   };
@@ -319,7 +307,7 @@ const ActivityPage = () => {
 
               {displayItems.map((item, idx) => {
                 const sourceBadge = getSourceBadgeColor(item.entry_source);
-                const statusColor = getStatusColor(item.status, item.quarantine_reason);
+                const statusColor = getStatusColor(item.status);
                 const accentColor = getAccentColor(item.entry_source);
                 const sourceIcon = getSourceIcon(item.entry_source);
 
@@ -392,8 +380,22 @@ const ActivityPage = () => {
                           )}
                         </Stack>
 
-                        {/* Right: timestamp and status pill */}
+                        {/* Right: entry count (if multi-entry), timestamp, status */}
                         <Stack direction='row' alignItems='center' spacing={1.5} sx={{ flexShrink: 0 }}>
+                          {item.entry_source === 'receipt' && item.entry_count > 1 && (
+                            <Chip
+                              label={`${item.entry_count} entries`}
+                              size='small'
+                              sx={{
+                                fontWeight: 700,
+                                fontSize: '0.68rem',
+                                height: 22,
+                                bgcolor: '#ede9fe',
+                                color: '#6d28d9',
+                                border: '1px solid #c4b5fd',
+                              }}
+                            />
+                          )}
                           <Typography variant='caption' color='text.secondary'>
                             {formatRelativeTime(item.created_at)}
                           </Typography>
@@ -421,34 +423,6 @@ const ActivityPage = () => {
                               {statusColor.text}
                             </Typography>
                           </Box>
-                          {item.entry_source === 'receipt' && (item.status === 'active' || item.quarantine_reason === 'business_review') && (
-                            <Tooltip title={item.quarantine_reason === 'business_review' ? 'Restore entry' : 'Disqualify entry'}>
-                              <span>
-                                <IconButton
-                                  size='small'
-                                  disabled={qualifyMutation.isPending}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    qualifyMutation.mutate({
-                                      ticketId: item.ticket_id,
-                                      disqualify: item.quarantine_reason !== 'business_review',
-                                    });
-                                  }}
-                                  sx={{
-                                    color: item.quarantine_reason === 'business_review' ? '#10b981' : '#ef4444',
-                                    '&:hover': { bgcolor: item.quarantine_reason === 'business_review' ? '#ecfdf5' : '#fef2f2' },
-                                  }}
-                                >
-                                  {qualifyMutation.isPending && qualifyMutation.variables?.ticketId === item.ticket_id
-                                    ? <CircularProgress size={16} color='inherit' />
-                                    : item.quarantine_reason === 'business_review'
-                                      ? <CheckCircleOutline sx={{ fontSize: 18 }} />
-                                      : <BlockOutlined sx={{ fontSize: 18 }} />
-                                  }
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-                          )}
                         </Stack>
                       </Stack>
                     </Box>

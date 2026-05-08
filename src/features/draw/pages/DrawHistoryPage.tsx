@@ -26,8 +26,8 @@ const DrawHistoryPage = () => {
               <EmojiEvents sx={{ color: 'white', fontSize: 28 }} />
             </Box>
             <Box>
-              <Typography variant='h5' fontWeight={800}>Draw History</Typography>
-              <Typography variant='body2' sx={{ opacity: 0.75 }}>Past draws and their winners</Typography>
+              <Typography variant='h5' fontWeight={800}>Campaign History</Typography>
+              <Typography variant='body2' sx={{ opacity: 0.75 }}>Past campaigns and their winners</Typography>
             </Box>
           </Stack>
         </Container>
@@ -36,7 +36,7 @@ const DrawHistoryPage = () => {
       <Container maxWidth='lg' sx={{ mt: -5 }}>
         {isError && (
           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'error.light', bgcolor: 'error.50', mb: 3 }}>
-            <Typography color='error'>Failed to load draw history. Please try again.</Typography>
+            <Typography color='error'>Failed to load campaign history. Please try again.</Typography>
           </Paper>
         )}
 
@@ -52,8 +52,8 @@ const DrawHistoryPage = () => {
           <Paper elevation={0} sx={{ p: 0, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
             <EmptyState
               icon={<EmojiEventsOutlined />}
-              title='No draws yet'
-              description='Draws appear here once they&#39;ve closed and a winner has been selected'
+              title='No campaigns yet'
+              description='Campaigns appear here once they&#39;ve closed and a winner has been selected'
             />
           </Paper>
         )}

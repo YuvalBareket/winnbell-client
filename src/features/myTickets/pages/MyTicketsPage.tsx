@@ -59,10 +59,10 @@ const MyTicketsPage = () => {
               </Box>
               <Box>
                 <Typography variant='h5' fontWeight={800}>
-                  {isBusinessUser ? 'Distributed Tickets' : 'My Tickets'}
+                  {isBusinessUser ? 'Distributed Entries' : 'My Entries'}
                 </Typography>
                 <Typography variant='body2' sx={{ opacity: 0.75 }}>
-                  {isBusinessUser ? 'Track all distributed tickets by draw' : 'Your entries for all active draws'}
+                  {isBusinessUser ? 'Track all distributed entries by campaign' : 'Your entries for all active campaigns'}
                 </Typography>
               </Box>
             </Stack>
@@ -85,7 +85,7 @@ const MyTicketsPage = () => {
             >
               <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
                 <Typography variant='caption' fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 1, color: 'text.secondary' }}>
-                  Active Draws
+                  Active Campaigns
                 </Typography>
               </Box>
               <DrawSwiper

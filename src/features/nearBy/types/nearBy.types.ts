@@ -13,6 +13,7 @@ export interface NearbyLocation {
   terms_text: string;
   logo_url: string | null;
   receipt_example_image_url: string | null;
+  min_transaction_amount: number | null;
   distance_km: number;
 }
 

@@ -18,8 +18,8 @@ import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { getUploadUrl, updateCampaignSettingsApi } from '../../partner/api/business.api';
 
 const FEATURES = [
-  { icon: <ConfirmationNumber />, text: 'Issue unlimited tickets to your customers' },
-  { icon: <EmojiEvents />,        text: 'Enter the next monthly prize draw and grow your prize pool' },
+  { icon: <ConfirmationNumber />, text: 'Issue unlimited entries to your customers' },
+  { icon: <EmojiEvents />,        text: 'Enter the next monthly campaign and grow your prize pool' },
   { icon: <Storefront />,         text: 'Appear on the Winnbell map so customers can find you' },
   { icon: <Groups />,             text: 'Assign branch managers to run your locations' },
 ];
@@ -91,7 +91,7 @@ const StepIndicator = ({ currentStep }: { currentStep: number }) => (
 const STEP_COPY = [
   {
     headline: 'Start your campaign',
-    sub: 'Choose how customers earn their ticket — set a spending goal or let every purchase count.',
+    sub: 'Choose how customers earn their entry — set a spending goal or let every purchase count.',
   },
   {
     headline: 'Make it crystal clear',
@@ -238,7 +238,7 @@ const SubscribePage = () => {
             Grow Your<br />Business
           </Typography>
           <Typography variant='body1' sx={{ opacity: 0.85, lineHeight: 1.8, maxWidth: 380, fontSize: { xs: '0.95rem', md: '1.05rem' } }}>
-            One flat monthly fee. Get listed on the map, issue tickets to your customers, and compete in the monthly prize draw.
+            One flat monthly fee. Get listed on the map, issue entries to your customers, and compete in the monthly campaign.
           </Typography>
         </Box>
 
@@ -540,13 +540,13 @@ const SubscribePage = () => {
 
                     <Button fullWidth variant='contained' size='large' startIcon={loading ? undefined : <CreditCard />} onClick={handleSubscribe} disabled={loading}
                       sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(25,93,230,0.35)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.45)' } }}>
-                      {loading ? <CircularProgress size={24} color='inherit' /> : 'Subscribe & Join Next Draw'}
+                      {loading ? <CircularProgress size={24} color='inherit' /> : 'Subscribe & Join Next Campaign'}
                     </Button>
 
                     <Typography variant='caption' color='text.disabled' textAlign='center' display='block' mt={1.5}>
                       {billingInterval === 'yearly'
-                        ? "You'll be redirected to Stripe's secure checkout. Yearly plan covers 12 monthly draws."
-                        : "You'll be redirected to Stripe's secure checkout. You'll enter the next monthly draw on payment."}
+                        ? "You'll be redirected to Stripe's secure checkout. Yearly plan covers 12 monthly campaigns."
+                        : "You'll be redirected to Stripe's secure checkout. You'll enter the next monthly campaign on payment."}
                     </Typography>
 
                     <Button fullWidth variant='text' size='small' onClick={() => navigate('/nearby')}

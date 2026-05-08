@@ -56,7 +56,7 @@ const GenerateTicketsModal: React.FC<Props> = ({
     <Modal open={open} onClose={onClose}>
       <Box sx={style}>
         <Typography variant='h6' mb={2}>
-          Generate Ticket Batch
+          Generate Entry Batch
         </Typography>
         {mutation.isError && (
           <Alert severity='error' sx={{ mb: 2 }}>
@@ -66,7 +66,7 @@ const GenerateTicketsModal: React.FC<Props> = ({
         <Stack spacing={3}>
           <TextField
             select
-            label='Select Draw'
+            label='Select Campaign'
             value={drawId}
             onChange={(e) => setDrawId(e.target.value)}
             fullWidth

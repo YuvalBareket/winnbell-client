@@ -48,14 +48,14 @@ const BrandPanel = () => (
       Win More,<br />Every Day
     </Typography>
     <Typography variant='body1' sx={{ opacity: 0.8, mb: 5, lineHeight: 1.7, maxWidth: 340 }}>
-      Join thousands of members earning tickets at local partner businesses and entering monthly prize draws.
+      Join thousands of members earning entries at local partner businesses and winning monthly campaigns.
     </Typography>
 
     {/* Feature bullets */}
     <Stack spacing={2.5}>
       {[
-        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn tickets at local partner shops' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Enter monthly prize draws automatically' },
+        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local partner shops' },
+        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Enter monthly campaigns automatically' },
         { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Win amazing prizes every month' },
       ].map((item, i) => (
         <Stack key={i} direction='row' alignItems='center' spacing={1.5}>
@@ -207,7 +207,7 @@ const LoginPage = () => {
           </Paper>
         )}
         <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>Welcome Back</Typography>
-        <Typography variant='body1' color='text.secondary'>Sign in to check your tickets</Typography>
+        <Typography variant='body1' color='text.secondary'>Sign in to check your entries</Typography>
       </Box>
 
       {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}

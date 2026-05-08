@@ -29,7 +29,7 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const mutation = useCreateDraw();
   const [formData, setFormData] = useState({
     name: '',
-    prize_percentage: '80',
+    prize_amount: '',
     draw_date: '',
   });
 
@@ -37,13 +37,13 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     mutation.mutate(
       {
         name: formData.name,
-        prize_percentage: parseFloat(formData.prize_percentage) || 80,
+        prize_amount: parseFloat(formData.prize_amount) || 0,
         draw_date: formData.draw_date,
       },
       {
         onSuccess: () => {
           onClose();
-          setFormData({ name: '', prize_percentage: '80', draw_date: '' });
+          setFormData({ name: '', prize_amount: '', draw_date: '' });
         },
       },
     );
@@ -53,29 +53,29 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     <Modal open={open} onClose={onClose}>
       <Box sx={style}>
         <Typography variant='h6' mb={2} fontWeight={700}>
-          Create New Draw
+          Create New Campaign
         </Typography>
         <Alert severity='info' sx={{ mb: 2.5, borderRadius: 2 }}>
-          The prize pool is built automatically from subscription fees. Set the percentage of fees allocated to prizes below.
+          Set the prize amount directly. This is independent of business subscriptions.
         </Alert>
         <Stack spacing={2}>
           <TextField
-            label='Draw Name (e.g. March 2026)'
+            label='Campaign Name (e.g. March 2026)'
             fullWidth
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
           <TextField
-            label='Prize Percentage (%)'
+            label='Prize Amount ($)'
             type='number'
             fullWidth
-            value={formData.prize_percentage}
-            onChange={(e) => setFormData({ ...formData, prize_percentage: e.target.value })}
-            helperText='Percentage of subscription fees that goes into the prize pool (default: 80%)'
-            slotProps={{ htmlInput: { min: 1, max: 100, step: 1 } }}
+            value={formData.prize_amount}
+            onChange={(e) => setFormData({ ...formData, prize_amount: e.target.value })}
+            helperText='The total prize amount for this campaign (e.g. 1000)'
+            slotProps={{ htmlInput: { min: 1, step: 1 } }}
           />
           <TextField
-            label='Draw Date'
+            label='Campaign Date'
             type='date'
             fullWidth
             slotProps={{ inputLabel: { shrink: true } }}
@@ -87,10 +87,10 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Button
               variant='contained'
               onClick={handleSubmit}
-              disabled={mutation.isPending || !formData.name || !formData.draw_date}
+              disabled={mutation.isPending || !formData.name || !formData.draw_date || !formData.prize_amount}
               sx={{ borderRadius: 2 }}
             >
-              {mutation.isPending ? 'Saving...' : 'Create Draw'}
+              {mutation.isPending ? 'Saving...' : 'Create Campaign'}
             </Button>
           </Box>
         </Stack>

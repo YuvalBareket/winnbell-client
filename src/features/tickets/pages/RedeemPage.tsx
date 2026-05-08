@@ -12,7 +12,8 @@ import {
   AddCircleOutline,
   ConfirmationNumber,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 
 import {
   selectIsAuthenticated,
@@ -47,6 +48,9 @@ const RedeemPage = () => {
   const isLocationManager = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessAdmin || isLocationManager;
   const navigate = useNavigate();
+  const routeLocation = useLocation();
+  const preselectedBusinessId = (routeLocation.state as any)?.preselectedBusinessId as number | undefined;
+  const preselectedLocation = (routeLocation.state as any)?.preselectedLocation as NearbyLocation | undefined;
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -209,14 +213,14 @@ const didAutoActivate = useRef(false);
               </Box>
               <Box >
                 <Typography variant='h5' fontWeight={800}>
-                  {isBusiness ? 'Generate Ticket' : entryMode === 'receipt' ? 'Submit Receipt' : 'Activate Ticket'}
+                  {isBusiness ? 'Generate Entry' : entryMode === 'receipt' ? 'Submit Receipt' : 'Activate Entry'}
                 </Typography>
                 <Typography variant='body2' sx={{ opacity: 0.75, mt: 0.25 }}>
                   {isBusiness
-                    ? 'Create a unique code for your customer to enter the draw'
+                    ? 'Create a unique code for your customer to enter the campaign'
                     : entryMode === 'receipt'
-                      ? 'Submit your receipt details to enter the draw'
-                      : 'Enter your code from the receipt to join the draw'}
+                      ? 'Submit your receipt details to enter the campaign'
+                      : 'Enter your code from the receipt to join the campaign'}
                 </Typography>
               </Box>
             </Box>
@@ -254,14 +258,14 @@ const didAutoActivate = useRef(false);
             >
               <Box sx={{ mb: 3 }}>
                 <Typography variant='h6' fontWeight={800} sx={{ mb: 0.5 }}>
-                  {isBusiness ? 'Create New Ticket' : entryMode === 'receipt' ? 'Submit your receipt' : 'Got a code?'}
+                  {isBusiness ? 'Create New Entry' : entryMode === 'receipt' ? 'Submit your receipt' : 'Got a code?'}
                 </Typography>
                 <Typography variant='body2' color='text.secondary'>
                   {isBusiness
-                    ? 'Generate a unique code for your customer to join the Winnbell draw.'
+                    ? 'Generate a unique code for your customer to join the Winnbell campaign.'
                     : entryMode === 'receipt'
-                      ? 'Enter your receipt details below to submit your entry for the draw.'
-                      : 'Enter the code from your receipt to activate your ticket and join the draw.'}
+                      ? 'Enter your receipt details below to submit your entry for the campaign.'
+                      : 'Enter the code from your receipt to activate your entry and join the campaign.'}
                 </Typography>
               </Box>
               {isBusiness ? (
@@ -277,7 +281,7 @@ const didAutoActivate = useRef(false);
                   primaryColor={primaryColor}
                 />
               ) : entryMode === 'receipt' ? (
-                <ReceiptEntryForm primaryColor={primaryColor} />
+                <ReceiptEntryForm primaryColor={primaryColor} preselectedBusinessId={preselectedBusinessId} preselectedLocation={preselectedLocation} />
               ) : (
                 <UserActions
                   code={code}
@@ -369,7 +373,7 @@ const didAutoActivate = useRef(false);
               <UserVisual primaryColor={primaryColor} />
             </Box>
             {entryMode === 'receipt' ? (
-              <ReceiptEntryForm primaryColor={primaryColor} />
+              <ReceiptEntryForm primaryColor={primaryColor} preselectedBusinessId={preselectedBusinessId} preselectedLocation={preselectedLocation} />
             ) : (
               <UserActions
                 code={code}

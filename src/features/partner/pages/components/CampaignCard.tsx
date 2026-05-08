@@ -271,7 +271,7 @@ const CampaignCard = ({
                           </InputAdornment>
                         ),
                       }}
-                      helperText='Customers must spend at least this amount per receipt to earn a ticket entry.'
+                      helperText='Customers must spend at least this amount per receipt to earn an entry.'
                       sx={{
                         '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'white' },
                         '& .MuiFormHelperText-root': { mx: 0, mt: 0.75, lineHeight: 1.4 },

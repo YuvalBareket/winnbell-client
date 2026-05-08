@@ -36,10 +36,10 @@ const DrawPreparationView = ({
 
   const checklist = [
     { label: 'Subscription active', done: true },
-    { label: `Registered for ${subscription?.draw_name ?? 'upcoming draw'}`, done: true },
+    { label: `Registered for ${subscription?.draw_name ?? 'upcoming campaign'}`, done: true },
     { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
     { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
-    { label: 'Go live on the map when draw opens', done: false, info: true },
+    { label: 'Go live on the map when campaign opens', done: false, info: true },
   ];
   const taskItems = checklist.filter(c => !c.info);
   const completedCount = taskItems.filter(c => c.done).length;
@@ -55,9 +55,9 @@ const DrawPreparationView = ({
               <EmojiEvents sx={{ color: 'white', fontSize: 26 }} />
             </Box>
             <Box>
-              <Typography variant='h5' fontWeight={800}>Preparing for Your Draw</Typography>
+              <Typography variant='h5' fontWeight={800}>Preparing for Your Campaign</Typography>
               <Typography variant='body2' sx={{ opacity: 0.75, mt: 0.25 }}>
-                You're registered — your business goes live when the draw opens
+                You're registered — your business goes live when the campaign opens
               </Typography>
             </Box>
           </Box>
@@ -70,9 +70,9 @@ const DrawPreparationView = ({
           {/* Left: Draw info card */}
           <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
             <Box sx={{ background: GRADIENT_HERO, p: 3, color: 'white' }}>
-              <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>Registered Draw</Typography>
+              <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>Registered Campaign</Typography>
               <Typography variant='h6' fontWeight={800} sx={{ mt: 0.5 }}>
-                {subscription?.draw_name ?? 'Upcoming Monthly Draw'}
+                {subscription?.draw_name ?? 'Upcoming Monthly Campaign'}
               </Typography>
               {drawDate && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
@@ -100,7 +100,7 @@ const DrawPreparationView = ({
               </Box>
               <Box sx={{ p: 2, bgcolor: 'rgba(25,93,230,0.04)', borderRadius: 2, border: '1px solid rgba(25,93,230,0.1)' }}>
                 <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-                  When the draw opens, you'll be able to generate unique ticket codes for your customers. Each activated code enters them into the prize draw.
+                  When the campaign opens, you'll be able to generate unique entry codes for your customers. Each activated code enters them into the prize campaign.
                 </Typography>
               </Box>
             </Box>
@@ -148,7 +148,7 @@ const DrawPreparationView = ({
 
             <Divider sx={{ my: 3 }} />
             <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7 }}>
-              <strong>Ticket generation opens when the draw starts.</strong> In the meantime, make sure your profile is complete so customers can find you on the map and know what you offer.
+              <strong>Entry generation opens when the campaign starts.</strong> In the meantime, make sure your profile is complete so customers can find you on the map and know what you offer.
             </Typography>
           </Paper>
         </Box>
