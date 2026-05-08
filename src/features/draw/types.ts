@@ -7,10 +7,11 @@ export interface IDrawSummary {
 }
 
 export interface IDrawResult extends IDrawSummary {
-  closed_at: string;
+  closed_at?: string;
   winner_user_id?: number;
   winner_name?: string;
   winning_ticket_code?: string;
   winner_business_name?: string;
   winner_location_name?: string;
+  entry_count?: number;
 }

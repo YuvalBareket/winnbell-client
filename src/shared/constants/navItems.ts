@@ -22,7 +22,7 @@ export const userNavItems: NavItem[] = [
   { label: 'Nearby Partners', Icon: StorefrontOutlined, path: '/nearby' },
   { label: 'Submit Receipt', Icon: ReceiptLongOutlined, path: '/scan' },
   { label: 'My Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
-  { label: 'Campaign History', Icon: EmojiEventsOutlined, path: '/draws/history' },
+  { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
 ];
 
 export const businessNavItems: NavItem[] = [

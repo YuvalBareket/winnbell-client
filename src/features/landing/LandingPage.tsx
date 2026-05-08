@@ -42,7 +42,11 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How do businesses benefit?',
-    a: 'Partner businesses see increased repeat visits as customers return to earn more entries.',
+    a: 'Partner businesses pay a subscription to be featured in the Winnbell campaign. In return, customers visit your location to earn entries — driving repeat foot traffic and sales throughout the campaign period.',
+  },
+  {
+    q: 'How does the business subscription work?',
+    a: 'Businesses subscribe monthly to participate in Winnbell campaigns. There are no long-term commitments — you can cancel at any time. Pricing depends on the number of locations.',
   },
 ];
 
@@ -68,7 +72,14 @@ const LandingPage = () => {
           <span style={{ color: TEXT_HEADING }}>Winn</span>
           <span style={{ color: PRIMARY_MAIN }}>bell</span>
         </Typography>
-        <Stack direction='row' spacing={1}>
+        <Stack direction='row' spacing={1} alignItems='center'>
+          <Button
+            variant='text'
+            onClick={() => document.getElementById('for-businesses')?.scrollIntoView({ behavior: 'smooth' })}
+            sx={{ color: TEXT_HEADING, fontWeight: 600, fontSize: '0.9rem', display: { xs: 'none', sm: 'inline-flex' } }}
+          >
+            For Businesses
+          </Button>
           <Button
             variant='text'
             onClick={() => navigate('/login')}
@@ -149,7 +160,7 @@ const LandingPage = () => {
             for the monthly campaign. No catch, no cost.
           </Typography>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent='center' alignItems='center'>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent='center' alignItems='center' sx={{ mb: 4 }}>
             <Button
               variant='contained'
               size='large'
@@ -183,9 +194,134 @@ const LandingPage = () => {
               Sign in
             </Button>
           </Stack>
+
+          <Button
+            variant='text'
+            endIcon={<ArrowForward sx={{ fontSize: '0.9rem !important' }} />}
+            onClick={() => document.getElementById('for-businesses')?.scrollIntoView({ behavior: 'smooth' })}
+            sx={{
+              color: 'rgba(255,255,255,0.8)',
+              fontWeight: 500,
+              fontSize: '0.85rem',
+              opacity: 0.9,
+              '&:hover': { bgcolor: 'transparent', opacity: 1, color: 'white' },
+              textTransform: 'none',
+            }}
+          >
+            Are you a business owner?
+          </Button>
         </Container>
       </Box>
 
+      {/* ── Two-Audience Split ── */}
+      <Box sx={{ py: { xs: 8, md: 10 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.default' }}>
+        <Container maxWidth='lg'>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: { xs: 3, md: 4 } }}>
+            {/* For Shoppers Card */}
+            <Box
+              sx={{
+                bgcolor: 'background.paper',
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                p: { xs: 3, md: 4 },
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+                '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.1)' },
+              }}
+            >
+              <ConfirmationNumber sx={{ fontSize: 40, color: PRIMARY_MAIN, mb: 2.5 }} />
+              <Typography variant='h5' sx={{ fontWeight: 800, color: TEXT_HEADING, mb: 1.5, fontSize: '1.3rem' }}>
+                I shop at local businesses
+              </Typography>
+              <Stack spacing={1.5} sx={{ mb: 3.5, textAlign: 'left' }}>
+                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
+                  Earn free entries with every purchase
+                </Typography>
+                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
+                  Win real prizes monthly
+                </Typography>
+                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
+                  Completely free to join
+                </Typography>
+              </Stack>
+              <Button
+                variant='contained'
+                fullWidth
+                onClick={() => navigate('/register')}
+                sx={{ fontWeight: 700, borderRadius: 2, py: 1.4 }}
+              >
+                Start now
+              </Button>
+            </Box>
+
+            {/* For Businesses Card */}
+            <Box
+              sx={{
+                bgcolor: 'background.paper',
+                borderRadius: 3,
+                border: '2px solid',
+                borderColor: '#6366F1',
+                p: { xs: 3, md: 4 },
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+                position: 'relative',
+                '&:hover': { boxShadow: '0 12px 32px rgba(99,102,241,0.2)' },
+                background: 'linear-gradient(135deg, rgba(99,102,241,0.03) 0%, rgba(99,102,241,0.01) 100%)',
+              }}
+            >
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -12,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  bgcolor: '#6366F1',
+                  color: 'white',
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: 99,
+                  fontSize: '0.65rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                For you
+              </Box>
+              <Storefront sx={{ fontSize: 40, color: '#6366F1', mb: 2.5 }} />
+              <Typography variant='h5' sx={{ fontWeight: 800, color: TEXT_HEADING, mb: 1.5, fontSize: '1.3rem' }}>
+                I own a business
+              </Typography>
+              <Stack spacing={1.5} sx={{ mb: 3.5, textAlign: 'left' }}>
+                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#6366F1', flexShrink: 0 }} />
+                  Attract and keep customers
+                </Typography>
+                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#6366F1', flexShrink: 0 }} />
+                  Simple subscription, no long-term contract
+                </Typography>
+                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#6366F1', flexShrink: 0 }} />
+                  Easy dashboard, minimal effort
+                </Typography>
+              </Stack>
+              <Button
+                variant='contained'
+                fullWidth
+                onClick={() => navigate('/register/Business')}
+                sx={{ fontWeight: 700, borderRadius: 2, py: 1.4, bgcolor: '#6366F1', '&:hover': { bgcolor: '#4F46E5' } }}
+              >
+                Partner with us
+              </Button>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
 
       {/* ── How It Works ── */}
       <Box sx={{ py: { xs: 8, md: 12 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.default' }}>
@@ -244,13 +380,12 @@ const LandingPage = () => {
             </Box>
             <Box sx={{ borderLeft: '4px solid', borderColor: 'primary.main', pl: { xs: 2.5, md: 4 }, py: 1 }}>
               <Typography sx={{ fontStyle: 'italic', color: TEXT_HEADING, fontSize: { xs: '1.1rem', md: '1.3rem' }, lineHeight: 1.7, fontWeight: 400, mb: 2.5, letterSpacing: '-0.01em' }}>
-                Since adding Winnbell, our repeat customer visits are up 28%.
-                The setup took less than a day — and we haven't paid a cent.
+                Winnbell gives us a reason to bring customers back every month. The dashboard is easy to use and the results speak for themselves.
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', fontWeight: 600 }}>
-                Sarah K.
+                Alex M.
                 <Box component='span' sx={{ mx: 1, opacity: 0.3 }}>|</Box>
-                Coffee Shop Owner, Dublin
+                Restaurant Owner, Dublin
               </Typography>
             </Box>
           </Box>
@@ -259,81 +394,111 @@ const LandingPage = () => {
 
       {/* ── For Businesses ── */}
       <Box
+        id='for-businesses'
         sx={{
-          background: GRADIENT_HERO,
-          py: { xs: 8, md: 12 },
+          bgcolor: '#F8F9FF',
+          py: { xs: 10, md: 14 },
           px: { xs: 2.5, md: 0 },
-          color: 'white',
           position: 'relative',
           overflow: 'hidden',
         }}
       >
-        <Box sx={{ position: 'absolute', top: '-20%', right: '-5%', width: 350, height: 350, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.05)', filter: 'blur(60px)', pointerEvents: 'none' }} />
-        <Container maxWidth='md' sx={{ position: 'relative', zIndex: 1 }}>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 5, md: 8 }} alignItems={{ md: 'center' }}>
-            <Box sx={{ flex: 1 }}>
-              <Box sx={{ display: 'inline-block', borderRadius: 99, px: 1.5, py: 0.5, fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', bgcolor: ALPHA_WHITE_15, color: 'white', mb: 2 }}>
-                For businesses
-              </Box>
-              <Typography variant='h2' sx={{ fontWeight: 900, fontSize: { xs: '2rem', md: '2.8rem' }, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#fff', mb: 2.5 }}>
-                Turn customers into loyal regulars
-              </Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '1.05rem', lineHeight: 1.7, mb: 4, maxWidth: 420 }}>
-                Partner with Winnbell and give your customers a reason to keep coming back.
-                Every visit becomes an exciting moment, and you get the footfall.
-              </Typography>
-              <Button
-                variant='contained'
-                size='large'
-                endIcon={<ArrowForward />}
-                onClick={() => navigate('/register/Business')}
+        <Container maxWidth='lg'>
+          {/* Header */}
+          <Box sx={{ textAlign: 'center', mb: { xs: 8, md: 10 } }}>
+            <Typography variant='h2' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '2.2rem', md: '3rem' }, letterSpacing: '-0.03em', lineHeight: 1.1, mb: 2.5 }}>
+              Grow your business with Winnbell
+            </Typography>
+            <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '1rem', md: '1.1rem' }, lineHeight: 1.7, maxWidth: 520, mx: 'auto' }}>
+              A subscription-based campaign that brings customers through your door — month after month.
+            </Typography>
+          </Box>
+
+          {/* Three Value Props */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: { xs: 3, md: 4 }, mb: { xs: 8, md: 10 } }}>
+            {[
+              { icon: <CheckCircle sx={{ fontSize: 32, color: PRIMARY_MAIN }} />, title: 'Campaign marketing that works', desc: 'Your business joins the monthly Winnbell campaign. Customers visit you to earn entries — giving them a real reason to return.' },
+              { icon: <EmojiEvents sx={{ fontSize: 32, color: PRIMARY_MAIN }} />, title: 'Drive repeat customers', desc: 'Instead of one-time visits, customers come back throughout the campaign. More visits means more sales and stronger loyalty.' },
+              { icon: <Storefront sx={{ fontSize: 32, color: PRIMARY_MAIN }} />, title: 'Simple dashboard', desc: 'Set up your business profile in minutes. Manage locations, track campaign entries, and see results — all in one place.' },
+            ].map((item, i) => (
+              <Box
+                key={i}
                 sx={{
-                  bgcolor: 'white',
-                  color: PRIMARY_MAIN,
-                  fontWeight: 800,
-                  fontSize: '1rem',
-                  borderRadius: 2.5,
-                  px: 4,
-                  py: 1.6,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' },
+                  bgcolor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 3,
+                  p: { xs: 2.5, md: 3 },
+                  textAlign: 'center',
+                  transition: 'all 0.3s ease',
+                  '&:hover': { boxShadow: '0 8px 24px rgba(25,93,230,0.1)' },
                 }}
               >
-                Become a partner
-              </Button>
-            </Box>
+                <Box sx={{ mb: 2 }}>{item.icon}</Box>
+                <Typography sx={{ fontWeight: 800, color: TEXT_HEADING, mb: 1, fontSize: '1.1rem' }}>
+                  {item.title}
+                </Typography>
+                <Typography variant='body2' sx={{ color: TEXT_SECONDARY, lineHeight: 1.65 }}>
+                  {item.desc}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
 
-            <Box sx={{ flex: 1 }}>
-              <Stack spacing={2}>
-                {[
-                  { icon: <Storefront sx={{ fontSize: 22, color: 'white' }} />, title: 'Zero cost to join', desc: 'Free for all partners. No subscription, no hidden fees.' },
-                  { icon: <EmojiEvents sx={{ fontSize: 22, color: 'white' }} />, title: 'Drive repeat visits', desc: 'Customers come back to earn more entries and win prizes.' },
-                  { icon: <CheckCircle sx={{ fontSize: 22, color: 'white' }} />, title: 'Simple dashboard', desc: 'Manage your location, track engagement, all in one place.' },
-                ].map((item) => (
-                  <Box
-                    key={item.title}
-                    sx={{
-                      bgcolor: ALPHA_WHITE_15,
-                      border: `1px solid ${ALPHA_WHITE_30}`,
-                      borderRadius: 3,
-                      p: 2.5,
-                      display: 'flex',
-                      gap: 2,
-                      alignItems: 'flex-start',
-                    }}
-                  >
-                    <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {item.icon}
-                    </Box>
-                    <Box>
-                      <Typography sx={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem', mb: 0.25 }}>{item.title}</Typography>
-                      <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.6 }}>{item.desc}</Typography>
-                    </Box>
-                  </Box>
-                ))}
-              </Stack>
-            </Box>
-          </Stack>
+          {/* Stats Row */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' },
+              gap: { xs: 3, md: 4 },
+              mb: { xs: 8, md: 10 },
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 3,
+              p: { xs: 3, md: 4 },
+            }}
+          >
+            {[
+              { stat: 'Monthly', label: 'Campaign cycle' },
+              { stat: '< 1 day', label: 'To get started' },
+              { stat: '100%', label: 'Local focus' },
+            ].map((item, i) => (
+              <Box key={i} sx={{ textAlign: 'center' }}>
+                <Typography sx={{ fontWeight: 900, fontSize: { xs: '1.8rem', md: '2.2rem' }, color: PRIMARY_MAIN, mb: 0.5, letterSpacing: '-0.03em' }}>
+                  {item.stat}
+                </Typography>
+                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500 }}>
+                  {item.label}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+
+          {/* Primary CTA */}
+          <Box sx={{ textAlign: 'center' }}>
+            <Button
+              variant='contained'
+              size='large'
+              onClick={() => navigate('/register/Business')}
+              sx={{
+                fontWeight: 800,
+                fontSize: '1.05rem',
+                borderRadius: 2.5,
+                px: 5,
+                py: 1.8,
+                boxShadow: '0 8px 24px rgba(25,93,230,0.3)',
+                mb: 2,
+                minWidth: 200,
+                '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' },
+              }}
+            >
+              Become a partner
+            </Button>
+            <Typography sx={{ display: 'block', color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500 }}>
+              Simple monthly subscription. Cancel anytime.
+            </Typography>
+          </Box>
         </Container>
       </Box>
 
@@ -382,18 +547,29 @@ const LandingPage = () => {
           <Typography variant='h3' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '1.8rem', md: '2.4rem' }, letterSpacing: '-0.03em', lineHeight: 1.1, mb: 2 }}>
             Ready to start winning?
           </Typography>
-          <Typography sx={{ color: TEXT_SECONDARY, fontSize: '1.05rem', lineHeight: 1.65, mb: 4, maxWidth: 380, mx: 'auto' }}>
+          <Typography sx={{ color: TEXT_SECONDARY, fontSize: '1.05rem', lineHeight: 1.65, mb: 5, maxWidth: 380, mx: 'auto' }}>
             Join thousands of people who turn everyday shopping into prizes.
           </Typography>
-          <Button
-            variant='contained'
-            size='large'
-            endIcon={<ArrowForward />}
-            onClick={() => navigate('/register')}
-            sx={{ fontWeight: 700, fontSize: '1.05rem', borderRadius: 2.5, px: 5, py: 1.6, boxShadow: '0 8px 24px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' } }}
-          >
-            Create free account
-          </Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent='center' alignItems='center'>
+            <Button
+              variant='contained'
+              size='large'
+              endIcon={<ArrowForward />}
+              onClick={() => navigate('/register')}
+              sx={{ fontWeight: 700, fontSize: '1.05rem', borderRadius: 2.5, px: 5, py: 1.6, boxShadow: '0 8px 24px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' } }}
+            >
+              Create free account
+            </Button>
+            <Button
+              variant='outlined'
+              size='large'
+              endIcon={<ArrowForward />}
+              onClick={() => document.getElementById('for-businesses')?.scrollIntoView({ behavior: 'smooth' })}
+              sx={{ fontWeight: 700, fontSize: '1.05rem', borderRadius: 2.5, px: 5, py: 1.6, borderColor: PRIMARY_MAIN, color: PRIMARY_MAIN, '&:hover': { borderColor: PRIMARY_MAIN, bgcolor: 'rgba(25,93,230,0.05)' } }}
+            >
+              Partner with us
+            </Button>
+          </Stack>
         </Container>
       </Box>
 

@@ -85,7 +85,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
         { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
-        { label: 'Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
+        { label: 'Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
         { label: 'Subscription', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
       ]
@@ -93,14 +93,14 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
         { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
-        { label: 'Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
+        { label: 'Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
       ]
     : [
         { label: 'Nearby Partners', icon: <StorefrontOutlined />, path: '/nearby' },
         { label: 'Submit Receipt', icon: <ReceiptLongOutlined />, path: '/scan' },
-        { label: 'My Tickets', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
-        { label: 'Draw History', icon: <EmojiEventsOutlined />, path: '/draws/history' },
+        { label: 'My Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
+        { label: 'Campaigns Hub', icon: <EmojiEventsOutlined />, path: '/draws/history' },
       ];
 
   const legalItems: NavItem[] = [

@@ -6,11 +6,16 @@ import {
   IconButton,
   Paper,
   InputBase,
-  Chip,
   Button,
   Avatar,
   Stack,
   CircularProgress,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Slider,
+  Chip,
 } from '@mui/material';
 import {
   Search,
@@ -19,6 +24,7 @@ import {
   CheckCircle,
   SearchOff,
   Storefront as StorefrontIcon,
+  TuneOutlined,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 
@@ -52,6 +58,8 @@ const listItemVariants = {
 const NearbyPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
+  const [radiusKm, setRadiusKm] = useState(10);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   // Use location_id as the state key to support multiple locations per business
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
 
@@ -66,11 +74,15 @@ const NearbyPage = () => {
   const selectedLocation =
     locations.find((loc) => loc.location_id === selectedLocationId) || null;
 
-  // 4. Filter locations based on search term and sector
+  // 4. Filter locations based on search term, sector, and radius
   const filteredLocations = locations.filter((loc) => {
     const matchesSearch = loc.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSector = !selectedSector || loc.sector === selectedSector;
-    return matchesSearch && matchesSector;
+    const matchesRadius = !userLocation || haversineKm(
+      userLocation.latitude, userLocation.longitude,
+      loc.latitude, loc.longitude
+    ) <= radiusKm;
+    return matchesSearch && matchesSector && matchesRadius;
   });
 
   return (
@@ -163,32 +175,56 @@ const NearbyPage = () => {
             <Typography variant='subtitle2' color='primary' sx={{ fontWeight: 700 }}>
               {filteredLocations.length} Found
             </Typography>
+            <IconButton
+              size='small'
+              onClick={() => setFiltersOpen(!filtersOpen)}
+              sx={{ ml: 1 }}
+            >
+              <TuneOutlined fontSize='small' />
+            </IconButton>
           </Box>
         </Box>
 
-        {/* Sector filter chips */}
-        <Box sx={{ px: 2, pb: 1.5, display: 'flex', gap: 1, overflowX: 'auto', flexShrink: 0, '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
-          <Chip
-            label='All'
-            size='small'
-            onClick={() => setSelectedSector(null)}
-            sx={{ fontWeight: 700, flexShrink: 0, height: 28, bgcolor: !selectedSector ? 'primary.main' : 'action.hover', color: !selectedSector ? 'white' : 'text.secondary', border: 'none' }}
-          />
-          {Object.entries(BUSINESS_SECTORS)
-            .filter(([key]) => key !== 'Free')
-            .map(([key, info]) => {
-              const isActive = selectedSector === key;
-              return (
-                <Chip
-                  key={key}
-                  label={info.label}
-                  size='small'
-                  onClick={() => setSelectedSector(isActive ? null : key)}
-                  sx={{ fontWeight: 700, flexShrink: 0, height: 28, bgcolor: isActive ? info.color : 'action.hover', color: isActive ? 'white' : 'text.secondary', border: 'none' }}
-                />
-              );
-            })}
-        </Box>
+        {/* Collapsible Filter Panel */}
+        {filtersOpen && (
+          <Box sx={{ px: 2, pb: 1.5 }}>
+            {/* Category Dropdown */}
+            <FormControl fullWidth size='small' sx={{ mb: 1.5 }}>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={selectedSector || ''}
+                onChange={(e) => setSelectedSector(e.target.value || null)}
+                label='Category'
+              >
+                <MenuItem value=''>All categories</MenuItem>
+                {Object.entries(BUSINESS_SECTORS)
+                  .filter(([key]) => key !== 'Free')
+                  .map(([key, info]) => (
+                    <MenuItem key={key} value={key}>
+                      {info.label}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+
+            {/* Radius Slider */}
+            <Box sx={{ mt: 1.5 }}>
+              <Typography variant='body2' sx={{ fontWeight: 600, mb: 1 }}>
+                Radius: {radiusKm} km
+              </Typography>
+              <Slider
+                value={radiusKm}
+                onChange={(e, newValue) => setRadiusKm(newValue as number)}
+                min={1}
+                max={50}
+                step={1}
+                color='primary'
+                valueLabelDisplay='auto'
+                valueLabelFormat={(v) => `${v} km`}
+              />
+            </Box>
+          </Box>
+        )}
 
         <Stack
           spacing={2}

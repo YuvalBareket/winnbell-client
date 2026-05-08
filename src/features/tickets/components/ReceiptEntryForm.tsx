@@ -65,7 +65,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [nearbyLocations, setNearbyLocations] = useState<NearbyLocation[]>([]);
   const [receiptIdentifier, setReceiptIdentifier] = useState('');
   const [transactionAmount, setTransactionAmount] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState('');
+  const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
   const [errorMessage, setErrorMessage] = useState('');
   const [receiptFirstKeystrokeAt, setReceiptFirstKeystrokeAt] = useState<number | null>(null);
   const [receiptLastKeystrokeAt, setReceiptLastKeystrokeAt] = useState<number | null>(null);
@@ -739,33 +739,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       </Collapse>
 
       </>}
-
-
-      {/* ── Free Weekly Ticket ──────────────────────── */}
-      <Divider sx={{ my: 1 }} />
-      <Paper
-        elevation={0}
-        onClick={() => navigate('/freeTicket')}
-        sx={{
-          p: 1.5, px: 2, borderRadius: 3,
-          bgcolor: `${primaryColor || PRIMARY_MAIN}0A`,
-          border: `1px solid ${primaryColor || PRIMARY_MAIN}`,
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 1.5,
-          transition: 'background-color 150ms ease-out, transform 150ms ease-out',
-          '&:hover': { bgcolor: `${primaryColor || PRIMARY_MAIN}14`, transform: 'translateY(-2px)' },
-          '&:active': { transform: 'scale(0.97)' },
-        }}
-      >
-        <Box sx={{ bgcolor: primaryColor || PRIMARY_MAIN, borderRadius: 1.5, p: 0.75, display: 'flex', color: 'white' }}>
-          <CardGiftcard fontSize="small" />
-        </Box>
-        <Stack flex={1} spacing={0.25}>
-          <Typography variant="body2" fontWeight={700} sx={{ lineHeight: 1.2 }}>Free Weekly Entry</Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2 }}>Claim 1 free entry</Typography>
-        </Stack>
-        <ChevronRight sx={{ color: primaryColor || PRIMARY_MAIN, fontSize: 20 }} />
-      </Paper>
 
       {/* ── Success Dialog ───────────────────────────── */}
       <Dialog
