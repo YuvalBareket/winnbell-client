@@ -214,7 +214,7 @@ const NearbyPage = () => {
               </Typography>
               <Slider
                 value={radiusKm}
-                onChange={(e, newValue) => setRadiusKm(newValue as number)}
+                onChange={(_e, newValue) => setRadiusKm(newValue as number)}
                 min={1}
                 max={50}
                 step={1}

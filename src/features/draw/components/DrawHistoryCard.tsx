@@ -193,7 +193,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
                   }}
                 />
                 <Box flex={1}>
-                  <Typography variable='body2' fontWeight={700} color={ACCENT_GOLD_DARK} sx={{ mb: 0.5 }}>
+                  <Typography variant='body2' fontWeight={700} color={ACCENT_GOLD_DARK} sx={{ mb: 0.5 }}>
                     Verification in progress
                   </Typography>
                   <Typography variant='body2' color={TEXT_SECONDARY} sx={{ lineHeight: 1.5 }}>

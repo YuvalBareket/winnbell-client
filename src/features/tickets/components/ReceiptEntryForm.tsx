@@ -10,17 +10,15 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Divider,
   Fade,
   IconButton,
   InputAdornment,
-  Paper,
   Stack,
   TextField,
   Typography,
   Zoom,
 } from '@mui/material';
-import { AccessTime, CardGiftcard, CloudUpload, ChevronRight, Close, ConfirmationNumber, EmojiEvents, ReceiptOutlined, StorefrontOutlined, AddCircleOutline, Visibility } from '@mui/icons-material';
+import { AccessTime, CloudUpload, Close, ConfirmationNumber, EmojiEvents, ReceiptOutlined, StorefrontOutlined, AddCircleOutline, Visibility } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import { PRIMARY_MAIN, GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';

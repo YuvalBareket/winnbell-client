@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
   STATUS_PENDING_BG, STATUS_PENDING_TEXT,
-  PRIMARY_MAIN,
 } from '../../../shared/colors';
 import { formatTicketDate } from '../../../shared/utils/date';
 import { BUSINESS_SECTORS } from '../../admin/data';

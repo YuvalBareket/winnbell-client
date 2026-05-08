@@ -9,7 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import {
   PRIMARY_MAIN, TEXT_SECONDARY, TEXT_HEADING,
-  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
+  GRADIENT_HERO, ALPHA_WHITE_15,
 } from '../../shared/colors';
 
 
