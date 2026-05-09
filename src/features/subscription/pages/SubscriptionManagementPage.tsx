@@ -95,8 +95,8 @@ export default function SubscriptionManagementPage() {
   if (isError || !sub) {
     return (
       <Box sx={{ p: 3, textAlign: 'center', pt: 10 }}>
-        <Typography color='error' fontWeight={700}>No subscription found.</Typography>
-        <Button sx={{ mt: 2 }} onClick={() => navigate('/subscribe')}>Subscribe Now</Button>
+        <Typography color='error' fontWeight={700}>No active campaign found.</Typography>
+        <Button sx={{ mt: 2 }} onClick={() => navigate('/subscribe')}>Start a Campaign</Button>
       </Box>
     );
   }
@@ -130,7 +130,7 @@ export default function SubscriptionManagementPage() {
               <Typography variant='caption' fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, opacity: 0.9 }}>
                 Manage Account
               </Typography>
-              <Typography variant='h5' fontWeight={800}>Your Subscription</Typography>
+              <Typography variant='h5' fontWeight={800}>Campaign Management</Typography>
             </Box>
           </Stack>
         </Container>
@@ -148,13 +148,13 @@ export default function SubscriptionManagementPage() {
             onClose={() => setCancelResult(null)}
           >
             {cancelResult.refundType === 'full' && (
-              <>Subscription cancelled. You've been removed from the campaign and a <strong>full refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
+              <>Campaign cancelled. You've been removed from the campaign and a <strong>full refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
             )}
             {cancelResult.refundType === 'partial_40' && (
-              <>Subscription cancelled. You've been removed from the campaign and a <strong>40% refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
+              <>Campaign cancelled. You've been removed from the campaign and a <strong>40% refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
             )}
             {cancelResult.refundType === 'none' && (
-              <>Subscription cancelled. The campaign has already commenced — your entry remains and no refund applies.</>
+              <>Campaign cancelled. The campaign has already commenced — your entry remains and no refund applies.</>
             )}
           </Alert>
         )}
@@ -263,7 +263,7 @@ export default function SubscriptionManagementPage() {
                     disabled={resuming}
                     sx={{ borderRadius: 3, fontWeight: 700, py: 1.75 }}
                   >
-                    {resuming ? <CircularProgress size={22} color='inherit' /> : 'Resume Subscription'}
+                    {resuming ? <CircularProgress size={22} color='inherit' /> : 'Resume Campaign'}
                   </Button>
                 )}
               </Stack>

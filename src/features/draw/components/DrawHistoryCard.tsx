@@ -1,8 +1,8 @@
 import {
-  Box, Typography, Paper, Stack, Chip, Divider,
+  Box, Typography, Paper, Stack, Chip, Divider, Link,
 } from '@mui/material';
 import {
-  CalendarToday, ConfirmationNumberOutlined, EmojiEventsOutlined, HourglassEmptyOutlined,
+  CalendarToday, ConfirmationNumberOutlined, EmojiEventsOutlined, HourglassEmptyOutlined, ArticleOutlined,
 } from '@mui/icons-material';
 import { formatCurrency, formatDateShort } from '../../../shared/utils/date';
 import {
@@ -148,16 +148,26 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
           {/* Bottom section: varies by state */}
           <Box sx={{ p: 3 }}>
             {isOpen && draw.entry_count !== undefined && (
-              <Stack direction='row' spacing={1.5} alignItems='center'>
-                <ConfirmationNumberOutlined sx={{ fontSize: 20, color: TEXT_SECONDARY }} />
-                <Box>
-                  <Typography variant='caption' color={TEXT_SECONDARY} display='block' sx={{ mb: 0.25 }}>
-                    Total Entries
-                  </Typography>
-                  <Typography variant='body2' fontWeight={700}>
-                    {draw.entry_count.toLocaleString()}
-                  </Typography>
-                </Box>
+              <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                <Stack direction='row' spacing={1.5} alignItems='center'>
+                  <ConfirmationNumberOutlined sx={{ fontSize: 20, color: TEXT_SECONDARY }} />
+                  <Box>
+                    <Typography variant='caption' color={TEXT_SECONDARY} display='block' sx={{ mb: 0.25 }}>
+                      Total Entries
+                    </Typography>
+                    <Typography variant='body2' fontWeight={700}>
+                      {draw.entry_count.toLocaleString()}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Link
+                  href='/terms'
+                  underline='hover'
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.78rem', fontWeight: 600, color: TEXT_SECONDARY }}
+                >
+                  <ArticleOutlined sx={{ fontSize: 14 }} />
+                  Official Rules
+                </Link>
               </Stack>
             )}
 

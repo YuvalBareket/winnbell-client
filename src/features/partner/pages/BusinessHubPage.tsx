@@ -13,6 +13,7 @@ import {
   AddBusiness,
   Warning,
   CreditCard,
+  PreviewOutlined,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef } from 'react';
@@ -32,7 +33,9 @@ import InviteManagerDialog from './components/InviteManagerDialog';
 import RemoveManagerDialog from './components/RemoveManagerDialog';
 import BusinessHeroSection from './components/BusinessHeroSection';
 import LogoCropDialog from './components/LogoCropDialog';
+import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
 import type { BusinessLocation } from '../types/business.types';
+import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 import {
   BG_PAGE,
   ALPHA_WHITE_10,
@@ -57,6 +60,7 @@ const BusinessHubPage = () => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
   const [removeManagerLocationId, setRemoveManagerLocationId] = useState<number | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const handleAddLocation = (data: { name: string; address: string; lat: number; lon: number }) => {
     doAddLocation(
@@ -180,10 +184,10 @@ const BusinessHubPage = () => {
                     Complete your onboarding
                   </Typography>
                   <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'none', sm: 'block' } }}>
-                    Your business isn't live yet. Subscribe to appear on the map and start issuing entries.
+                    Your business isn't live yet. Start a campaign to appear on the map and begin issuing entries.
                   </Typography>
                   <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'block', sm: 'none' } }}>
-                    Subscribe to go live on the map
+                    Start a campaign to go live on the map
                   </Typography>
                 </Box>
               </Stack>
@@ -194,10 +198,30 @@ const BusinessHubPage = () => {
                 onClick={() => navigate('/subscribe')}
                 sx={{ borderRadius: 2, fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
               >
-                Subscribe
+                Start Campaign
               </Button>
             </Paper>
           )}
+
+          {/* Profile Preview button */}
+          <Paper
+            elevation={0}
+            sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
+          >
+            <Box>
+              <Typography variant='body2' fontWeight={700}>Public Profile Preview</Typography>
+              <Typography variant='caption' color='text.secondary'>See how customers find you on the Winnbell map</Typography>
+            </Box>
+            <Button
+              variant='outlined'
+              size='small'
+              startIcon={<PreviewOutlined />}
+              onClick={() => setPreviewOpen(true)}
+              sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', flexShrink: 0 }}
+            >
+              Preview
+            </Button>
+          </Paper>
 
           {/* Campaign card */}
           <CampaignCard
@@ -335,6 +359,29 @@ const BusinessHubPage = () => {
           {logoError}
         </Alert>
       </Snackbar>
+
+      {/* Profile preview popup — shows business profile as users see it */}
+      <MapBusinessPopup
+        location={previewOpen && business.locations.length > 0 ? ({
+          location_id: business.locations[0].id,
+          id: business.id,
+          name: business.name,
+          sector: business.sector as NearbyLocation['sector'],
+          description: business.description,
+          terms_text: business.terms_text,
+          logo_url: business.logo_url,
+          receipt_example_image_url: business.receipt_example_image_url,
+          min_transaction_amount: business.min_transaction_amount,
+          website_url: business.website_url,
+          phone: business.phone,
+          address: business.locations[0].address,
+          latitude: 0,
+          longitude: 0,
+          distance_km: 0,
+          other_locations: business.locations.slice(1).map(l => ({ id: l.id, name: l.name, address: l.address })),
+        } satisfies NearbyLocation) : null}
+        onClose={() => setPreviewOpen(false)}
+      />
     </Box>
   );
 };

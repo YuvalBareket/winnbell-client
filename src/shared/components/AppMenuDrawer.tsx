@@ -24,8 +24,12 @@ import {
   EmojiEventsOutlined,
   AdminPanelSettingsOutlined,
   FeedOutlined,
+  SettingsOutlined,
+  CampaignOutlined,
+  HelpOutlineOutlined,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useState, Fragment } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { logout } from '../../store/slices/authSlice';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl } from '../../store/selectors/authSelectors';
@@ -41,6 +45,7 @@ import {
   ALPHA_PRIMARY_06,
 } from '../colors';
 import { getUserInitials, getRoleLabel } from '../utils/string';
+import HowItWorksModal from '../../features/help/components/HowItWorksModal';
 
 interface Props {
   open: boolean;
@@ -63,6 +68,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const businessLogoUrl = useAppSelector(selectBusinessLogoUrl);
   const { signOut } = useClerk();
+  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -71,6 +77,11 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
 
   const handleNav = (path: string) => {
     navigate(path);
+    onClose();
+  };
+
+  const handleHowItWorks = () => {
+    setHowItWorksOpen(true);
     onClose();
   };
 
@@ -87,7 +98,9 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
         { label: 'Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
-        { label: 'Subscription', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
+        { label: 'Campaign', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
+        { label: 'Marketing', icon: <CampaignOutlined />, path: '/marketing' },
+        { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
       ]
     : isManager
     ? [
@@ -95,12 +108,14 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
         { label: 'Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
+        { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
       ]
     : [
         { label: 'Nearby Partners', icon: <StorefrontOutlined />, path: '/nearby' },
         { label: 'Submit Receipt', icon: <ReceiptLongOutlined />, path: '/scan' },
         { label: 'My Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Campaigns Hub', icon: <EmojiEventsOutlined />, path: '/draws/history' },
+        { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
       ];
 
   const legalItems: NavItem[] = [
@@ -109,6 +124,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   ];
 
   return (
+    <Fragment>
     <Drawer
       anchor='right'
       open={open}
@@ -239,6 +255,34 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
 
         <Divider sx={{ mx: 3, my: 1.5 }} />
 
+        {/* Help section */}
+        <Box sx={{ px: 2 }}>
+          <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
+            sx={{ px: 1, textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', mb: 0.75, fontSize: '0.63rem' }}>
+            Help
+          </Typography>
+          <List disablePadding>
+            <ListItemButton
+              onClick={handleHowItWorks}
+              sx={{
+                borderRadius: 2.5, mb: 0.3, py: 1.1, px: 1.5,
+                transition: 'all 0.15s ease',
+                '&:hover': { bgcolor: 'rgba(0,0,0,0.03)', transform: 'translateX(3px)' },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 36, color: TEXT_TERTIARY }}>
+                <HelpOutlineOutlined />
+              </ListItemIcon>
+              <ListItemText
+                primary='How It Works'
+                primaryTypographyProps={{ fontWeight: 500, fontSize: '0.84rem', color: 'text.secondary' }}
+              />
+            </ListItemButton>
+          </List>
+        </Box>
+
+        <Divider sx={{ mx: 3, my: 1.5 }} />
+
         {/* Legal / support */}
         <Box sx={{ px: 2 }}>
           <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
@@ -299,6 +343,10 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         </Box>
       </Box>
     </Drawer>
+
+    {/* How It Works Modal */}
+    <HowItWorksModal open={howItWorksOpen} onClose={() => setHowItWorksOpen(false)} />
+    </Fragment>
   );
 };
 

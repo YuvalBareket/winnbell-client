@@ -46,6 +46,8 @@ import BusinessHubPage from '../features/partner/pages/BusinessHubPage';
 import StatsPage from '../features/stats/pages/StatsPage';
 import ActivityPage from '../features/activity/pages/ActivityPage';
 import DrawHistoryPage from '../features/draw/pages/DrawHistoryPage';
+import SettingsPage from '../features/settings/pages/SettingsPage';
+import MarketingPage from '../features/marketing/pages/MarketingPage';
 
 const AppRoutes = () => {
   const navigate = useNavigate();
@@ -96,6 +98,8 @@ const AppRoutes = () => {
               <Route path='/subscribe' element={<SubscribePage />} />
               <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
               <Route path='/subscription/success' element={<SubscriptionSuccessPage />} />
+              <Route path='/settings' element={<SettingsPage />} />
+              <Route path='/marketing' element={<MarketingPage />} />
             </>
           )}
 

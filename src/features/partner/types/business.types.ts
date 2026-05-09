@@ -47,6 +47,8 @@ export interface BusinessData {
   terms_text: string;
   logo_url: string | null;
   receipt_example_image_url: string | null;
+  website_url?: string | null;
+  phone?: string | null;
   is_subscribed: boolean;
   is_participating: boolean;
   entry_mode: EntryMode;

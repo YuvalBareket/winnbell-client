@@ -46,7 +46,7 @@ const SubscriptionSuccessPage = () => {
             <Box>
               <Typography variant='h5' fontWeight={900} mb={1}>Payment received</Typography>
               <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
-                Your payment was processed but we could not confirm your subscription automatically.
+                Your payment was processed but we could not confirm your campaign enrollment automatically.
                 Please contact support and we will activate your account manually.
               </Typography>
             </Box>
@@ -72,7 +72,7 @@ const SubscriptionSuccessPage = () => {
           <Box>
             <Typography variant='h4' fontWeight={900} mb={1}>You're live!</Typography>
             <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
-              Your subscription is active and your business is now visible on the Winnbell map.
+              Your campaign is active and your business is now visible on the Winnbell map.
             </Typography>
           </Box>
           <Button

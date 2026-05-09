@@ -27,7 +27,7 @@ const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
             variant='subtitle1'
             sx={{ fontWeight: 700, lineHeight: 1.2 }}
           >
-            {ticket.business_name ?? 'Free weekly ticket'}
+            {ticket.business_name ?? 'Free weekly entry'}
           </Typography>
           {ticket.location_name && (
             <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block', lineHeight: 1.3 }}>

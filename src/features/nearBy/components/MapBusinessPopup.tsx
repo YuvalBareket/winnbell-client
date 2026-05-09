@@ -5,7 +5,8 @@ import {
 } from '@mui/material';
 import {
   Directions, Close, CheckCircle, LocationOn, InfoOutlined,
-  ReceiptLong, AttachMoney,
+  ReceiptLong, AttachMoney, LocalPhoneOutlined, LanguageOutlined,
+  LocationOnOutlined,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import type { NearbyLocation } from '../types/nearBy.types';
@@ -184,6 +185,66 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose }) => {
                 </Box>
               </Stack>
             </Box>
+
+            {/* Phone */}
+            {location.phone && (
+              <Box mb={2}>
+                <Stack direction='row' spacing={1} alignItems='center'>
+                  <LocalPhoneOutlined sx={{ fontSize: 17, color: 'text.disabled', flexShrink: 0 }} />
+                  <Typography
+                    component='a'
+                    href={`tel:${location.phone}`}
+                    variant='caption'
+                    sx={{ color: PRIMARY_MAIN, fontWeight: 700, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                  >
+                    {location.phone}
+                  </Typography>
+                </Stack>
+              </Box>
+            )}
+
+            {/* Website */}
+            {location.website_url && (
+              <Box mb={2}>
+                <Stack direction='row' spacing={1} alignItems='center'>
+                  <LanguageOutlined sx={{ fontSize: 17, color: 'text.disabled', flexShrink: 0 }} />
+                  <Typography
+                    component='a'
+                    href={location.website_url}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    variant='caption'
+                    sx={{ color: PRIMARY_MAIN, fontWeight: 700, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                  >
+                    {location.website_url.replace(/^https?:\/\//, '')}
+                  </Typography>
+                </Stack>
+              </Box>
+            )}
+
+            {/* Other locations */}
+            {location.other_locations && location.other_locations.length > 0 && (
+              <Box mb={2.5}>
+                <Stack direction='row' spacing={1} alignItems='flex-start'>
+                  <LocationOnOutlined sx={{ fontSize: 17, color: 'text.disabled', mt: 0.2, flexShrink: 0 }} />
+                  <Box>
+                    <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ display: 'block', mb: 0.5 }}>
+                      Other locations
+                    </Typography>
+                    {location.other_locations.map((loc) => (
+                      <Box key={loc.id} mb={0.5}>
+                        <Typography variant='caption' color='text.primary' fontWeight={600} sx={{ display: 'block', lineHeight: 1.4 }}>
+                          {loc.name}
+                        </Typography>
+                        <Typography variant='caption' color='text.disabled' sx={{ display: 'block', lineHeight: 1.4 }}>
+                          {loc.address}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Stack>
+              </Box>
+            )}
 
             <Divider sx={{ mb: 2.5 }} />
 

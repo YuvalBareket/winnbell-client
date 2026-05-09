@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Box, Button, Typography, Paper, Stack, CircularProgress,
   Divider, Skeleton, IconButton, TextField, InputAdornment,
+  FormControlLabel, Checkbox,
 } from '@mui/material';
 import {
   ConfirmationNumber, EmojiEvents, Storefront, CreditCard, Groups, Remove, Add,
@@ -189,7 +190,7 @@ const SubscribePage = () => {
       const msg = err.response?.data?.error ?? '';
       setError(
         msg.includes('already has an active subscription')
-          ? 'Your business already has an active subscription. Go to the subscription page to manage it.'
+          ? 'Your business is already enrolled in a campaign. Go to Campaign Management to update settings.'
           : 'Something went wrong. Please try again.',
       );
       setLoading(false);
@@ -538,15 +539,25 @@ const SubscribePage = () => {
 
                     {error && <Typography variant='body2' color='error' textAlign='center' mb={2}>{error}</Typography>}
 
+                    <FormControlLabel
+                      sx={{ mb: 2, display: 'flex', alignItems: 'flex-start', gap: 0.5 }}
+                      control={<Checkbox defaultChecked size='small' sx={{ pt: 0 }} />}
+                      label={
+                        <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5 }}>
+                          Automatically renew for next campaign — cancel anytime before the 7-day cutoff
+                        </Typography>
+                      }
+                    />
+
                     <Button fullWidth variant='contained' size='large' startIcon={loading ? undefined : <CreditCard />} onClick={handleSubscribe} disabled={loading}
                       sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(25,93,230,0.35)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.45)' } }}>
-                      {loading ? <CircularProgress size={24} color='inherit' /> : 'Subscribe & Join Next Campaign'}
+                      {loading ? <CircularProgress size={24} color='inherit' /> : 'Start Campaign'}
                     </Button>
 
                     <Typography variant='caption' color='text.disabled' textAlign='center' display='block' mt={1.5}>
                       {billingInterval === 'yearly'
                         ? "You'll be redirected to Stripe's secure checkout. Yearly plan covers 12 monthly campaigns."
-                        : "You'll be redirected to Stripe's secure checkout. You'll enter the next monthly campaign on payment."}
+                        : "You'll be redirected to Stripe's secure checkout. You'll be enrolled in the next monthly campaign on payment."}
                     </Typography>
 
                     <Button fullWidth variant='text' size='small' onClick={() => navigate('/nearby')}

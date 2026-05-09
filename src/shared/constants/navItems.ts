@@ -10,6 +10,8 @@ import {
   EmojiEventsOutlined,
   AdminPanelSettingsOutlined,
   FeedOutlined,
+  SettingsOutlined,
+  CampaignOutlined,
 } from '@mui/icons-material';
 
 export interface NavItem {
@@ -23,6 +25,7 @@ export const userNavItems: NavItem[] = [
   { label: 'Submit Receipt', Icon: ReceiptLongOutlined, path: '/scan' },
   { label: 'My Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
+  { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 
 export const businessNavItems: NavItem[] = [
@@ -30,7 +33,9 @@ export const businessNavItems: NavItem[] = [
   { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
   { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
-  { label: 'Subscription', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
+  { label: 'Campaign', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
+  { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
+  { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 
 export const managerNavItems: NavItem[] = [
@@ -38,6 +43,7 @@ export const managerNavItems: NavItem[] = [
   { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
   { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
+  { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 
 export const adminNavItems: NavItem[] = [

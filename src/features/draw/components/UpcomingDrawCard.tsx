@@ -87,7 +87,7 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
         >
           <Schedule sx={{ fontSize: 18 }} />
           <Typography variant='body2' sx={{ fontWeight: 600 }}>
-            {daysLeft <= 0 ? 'Drawing Today' : `Campaign ends in: ${daysLeft} days`}
+            {daysLeft <= 0 ? 'Campaign Ends Today' : `Campaign ends in: ${daysLeft} days`}
           </Typography>
         </Box>
       </Box>

@@ -15,6 +15,9 @@ export interface NearbyLocation {
   receipt_example_image_url: string | null;
   min_transaction_amount: number | null;
   distance_km: number;
+  website_url?: string | null;
+  phone?: string | null;
+  other_locations?: Array<{ id: number; name: string; address: string }>;
 }
 
 export interface ILocationCoords {

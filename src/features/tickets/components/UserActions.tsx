@@ -44,7 +44,7 @@ const UserActions: React.FC<UserActionsProps> = ({
     {/* Ticket Code Input */}
     <Box>
       <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 1, px: 0.5 }}>
-        Ticket Code
+        Entry Code
       </Typography>
       <TextField
         fullWidth
@@ -101,7 +101,7 @@ const UserActions: React.FC<UserActionsProps> = ({
         '&:active': { transform: 'scale(0.97)', transition: 'transform 160ms ease-out' },
       }}
     >
-      Activate Ticket
+      Activate Entry
     </Button>
 
     {!hideScan && (
@@ -151,7 +151,7 @@ const UserActions: React.FC<UserActionsProps> = ({
         <CardGiftcard fontSize='small' />
       </Box>
       <Stack flex={1} spacing={0.25}>
-        <Typography variant='body2' fontWeight={700} sx={{ lineHeight: 1.2 }}>Free Weekly Ticket</Typography>
+        <Typography variant='body2' fontWeight={700} sx={{ lineHeight: 1.2 }}>Free Weekly Entry</Typography>
         <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.2 }}>
           Claim 1 free entry
         </Typography>

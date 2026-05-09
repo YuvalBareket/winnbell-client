@@ -14,6 +14,7 @@ import {
 import {
   BusinessOutlined, ConfirmationNumberOutlined,
   BarChartOutlined, ReceiptLongOutlined, FeedOutlined,
+  SettingsOutlined, CampaignOutlined,
 } from '@mui/icons-material';
 import {
   GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING,
@@ -43,7 +44,9 @@ const AppSidebar = () => {
     { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
     { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
     { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
-    { label: 'Subscription', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
+    { label: 'Campaign', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
+    { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
+    { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
   ];
 
   const mainNavItems = isAdmin ? adminNavItems : isBusiness ? businessNavItems : isManager ? managerNavItems : userNavItems;

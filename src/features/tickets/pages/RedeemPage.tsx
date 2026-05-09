@@ -149,7 +149,7 @@ const didAutoActivate = useRef(false);
         setSuccessDialogOpen(true);
       },
       onError: (err: any) => {
-        const msg = err?.response?.data?.message || 'Invalid or already used ticket code.';
+        const msg = err?.response?.data?.message || 'Invalid or already used entry code.';
         setErrorMessage(msg);
         setErrorOpen(true);
       },
@@ -236,77 +236,67 @@ const didAutoActivate = useRef(false);
             transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
           >
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, alignItems: 'flex-start' }}>
-              {/* Left panel: visual */}
+              {/* Left panel */}
               <Paper
               elevation={0}
               sx={{
-                borderRadius: 3, border: '1px solid', borderColor: 'divider',
-                overflow: 'hidden', p: 4,
-                display: 'flex', flexDirection: 'column', gap: 3,
+                borderRadius: 3, overflow: 'hidden',
+                display: 'flex', flexDirection: 'column',
                 minHeight: 360,
               }}
             >
               {isBusiness ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box sx={{ p: 4, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <BusinessVisual generatedCode={generatedCode} primaryColor={primaryColor} isDesktop={isDesktop} />
               </Box>
             ) : entryMode === 'receipt' ? (
-              <>
-                {/* Top: UserVisual */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 120 }}>
-                  <UserVisual primaryColor={primaryColor} />
+              /* AMOE Premium Panel */
+              <Box
+                sx={{
+                  background: GRADIENT_HERO,
+                  color: 'white',
+                  p: 4,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: 2.5,
+                  textAlign: 'center',
+                  minHeight: 360,
+                }}
+              >
+                <CardGiftcard sx={{ fontSize: 64, color: 'white' }} />
+                <Box>
+                  <Typography variant="h5" fontWeight={900} sx={{ mb: 0.75 }}>
+                    Free Weekly Entry
+                  </Typography>
+                  <Typography variant="body1" sx={{ opacity: 0.9, lineHeight: 1.6 }}>
+                    Every member gets 1 free entry per week — no purchase needed. Resets every Sunday.
+                  </Typography>
                 </Box>
-
-                {/* Bottom: Free Weekly Entry Card */}
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <Paper
-                    elevation={0}
-                    onClick={() => navigate('/freeTicket')}
-                    sx={{
-                      p: 3,
-                      borderRadius: 3,
-                      background: `linear-gradient(135deg, rgba(25, 93, 230, 0.06) 0%, rgba(25, 93, 230, 0.02) 100%)`,
-                      border: `1px solid rgba(25, 93, 230, 0.2)`,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      textAlign: 'center',
-                      gap: 2,
-                      transition: 'transform 150ms ease-out, box-shadow 150ms ease-out',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `0 8px 24px rgba(25, 93, 230, 0.15)`,
-                      },
-                      '&:active': { transform: 'scale(0.98)' },
-                    }}
-                  >
-                    <CardGiftcard sx={{ fontSize: 48, color: PRIMARY_MAIN }} />
-                    <Box>
-                      <Typography variant="h6" fontWeight={900} sx={{ mb: 0.5 }}>
-                        Free Weekly Entry
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
-                        No purchase needed — claim 1 free entry every week
-                      </Typography>
-                    </Box>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      onClick={() => navigate('/freeTicket')}
-                      sx={{
-                        mt: 1,
-                        bgcolor: PRIMARY_MAIN,
-                        '&:hover': { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.9)' },
-                      }}
-                    >
-                      Claim free entry
-                    </Button>
-                  </Paper>
-                </Box>
-              </>
+                <Button
+                  variant="contained"
+                  onClick={() => navigate('/freeTicket')}
+                  sx={{
+                    mt: 1,
+                    bgcolor: 'white',
+                    color: PRIMARY_MAIN,
+                    fontWeight: 700,
+                    px: 3,
+                    py: 1.25,
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.9)',
+                    },
+                  }}
+                >
+                  Claim Free Entry
+                </Button>
+                <Typography variant="caption" sx={{ opacity: 0.75, mt: 1.5 }}>
+                  Completely free. No credit card required.
+                </Typography>
+              </Box>
             ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box sx={{ p: 4, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <UserVisual primaryColor={primaryColor} />
               </Box>
             )}
@@ -435,32 +425,51 @@ const didAutoActivate = useRef(false);
             </Box>
             {entryMode === 'receipt' ? (
               <>
-                {/* Free Weekly Entry card (mobile, compact horizontal) */}
+                {/* AMOE Card (mobile, prominent) */}
                 <Paper
                   elevation={0}
                   onClick={() => navigate('/freeTicket')}
                   sx={{
-                    p: 1.5,
-                    px: 2,
+                    p: 3,
                     borderRadius: 3,
                     bgcolor: `${primaryColor || PRIMARY_MAIN}0A`,
                     border: `1px solid ${primaryColor || PRIMARY_MAIN}`,
                     cursor: 'pointer',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
-                    gap: 1.5,
-                    transition: 'background-color 150ms ease-out, transform 150ms ease-out',
-                    '&:hover': { bgcolor: `${primaryColor || PRIMARY_MAIN}14`, transform: 'translateY(-2px)' },
+                    textAlign: 'center',
+                    gap: 2,
+                    transition: 'background-color 150ms ease-out, transform 150ms ease-out, box-shadow 150ms ease-out',
+                    '&:hover': { bgcolor: `${primaryColor || PRIMARY_MAIN}14`, transform: 'translateY(-2px)', boxShadow: `0 4px 12px ${primaryColor || PRIMARY_MAIN}26` },
                     '&:active': { transform: 'scale(0.97)' },
                   }}
                 >
-                  <Box sx={{ bgcolor: primaryColor || PRIMARY_MAIN, borderRadius: 1.5, p: 0.75, display: 'flex', color: 'white' }}>
-                    <CardGiftcard fontSize="small" />
+                  <Box sx={{ bgcolor: primaryColor || PRIMARY_MAIN, borderRadius: 2, p: 1.5, display: 'flex', color: 'white' }}>
+                    <CardGiftcard sx={{ fontSize: 40 }} />
                   </Box>
-                  <Box flex={1} minWidth={0}>
-                    <Typography variant="body2" fontWeight={700} sx={{ lineHeight: 1.2 }}>Free Weekly Entry</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2 }}>Claim 1 free entry</Typography>
+                  <Box>
+                    <Typography variant="h6" fontWeight={900} sx={{ mb: 0.5 }}>
+                      Free Weekly Entry
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
+                      No purchase needed · Resets every Sunday
+                    </Typography>
                   </Box>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={() => navigate('/freeTicket')}
+                    sx={{
+                      mt: 1,
+                      bgcolor: primaryColor || PRIMARY_MAIN,
+                      color: 'white',
+                      fontWeight: 700,
+                      '&:hover': { bgcolor: primaryColor || PRIMARY_MAIN, filter: 'brightness(0.9)' },
+                    }}
+                  >
+                    Claim Free Entry →
+                  </Button>
                 </Paper>
                 <ReceiptEntryForm primaryColor={primaryColor} preselectedBusinessId={preselectedBusinessId} preselectedLocation={preselectedLocation} />
               </>
