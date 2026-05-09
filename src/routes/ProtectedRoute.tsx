@@ -27,6 +27,14 @@ const ProtectedRoute = () => {
   }
 
   if (!isAuthenticated) {
+    // QR scan link — save business ID and send to landing page so the user
+    // sees the full app intro rather than a bare login form
+    const params = new URLSearchParams(window.location.search);
+    const bid = params.get('b');
+    if (window.location.pathname === '/scan' && bid) {
+      sessionStorage.setItem('pendingBusinessScan', bid);
+      return <Navigate to='/' replace />;
+    }
     return <Navigate to='/login' replace />;
   }
 
