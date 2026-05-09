@@ -261,7 +261,7 @@ const BusinessDashboard: React.FC = () => {
   // Risk action handler
   const handleConfirmRiskAction = async () => {
     if (!riskConfirmUser) return;
-    const riskScore = riskConfirmUser.action === 'disqualify' ? 20 : 0;
+    const riskScore = riskConfirmUser.action === 'disqualify' ? 20 : 18;
     try {
       await setUserRisk.mutateAsync({ userId: riskConfirmUser.id, riskScore });
       setSnackSuccess(
@@ -923,7 +923,7 @@ const BusinessDashboard: React.FC = () => {
                   <DialogContentText>
                     {riskConfirmUser?.action === 'disqualify'
                       ? `Disqualify ${riskConfirmUser.name}? This will quarantine all their current campaign entries. They can no longer submit until their score is cleared.`
-                      : `Clear flag for ${riskConfirmUser?.name}? This will restore their entries and reset their risk score to 0.`}
+                      : `Clear flag for ${riskConfirmUser?.name}? This will restore their entries and set their risk score to 18 (on watch).`}
                   </DialogContentText>
                 </DialogContent>
                 <DialogActions>

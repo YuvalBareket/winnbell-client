@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { CircularProgress, Box } from '@mui/material';
+import { useAuth } from '@clerk/clerk-react';
 import { useAppSelector } from '../store/hook';
 import {
   selectIsRegularUser,
@@ -51,6 +53,7 @@ import MarketingPage from '../features/marketing/pages/MarketingPage';
 
 const AppRoutes = () => {
   const navigate = useNavigate();
+  const { isSignedIn, isLoaded } = useAuth();
   const isUser = useAppSelector(selectIsRegularUser);
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
@@ -72,7 +75,13 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* --- Public Routes --- */}
-      <Route path='/' element={isAuthenticated ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace /> : <LandingPage />} />
+      <Route path='/' element={
+        (!isLoaded || (isSignedIn && !isAuthenticated))
+          ? <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box>
+          : isAuthenticated
+            ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace />
+            : <LandingPage />
+      } />
       <Route path='/login' element={<LoginPage />} />
       <Route path='/register/:role?' element={<RegisterPage />} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />

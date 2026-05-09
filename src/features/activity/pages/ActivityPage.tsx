@@ -90,12 +90,6 @@ const ActivityPage = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    if (status === 'active') return { dot: '#10b981', text: 'Active', bg: '#ecfdf5', fg: '#065f46' };
-    if (status === 'under_review') return { dot: '#f59e0b', text: 'Under Review', bg: '#fffbeb', fg: '#92400e' };
-    return { dot: '#999', text: status, bg: '#f3f4f6', fg: '#6b7280' };
-  };
-
   const getSourceIcon = (source: string) => {
     switch (source) {
       case 'code':
@@ -251,8 +245,12 @@ const ActivityPage = () => {
                 />
                 <KpiCard
                   icon={<ConfirmationNumberOutlined sx={{ color: '#7b1fa2', fontSize: 22 }} />}
-                  label='Entries Issued'
-                  value={(activity?.summary.entries_today ?? 0).toLocaleString()}
+                  label='Entries This Month'
+                  value={
+                    activity?.summary.monthly_cap != null
+                      ? `${(activity.summary.entries_this_month ?? 0).toLocaleString()} / ${activity.summary.monthly_cap.toLocaleString()}`
+                      : (activity?.summary.entries_this_month ?? 0).toLocaleString()
+                  }
                   color='rgba(123,31,162,0.12)'
                 />
               </>
@@ -307,7 +305,6 @@ const ActivityPage = () => {
 
               {displayItems.map((item, idx) => {
                 const sourceBadge = getSourceBadgeColor(item.entry_source);
-                const statusColor = getStatusColor(item.status);
                 const accentColor = getAccentColor(item.entry_source);
                 const sourceIcon = getSourceIcon(item.entry_source);
 
@@ -399,30 +396,6 @@ const ActivityPage = () => {
                           <Typography variant='caption' color='text.secondary'>
                             {formatRelativeTime(item.created_at)}
                           </Typography>
-                          <Box
-                            sx={{
-                              px: 1,
-                              py: 0.5,
-                              borderRadius: 1,
-                              bgcolor: statusColor.bg,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 0.5,
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                width: 6,
-                                height: 6,
-                                borderRadius: '50%',
-                                bgcolor: statusColor.dot,
-                                flexShrink: 0,
-                              }}
-                            />
-                            <Typography variant='caption' fontWeight={600} sx={{ color: statusColor.fg, fontSize: '0.7rem' }}>
-                              {statusColor.text}
-                            </Typography>
-                          </Box>
                         </Stack>
                       </Stack>
                     </Box>

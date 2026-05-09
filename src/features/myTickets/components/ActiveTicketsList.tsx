@@ -140,7 +140,7 @@ const BusinessTicketRow = ({ ticket, index }: { ticket: BusinessTicket; index: n
           </Typography>
         </Box>
       </Box>
-      <TicketStatusSection code={ticket.code} status={ticket.status} />
+      <TicketStatusSection code={ticket.code} status={ticket.status} isUnderReview={ticket.is_quarantined} />
     </TicketRowWrapper>
   );
 };
@@ -151,13 +151,13 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
   const isBusinessOwner = useAppSelector(selectIsBusiness);
   const isLocation = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessOwner || isLocation;
-  const { data: tickets, effectiveCount, isLoading } = useMyTickets(draw_id ?? 0);
+  const { data: tickets, isLoading } = useMyTickets(draw_id ?? 0);
 
   const ticketCount = tickets?.length ?? 0;
   const CAP = 30;
-  const progress = Math.min((effectiveCount / CAP) * 100, 100);
-  const isMaxed = effectiveCount >= CAP;
-  const progressColor = isMaxed ? '#2e7d32' : effectiveCount >= 20 ? '#ed6c02' : '#195DE2';
+  const progress = Math.min((ticketCount / CAP) * 100, 100);
+  const isMaxed = ticketCount >= CAP;
+  const progressColor = isMaxed ? '#2e7d32' : ticketCount >= 20 ? '#ed6c02' : '#195DE2';
 
   if (!draw_id) return (
     <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
@@ -187,7 +187,7 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
               ) : (
                 <>
                   <Typography variant='h3' sx={{ fontWeight: 900, color: progressColor, lineHeight: 1, letterSpacing: '-0.03em', transition: 'color 0.3s' }}>
-                    {isBusiness ? ticketCount : effectiveCount}
+                    {ticketCount}
                   </Typography>
                   {!isBusiness && (
                     <Typography variant='body1' sx={{ fontWeight: 700, color: 'text.secondary' }}>
@@ -206,7 +206,7 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
 
           {!isBusiness && !isLoading && (
             <Typography variant='caption' sx={{ fontWeight: 700, color: progressColor, pb: 0.5, transition: 'color 0.3s' }}>
-              {isMaxed ? '🎉 Maxed out!' : `${CAP - effectiveCount} slots left`}
+              {isMaxed ? '🎉 Maxed out!' : `${CAP - ticketCount} slots left`}
             </Typography>
           )}
           {isBusiness && (
@@ -241,9 +241,9 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
               <Typography variant='caption' color='text.disabled' sx={{ mt: 0.75, display: 'block', fontWeight: 500 }}>
                 {isMaxed
                   ? 'You have the maximum entries for this campaign. Good luck!'
-                  : effectiveCount === 0
+                  : ticketCount === 0
                     ? 'Submit receipts, use promo codes, or claim your free weekly entry.'
-                    : `You have ${CAP - effectiveCount} more entries available — don't leave them unclaimed!`}
+                    : `You have ${CAP - ticketCount} more entries available — don't leave them unclaimed!`}
               </Typography>
             )}
           </Box>
@@ -303,9 +303,11 @@ const iconBoxStyle = {
 const TicketStatusSection = ({
   code,
   status,
+  isUnderReview,
 }: {
   code: string;
   status: string;
+  isUnderReview?: boolean;
 }) => (
   <Box sx={{ textAlign: 'right', flexShrink: 0, ml: 1.5 }}>
     <Typography
@@ -324,21 +326,21 @@ const TicketStatusSection = ({
     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
       <Chip
         icon={<Circle sx={{ fontSize: '6px !important' }} />}
-        label={status.toUpperCase()}
+        label={isUnderReview ? 'UNDER REVIEW' : status.toUpperCase()}
         size='small'
         sx={{
           height: 24,
           fontSize: '0.65rem',
           fontWeight: 700,
           borderRadius: '12px',
-          bgcolor: status === 'Activated' ? STATUS_ACTIVATED_BG : STATUS_PENDING_BG,
-          color: status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
+          bgcolor: isUnderReview ? '#fffbeb' : status === 'Activated' ? STATUS_ACTIVATED_BG : STATUS_PENDING_BG,
+          color: isUnderReview ? '#92400e' : status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
           border: '1px solid',
-          borderColor: status === 'Activated'
+          borderColor: isUnderReview ? 'rgba(245,158,11,0.3)' : status === 'Activated'
             ? 'rgba(46,125,50,0.2)'
             : 'rgba(230,81,0,0.2)',
           '& .MuiChip-icon': {
-            color: status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
+            color: isUnderReview ? '#f59e0b' : status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
           },
         }}
       />

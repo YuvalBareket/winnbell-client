@@ -4,6 +4,8 @@ export interface ActivitySummary {
   receipts_today: number;
   revenue_today: number;
   entries_today: number;
+  entries_this_month: number;
+  monthly_cap: number | null;
 }
 
 export interface ActivityItem {
