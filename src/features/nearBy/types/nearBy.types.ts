@@ -1,4 +1,4 @@
-export type BusinessSector = 'Food' | 'Retail' | 'Service';
+export type BusinessSector = string;
 
 // Matches exactly what GET /business/nearby returns
 export interface NearbyLocation {

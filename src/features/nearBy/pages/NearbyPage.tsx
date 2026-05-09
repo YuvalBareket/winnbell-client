@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Box,
@@ -10,10 +10,6 @@ import {
   Avatar,
   Stack,
   CircularProgress,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
   Slider,
   Chip,
 } from '@mui/material';
@@ -24,7 +20,6 @@ import {
   CheckCircle,
   SearchOff,
   Storefront as StorefrontIcon,
-  TuneOutlined,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 
@@ -59,7 +54,6 @@ const NearbyPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [radiusKm, setRadiusKm] = useState(10);
-  const [filtersOpen, setFiltersOpen] = useState(false);
   // Use location_id as the state key to support multiple locations per business
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
 
@@ -168,68 +162,73 @@ const NearbyPage = () => {
           overflow: 'hidden',
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pb: 1.5 }}>
           <Typography variant='h6' sx={{ fontWeight: 700 }}>Partners List</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {isFetching && !isLoading && <CircularProgress size={14} thickness={5} />}
             <Typography variant='subtitle2' color='primary' sx={{ fontWeight: 700 }}>
               {filteredLocations.length} Found
             </Typography>
-            <IconButton
-              size='small'
-              onClick={() => setFiltersOpen(!filtersOpen)}
-              sx={{ ml: 1 }}
-            >
-              <TuneOutlined fontSize='small' />
-            </IconButton>
           </Box>
         </Box>
 
-        {/* Collapsible Filter Panel */}
-        {filtersOpen && (
-          <Box sx={{ px: 2, pb: 1.5 }}>
-            {/* Category Dropdown */}
-            <FormControl fullWidth size='small' sx={{ mb: 1.5 }}>
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={selectedSector || ''}
-                onChange={(e) => setSelectedSector(e.target.value || null)}
-                label='Category'
-              >
-                <MenuItem value=''>All categories</MenuItem>
-                {Object.entries(BUSINESS_SECTORS)
-                  .filter(([key]) => key !== 'Free')
-                  .map(([key, info]) => (
-                    <MenuItem key={key} value={key}>
-                      {info.label}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
-
-            {/* Radius Slider */}
-            <Box sx={{ mt: 1.5 }}>
-              <Typography variant='body2' sx={{ fontWeight: 600, mb: 1 }}>
-                Radius: {radiusKm} km
-              </Typography>
-              <Slider
-                value={radiusKm}
-                onChange={(_e, newValue) => setRadiusKm(newValue as number)}
-                min={1}
-                max={50}
-                step={1}
-                color='primary'
-                valueLabelDisplay='auto'
-                valueLabelFormat={(v) => `${v} km`}
-              />
-            </Box>
+        {/* Filter bar */}
+        <Box sx={{ px: 2, pt: 1, pb: 0.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+          {/* Sector chips */}
+          <Box sx={{
+            display: 'flex', gap: 0.75, overflowX: 'auto', pb: 1,
+            '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none',
+          }}>
+            {[{ key: null, label: 'All', icon: null }, ...Object.entries(BUSINESS_SECTORS).filter(([k]) => k !== 'Free').map(([k, v]) => ({ key: k, label: v.label, icon: v.icon }))].map(({ key, label, icon }) => {
+              const active = key === null ? !selectedSector : selectedSector === key;
+              return (
+                <Chip
+                  key={String(key)}
+                  label={label}
+                  icon={icon ? <Box sx={{ display: 'flex', '& svg': { fontSize: '13px !important' } }}>{icon as React.ReactElement}</Box> : undefined}
+                  size='small'
+                  onClick={() => setSelectedSector(key as string | null)}
+                  sx={{
+                    flexShrink: 0,
+                    height: 26,
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    bgcolor: active ? 'primary.main' : 'transparent',
+                    color: active ? 'white' : 'text.secondary',
+                    border: '1px solid',
+                    borderColor: active ? 'primary.main' : 'divider',
+                    '& .MuiChip-icon': { color: active ? 'white' : 'text.secondary', ml: '6px', mr: '-2px' },
+                    '&:hover': { bgcolor: active ? 'primary.dark' : 'action.hover' },
+                  }}
+                />
+              );
+            })}
           </Box>
-        )}
+
+          {/* Radius row */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Typography variant='caption' fontWeight={600} color='text.secondary' sx={{ flexShrink: 0 }}>
+              Within
+            </Typography>
+            <Slider
+              value={radiusKm}
+              onChange={(_e, v) => setRadiusKm(v as number)}
+              min={1} max={50} step={1}
+              size='small'
+              sx={{ flex: 1, '& .MuiSlider-thumb': { width: 14, height: 14 } }}
+            />
+            <Typography variant='caption' fontWeight={700} color='primary.main' sx={{ flexShrink: 0, minWidth: 36, textAlign: 'right' }}>
+              {radiusKm} km
+            </Typography>
+          </Box>
+        </Box>
 
         <Stack
-          spacing={2}
+          spacing={1.5}
           sx={{
             px: 2,
+            pt: 1.5,
             pb: { xs: 12, md: 3 },
             overflowY: 'auto',
             flex: 1,
@@ -284,8 +283,8 @@ const NearbyPage = () => {
                     elevation={0}
                     onClick={() => setSelectedLocationId(partner.location_id)}
                     sx={{
-                      p: 2,
-                      borderRadius: 3,
+                      p: 1.25,
+                      borderRadius: 2.5,
                       border: '1px solid',
                       borderColor: 'divider',
                       display: 'flex',
@@ -297,24 +296,24 @@ const NearbyPage = () => {
                       '&:hover': { bgcolor: 'rgba(0,0,0,0.01)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
                     }}
                   >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Avatar
                       src={partner.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${partner.logo_url}` : undefined}
                       sx={{
-                        width: 56,
-                        height: 56,
+                        width: 42,
+                        height: 42,
                         bgcolor: sectorInfo.bgColor,
                         color: sectorInfo.color,
-                        borderRadius: 3,
+                        borderRadius: 2,
                         fontWeight: 700,
-                        '& svg': { fontSize: 28 },
+                        '& svg': { fontSize: 20 },
                       }}
                     >
                       {!partner.logo_url && sectorInfo.icon}
                     </Avatar>
 
                     <Box>
-                      <Typography variant='subtitle1' sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                      <Typography variant='body2' sx={{ fontWeight: 700, lineHeight: 1.2 }}>
                         {partner.name}
                       </Typography>
 
