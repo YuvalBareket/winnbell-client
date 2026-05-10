@@ -304,7 +304,7 @@ const RegisterPage = () => {
         </Stack>
       </Stack>
 
-      <Box sx={{ pt: 2, textAlign: 'center' }}>
+      <Box sx={{ pt: 1, textAlign: 'center' }}>
         <Typography variant='body2' color='text.secondary' fontWeight={600}>
           Already have an account?{' '}
           <Typography component='span' onClick={() => navigate(inviteToken ? `/login/?token=${inviteToken}` : '/login')}
@@ -320,7 +320,7 @@ const RegisterPage = () => {
 
   if (isDesktop) {
     return (
-      <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', height: '100dvh', overflow: 'hidden' }}>
         <BrandPanel isBusinessOwner={isBusinessOwner} isLocationManager={isLocationManager} />
 
         {/* Right: form panel */}
@@ -351,13 +351,13 @@ const RegisterPage = () => {
   // ─── Mobile layout (original) ────────────────────────────────────────────────
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE }}>
+    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
       <Box sx={{ p: 1.5 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}>
           <ArrowBackIosNew fontSize='small' />
         </IconButton>
       </Box>
-      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pb: 4 }}>
         {FormContent()}
       </Container>
     </Box>

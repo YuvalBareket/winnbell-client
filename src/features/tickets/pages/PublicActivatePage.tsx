@@ -59,13 +59,13 @@ const PublicActivatePage = () => {
   // ─── 1. Loading State (Prevents Jumping) ──────────────────────────────────
   if (isChecking && code) {
     return (
-      <Box sx={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        bgcolor: '#f8fafc' 
+      <Box sx={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: '#f8fafc'
       }}>
         <CircularProgress size={40} sx={{ mb: 2, color: PRIMARY_MAIN }} />
         <Typography variant="body2" color="text.secondary" fontWeight={600}>
@@ -78,7 +78,7 @@ const PublicActivatePage = () => {
   // ─── 2. No code in URL ───────────────────────────────────────────────────────
   if (!code) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
+      <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
         <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider', p: 4, textAlign: 'center' }}>
           <ErrorOutline sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
           <Typography variant='h6' fontWeight={800} mb={1}>Invalid Link</Typography>
@@ -99,7 +99,7 @@ const PublicActivatePage = () => {
 
   // ─── 3. Unauthenticated View (User is NOT logged in) ───────────────────────
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
+    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
       <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 4, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
 
         <Box sx={{ background: GRADIENT_HERO, p: 3.5, textAlign: 'center', color: 'white' }}>

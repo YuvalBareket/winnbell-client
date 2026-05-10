@@ -45,7 +45,7 @@ const MyTicketsPage = () => {
 
   if (isDesktop) {
     return (
-      <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: 6 }}>
+      <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: 6 }}>
         {/* Hero */}
         <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
           <Container maxWidth='lg'>
@@ -116,7 +116,7 @@ const MyTicketsPage = () => {
 
   // Mobile
   return (
-    <Box sx={{ minHeight: '100vh' }}>
+    <Box sx={{ minHeight: '100dvh' }}>
       {/* Hero */}
    
       <Box sx={{ pt:2}}>

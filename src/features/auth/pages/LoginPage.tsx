@@ -161,7 +161,7 @@ const LoginPage = () => {
 
   if (needs2FA) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', bgcolor: BG_PAGE }}>
+      <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', bgcolor: BG_PAGE }}>
         <Container maxWidth='xs'>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
             <Paper elevation={4} sx={{ width: 80, height: 80, bgcolor: 'primary.main', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
@@ -314,7 +314,7 @@ const LoginPage = () => {
 
   if (isDesktop) {
     return (
-      <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', height: '100dvh', overflow: 'hidden' }}>
         <BrandPanel />
 
         {/* Right: form panel */}
@@ -345,13 +345,13 @@ const LoginPage = () => {
   // ─── Mobile layout (original) ────────────────────────────────────────────────
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE }}>
+    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
       <Box sx={{ p: 2 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'action.hover' }}>
           <ArrowBackIosNew fontSize='small' />
         </IconButton>
       </Box>
-      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 4 }}>
+      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 4, pb: 4 }}>
         {FormContent()}
       </Container>
     </Box>

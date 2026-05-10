@@ -46,7 +46,7 @@ const DrawPreparationView = ({
   const progress = (completedCount / taskItems.length) * 100;
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: isDesktop ? 'auto' : 'calc(100vh - 138px)', pb: 6 }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: isDesktop ? 'auto' : 'calc(100dvh - 138px)', pb: 6 }}>
       {/* Hero */}
       <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
         <Container maxWidth='lg'>

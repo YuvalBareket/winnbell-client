@@ -14,7 +14,7 @@ const LoadingState = () => (
     sx={{
       display: 'flex',
       flexDirection: 'column',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       alignItems: 'center',
       justifyContent: 'center',
       bgcolor: 'background.default',

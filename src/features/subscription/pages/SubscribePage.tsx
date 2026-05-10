@@ -203,10 +203,10 @@ const SubscribePage = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
-        '& > *': { minHeight: { md: '100vh' }, alignItems: 'stretch' },
+        '& > *': { minHeight: { md: '100dvh' }, alignItems: 'stretch' },
       }}
     >
       {/* ── Left brand panel ── */}
@@ -221,7 +221,7 @@ const SubscribePage = () => {
           color: 'white',
           position: 'relative',
           overflow: 'hidden',
-          minHeight: { xs: 300, md: '100vh' },
+          minHeight: { xs: 300, md: '100dvh' },
         }}
       >
         <Box sx={{ position: 'absolute', top: -80, right: -80, width: 320, height: 320, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(70px)', pointerEvents: 'none' }} />

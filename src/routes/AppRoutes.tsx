@@ -77,7 +77,7 @@ const AppRoutes = () => {
       {/* --- Public Routes --- */}
       <Route path='/' element={
         (!isLoaded || (isSignedIn && !isAuthenticated))
-          ? <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box>
+          ? <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box>
           : isAuthenticated
             ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace />
             : <LandingPage />

@@ -60,7 +60,7 @@ const AppSidebar = () => {
     <Box
       sx={{
         width: 260,
-        height: '100vh',
+        height: '100dvh',
         position: 'fixed',
         left: 0,
         top: 0,

@@ -42,7 +42,7 @@ const MainLayout = () => {
     <Box
       sx={{
         width: '100%',
-        minHeight: '100vh',
+        minHeight: '100dvh',
         bgcolor: 'background.default',
         background: BG_APP_GRADIENT,
         display: 'flex',

@@ -76,7 +76,7 @@ const SettingsPage = () => {
   const isSocialLoginError = serverMessage === 'Password cannot be changed for social login accounts';
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: 6 }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: 6 }}>
       {/* Hero */}
       <Box
         sx={{

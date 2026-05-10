@@ -105,7 +105,7 @@ const BusinessHubPage = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh' }}>
+      <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh' }}>
         {/* Hero skeleton */}
         <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3 }}>
           <Container maxWidth='md'>
@@ -139,7 +139,7 @@ const BusinessHubPage = () => {
   }
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: { xs: 12, md: 6 } }}>
       <AppHeader onMenuOpen={() => setMenuOpen(true)} />
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 

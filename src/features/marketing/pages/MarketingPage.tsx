@@ -260,7 +260,7 @@ const MarketingPage = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: 8 }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: 8 }}>
       {/* Hero */}
       <Box sx={{
         background: GRADIENT_HERO, pt: 3, pb: isDesktop ? 9 : 6, px: 3,

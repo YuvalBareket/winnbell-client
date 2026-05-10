@@ -105,7 +105,7 @@ export default function SubscriptionManagementPage() {
   const canCancel = sub.status !== 'Cancelled' && !sub.cancel_at_period_end;
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100vh', pb: { xs: 10, md: 6 } }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: { xs: 10, md: 6 } }}>
       {/* Hero Header */}
       <Box
         sx={{

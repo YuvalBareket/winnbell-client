@@ -59,7 +59,7 @@ export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwipe
   // Desktop compact mode: clean selectable list of draw items
   if (compact) {
     return (
-      <Box sx={{ maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
+      <Box sx={{ maxHeight: 'calc(100dvh - 220px)', overflowY: 'auto', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
         {draws.map((draw, index) => {
           const isActive = draw_id === draw.id;
           const daysLeft = calculateDaysLeft(draw.draw_date);

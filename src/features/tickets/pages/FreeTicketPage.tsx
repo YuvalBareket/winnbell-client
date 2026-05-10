@@ -59,7 +59,7 @@ const FreeTicketPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box display='flex' justifyContent='center' alignItems='center' minHeight='100vh'>
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight='100dvh'>
         <CircularProgress color='primary' />
       </Box>
     );
@@ -75,10 +75,11 @@ const FreeTicketPage: React.FC = () => {
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          height: '100%',
+          minHeight: '100dvh',
           maxWidth: '480px',
           mx: 'auto',
           pt: 1,
+          overflowY: 'auto',
         }}
       >
         {/* Header */}
@@ -284,7 +285,7 @@ const FreeTicketPage: React.FC = () => {
       sx={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        minHeight: '100vh',
+        minHeight: '100dvh',
       }}
     >
       {/* Left Column — Hero/Brand side */}

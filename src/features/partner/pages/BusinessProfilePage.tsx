@@ -76,7 +76,7 @@ const BusinessProfilePage = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
+    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
 
       {/* ── Left panel (branding) ── */}
       <Box

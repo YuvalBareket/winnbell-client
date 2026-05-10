@@ -11,7 +11,7 @@ const ProtectedRoute = () => {
   // Clerk is still initializing
   if (!isLoaded) {
     return (
-      <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}>
         <CircularProgress />
       </Box>
     );
@@ -20,7 +20,7 @@ const ProtectedRoute = () => {
   // Clerk session exists but useClerkSync hasn't finished yet — wait, don't redirect
   if (isSignedIn && !isAuthenticated) {
     return (
-      <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}>
         <CircularProgress />
       </Box>
     );
