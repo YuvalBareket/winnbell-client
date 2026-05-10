@@ -5,8 +5,10 @@ import {
   Button,
   IconButton,
   CircularProgress,
-  Snackbar,
-  Alert,
+  Zoom,
+  Fade,
+  Dialog,
+  Stack,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -19,7 +21,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useNavigate } from 'react-router-dom';
 import { useFreeTicket } from '../hooks/useFreeTicket';
-import { AMBER_HOURGLASS, SHADOW_PRIMARY_MEDIUM, GRADIENT_HERO, ALPHA_WHITE_20, ALPHA_WHITE_10 } from '../../../shared/colors';
+import { AMBER_HOURGLASS, SHADOW_PRIMARY_MEDIUM, GRADIENT_HERO, ALPHA_WHITE_20, ALPHA_WHITE_10, GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
 
 const getNextSunday = (): Date => {
   const now = new Date();
@@ -39,21 +41,20 @@ const FreeTicketPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-  const { status, activate, isActivating, isLoading } = useFreeTicket();
-  const [successOpen, setSuccessOpen] = useState(false);
+  const { status, activateAsync, isActivating, isLoading } = useFreeTicket();
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [claimedCode, setClaimedCode] = useState('');
+  const [claimError, setClaimError] = useState('');
 
-  const handleCloseSnackbar = (
-    _event?: React.SyntheticEvent | Event,
-    reason?: string,
-  ) => {
-    if (reason === 'clickaway') return;
-    setSuccessOpen(false);
-  };
-
-  const handleActivateClick = () => {
-    activate(undefined, {
-      onSuccess: () => setSuccessOpen(true),
-    });
+  const handleActivateClick = async () => {
+    setClaimError('');
+    try {
+      const result = await activateAsync(undefined);
+      setClaimedCode(result?.code ?? '');
+      setSuccessDialogOpen(true);
+    } catch (err: any) {
+      setClaimError(err?.response?.data?.message ?? 'Something went wrong. Please try again.');
+    }
   };
 
   if (isLoading) {
@@ -65,6 +66,7 @@ const FreeTicketPage: React.FC = () => {
   }
 
   const canActivate = status?.canActivate;
+  const noCampaign = !canActivate && (status as any)?.reason === 'no_campaign';
 
   // Mobile layout (xs/sm)
   if (!isDesktop) {
@@ -161,13 +163,15 @@ const FreeTicketPage: React.FC = () => {
           {/* Description */}
           <Box sx={{ maxWidth: '320px' }}>
             <Typography variant='h5' sx={{ fontWeight: 700, mb: 1.5 }}>
-              {canActivate ? 'Your Entry is Waiting!' : 'Entry Request Pending'}
+              {canActivate ? 'Your Entry is Waiting!' : noCampaign ? 'No Active Campaign' : 'Entry Request Pending'}
             </Typography>
             <Typography variant='body1' color='text.secondary' sx={{ lineHeight: 1.6 }}>
               Winnbell gives you one free entry every week, from Sunday to Sunday.
               {canActivate
                 ? ' Click below to claim your entry and join the campaign!'
-                : ' Your next free entry will be available on Sunday.'}
+                : noCampaign
+                  ? ' There is no active campaign right now. Check back soon!'
+                  : ' Your next free entry will be available on Sunday.'}
             </Typography>
           </Box>
         </Box>
@@ -192,6 +196,11 @@ const FreeTicketPage: React.FC = () => {
           >
             {isActivating ? 'Claiming...' : 'Get Your Entry'}
           </Button>
+          {claimError && (
+            <Typography variant='body2' color='error' sx={{ mt: 1.5, textAlign: 'center', fontWeight: 600 }}>
+              {claimError}
+            </Typography>
+          )}
           <Typography
             variant='caption'
             sx={{ display: 'block', textAlign: 'center', mt: 2, color: 'text.secondary', fontWeight: 500 }}
@@ -200,11 +209,71 @@ const FreeTicketPage: React.FC = () => {
           </Typography>
         </Box>
 
-        <Snackbar open={successOpen} autoHideDuration={4000} onClose={handleCloseSnackbar}>
-          <Alert onClose={handleCloseSnackbar} severity='success' variant='filled' sx={{ width: '100%' }}>
-            Entry activated successfully! Good luck in the campaign.
-          </Alert>
-        </Snackbar>
+        {/* ── Success Dialog ───────────────────────────── */}
+        <Dialog
+          open={successDialogOpen}
+          fullScreen
+          TransitionComponent={Fade}
+          PaperProps={{ sx: { bgcolor: 'transparent' } }}
+        >
+          <Box sx={{
+            height: '100%', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            background: GRADIENT_SUCCESS, px: 4, textAlign: 'center',
+          }}>
+            <Zoom in={successDialogOpen} timeout={400}>
+              <Box sx={{
+                width: 100, height: 100, borderRadius: '50%',
+                bgcolor: 'rgba(255,255,255,0.15)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                mb: 3, border: '2px solid rgba(255,255,255,0.3)',
+              }}>
+                <EmojiEventsIcon sx={{ fontSize: 52, color: GOLD_TROPHY }} />
+              </Box>
+            </Zoom>
+            <Fade in={successDialogOpen} timeout={600}>
+              <Box>
+                <Typography variant="h3" fontWeight={800} sx={{ color: 'white', mb: 1 }}>
+                  You're In!
+                </Typography>
+                <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, lineHeight: 1.6 }}>
+                  Your free entry is in the campaign.<br />Good luck!
+                </Typography>
+                {claimedCode && (
+                  <Box sx={{
+                    bgcolor: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: 3, px: 4, py: 2.5, mb: 5, display: 'inline-block',
+                  }}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 2, display: 'block', mb: 0.5 }}>
+                      Entry Code
+                    </Typography>
+                    <Typography variant="h4" fontWeight={900} sx={{ color: 'white', fontFamily: 'monospace', letterSpacing: 4 }}>
+                      {claimedCode}
+                    </Typography>
+                  </Box>
+                )}
+                <Stack spacing={2}>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    startIcon={<ConfirmationNumberIcon />}
+                    onClick={() => { setSuccessDialogOpen(false); navigate('/tickets'); }}
+                    sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, borderRadius: 3, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                  >
+                    View My Entries
+                  </Button>
+                  <Button
+                    variant="text"
+                    onClick={() => setSuccessDialogOpen(false)}
+                    sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}
+                  >
+                    Close
+                  </Button>
+                </Stack>
+              </Box>
+            </Fade>
+          </Box>
+        </Dialog>
       </Box>
     );
   }
@@ -357,7 +426,7 @@ const FreeTicketPage: React.FC = () => {
         {/* Description */}
         <Box sx={{ maxWidth: '380px', mb: 4, textAlign: 'center' }}>
           <Typography variant='h5' sx={{ fontWeight: 700, mb: 1.5 }}>
-            {canActivate ? 'Your Entry is Waiting!' : 'Entry Request Pending'}
+            {canActivate ? 'Your Entry is Waiting!' : noCampaign ? 'No Active Campaign' : 'Entry Request Pending'}
           </Typography>
           <Typography variant='body1' color='text.secondary' sx={{ lineHeight: 1.6 }}>
             Winnbell gives you one free entry every week, from Sunday to Sunday.
@@ -388,20 +457,87 @@ const FreeTicketPage: React.FC = () => {
           {isActivating ? 'Claiming...' : 'Get Your Entry'}
         </Button>
 
+        {claimError && (
+          <Typography variant='body2' color='error' sx={{ mt: 1, textAlign: 'center', fontWeight: 600 }}>
+            {claimError}
+          </Typography>
+        )}
+
         {/* Caption */}
         <Typography
           variant='caption'
-          sx={{ textAlign: 'center', color: 'text.secondary', fontWeight: 500 }}
+          sx={{ textAlign: 'center', color: 'text.secondary', fontWeight: 500, mt: 1 }}
         >
           One free entry per week. Resets every Sunday.
         </Typography>
+
       </Box>
 
-      <Snackbar open={successOpen} autoHideDuration={4000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity='success' variant='filled' sx={{ width: '100%' }}>
-          Entry activated successfully! Good luck in the campaign.
-        </Alert>
-      </Snackbar>
+      {/* ── Success Dialog ───────────────────────────── */}
+      <Dialog
+        open={successDialogOpen}
+        fullScreen
+        TransitionComponent={Fade}
+        PaperProps={{ sx: { bgcolor: 'transparent' } }}
+      >
+        <Box sx={{
+          height: '100%', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          background: GRADIENT_SUCCESS, px: 4, textAlign: 'center',
+        }}>
+          <Zoom in={successDialogOpen} timeout={400}>
+            <Box sx={{
+              width: 100, height: 100, borderRadius: '50%',
+              bgcolor: 'rgba(255,255,255,0.15)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              mb: 3, border: '2px solid rgba(255,255,255,0.3)',
+            }}>
+              <EmojiEventsIcon sx={{ fontSize: 52, color: GOLD_TROPHY }} />
+            </Box>
+          </Zoom>
+          <Fade in={successDialogOpen} timeout={600}>
+            <Box>
+              <Typography variant="h3" fontWeight={800} sx={{ color: 'white', mb: 1 }}>
+                You're In!
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, lineHeight: 1.6 }}>
+                Your free entry is in the campaign.<br />Good luck!
+              </Typography>
+              {claimedCode && (
+                <Box sx={{
+                  bgcolor: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: 3, px: 4, py: 2.5, mb: 5, display: 'inline-block',
+                }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 2, display: 'block', mb: 0.5 }}>
+                    Entry Code
+                  </Typography>
+                  <Typography variant="h4" fontWeight={900} sx={{ color: 'white', fontFamily: 'monospace', letterSpacing: 4 }}>
+                    {claimedCode}
+                  </Typography>
+                </Box>
+              )}
+              <Stack spacing={2}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={<ConfirmationNumberIcon />}
+                  onClick={() => { setSuccessDialogOpen(false); navigate('/tickets'); }}
+                  sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, borderRadius: 3, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                >
+                  View My Entries
+                </Button>
+                <Button
+                  variant="text"
+                  onClick={() => setSuccessDialogOpen(false)}
+                  sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}
+                >
+                  Close
+                </Button>
+              </Stack>
+            </Box>
+          </Fade>
+        </Box>
+      </Dialog>
     </Box>
   );
 };

@@ -39,6 +39,8 @@ export const useClerkSync = () => {
           navigate('/scan');
         } else if (data.user.role === 'Business' || data.user.location_id != null) {
           navigate('/activity');
+        } else if (data.user.role === 'User') {
+          navigate('/scan');
         }
       })
       .catch(console.error)

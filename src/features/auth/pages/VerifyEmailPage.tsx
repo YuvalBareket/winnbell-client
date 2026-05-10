@@ -102,7 +102,7 @@ const VerifyEmailPage = () => {
         if (role) sessionStorage.setItem('pendingRole', role);
         if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
-        navigate('/nearby');
+        navigate('/');
       }
     } catch (err: any) {
       setError(err.errors?.[0]?.message || 'Verification failed. Check your code.');

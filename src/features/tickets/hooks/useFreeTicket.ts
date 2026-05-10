@@ -23,6 +23,7 @@ export const useFreeTicket = () => {
     status: statusQuery.data,
     isLoading: statusQuery.isLoading,
     activate: activateMutation.mutate,
+    activateAsync: activateMutation.mutateAsync,
     isActivating: activateMutation.isPending,
   };
 };
