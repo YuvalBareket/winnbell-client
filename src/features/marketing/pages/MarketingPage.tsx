@@ -20,9 +20,23 @@ const POSTER_W = 320;
 const POSTER_H = 452; // ~A4 ratio 1:1.414
 
 // Thumbnail scale — a unitless decimal fraction (NOT a CSS percentage)
-const THUMB_SCALE = 0.38;
-const THUMB_W = Math.round(POSTER_W * THUMB_SCALE); // 122px
-const THUMB_H = Math.round(POSTER_H * THUMB_SCALE); // 172px
+const THUMB_SCALE = 0.27;
+const THUMB_W = Math.round(POSTER_W * THUMB_SCALE); // ~86px
+const THUMB_H = Math.round(POSTER_H * THUMB_SCALE); // ~122px
+
+// Smaller scale for mobile (4 in a row on ~375px screens)
+const THUMB_SCALE_MOBILE = 0.19;
+const THUMB_W_MOBILE = Math.round(POSTER_W * THUMB_SCALE_MOBILE); // ~61px
+const THUMB_H_MOBILE = Math.round(POSTER_H * THUMB_SCALE_MOBILE); // ~86px
+
+const HEADLINES = [
+  'You are one scan away',
+  'Sometimes rewards start with a scan',
+  'Scan. Submit. See what you unlock.',
+];
+
+const LEGAL_TEXT =
+  'This business participates in Winnbell campaigns. No purchase necessary. A purchase will not increase chances of winning. Alternative free entry method available on the platform. 18+. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com';
 
 // ── Shared poster wrapper ─────────────────────────────────────────────────────
 const PosterWrap = ({ children, bg }: { children: React.ReactNode; bg?: string }) => (
@@ -35,67 +49,55 @@ const PosterWrap = ({ children, bg }: { children: React.ReactNode; bg?: string }
   </Box>
 );
 
-interface PosterProps { businessName: string; scanUrl: string }
+interface PosterProps { businessName: string; scanUrl: string; headline: string }
 
 // ── Template 1: Classic Blue ──────────────────────────────────────────────────
-const PosterClassic = ({ businessName, scanUrl }: PosterProps) => (
+const PosterClassic = ({ businessName, scanUrl, headline }: PosterProps) => (
   <PosterWrap>
     {/* Header */}
     <Box sx={{
       background: 'linear-gradient(135deg, #195DE2 0%, #4A90E2 100%)',
       color: 'white', py: 3, px: 3, textAlign: 'center', flexShrink: 0,
     }}>
-      <Typography sx={{ fontSize: 28, fontWeight: 900, lineHeight: 1, mb: 0.5, letterSpacing: '-0.5px' }}>
+      <Typography sx={{ fontSize: 34, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.5px' }}>
         Winnbell
-      </Typography>
-      <Typography sx={{ fontSize: 11, fontWeight: 600, opacity: 0.9, letterSpacing: 3, textTransform: 'uppercase' }}>
-        Scan · Shop · Win
       </Typography>
     </Box>
 
     {/* Body */}
     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 2, bgcolor: 'white' }}>
       <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#1a1a1a', textAlign: 'center', mb: 3, lineHeight: 1.5 }}>
-        Scan to earn entries &amp; win monthly prizes!
+        {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #195DE2', bgcolor: 'white' }}>
         <QRCode value={scanUrl} size={120} level='H' />
       </Box>
-      <Typography sx={{ mt: 2.5, fontSize: 10, color: '#999', textAlign: 'center', letterSpacing: 0.3 }}>
-        No purchase necessary · Free entry every week
-      </Typography>
+     
     </Box>
 
     {/* Footer */}
-    <Box sx={{ bgcolor: '#EEF3FD', px: 2, py: '14px', borderTop: '1px solid rgba(25,93,230,0.15)', flexShrink: 0, textAlign: 'center' }}>
+    <Box sx={{ bgcolor: '#EEF3FD', px: 2, pt: '10px', pb: '6px', borderTop: '1px solid rgba(25,93,230,0.15)', flexShrink: 0, textAlign: 'center' }}>
       <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#195DE2', mb: 0.25 }}>{businessName}</Typography>
-      <Typography sx={{ fontSize: 9, color: '#888', letterSpacing: 1, textTransform: 'uppercase' }}>Powered by Winnbell</Typography>
+      <Typography sx={{ fontSize: 9, color: '#888', letterSpacing: 1, textTransform: 'uppercase', mb: '6px' }}>Powered by Winnbell</Typography>
+      <Typography sx={{ fontSize: '5.5px', color: '#aaa', lineHeight: 1.45 }}>{LEGAL_TEXT}</Typography>
     </Box>
   </PosterWrap>
 );
 
 // ── Template 2: Dark Premium ──────────────────────────────────────────────────
-const PosterDark = ({ businessName, scanUrl }: PosterProps) => (
+const PosterDark = ({ businessName, scanUrl, headline }: PosterProps) => (
   <PosterWrap bg='#0D1B2A'>
-    {/* Top badge */}
+    {/* Top */}
     <Box sx={{ textAlign: 'center', pt: 3, pb: 1.5, flexShrink: 0 }}>
-      <Box sx={{ display: 'inline-block', px: 2, py: 0.5, border: '1px solid rgba(245,185,50,0.4)', mb: 1 }}>
-        <Typography sx={{ fontSize: 9, fontWeight: 700, color: '#F5B932', letterSpacing: 2.5, textTransform: 'uppercase' }}>
-          Monthly Campaign
-        </Typography>
-      </Box>
-      <Typography sx={{ fontSize: 28, fontWeight: 900, color: 'white', lineHeight: 1, mb: 0.5, letterSpacing: '-0.5px' }}>
+      <Typography sx={{ fontSize: 34, fontWeight: 900, color: 'white', lineHeight: 1, letterSpacing: '-0.5px' }}>
         Winnbell
-      </Typography>
-      <Typography sx={{ fontSize: 10, color: 'white', letterSpacing: 1.5 }}>
-        Scan · Earn · Win
       </Typography>
     </Box>
 
     {/* Body */}
     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3 }}>
       <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'white', textAlign: 'center', mb: 3, lineHeight: 1.6 }}>
-        Scan the QR code, submit your receipt, and enter to win a monthly cash prize
+        {headline}
       </Typography>
       {/* Gold-framed QR */}
       <Box sx={{ p: '10px', background: 'linear-gradient(135deg, #F5B932, #E8A020)' }}>
@@ -106,36 +108,30 @@ const PosterDark = ({ businessName, scanUrl }: PosterProps) => (
     </Box>
 
     {/* Footer */}
-    <Box sx={{ borderTop: '1px solid rgba(245,185,50,0.2)', px: 3, py: '14px', textAlign: 'center', flexShrink: 0 }}>
+    <Box sx={{ borderTop: '1px solid rgba(245,185,50,0.2)', px: 3, pt: '10px', pb: '6px', textAlign: 'center', flexShrink: 0 }}>
       <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#F5B932', mb: 0.25 }}>{businessName}</Typography>
-      <Typography sx={{ fontSize: 9, color: 'white', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+      <Typography sx={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, textTransform: 'uppercase', mb: '6px' }}>
         Authorized Winnbell Partner
       </Typography>
+      <Typography sx={{ fontSize: '5.5px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.45 }}>{LEGAL_TEXT}</Typography>
     </Box>
   </PosterWrap>
 );
 
 // ── Template 3: Fresh Green ───────────────────────────────────────────────────
-const PosterFresh = ({ businessName, scanUrl }: PosterProps) => (
+const PosterFresh = ({ businessName, scanUrl, headline }: PosterProps) => (
   <PosterWrap>
     {/* Header */}
     <Box sx={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 60%, #34D399 100%)', color: 'white', py: 3, px: 3, textAlign: 'center', flexShrink: 0 }}>
-      <Typography sx={{ fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.9, mb: 1 }}>
-        Winnbell Partner
-      </Typography>
-      <Typography sx={{ fontSize: 26, fontWeight: 900, lineHeight: 1.1, mb: 0.75 }}>
-        Win Cash Prizes
-      </Typography>
-      <Typography sx={{ fontSize: 12, fontWeight: 500, opacity: 0.85, lineHeight: 1.5 }}>
-        Every purchase is a chance to win.{' '}
-        Free entry every week — no purchase needed.
+      <Typography sx={{ fontSize: 34, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.5px' }}>
+        Winnbell
       </Typography>
     </Box>
 
     {/* Body */}
     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 2, bgcolor: 'white' }}>
       <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#1a1a1a', mb: 3, textAlign: 'center' }}>
-        Scan here to get started
+        {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #10B981', bgcolor: 'white' }}>
         <QRCode value={scanUrl} size={120} level='H' fgColor='#059669' />
@@ -143,18 +139,49 @@ const PosterFresh = ({ businessName, scanUrl }: PosterProps) => (
     </Box>
 
     {/* Footer */}
-    <Box sx={{ bgcolor: '#F0FDF7', px: 2, py: '14px', borderTop: '1px solid rgba(5,150,105,0.15)', flexShrink: 0, textAlign: 'center' }}>
+    <Box sx={{ bgcolor: '#F0FDF7', px: 2, pt: '10px', pb: '6px', borderTop: '1px solid rgba(5,150,105,0.15)', flexShrink: 0, textAlign: 'center' }}>
       <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#059669', mb: 0.25 }}>{businessName}</Typography>
-      <Typography sx={{ fontSize: 9, color: '#888', letterSpacing: 1, textTransform: 'uppercase' }}>Powered by Winnbell</Typography>
+      <Typography sx={{ fontSize: 9, color: '#888', letterSpacing: 1, textTransform: 'uppercase', mb: '6px' }}>Powered by Winnbell</Typography>
+      <Typography sx={{ fontSize: '5.5px', color: '#aaa', lineHeight: 1.45 }}>{LEGAL_TEXT}</Typography>
     </Box>
   </PosterWrap>
 );
 
 // ── Template registry ─────────────────────────────────────────────────────────
+// ── Template 4: Light Pink ────────────────────────────────────────────────────
+const PosterPink = ({ businessName, scanUrl, headline }: PosterProps) => (
+  <PosterWrap>
+    {/* Header */}
+    <Box sx={{ background: 'linear-gradient(135deg, #EC4899 0%, #F472B6 60%, #FBCFE8 100%)', color: 'white', py: 3, px: 3, textAlign: 'center', flexShrink: 0 }}>
+      <Typography sx={{ fontSize: 34, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.5px' }}>
+        Winnbell
+      </Typography>
+    </Box>
+
+    {/* Body */}
+    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 2, bgcolor: 'white' }}>
+      <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#1a1a1a', textAlign: 'center', mb: 3, lineHeight: 1.5 }}>
+        {headline}
+      </Typography>
+      <Box sx={{ p: '10px', border: '3px solid #EC4899', bgcolor: 'white' }}>
+        <QRCode value={scanUrl} size={120} level='H' fgColor='#BE185D' />
+      </Box>
+    </Box>
+
+    {/* Footer */}
+    <Box sx={{ bgcolor: '#FDF2F8', px: 2, pt: '10px', pb: '6px', borderTop: '1px solid rgba(236,72,153,0.15)', flexShrink: 0, textAlign: 'center' }}>
+      <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#BE185D', mb: 0.25 }}>{businessName}</Typography>
+      <Typography sx={{ fontSize: 9, color: '#aaa', letterSpacing: 1, textTransform: 'uppercase', mb: '6px' }}>Powered by Winnbell</Typography>
+      <Typography sx={{ fontSize: '5.5px', color: '#aaa', lineHeight: 1.45 }}>{LEGAL_TEXT}</Typography>
+    </Box>
+  </PosterWrap>
+);
+
 const TEMPLATES = [
   { id: 'classic', label: 'Classic Blue',  Component: PosterClassic },
   { id: 'dark',    label: 'Dark Premium',  Component: PosterDark },
   { id: 'fresh',   label: 'Fresh Green',   Component: PosterFresh },
+  { id: 'pink',    label: 'Light Pink',    Component: PosterPink },
 ];
 
 // ── SVG → PNG helper (ensures QR renders in html2canvas) ─────────────────────
@@ -188,6 +215,7 @@ const MarketingPage = () => {
   const { data: businessData } = useBusinessData(isBusiness);
 
   const [selectedId, setSelectedId] = useState('classic');
+  const [headline, setHeadline] = useState(HEADLINES[0]);
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [snackbar, setSnackbar] = useState('');
@@ -204,6 +232,10 @@ const MarketingPage = () => {
   const scanUrl = effectiveLocationId
     ? `${window.location.origin}/scan?l=${effectiveLocationId}`
     : 'https://winnbell.com';
+
+  const thumbScale = isDesktop ? THUMB_SCALE : THUMB_SCALE_MOBILE;
+  const thumbW = isDesktop ? THUMB_W : THUMB_W_MOBILE;
+  const thumbH = isDesktop ? THUMB_H : THUMB_H_MOBILE;
 
   const selected = TEMPLATES.find(t => t.id === selectedId) ?? TEMPLATES[0];
   const SelectedPoster = selected.Component;
@@ -306,7 +338,7 @@ const MarketingPage = () => {
               <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
                 Choose a template
               </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, auto)', gap: 1.5, justifyContent: 'start' }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: { xs: 0.75, md: 1 }, justifyItems: 'center' }}>
                 {TEMPLATES.map((t) => {
                   const Thumb = t.Component;
                   const isActive = t.id === selectedId;
@@ -316,8 +348,8 @@ const MarketingPage = () => {
                       onClick={() => setSelectedId(t.id)}
                       sx={{
                         cursor: 'pointer',
-                        width: THUMB_W,
-                        height: THUMB_H,
+                        width: thumbW,
+                        height: thumbH,
                         position: 'relative',
                         overflow: 'hidden',
                         border: '2px solid',
@@ -336,11 +368,11 @@ const MarketingPage = () => {
                           width: POSTER_W,
                           height: POSTER_H,
                           transformOrigin: 'top left',
-                          transform: `scale(${THUMB_SCALE})`,
+                          transform: `scale(${thumbScale})`,
                           pointerEvents: 'none',
                         }}
                       >
-                        <Thumb businessName={businessName} scanUrl={scanUrl} />
+                        <Thumb businessName={businessName} scanUrl={scanUrl} headline={headline} />
                       </Box>
 
                       {/* Active checkmark */}
@@ -372,11 +404,17 @@ const MarketingPage = () => {
               <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
                 Preview — {selected.label}
               </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
                 {/* Outer wrapper carries the shadow so html2canvas only captures the poster */}
-                <Box sx={{ flexShrink: 0, boxShadow: '0 12px 40px rgba(0,0,0,0.15)' }}>
+                <Box sx={{
+                  flexShrink: 0,
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                  transformOrigin: 'top center',
+                  transform: { xs: 'scale(0.92)', sm: 'none' },
+                  mb: { xs: `-${Math.round(POSTER_H * 0.08)}px`, sm: 0 },
+                }}>
                   <Box ref={posterRef} style={{ width: POSTER_W, height: POSTER_H, overflow: 'hidden' }}>
-                    <SelectedPoster businessName={businessName} scanUrl={scanUrl} />
+                    <SelectedPoster businessName={businessName} scanUrl={scanUrl} headline={headline} />
                   </Box>
                 </Box>
               </Box>
@@ -385,10 +423,9 @@ const MarketingPage = () => {
 
           {/* ── Right: controls ── */}
           <Paper elevation={0} sx={{
-            width: { xs: '100%', md: '50%' }, flexShrink: 0,
+            width: { xs: '100%', md: '45%' }, flexShrink: 0,
             borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 3,
-            position: { md: 'sticky' }, top: { md: 24 },
-          }}>
+                      }}>
             <Stack spacing={3}>
               <Box>
                 <Typography variant='h6' fontWeight={800} gutterBottom>Download Poster</Typography>
@@ -403,6 +440,36 @@ const MarketingPage = () => {
                 <Typography variant='body2' fontWeight={700} color='primary.main'>{selected.label}</Typography>
               </Box>
 
+              {/* Headline picker */}
+              <Box>
+                <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Headline text
+                </Typography>
+                <Stack spacing={1}>
+                  {HEADLINES.map((h) => {
+                    const active = h === headline;
+                    return (
+                      <Box
+                        key={h}
+                        onClick={() => setHeadline(h)}
+                        sx={{
+                          px: 1.5, py: 1, borderRadius: 2, cursor: 'pointer',
+                          border: '1px solid',
+                          borderColor: active ? 'primary.main' : 'divider',
+                          bgcolor: active ? `${PRIMARY_MAIN}08` : 'transparent',
+                          transition: 'all 0.15s',
+                          '&:hover': { borderColor: 'primary.main', bgcolor: `${PRIMARY_MAIN}06` },
+                        }}
+                      >
+                        <Typography variant='body2' fontWeight={active ? 700 : 500} color={active ? 'primary.main' : 'text.primary'} sx={{ lineHeight: 1.4 }}>
+                          {h}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
+                </Stack>
+              </Box>
+
               {isBusiness && locations.length > 0 && (
                 <FormControl fullWidth size='small'>
                   <InputLabel>Select Location</InputLabel>
@@ -410,13 +477,14 @@ const MarketingPage = () => {
                     value={selectedLocationId}
                     label='Select Location'
                     onChange={(e) => setSelectedLocationId(e.target.value as number)}
+                    renderValue={(val) => locations.find(l => l.id === val)?.name ?? ''}
                     sx={{ borderRadius: 2 }}
                   >
                     {locations.map((loc) => (
                       <MenuItem key={loc.id} value={loc.id}>
-                        <Box>
-                          <Typography variant='body2' fontWeight={700}>{loc.name}</Typography>
-                          <Typography variant='caption' color='text.secondary'>{loc.address}</Typography>
+                        <Box sx={{ overflow: 'hidden' }}>
+                          <Typography variant='body2' fontWeight={700} noWrap>{loc.name}</Typography>
+                          <Typography variant='caption' color='text.secondary' noWrap>{loc.address}</Typography>
                         </Box>
                       </MenuItem>
                     ))}
@@ -463,15 +531,7 @@ const MarketingPage = () => {
                 </Tooltip>
               </Box>
 
-              {/* URL */}
-              {effectiveLocationId && (
-                <Box sx={{ bgcolor: 'action.hover', borderRadius: 1.5, p: 1.5 }}>
-                  <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 0.5 }}>Scan URL</Typography>
-                  <Typography sx={{ fontFamily: 'monospace', fontSize: '0.7rem', color: 'text.secondary', wordBreak: 'break-all', lineHeight: 1.5 }}>
-                    {scanUrl}
-                  </Typography>
-                </Box>
-              )}
+     
 
               {/* Tips */}
               <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
