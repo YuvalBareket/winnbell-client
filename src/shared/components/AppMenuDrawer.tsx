@@ -123,6 +123,11 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     { label: 'Privacy Policy', icon: <PrivacyTipOutlined />, path: '/privacy' },
   ];
 
+  // Responsive item padding — compact on mobile so everything fits without scrolling
+  const itemPy = { xs: 0.65, sm: 1.1 };
+  const sectionMy = { xs: 0.75, sm: 1.5 };
+  const labelMb = { xs: 0.4, sm: 0.75 };
+
   return (
     <Fragment>
     <Drawer
@@ -145,7 +150,9 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         {/* Hero header */}
         <Box sx={{
           background: GRADIENT_HERO_WARM,
-          px: 3, pt: 5.5, pb: 4,
+          px: 3,
+          pt: { xs: 2.5, sm: 5.5 },
+          pb: { xs: 2, sm: 4 },
           position: 'relative', overflow: 'hidden',
         }}>
           {/* Decorative orbs */}
@@ -166,33 +173,34 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
             <Avatar
               src={businessLogoUrl ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${businessLogoUrl}` : undefined}
               sx={{
-                width: 56,
-                height: 56,
+                width: { xs: 44, sm: 56 },
+                height: { xs: 44, sm: 56 },
                 background: ALPHA_WHITE_20,
                 color: 'white',
                 fontWeight: 800,
-                fontSize: 19,
+                fontSize: { xs: 15, sm: 19 },
                 border: `2px solid ${ALPHA_WHITE_30}`,
                 backdropFilter: 'blur(12px)',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                flexShrink: 0,
               }}
             >
               {initials}
             </Avatar>
             <Box sx={{ overflow: 'hidden', flex: 1 }}>
-              <Typography fontWeight={800} fontSize='1rem' color='white' noWrap sx={{ letterSpacing: '-0.01em' }}>
+              <Typography fontWeight={800} fontSize={{ xs: '0.9rem', sm: '1rem' }} color='white' noWrap sx={{ letterSpacing: '-0.01em' }}>
                 {user?.fullName || 'Welcome'}
               </Typography>
-              <Typography variant='caption' sx={{ color: ALPHA_WHITE_70, display: 'block', mt: 0.2 }} noWrap>
+              <Typography variant='caption' sx={{ color: ALPHA_WHITE_70, display: 'block', mt: 0.2, fontSize: { xs: '0.7rem', sm: '0.75rem' } }} noWrap>
                 {user?.email}
               </Typography>
               <Chip
                 label={roleLabel}
                 size='small'
                 sx={{
-                  mt: 0.75,
-                  height: 20,
-                  fontSize: '0.6rem',
+                  mt: 0.5,
+                  height: 18,
+                  fontSize: '0.58rem',
                   fontWeight: 800,
                   bgcolor: ALPHA_WHITE_15,
                   color: 'white',
@@ -207,9 +215,9 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         </Box>
 
         {/* Main nav */}
-        <Box sx={{ px: 2, pt: 2.5 }}>
+        <Box sx={{ px: 2, pt: { xs: 1.5, sm: 2.5 } }}>
           <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
-            sx={{ px: 1, textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', mb: 0.75, fontSize: '0.63rem' }}>
+            sx={{ px: 1, textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', mb: labelMb, fontSize: '0.63rem' }}>
             Navigation
           </Typography>
           <List disablePadding>
@@ -219,8 +227,8 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                 onClick={() => handleNav(item.path)}
                 sx={{
                   borderRadius: 2.5,
-                  mb: 0.3,
-                  py: 1.1,
+                  mb: 0.2,
+                  py: itemPy,
                   px: 1.5,
                   transition: 'all 0.15s ease',
                   '&:hover': {
@@ -233,13 +241,13 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
               >
                 <ListItemIcon
                   className='nav-icon'
-                  sx={{ minWidth: 36, color: 'text.secondary', transition: 'color 0.15s ease' }}
+                  sx={{ minWidth: 34, color: 'text.secondary', transition: 'color 0.15s ease', '& svg': { fontSize: { xs: 20, sm: 24 } } }}
                 >
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText
                   primary={item.label}
-                  primaryTypographyProps={{ fontWeight: 600, fontSize: '0.88rem', letterSpacing: '-0.01em' }}
+                  primaryTypographyProps={{ fontWeight: 600, fontSize: { xs: '0.82rem', sm: '0.88rem' }, letterSpacing: '-0.01em' }}
                 />
                 <ChevronRight
                   className='nav-chevron'
@@ -253,59 +261,47 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
           </List>
         </Box>
 
-        <Divider sx={{ mx: 3, my: 1.5 }} />
+        <Divider sx={{ mx: 3, my: sectionMy }} />
 
-        {/* Help section */}
+        {/* Help + Support merged */}
         <Box sx={{ px: 2 }}>
           <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
-            sx={{ px: 1, textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', mb: 0.75, fontSize: '0.63rem' }}>
-            Help
+            sx={{ px: 1, textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', mb: labelMb, fontSize: '0.63rem' }}>
+            Support
           </Typography>
           <List disablePadding>
             <ListItemButton
               onClick={handleHowItWorks}
               sx={{
-                borderRadius: 2.5, mb: 0.3, py: 1.1, px: 1.5,
+                borderRadius: 2.5, mb: 0.2, py: itemPy, px: 1.5,
                 transition: 'all 0.15s ease',
                 '&:hover': { bgcolor: 'rgba(0,0,0,0.03)', transform: 'translateX(3px)' },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 36, color: TEXT_TERTIARY }}>
+              <ListItemIcon sx={{ minWidth: 34, color: TEXT_TERTIARY, '& svg': { fontSize: { xs: 20, sm: 24 } } }}>
                 <HelpOutlineOutlined />
               </ListItemIcon>
               <ListItemText
                 primary='How It Works'
-                primaryTypographyProps={{ fontWeight: 500, fontSize: '0.84rem', color: 'text.secondary' }}
+                primaryTypographyProps={{ fontWeight: 500, fontSize: { xs: '0.82rem', sm: '0.84rem' }, color: 'text.secondary' }}
               />
             </ListItemButton>
-          </List>
-        </Box>
-
-        <Divider sx={{ mx: 3, my: 1.5 }} />
-
-        {/* Legal / support */}
-        <Box sx={{ px: 2 }}>
-          <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
-            sx={{ px: 1, textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', mb: 0.75, fontSize: '0.63rem' }}>
-            Support
-          </Typography>
-          <List disablePadding>
             {legalItems.map((item) => (
               <ListItemButton
                 key={item.path}
                 onClick={() => handleNav(item.path)}
                 sx={{
-                  borderRadius: 2.5, mb: 0.3, py: 1.1, px: 1.5,
+                  borderRadius: 2.5, mb: 0.2, py: itemPy, px: 1.5,
                   transition: 'all 0.15s ease',
                   '&:hover': { bgcolor: 'rgba(0,0,0,0.03)', transform: 'translateX(3px)' },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 36, color: TEXT_TERTIARY }}>
+                <ListItemIcon sx={{ minWidth: 34, color: TEXT_TERTIARY, '& svg': { fontSize: { xs: 20, sm: 24 } } }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText
                   primary={item.label}
-                  primaryTypographyProps={{ fontWeight: 500, fontSize: '0.84rem', color: 'text.secondary' }}
+                  primaryTypographyProps={{ fontWeight: 500, fontSize: { xs: '0.82rem', sm: '0.84rem' }, color: 'text.secondary' }}
                 />
               </ListItemButton>
             ))}
@@ -316,28 +312,28 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         <Box sx={{ flex: 1 }} />
 
         {/* App version + logout */}
-        <Box sx={{ px: 2, pb: 3.5 }}>
-          <Divider sx={{ mb: 2 }} />
+        <Box sx={{ px: 2, pb: { xs: 2, sm: 3.5 } }}>
+          <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
           <ListItemButton
             onClick={handleLogout}
             sx={{
               borderRadius: 2.5,
               color: 'error.main',
-              py: 1.1,
+              py: itemPy,
               px: 1.5,
               transition: 'all 0.15s ease',
               '&:hover': { bgcolor: 'rgba(211,47,47,0.06)' },
             }}
           >
-            <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
+            <ListItemIcon sx={{ minWidth: 34, color: 'inherit' }}>
               <Logout fontSize='small' />
             </ListItemIcon>
             <ListItemText
               primary='Log out'
-              primaryTypographyProps={{ fontWeight: 700, fontSize: '0.88rem' }}
+              primaryTypographyProps={{ fontWeight: 700, fontSize: { xs: '0.82rem', sm: '0.88rem' } }}
             />
           </ListItemButton>
-          <Typography variant='caption' color={TEXT_TERTIARY} sx={{ px: 1.5, mt: 1.5, display: 'block', fontSize: '0.68rem' }}>
+          <Typography variant='caption' color={TEXT_TERTIARY} sx={{ px: 1.5, mt: 1, display: 'block', fontSize: '0.68rem' }}>
             Winnbell v1.0 · {new Date().getFullYear()}
           </Typography>
         </Box>
