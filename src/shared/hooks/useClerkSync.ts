@@ -35,12 +35,14 @@ export const useClerkSync = () => {
         sessionStorage.removeItem('pendingRole');
         sessionStorage.removeItem('pendingInviteToken');
         dispatch(login({ user: data.user, token: data.token }));
+        const pendingLocationId = sessionStorage.getItem('pendingLocationId');
+        sessionStorage.removeItem('pendingLocationId');
         if (localStorage.getItem('pendingTicketCode')) {
           navigate('/scan');
         } else if (data.user.role === 'Business' || data.user.location_id != null) {
           navigate('/activity');
         } else if (data.user.role === 'User') {
-          navigate('/scan');
+          navigate(pendingLocationId ? `/scan?l=${pendingLocationId}` : '/scan');
         }
       })
       .catch(console.error)

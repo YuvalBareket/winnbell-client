@@ -2,14 +2,14 @@ import { useState, useRef } from 'react';
 import {
   Box, Container, Typography, Stack, Paper, Button,
   useMediaQuery, useTheme, Snackbar, Alert, Tooltip,
-  CircularProgress,
+  CircularProgress, MenuItem, Select, FormControl, InputLabel,
 } from '@mui/material';
 import { CropFree, ContentCopy, FileDownload, CheckCircleOutline } from '@mui/icons-material';
 import QRCode from 'react-qr-code';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { useAppSelector } from '../../../store/hook';
-import { selectIsBusiness } from '../../../store/selectors/authSelectors';
+import { selectIsBusiness, selectIsLocationManager, selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN,
@@ -183,17 +183,27 @@ const MarketingPage = () => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const isBusiness = useAppSelector(selectIsBusiness);
+  const isManager = useAppSelector(selectIsLocationManager);
+  const currentUser = useAppSelector(selectCurrentUser);
   const { data: businessData } = useBusinessData(isBusiness);
 
   const [selectedId, setSelectedId] = useState('classic');
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [snackbar, setSnackbar] = useState('');
+  const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
   const posterRef = useRef<HTMLDivElement>(null);
 
   const businessName = businessData?.name ?? 'Your Business';
-  const businessId = businessData?.id;
-  const scanUrl = businessId ? `${window.location.origin}/scan?b=${businessId}` : 'https://winnbell.com';
+  const locations = (isBusiness ? businessData?.locations : []) ?? [];
+
+  const effectiveLocationId = isManager
+    ? currentUser?.location_id ?? null
+    : (selectedLocationId || null);
+
+  const scanUrl = effectiveLocationId
+    ? `${window.location.origin}/scan?l=${effectiveLocationId}`
+    : 'https://winnbell.com';
 
   const selected = TEMPLATES.find(t => t.id === selectedId) ?? TEMPLATES[0];
   const SelectedPoster = selected.Component;
@@ -375,7 +385,7 @@ const MarketingPage = () => {
 
           {/* ── Right: controls ── */}
           <Paper elevation={0} sx={{
-            width: { xs: '100%', md: 300 }, flexShrink: 0,
+            width: { xs: '100%', md: '50%' }, flexShrink: 0,
             borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 3,
             position: { md: 'sticky' }, top: { md: 24 },
           }}>
@@ -393,12 +403,33 @@ const MarketingPage = () => {
                 <Typography variant='body2' fontWeight={700} color='primary.main'>{selected.label}</Typography>
               </Box>
 
+              {isBusiness && locations.length > 0 && (
+                <FormControl fullWidth size='small'>
+                  <InputLabel>Select Location</InputLabel>
+                  <Select
+                    value={selectedLocationId}
+                    label='Select Location'
+                    onChange={(e) => setSelectedLocationId(e.target.value as number)}
+                    sx={{ borderRadius: 2 }}
+                  >
+                    {locations.map((loc) => (
+                      <MenuItem key={loc.id} value={loc.id}>
+                        <Box>
+                          <Typography variant='body2' fontWeight={700}>{loc.name}</Typography>
+                          <Typography variant='caption' color='text.secondary'>{loc.address}</Typography>
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+
               {/* Download */}
               <Button
                 fullWidth variant='contained' size='large'
                 startIcon={downloading ? undefined : <FileDownload />}
                 onClick={handleDownload}
-                disabled={downloading || !businessId}
+                disabled={downloading || !effectiveLocationId}
                 sx={{
                   py: 1.6, borderRadius: 2.5, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
                   boxShadow: '0 4px 14px rgba(25,93,230,0.3)',
@@ -433,7 +464,7 @@ const MarketingPage = () => {
               </Box>
 
               {/* URL */}
-              {businessId && (
+              {effectiveLocationId && (
                 <Box sx={{ bgcolor: 'action.hover', borderRadius: 1.5, p: 1.5 }}>
                   <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 0.5 }}>Scan URL</Typography>
                   <Typography sx={{ fontFamily: 'monospace', fontSize: '0.7rem', color: 'text.secondary', wordBreak: 'break-all', lineHeight: 1.5 }}>

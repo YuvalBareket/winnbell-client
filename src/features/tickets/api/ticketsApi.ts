@@ -54,6 +54,9 @@ export interface ParticipatingLocation {
 export const searchParticipatingLocations = (q: string): Promise<ParticipatingLocation[]> =>
   api.get('/business/participating/locations/search', { params: { q } }).then(r => r.data);
 
+export const fetchParticipatingLocationById = (locationId: number): Promise<ParticipatingLocation | null> =>
+  api.get(`/business/participating/locations/${locationId}`).then(r => r.data).catch(() => null);
+
 export interface ReceiptEntryPayload {
   locationId: number;
   receiptIdentifier: string;

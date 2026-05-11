@@ -14,7 +14,7 @@ import {
   CardGiftcard,
   ConfirmationNumber,
 } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 
 import {
@@ -53,6 +53,8 @@ const RedeemPage = () => {
   const routeLocation = useLocation();
   const preselectedBusinessId = (routeLocation.state as any)?.preselectedBusinessId as number | undefined;
   const preselectedLocation = (routeLocation.state as any)?.preselectedLocation as NearbyLocation | undefined;
+  const [searchParams] = useSearchParams();
+  const qrLocationId = searchParams.get('l') ? Number(searchParams.get('l')) : undefined;
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -66,6 +68,7 @@ const RedeemPage = () => {
   const [activatedCode, setActivatedCode] = useState<string | null>(null);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
+  const [receiptLocationSelected, setReceiptLocationSelected] = useState(false);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const primaryColor = PRIMARY_MAIN;
 
@@ -334,7 +337,7 @@ const didAutoActivate = useRef(false);
                   primaryColor={primaryColor}
                 />
               ) : entryMode === 'receipt' ? (
-                <ReceiptEntryForm primaryColor={primaryColor} preselectedBusinessId={preselectedBusinessId} preselectedLocation={preselectedLocation} />
+                <ReceiptEntryForm primaryColor={primaryColor} preselectedBusinessId={preselectedBusinessId} preselectedLocation={preselectedLocation} preselectedLocationId={qrLocationId} />
               ) : (
                 <UserActions
                   code={code}
@@ -427,8 +430,8 @@ const didAutoActivate = useRef(false);
             </Box>
             {entryMode === 'receipt' ? (
               <>
-                {/* AMOE — compact row on mobile, above the form */}
-                <Paper
+                {/* AMOE — compact row on mobile, hidden when any location is selected */}
+                {!receiptLocationSelected && <Paper
                   elevation={0}
                   onClick={() => navigate('/freeTicket')}
                   sx={{
@@ -450,8 +453,8 @@ const didAutoActivate = useRef(false);
                     <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.2 }}>Claim 1 free entry · No purchase needed</Typography>
                   </Box>
                   <Box component='span' sx={{ color: primaryColor || PRIMARY_MAIN, fontSize: 20, display: 'flex' }}>›</Box>
-                </Paper>
-                <ReceiptEntryForm primaryColor={primaryColor} preselectedBusinessId={preselectedBusinessId} preselectedLocation={preselectedLocation} />
+                </Paper>}
+                <ReceiptEntryForm primaryColor={primaryColor} preselectedBusinessId={preselectedBusinessId} preselectedLocation={preselectedLocation} preselectedLocationId={qrLocationId} onLocationSelect={setReceiptLocationSelected} />
               </>
             ) : (
               <UserActions

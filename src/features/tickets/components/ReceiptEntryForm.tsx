@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '../../../shared/hooks/useDebounce';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -13,6 +14,7 @@ import {
   Fade,
   IconButton,
   InputAdornment,
+  Skeleton,
   Stack,
   TextField,
   Typography,
@@ -25,6 +27,7 @@ import { PRIMARY_MAIN, GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/col
 import { getNearbyBusinesses } from '../../nearBy/api/nearBy.api';
 import { useSearchParticipatingLocations } from '../hooks/useAllParticipatingLocations';
 import { useSubmitReceiptEntry } from '../hooks/useSubmitReceiptEntry';
+import { fetchParticipatingLocationById } from '../api/ticketsApi';
 import type { ParticipatingLocation } from '../hooks/useAllParticipatingLocations';
 import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 
@@ -32,8 +35,10 @@ interface ReceiptEntryFormProps {
   primaryColor: string;
   preselectedBusinessId?: number;
   preselectedLocation?: NearbyLocation;
+  preselectedLocationId?: number;
   onSuccess?: (ticketId: number) => void;
   onError?: (message: string) => void;
+  onLocationSelect?: (hasLocation: boolean) => void;
 }
 
 const toParticipating = (n: NearbyLocation): ParticipatingLocation => ({
@@ -52,13 +57,16 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   primaryColor,
   preselectedBusinessId,
   preselectedLocation,
+  preselectedLocationId,
   onSuccess,
   onError,
+  onLocationSelect,
 }) => {
   // ──────────────────────────────────────────────────
   // State
   // ──────────────────────────────────────────────────
   const [selectedLocation, setSelectedLocation] = useState<ParticipatingLocation | null>(null);
+  const userChangedLocation = useRef(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [nearbyLocations, setNearbyLocations] = useState<NearbyLocation[]>([]);
   const [receiptIdentifier, setReceiptIdentifier] = useState('');
@@ -85,6 +93,13 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const riskLevel = useMyRiskLevel();
   const { data: searchResults = [], isFetching: isSearching } = useSearchParticipatingLocations(debouncedTerm);
   const receiptImageUpload = useUploadReceiptImage();
+
+  const { data: preselectedLocationData, isFetching: isLocationFetching } = useQuery({
+    queryKey: ['participating-location', preselectedLocationId],
+    queryFn: () => fetchParticipatingLocationById(preselectedLocationId!),
+    enabled: !!preselectedLocationId && !preselectedLocation && !preselectedBusinessId,
+    staleTime: 5 * 60_000,
+  });
 
   const submitReceiptEntry = useSubmitReceiptEntry({
     onSuccess: (data) => {
@@ -114,6 +129,11 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     },
   });
 
+  // Notify parent when a location is selected/cleared
+  useEffect(() => {
+    onLocationSelect?.(!!selectedLocation);
+  }, [selectedLocation]);
+
   // ──────────────────────────────────────────────────
   // Fetch nearby locations on mount
   // ──────────────────────────────────────────────────
@@ -140,9 +160,14 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     );
   }, []);
 
-  // Auto-select location if preselected
+  // Auto-select location if preselected (skip if user manually cleared the selection)
   useEffect(() => {
+    if (userChangedLocation.current) return;
     if (selectedLocation) return;
+    if (preselectedLocationData) {
+      setSelectedLocation(preselectedLocationData);
+      return;
+    }
     // If full location object was passed directly (e.g. from NearBy drawer), use it immediately
     if (preselectedLocation) {
       setSelectedLocation(toParticipating(preselectedLocation));
@@ -160,7 +185,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         setSelectedLocation(searchMatch);
       }
     }
-  }, [preselectedLocation, preselectedBusinessId, nearbyLocations, searchResults, selectedLocation]);
+  }, [preselectedLocationData, preselectedLocation, preselectedBusinessId, nearbyLocations, searchResults, selectedLocation]);
 
   // ──────────────────────────────────────────────────
   // Derived state
@@ -195,6 +220,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   };
 
   const handleChangeLocation = () => {
+    userChangedLocation.current = true;
     setSelectedLocation(null);
     setSearchTerm('');
     setErrorMessage('');
@@ -301,7 +327,13 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       {!riskLevel.isDrawCapped && !riskLevel.isThrottled && <>
 
       {/* ── Step 1: Select Business ─────────────────── */}
-      {!selectedLocation && (
+      {!selectedLocation && isLocationFetching && (
+        <Box sx={{ mb: 2 }}>
+          <Skeleton variant='rounded' height={48} sx={{ borderRadius: 2.5, mb: 1 }} />
+          <Skeleton variant='rounded' height={56} sx={{ borderRadius: 2.5 }} />
+        </Box>
+      )}
+      {!selectedLocation && !isLocationFetching && (
         <Box sx={{ mb: 2 }}>
           {/* Step label */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
