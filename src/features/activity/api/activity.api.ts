@@ -6,6 +6,7 @@ export interface ActivitySummary {
   entries_today: number;
   entries_this_month: number;
   monthly_cap: number | null;
+  receipts_this_month: number;
 }
 
 export interface ActivityItem {

@@ -43,8 +43,8 @@ export const queryKeys = {
   // ─── Tickets ──────────────────────────────────────────────────────────────
   tickets: {
     all:        ['tickets']                                    as const,
-    mine:       (drawId?: number) =>
-      ['tickets', 'mine', drawId ?? 'all']                    as const,
+    mine:       (drawId?: number, locationId?: number) =>
+      ['tickets', 'mine', drawId ?? 'all', locationId ?? 'all'] as const,
     freeStatus: ['tickets', 'free-status']                    as const,
   },
 

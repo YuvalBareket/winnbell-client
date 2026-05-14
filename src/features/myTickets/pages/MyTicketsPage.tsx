@@ -1,4 +1,4 @@
-import { Box, Container, Paper, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Container, FormControl, InputLabel, MenuItem, Paper, Select, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { ConfirmationNumber } from '@mui/icons-material';
 import { ActiveTicketsList } from '../components/ActiveTicketsList';
 import { DrawSwiper } from '../../draw/components/DrawSwiper';
@@ -17,6 +17,7 @@ import {
 
 const MyTicketsPage = () => {
   const [activeDrawId, setActiveDrawId] = useState<number | null>(null);
+  const [selectedLocationId, setSelectedLocationId] = useState<number | undefined>(undefined);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const isBusiness = useAppSelector(selectIsBusiness);
@@ -31,6 +32,7 @@ const MyTicketsPage = () => {
 
   const hasDescription = !!(businessData?.description?.trim());
   const hasLocations = (businessData?.locations?.length ?? 0) > 0;
+  const locations = businessData?.locations ?? [];
 
   if (showPreparation) {
     return (
@@ -88,6 +90,24 @@ const MyTicketsPage = () => {
                   Active Campaigns
                 </Typography>
               </Box>
+              {isBusiness && !isManager && locations.length > 1 && (
+                <Box sx={{ px: 2, pt: 1.5, pb: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+                  <FormControl size='small' fullWidth>
+                    <InputLabel>All locations</InputLabel>
+                    <Select
+                      value={selectedLocationId ?? ''}
+                      label='All locations'
+                      onChange={(e) => setSelectedLocationId(e.target.value ? Number(e.target.value) : undefined)}
+                      sx={{ borderRadius: 2 }}
+                    >
+                      <MenuItem value=''>All locations</MenuItem>
+                      {locations.map((loc) => (
+                        <MenuItem key={loc.id} value={loc.id}>{loc.name}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+              )}
               <DrawSwiper
                 draw_id={activeDrawId}
                 onDrawChange={(id) => setActiveDrawId(id)}
@@ -106,7 +126,7 @@ const MyTicketsPage = () => {
                 minHeight: 320,
               }}
             >
-              <ActiveTicketsList draw_id={activeDrawId} />
+              <ActiveTicketsList draw_id={activeDrawId} locationId={selectedLocationId} />
             </Paper>
           </Box>
         </Container>
@@ -118,7 +138,7 @@ const MyTicketsPage = () => {
   return (
     <Box sx={{ minHeight: '100dvh' }}>
       {/* Hero */}
-   
+
       <Box sx={{ pt:2}}>
         <DrawSwiper
           draw_id={activeDrawId}
@@ -126,7 +146,26 @@ const MyTicketsPage = () => {
         />
       </Box>
 
-      <ActiveTicketsList draw_id={activeDrawId} />
+      {isBusiness && !isManager && locations.length > 1 && (
+        <Box sx={{ px: 2, pt: 1.5 }}>
+          <FormControl size='small' fullWidth>
+            <InputLabel>All locations</InputLabel>
+            <Select
+              value={selectedLocationId ?? ''}
+              label='All locations'
+              onChange={(e) => setSelectedLocationId(e.target.value ? Number(e.target.value) : undefined)}
+              sx={{ borderRadius: 2 }}
+            >
+              <MenuItem value=''>All locations</MenuItem>
+              {locations.map((loc) => (
+                <MenuItem key={loc.id} value={loc.id}>{loc.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      )}
+
+      <ActiveTicketsList draw_id={activeDrawId} locationId={selectedLocationId} />
     </Box>
   );
 };

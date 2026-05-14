@@ -146,14 +146,15 @@ const BusinessTicketRow = ({ ticket, index }: { ticket: BusinessTicket; index: n
 };
 
 // --- MAIN LIST COMPONENT ---
-export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
+export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | null; locationId?: number }) => {
   const navigate = useNavigate();
   const isBusinessOwner = useAppSelector(selectIsBusiness);
   const isLocation = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessOwner || isLocation;
-  const { data: tickets, isLoading } = useMyTickets(draw_id ?? 0);
+  const { data: tickets, isLoading, totalCount, cap, perLocationCap, activeLocationCount } = useMyTickets(draw_id ?? 0, locationId);
 
-  const ticketCount = tickets?.length ?? 0;
+  const ticketCount = tickets?.length ?? 0; // for user progress bar only
+  const displayCount = isBusiness ? totalCount : ticketCount; // what to show in the header
   const CAP = 30;
   const progress = Math.min((ticketCount / CAP) * 100, 100);
   const isMaxed = ticketCount >= CAP;
@@ -179,7 +180,9 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
               variant='caption'
               sx={{ color: 'text.disabled', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.65rem' }}
             >
-              {isBusiness ? 'Distributed' : 'Your Entries'}
+              {isBusiness
+                ? locationId ? 'Entries at this location' : 'All locations'
+                : 'Your Entries'}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
               {isLoading ? (
@@ -187,31 +190,40 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
               ) : (
                 <>
                   <Typography variant='h3' sx={{ fontWeight: 900, color: progressColor, lineHeight: 1, letterSpacing: '-0.03em', transition: 'color 0.3s' }}>
-                    {ticketCount}
+                    {displayCount}
                   </Typography>
                   {!isBusiness && (
                     <Typography variant='body1' sx={{ fontWeight: 700, color: 'text.secondary' }}>
                       / {CAP}
                     </Typography>
                   )}
-                  {isBusiness && (
+                  {isBusiness && cap !== null && (
                     <Typography variant='body1' sx={{ fontWeight: 700, color: 'text.secondary' }}>
-                      {ticketCount !== 1 ? 'entries' : 'entry'}
+                      / {cap.toLocaleString()}
+                    </Typography>
+                  )}
+                  {isBusiness && cap === null && (
+                    <Typography variant='body1' sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                      {displayCount !== 1 ? 'entries' : 'entry'}
                     </Typography>
                   )}
                 </>
               )}
             </Box>
+
+            {/* Cap breakdown — shown below the number */}
+            {isBusiness && !isLoading && cap !== null && perLocationCap !== null && (
+              <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
+                {locationId
+                  ? `${perLocationCap.toLocaleString()} entries / location`
+                  : `${perLocationCap.toLocaleString()} / location × ${activeLocationCount} locations`}
+              </Typography>
+            )}
           </Box>
 
           {!isBusiness && !isLoading && (
             <Typography variant='caption' sx={{ fontWeight: 700, color: progressColor, pb: 0.5, transition: 'color 0.3s' }}>
               {isMaxed ? '🎉 Maxed out!' : `${CAP - ticketCount} slots left`}
-            </Typography>
-          )}
-          {isBusiness && (
-            <Typography variant='caption' sx={{ fontWeight: 600, color: 'text.disabled', pb: 0.5 }}>
-              All locations
             </Typography>
           )}
         </Box>

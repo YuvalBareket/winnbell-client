@@ -4,10 +4,12 @@ import {
   FormControl, InputLabel, Skeleton, Alert, Chip, Button, ToggleButton, ToggleButtonGroup,
 } from '@mui/material';
 import {
-  ReceiptLongOutlined, AttachMoneyOutlined, ConfirmationNumberOutlined,
+  ReceiptLongOutlined, AttachMoneyOutlined,
   FeedOutlined, QrCodeScannerOutlined, CardGiftcardOutlined,
   RocketLaunch,
 } from '@mui/icons-material';
+import AppHeader from '../../../shared/components/AppHeader';
+import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useAppSelector } from '../../../store/hook';
@@ -25,6 +27,7 @@ const ActivityPage = () => {
   const user = useAppSelector(selectCurrentUser);
   const isLocationManager = !!user?.location_id;
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
   const [dateRange, setDateRange] = useState<DateRange>('today');
   const [cursor, setCursor] = useState<number | undefined>(undefined);
@@ -119,6 +122,8 @@ const ActivityPage = () => {
 
   return (
     <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: { xs: 12, md: 6 } }}>
+      <AppHeader onMenuOpen={() => setMenuOpen(true)} />
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Hero */}
       <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
@@ -244,13 +249,9 @@ const ActivityPage = () => {
                   color='rgba(56,142,60,0.12)'
                 />
                 <KpiCard
-                  icon={<ConfirmationNumberOutlined sx={{ color: '#7b1fa2', fontSize: 22 }} />}
-                  label='Entries This Month'
-                  value={
-                    activity?.summary.monthly_cap != null
-                      ? `${(activity.summary.entries_this_month ?? 0).toLocaleString()} / ${activity.summary.monthly_cap.toLocaleString()}`
-                      : (activity?.summary.entries_this_month ?? 0).toLocaleString()
-                  }
+                  icon={<ReceiptLongOutlined sx={{ color: '#7b1fa2', fontSize: 22 }} />}
+                  label='Receipts This Month'
+                  value={(activity?.summary.receipts_this_month ?? 0).toLocaleString()}
                   color='rgba(123,31,162,0.12)'
                 />
               </>
@@ -377,22 +378,8 @@ const ActivityPage = () => {
                           )}
                         </Stack>
 
-                        {/* Right: entry count (if multi-entry), timestamp, status */}
+                        {/* Right: timestamp, status */}
                         <Stack direction='row' alignItems='center' spacing={1.5} sx={{ flexShrink: 0 }}>
-                          {item.entry_source === 'receipt' && item.entry_count > 1 && (
-                            <Chip
-                              label={`${item.entry_count} entries`}
-                              size='small'
-                              sx={{
-                                fontWeight: 700,
-                                fontSize: '0.68rem',
-                                height: 22,
-                                bgcolor: '#ede9fe',
-                                color: '#6d28d9',
-                                border: '1px solid #c4b5fd',
-                              }}
-                            />
-                          )}
                           <Typography variant='caption' color='text.secondary'>
                             {formatRelativeTime(item.created_at)}
                           </Typography>

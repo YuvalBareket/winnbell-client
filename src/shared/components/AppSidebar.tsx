@@ -73,7 +73,7 @@ const AppSidebar = () => {
       }}
     >
       {/* Brand */}
-      <Stack sx={{ px: 3, pt: 3.5, pb: 2.5 }} direction='row' alignItems='center' spacing={-1.2}>
+      <Stack sx={{ px: 3, pt: 2.5, pb: 2.5 }} direction='row' alignItems='center' spacing={-1.2}>
         <Box component='img' src='/winnbell_logo.png' alt='W' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
         <Typography sx={{ fontFamily: "'Damion', cursive", fontSize: '1.9rem', color: TEXT_PRIMARY, lineHeight: 1, mt: '4px' }}>
           innbell
@@ -83,7 +83,7 @@ const AppSidebar = () => {
       {/* User identity card */}
       <Box
         sx={{
-          mx: 2, mb: 1.5, px: 2, py: 1.5,
+          mx: 2, mb: 1, px: 2, py: 1,
           bgcolor: ALPHA_PRIMARY_04,
           borderRadius: 3,
           border: `1px solid ${ALPHA_PRIMARY_06}`,
@@ -132,8 +132,10 @@ const AppSidebar = () => {
 
       <Divider sx={{ mx: 2.5, mb: 1 }} />
 
-      {/* Nav section */}
-      <Box sx={{ px: 1.5, pt: 0.5 }}>
+      {/* Scrollable nav + support section */}
+      <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {/* Nav section */}
+        <Box sx={{ px: 1.5, pt: 0 }}>
         <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
           sx={{ textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
           Navigation
@@ -146,7 +148,7 @@ const AppSidebar = () => {
                 key={path}
                 onClick={() => navigate(path)}
                 sx={{
-                  borderRadius: 2.5, mb: 0.3, px: 1.5, py: 0.8,
+                  borderRadius: 2.5, mb: 0.3, px: 1.5, py: 0.6,
                   bgcolor: active ? PRIMARY_MAIN : 'transparent',
                   boxShadow: active ? '0 2px 8px rgba(25,93,230,0.3)' : 'none',
                   '&:hover': {
@@ -186,10 +188,10 @@ const AppSidebar = () => {
         </List>
       </Box>
 
-      <Divider sx={{ mx: 2.5, my: 1 }} />
+        <Divider sx={{ mx: 2.5, my: 0.5 }} />
 
-      {/* Support section */}
-      <Box sx={{ px: 1.5 }}>
+        {/* Support section */}
+        <Box sx={{ px: 1.5 }}>
         <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
           sx={{ textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
           Support
@@ -218,10 +220,8 @@ const AppSidebar = () => {
             </ListItemButton>
           ))}
         </List>
+        </Box>
       </Box>
-
-      {/* Spacer */}
-      <Box sx={{ flex: 1 }} />
 
       <Divider sx={{ mx: 2.5 }} />
 
