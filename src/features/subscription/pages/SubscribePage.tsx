@@ -1,14 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Box, Button, Typography, Paper, Stack, CircularProgress,
-  Divider, Skeleton, IconButton, TextField, InputAdornment,
-  FormControlLabel, Checkbox,
+  Box, Typography, Paper, Stack,
+  IconButton,
 } from '@mui/material';
 import {
-  ConfirmationNumber, EmojiEvents, Storefront, CreditCard, Groups, Remove, Add,
-  Check, ArrowBack, Edit,
+  ConfirmationNumber, EmojiEvents, Storefront, Groups, ArrowBack,
 } from '@mui/icons-material';
-import CanvasAnnotationEditor from '../../../shared/components/CanvasAnnotationEditor';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../../shared/api/client';
@@ -17,6 +14,10 @@ import {
 } from '../../../shared/colors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { getUploadUrl, updateCampaignSettingsApi } from '../../partner/api/business.api';
+import StepIndicator from './components/StepIndicator';
+import SubscribeStep1 from './components/SubscribeStep1';
+import SubscribeStep2 from './components/SubscribeStep2';
+import SubscribeStep3 from './components/SubscribeStep3';
 
 const FEATURES = [
   { icon: <ConfirmationNumber />, text: 'Issue unlimited entries to your customers' },
@@ -24,68 +25,6 @@ const FEATURES = [
   { icon: <Storefront />,         text: 'Appear on the Winnbell map so customers can find you' },
   { icon: <Groups />,             text: 'Assign branch managers to run your locations' },
 ];
-
-const TIER_MAP: Record<number, number> = {
-  250:  250,
-  500:  490,
-  750:  730,
-  1000: 920,
-  1250: 1140,
-  1500: 1360,
-  1750: 1500,
-  2000: 1710,
-  2250: 1910,
-  2500: 2050,
-  2750: 2250,
-  3000: 2460,
-};
-
-const TIER_KEYS = Object.keys(TIER_MAP).map(Number).sort((a, b) => a - b);
-const MAX_TIER = TIER_KEYS[TIER_KEYS.length - 1];
-
-// ── Step indicator ────────────────────────────────────────────────────────────
-
-const STEPS = [
-  { num: 1, label: 'Threshold' },
-  { num: 2, label: 'Guide Image' },
-  { num: 3, label: 'Plan' },
-];
-
-const StepIndicator = ({ currentStep }: { currentStep: number }) => (
-  <Stack direction='row' alignItems='center' sx={{ mb: 4 }}>
-    {STEPS.map((s, idx) => (
-      <Box key={s.num} sx={{ display: 'flex', alignItems: 'center', flex: idx < STEPS.length - 1 ? 1 : 'none' }}>
-        <Stack direction='row' alignItems='center' spacing={1}>
-          <Box
-            sx={{
-              width: 28, height: 28, borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.72rem', fontWeight: 800, flexShrink: 0,
-              bgcolor: s.num <= currentStep ? 'primary.main' : 'action.hover',
-              color: s.num <= currentStep ? 'white' : 'text.disabled',
-              transition: 'background-color 0.2s',
-            }}
-          >
-            {s.num < currentStep ? <Check sx={{ fontSize: 13 }} /> : s.num}
-          </Box>
-          <Typography
-            variant='caption'
-            sx={{
-              fontWeight: 700,
-              color: s.num === currentStep ? 'text.primary' : 'text.disabled',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {s.label}
-          </Typography>
-        </Stack>
-        {idx < STEPS.length - 1 && (
-          <Box sx={{ flex: 1, height: 1, mx: 1.5, bgcolor: s.num < currentStep ? 'primary.main' : 'divider', transition: 'background-color 0.2s' }} />
-        )}
-      </Box>
-    ))}
-  </Stack>
-);
 
 // ── Step headers ──────────────────────────────────────────────────────────────
 
@@ -144,7 +83,6 @@ const SubscribePage = () => {
 
   // ── STEP 2 — canvas marker ─────────────────────────────────────────────────
   const [imgFile, setImgFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveReceipt = async (blob: Blob) => {
@@ -167,15 +105,6 @@ const SubscribePage = () => {
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const pricePerLocation = TIER_MAP[selectedTier] ?? 0;
-  const effectiveLocationCount = locationCount || 1;
-  const yearlyPricePerLocation = pricePerLocation * 12;
-  const totalMonthly = pricePerLocation * effectiveLocationCount;
-  const totalYearly = yearlyPricePerLocation * effectiveLocationCount;
-  const currentIndex = TIER_KEYS.indexOf(selectedTier);
-  const atMin = currentIndex === 0;
-  const atMax = currentIndex === TIER_KEYS.length - 1;
 
   const handleSubscribe = async () => {
     setLoading(true);
@@ -322,249 +251,47 @@ const SubscribePage = () => {
               {/* ── Step 1 ── */}
               {step === 1 && (
                 <motion.div key='step-1' initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
-                  <Box sx={{ px: { xs: 3, md: 4 }, py: { xs: 3, md: 4 } }}>
-
-                    <TextField
-                      fullWidth
-                      type='text'
-                      label='Minimum spend per receipt'
-                      placeholder='e.g. 50'
-                      value={thresholdInput}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        if (v === '' || /^\d*\.?\d*$/.test(v)) setThresholdInput(v);
-                      }}
-                      error={thresholdInput !== '' && !isThresholdValid}
-                      helperText={
-                        thresholdInput !== '' && !isThresholdValid
-                          ? 'Must be a positive number'
-                          : 'Leave blank to accept any purchase amount'
-                      }
-                      InputProps={{
-                        startAdornment: <InputAdornment position='start'><Typography sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '1rem' }}>$</Typography></InputAdornment>,
-                      }}
-                      sx={{
-                        mb: 3,
-                        '& .MuiOutlinedInput-root': { borderRadius: 2.5 },
-                        '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: 'primary.main' },
-                      }}
-                    />
-
-                    {/* Live preview */}
-                    <Box sx={{ bgcolor: 'rgba(25,93,230,0.04)', borderRadius: 2, p: 2.5, mb: 3, border: '1px dashed', borderColor: 'rgba(25,93,230,0.18)' }}>
-                      <Typography variant='caption' fontWeight={800} color='primary.main' display='block' mb={1.5} sx={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
-                        Preview
-                      </Typography>
-                      {parsedThreshold && parsedThreshold > 0 ? (
-                        <Stack spacing={0.75}>
-                          {[parsedThreshold - 1, parsedThreshold, parsedThreshold + parsedThreshold * 0.5].map((amt) => {
-                            const earns = amt >= parsedThreshold;
-                            return (
-                              <Stack key={amt} direction='row' alignItems='center' spacing={1}>
-                                <Typography variant='body2' sx={{ color: 'text.secondary', minWidth: 80 }}>
-                                  ${amt.toFixed(2)}
-                                </Typography>
-                                <Typography variant='body2' fontWeight={700} sx={{ color: earns ? 'success.main' : 'text.disabled' }}>
-                                  {earns ? '✓ 1 entry' : '✗ no entry'}
-                                </Typography>
-                              </Stack>
-                            );
-                          })}
-                        </Stack>
-                      ) : (
-                        <Typography variant='body2' color='text.secondary'>
-                          {thresholdInput === '' ? 'Any purchase amount earns 1 entry' : 'Enter an amount above to preview'}
-                        </Typography>
-                      )}
-                    </Box>
-
-                    <Button
-                      fullWidth variant='contained' size='large'
-                      onClick={handleThresholdContinue}
-                      disabled={!isThresholdValid || savingThreshold}
-                      sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.4)' } }}
-                    >
-                      {savingThreshold ? <CircularProgress size={22} color='inherit' /> : 'Continue →'}
-                    </Button>
-
-                    <Button fullWidth variant='text' size='small' onClick={() => navigate('/nearby')} sx={{ mt: 1.5, color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
-                      I'll do it later
-                    </Button>
-                  </Box>
+                  <SubscribeStep1
+                    thresholdInput={thresholdInput}
+                    setThresholdInput={setThresholdInput}
+                    isThresholdValid={isThresholdValid}
+                    parsedThreshold={parsedThreshold}
+                    savingThreshold={savingThreshold}
+                    onContinue={handleThresholdContinue}
+                    onSkip={() => navigate('/nearby')}
+                  />
                 </motion.div>
               )}
 
               {/* ── Step 2 ── */}
               {step === 2 && (
                 <motion.div key='step-2' initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
-                  <Box sx={{ px: { xs: 3, md: 4 }, py: { xs: 3, md: 4 } }}>
-
-                    {!imgFile && businessData?.receipt_example_image_url ? (
-                      <>
-                        {/* Already uploaded — show preview */}
-                        <Box sx={{ borderRadius: 2.5, overflow: 'hidden', border: '1px solid', borderColor: 'divider', mb: 2, lineHeight: 0 }}>
-                          <Box component='img' src={businessData.receipt_example_image_url} alt='Current receipt example'
-                            sx={{ display: 'block', width: '100%', maxHeight: 320, objectFit: 'contain' }} />
-                        </Box>
-
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 2, p: 1.5, mb: 2.5 }}>
-                          <Check sx={{ fontSize: 18, color: 'success.main', flexShrink: 0 }} />
-                          <Typography variant='body2' fontWeight={600} color='success.main'>
-                            Receipt example already uploaded
-                          </Typography>
-                        </Box>
-
-                        <Button fullWidth variant='contained' size='large' onClick={() => setStep(3)}
-                          sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', mb: 1.5, boxShadow: '0 4px 14px rgba(25,93,230,0.3)' }}>
-                          Looks good, continue →
-                        </Button>
-
-                        <input ref={fileInputRef} type='file' accept='image/*' hidden
-                          onChange={(e) => { if (e.target.files?.[0]) setImgFile(e.target.files[0]); }} />
-
-                        <Button fullWidth variant='outlined' size='small' startIcon={<Edit />} onClick={() => fileInputRef.current?.click()}
-                          sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>
-                          Replace image
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <CanvasAnnotationEditor
-                          imgFile={imgFile}
-                          onFileSelect={(file) => setImgFile(file)}
-                          onSave={handleSaveReceipt}
-                          isSaving={isSaving}
-                        />
-                        {!imgFile && (
-                          <Button fullWidth variant='text' onClick={() => setStep(3)}
-                            sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
-                            Skip for now
-                          </Button>
-                        )}
-                        {imgFile && (
-                          <Button fullWidth variant='text' onClick={() => { setImgFile(null); setStep(3); }}
-                            sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
-                            Skip for now
-                          </Button>
-                        )}
-                      </>
-                    )}
-                  </Box>
+                  <SubscribeStep2
+                    imgFile={imgFile}
+                    setImgFile={setImgFile}
+                    existingImageUrl={businessData?.receipt_example_image_url ?? undefined}
+                    isSaving={isSaving}
+                    onSave={handleSaveReceipt}
+                    onContinue={() => setStep(3)}
+                    onSkip={() => setStep(3)}
+                  />
                 </motion.div>
               )}
 
               {/* ── Step 3 ── */}
               {step === 3 && (
                 <motion.div key='step-3' initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
-                  <Box sx={{ px: { xs: 3, md: 4 }, py: { xs: 3, md: 4 } }}>
-
-                    {/* Billing toggle */}
-                    <Stack direction='row' alignItems='center' justifyContent='center' sx={{ bgcolor: 'action.hover', borderRadius: 2.5, p: 0.5, mb: 4 }}>
-                      {(['monthly', 'yearly'] as const).map((interval) => (
-                        <Box key={interval} onClick={() => setBillingInterval(interval)}
-                          sx={{
-                            flex: 1, textAlign: 'center', py: 1, px: 2, borderRadius: 2, cursor: 'pointer', transition: 'all 0.15s',
-                            bgcolor: billingInterval === interval ? 'background.paper' : 'transparent',
-                            boxShadow: billingInterval === interval ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
-                          }}
-                        >
-                          <Typography variant='body2' fontWeight={700} color={billingInterval === interval ? 'text.primary' : 'text.secondary'} sx={{ textTransform: 'capitalize' }}>
-                            {interval}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-
-                    {/* Entries stepper */}
-                    <Typography variant='h6' fontWeight={700} mb={0.5}>How many entries per location?</Typography>
-                    <Typography variant='caption' color='text.secondary' display='block' mb={3}>per month</Typography>
-
-                    <Stack direction='row' alignItems='center' justifyContent='center' spacing={2} sx={{ mb: 4 }}>
-                      <IconButton onClick={() => setSelectedTier(TIER_KEYS[currentIndex - 1])} disabled={atMin}
-                        sx={{ width: 52, height: 52, border: '2px solid', borderColor: 'divider', borderRadius: 2, opacity: atMin ? 0.4 : 1 }}>
-                        <Remove />
-                      </IconButton>
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography variant='h4' fontWeight={900} sx={{ minWidth: { xs: 160, md: 200 } }}>
-                          {selectedTier.toLocaleString()} entries
-                        </Typography>
-                        <Typography variant='body2' color='text.secondary' mt={1}>
-                          ${pricePerLocation.toLocaleString()} per location / month
-                        </Typography>
-                      </Box>
-                      <IconButton onClick={() => setSelectedTier(TIER_KEYS[currentIndex + 1])} disabled={atMax}
-                        sx={{ width: 52, height: 52, border: '2px solid', borderColor: 'divider', borderRadius: 2, opacity: atMax ? 0.4 : 1 }}>
-                        <Add />
-                      </IconButton>
-                    </Stack>
-
-                    <Divider sx={{ mb: 3 }} />
-
-                    {/* Price breakdown */}
-                    <Box sx={{ bgcolor: 'rgba(25,93,230,0.06)', borderRadius: 2.5, p: 3, mb: 3 }}>
-                      <Stack spacing={2}>
-                        <Stack direction='row' justifyContent='space-between'>
-                          <Typography variant='body2' color='text.secondary'>Entries per location</Typography>
-                          <Typography variant='body2' fontWeight={700}>{selectedTier.toLocaleString()} / mo</Typography>
-                        </Stack>
-                        <Stack direction='row' justifyContent='space-between'>
-                          <Typography variant='body2' color='text.secondary'>Your locations</Typography>
-                          {locationCount === null ? <Skeleton width={40} height={20} /> : <Typography variant='body2' fontWeight={700}>{effectiveLocationCount}</Typography>}
-                        </Stack>
-                        <Stack direction='row' justifyContent='space-between'>
-                          <Typography variant='body2' color='text.secondary'>Price per location</Typography>
-                          <Typography variant='body2' fontWeight={700}>
-                            {billingInterval === 'yearly' ? `$${yearlyPricePerLocation.toLocaleString()}/yr` : `$${pricePerLocation.toLocaleString()}`}
-                          </Typography>
-                        </Stack>
-                        <Divider />
-                        <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                          <Typography variant='body2' fontWeight={700}>{billingInterval === 'yearly' ? 'Total per year' : 'Total per month'}</Typography>
-                          <Typography variant='h5' fontWeight={900} sx={{ background: 'linear-gradient(135deg, #195DE2 0%, #7FA6FF 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                            {billingInterval === 'yearly' ? `$${totalYearly.toFixed(0)}` : `$${totalMonthly.toFixed(0)}`}
-                          </Typography>
-                        </Stack>
-                      </Stack>
-                    </Box>
-
-                    {atMax && (
-                      <Typography variant='body2' textAlign='center' sx={{ mb: 3, color: 'text.secondary', lineHeight: 1.6 }}>
-                        Need more than {MAX_TIER.toLocaleString()} entries?{' '}
-                        <Typography component='span' variant='body2' sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}
-                          onClick={() => { window.location.href = 'mailto:support@winnbell.com'; }}>
-                          Contact us
-                        </Typography>{' '}for a custom plan.
-                      </Typography>
-                    )}
-
-                    {error && <Typography variant='body2' color='error' textAlign='center' mb={2}>{error}</Typography>}
-
-                    <FormControlLabel
-                      sx={{ mb: 2, display: 'flex', alignItems: 'flex-start', gap: 0.5 }}
-                      control={<Checkbox defaultChecked size='small' sx={{ pt: 0 }} />}
-                      label={
-                        <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5 }}>
-                          Automatically renew for next campaign — cancel anytime before the 7-day cutoff
-                        </Typography>
-                      }
-                    />
-
-                    <Button fullWidth variant='contained' size='large' startIcon={loading ? undefined : <CreditCard />} onClick={handleSubscribe} disabled={loading}
-                      sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(25,93,230,0.35)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.45)' } }}>
-                      {loading ? <CircularProgress size={24} color='inherit' /> : 'Start Campaign'}
-                    </Button>
-
-                    <Typography variant='caption' color='text.disabled' textAlign='center' display='block' mt={1.5}>
-                      {billingInterval === 'yearly'
-                        ? "You'll be redirected to Stripe's secure checkout. Yearly plan covers 12 monthly campaigns."
-                        : "You'll be redirected to Stripe's secure checkout. You'll be enrolled in the next monthly campaign on payment."}
-                    </Typography>
-
-                    <Button fullWidth variant='text' size='small' onClick={() => navigate('/nearby')}
-                      sx={{ mt: 1.5, color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
-                      I'll do it later
-                    </Button>
-                  </Box>
+                  <SubscribeStep3
+                    selectedTier={selectedTier}
+                    setSelectedTier={setSelectedTier}
+                    billingInterval={billingInterval}
+                    setBillingInterval={setBillingInterval}
+                    locationCount={locationCount}
+                    loading={loading}
+                    error={error}
+                    onSubscribe={handleSubscribe}
+                    onSkip={() => navigate('/nearby')}
+                  />
                 </motion.div>
               )}
 

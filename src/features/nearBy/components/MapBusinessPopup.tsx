@@ -270,7 +270,7 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose }) => {
               {location.min_transaction_amount != null ? (
                 <Stack spacing={0.75}>
                   <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
-                    {(() => { const amt = Number(location.min_transaction_amount); return (<>Every <strong style={{ color: '#111' }}>${amt.toFixed(0)}</strong> spent = <strong style={{ color: '#111' }}>1 entry</strong>.</>); })()}
+                    {(() => { const amt = Number(location.min_transaction_amount); return (<>Every <strong style={{ color: '#111' }}>${Number.isInteger(amt) ? amt : amt.toFixed(2)}</strong> spent = <strong style={{ color: '#111' }}>1 entry</strong>.</>); })()}
                   </Typography>
                   {location.terms_text && (
                     <Typography variant='caption' color='text.disabled' lineHeight={1.5}>

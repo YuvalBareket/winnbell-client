@@ -29,7 +29,7 @@ const ActivityPage = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
-  const [dateRange, setDateRange] = useState<DateRange>('today');
+  const [dateRange, setDateRange] = useState<DateRange>('30d');
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [pages, setPages] = useState<ActivityItem[][]>([]);
 
