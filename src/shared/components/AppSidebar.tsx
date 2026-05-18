@@ -9,7 +9,7 @@ import { logout } from '../../store/slices/authSlice';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl } from '../../store/selectors/authSelectors';
 import { useClerk } from '@clerk/clerk-react';
 import {
-  userNavItems, managerNavItems, adminNavItems, legalNavItems, type NavItem,
+  userNavItems, managerNavItems, adminNavItems, legalNavItems, businessLegalNavItems, type NavItem,
 } from '../constants/navItems';
 import {
   BusinessOutlined, ConfirmationNumberOutlined,
@@ -73,7 +73,7 @@ const AppSidebar = () => {
       }}
     >
       {/* Brand */}
-      <Stack sx={{ px: 3, pt: 2.5, pb: 2.5 }} direction='row' alignItems='center' spacing={-1.2}>
+      <Stack sx={{ px: 3, pt: 1.5, pb: 1.5 }} direction='row' alignItems='center' spacing={-1.2}>
         <Box component='img' src='/winnbell_logo.png' alt='W' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
         <Typography sx={{ fontFamily: "'Damion', cursive", fontSize: '1.9rem', color: TEXT_PRIMARY, lineHeight: 1, mt: '4px' }}>
           innbell
@@ -83,7 +83,7 @@ const AppSidebar = () => {
       {/* User identity card */}
       <Box
         sx={{
-          mx: 2, mb: 1, px: 2, py: 1,
+          mx: 2, mb: 0.5, px: 1.5, py: 0.75,
           bgcolor: ALPHA_PRIMARY_04,
           borderRadius: 3,
           border: `1px solid ${ALPHA_PRIMARY_06}`,
@@ -97,7 +97,7 @@ const AppSidebar = () => {
         <Avatar
           src={businessLogoUrl ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${businessLogoUrl}` : undefined}
           sx={{
-            width: 40, height: 40,
+            width: 36, height: 36,
             background: GRADIENT_PRIMARY,
             color: 'white',
             fontWeight: 800,
@@ -130,14 +130,14 @@ const AppSidebar = () => {
         />
       </Box>
 
-      <Divider sx={{ mx: 2.5, mb: 1 }} />
+      <Divider sx={{ mx: 2, mb: 0.5 }} />
 
       {/* Scrollable nav + support section */}
       <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {/* Nav section */}
         <Box sx={{ px: 1.5, pt: 0 }}>
         <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
-          sx={{ textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
+          sx={{ textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.25, fontSize: '0.62rem' }}>
           Navigation
         </Typography>
         <List dense disablePadding>
@@ -148,7 +148,7 @@ const AppSidebar = () => {
                 key={path}
                 onClick={() => navigate(path)}
                 sx={{
-                  borderRadius: 2.5, mb: 0.3, px: 1.5, py: 0.6,
+                  borderRadius: 2.5, mb: 0.2, px: 1.5, py: 0.5,
                   bgcolor: active ? PRIMARY_MAIN : 'transparent',
                   boxShadow: active ? '0 2px 8px rgba(25,93,230,0.3)' : 'none',
                   '&:hover': {
@@ -168,7 +168,7 @@ const AppSidebar = () => {
                 <ListItemText
                   primary={label}
                   primaryTypographyProps={{
-                    fontSize: '0.85rem', fontWeight: active ? 700 : 600,
+                    fontSize: '0.82rem', fontWeight: active ? 700 : 600,
                     color: active ? 'white' : TEXT_HEADING,
                     letterSpacing: '-0.01em',
                   }}
@@ -188,21 +188,21 @@ const AppSidebar = () => {
         </List>
       </Box>
 
-        <Divider sx={{ mx: 2.5, my: 0.5 }} />
+        <Divider sx={{ mx: 2.5, my: 0.25 }} />
 
         {/* Support section */}
         <Box sx={{ px: 1.5 }}>
         <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
-          sx={{ textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
+          sx={{ textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.25, fontSize: '0.62rem' }}>
           Support
         </Typography>
         <List dense disablePadding>
-          {legalNavItems.map(({ label, Icon, path }) => (
+          {(isBusiness || isManager ? businessLegalNavItems : legalNavItems).map(({ label, Icon, path }) => (
             <ListItemButton
               key={path}
               onClick={() => navigate(path)}
               sx={{
-                borderRadius: 2.5, mb: 0.3, px: 1.5,
+                borderRadius: 2.5, mb: 0.2, px: 1.5,
                 '&:hover': {
                   bgcolor: ALPHA_PRIMARY_06,
                   transform: 'translateX(2px)',
@@ -211,11 +211,11 @@ const AppSidebar = () => {
               }}
             >
               <ListItemIcon sx={{ minWidth: 34 }}>
-                <Icon sx={{ fontSize: 18, color: TEXT_TERTIARY }} />
+                <Icon sx={{ fontSize: 16, color: TEXT_TERTIARY }} />
               </ListItemIcon>
               <ListItemText
                 primary={label}
-                primaryTypographyProps={{ fontSize: '0.82rem', fontWeight: 500, color: TEXT_SECONDARY }}
+                primaryTypographyProps={{ fontSize: '0.78rem', fontWeight: 500, color: TEXT_SECONDARY }}
               />
             </ListItemButton>
           ))}
@@ -226,7 +226,7 @@ const AppSidebar = () => {
       <Divider sx={{ mx: 2.5 }} />
 
       {/* Logout */}
-      <List dense disablePadding sx={{ px: 1.5, py: 1.5 }}>
+      <List dense disablePadding sx={{ px: 1.5, py: 1 }}>
         <ListItemButton
           onClick={handleLogout}
           sx={{
@@ -245,7 +245,7 @@ const AppSidebar = () => {
         </ListItemButton>
       </List>
 
-      <Typography variant='caption' color={TEXT_TERTIARY} sx={{ px: 3, pb: 2.5, display: 'block', fontSize: '0.68rem' }}>
+      <Typography variant='caption' color={TEXT_TERTIARY} sx={{ px: 3, pb: 1.5, display: 'block', fontSize: '0.68rem' }}>
         Winnbell v1.0 · {new Date().getFullYear()}
       </Typography>
     </Box>

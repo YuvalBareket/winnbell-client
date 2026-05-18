@@ -20,6 +20,7 @@ import {
   ReceiptLongOutlined,
   PrivacyTipOutlined,
   GavelOutlined,
+  ArticleOutlined,
   ChevronRight,
   EmojiEventsOutlined,
   AdminPanelSettingsOutlined,
@@ -121,6 +122,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const legalItems: NavItem[] = [
     { label: 'Terms of Service', icon: <GavelOutlined />, path: '/terms' },
     { label: 'Privacy Policy', icon: <PrivacyTipOutlined />, path: '/privacy' },
+    ...((isBusiness || isManager) ? [{ label: 'Business Agreement', icon: <ArticleOutlined />, path: '/business-agreement' }] : []),
   ];
 
   // Responsive item padding — compact on mobile so everything fits without scrolling

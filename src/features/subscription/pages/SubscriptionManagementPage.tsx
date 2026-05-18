@@ -349,6 +349,8 @@ export default function SubscriptionManagementPage() {
             )}
           </Box>
         </Stack>
+
+
       </Container>
 
       {/* Confirm dialog */}

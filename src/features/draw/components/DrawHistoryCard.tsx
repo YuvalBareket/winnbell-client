@@ -161,7 +161,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
                   </Box>
                 </Stack>
                 <Link
-                  href='/terms'
+                  href='/rules'
                   underline='hover'
                   sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.78rem', fontWeight: 600, color: TEXT_SECONDARY }}
                 >

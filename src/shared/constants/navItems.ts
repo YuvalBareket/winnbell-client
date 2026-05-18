@@ -7,6 +7,7 @@ import {
   ReceiptLongOutlined,
   GavelOutlined,
   PrivacyTipOutlined,
+  ArticleOutlined,
   EmojiEventsOutlined,
   AdminPanelSettingsOutlined,
   FeedOutlined,
@@ -53,4 +54,9 @@ export const adminNavItems: NavItem[] = [
 export const legalNavItems: NavItem[] = [
   { label: 'Terms of Service', Icon: GavelOutlined, path: '/terms' },
   { label: 'Privacy Policy', Icon: PrivacyTipOutlined, path: '/privacy' },
+];
+
+export const businessLegalNavItems: NavItem[] = [
+  ...legalNavItems,
+  { label: 'Business Agreement', Icon: ArticleOutlined, path: '/business-agreement' },
 ];

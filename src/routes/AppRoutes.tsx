@@ -29,6 +29,8 @@ import PublicActivatePage from '../features/tickets/pages/PublicActivatePage';
 // Legal
 import TermsOfServicePage from '../features/legal/pages/TermsOfServicePage';
 import PrivacyPolicyPage from '../features/legal/pages/PrivacyPolicyPage';
+import OfficialRulesPage from '../features/legal/pages/OfficialRulesPage';
+import BusinessAgreementPage from '../features/legal/pages/BusinessAgreementPage';
 
 // Subscription
 import SubscribePage from '../features/subscription/pages/SubscribePage';
@@ -88,6 +90,10 @@ const AppRoutes = () => {
       <Route path='/sso-callback' element={<SSOCallbackPage />} />
       <Route path='/activate' element={<PublicActivatePage />} />
       <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
+      <Route path='/terms' element={<TermsOfServicePage />} />
+      <Route path='/privacy' element={<PrivacyPolicyPage />} />
+      <Route path='/rules' element={<OfficialRulesPage />} />
+      <Route path='/business-agreement' element={<BusinessAgreementPage />} />
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>
@@ -111,10 +117,6 @@ const AppRoutes = () => {
               <Route path='/marketing' element={<MarketingPage />} />
             </>
           )}
-
-          {/* Legal — available to all authenticated users */}
-          <Route path='/terms' element={<TermsOfServicePage />} />
-          <Route path='/privacy' element={<PrivacyPolicyPage />} />
 
           {/* Redirect admin away from business pages */}
           {isAdmin && <Route path='*' element={<Navigate to='/admin' replace />} />}
