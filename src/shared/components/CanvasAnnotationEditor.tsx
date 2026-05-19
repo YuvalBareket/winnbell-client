@@ -77,7 +77,7 @@ const CanvasAnnotationEditor = ({
               Upload a receipt photo
             </Typography>
             <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5, maxWidth: 280 }}>
-              Take a photo of any receipt from your store — then you'll mark where the receipt number is
+              Take a photo of any receipt from your store - then you'll mark where the receipt number is
             </Typography>
           </Stack>
         </Box>

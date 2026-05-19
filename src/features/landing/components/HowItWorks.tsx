@@ -5,7 +5,7 @@ const STEPS = [
   {
     num: '01',
     title: 'Visit a partner',
-    body: 'Find a Winnbell partner near you — a cafe, shop, or restaurant — and make a purchase.',
+    body: 'Find a Winnbell partner near you - a cafe, shop, or restaurant - and make a purchase.',
   },
   {
     num: '02',

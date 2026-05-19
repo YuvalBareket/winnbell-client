@@ -57,7 +57,7 @@ const DrawPreparationView = ({
             <Box>
               <Typography variant='h5' fontWeight={800}>Preparing for Your Campaign</Typography>
               <Typography variant='body2' sx={{ opacity: 0.75, mt: 0.25 }}>
-                You're registered — your business goes live when the campaign opens
+                You're registered - your business goes live when the campaign opens
               </Typography>
             </Box>
           </Box>

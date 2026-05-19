@@ -52,7 +52,7 @@ const MainLayout = () => {
       {/* Desktop persistent sidebar */}
       <AppSidebar />
 
-      {/* Mobile header — hidden on desktop, hidden on pages with their own hero */}
+      {/* Mobile header - hidden on desktop, hidden on pages with their own hero */}
       {!isNearby && !isActivity && <AppHeader onMenuOpen={() => setMenuOpen(true)} />}
 
       {/* Mobile drawer */}
@@ -85,7 +85,7 @@ const MainLayout = () => {
         </AnimatePresence>
       </Box>
 
-      {/* Mobile bottom nav — hidden on desktop, hidden for admin */}
+      {/* Mobile bottom nav - hidden on desktop, hidden for admin */}
       {!isAdmin && (
         <Paper
           sx={{

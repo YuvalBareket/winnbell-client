@@ -76,7 +76,7 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
       </Typography>
 
     
-      {/* Hidden password field — revealed on triple-click of "404" */}
+      {/* Hidden password field - revealed on triple-click of "404" */}
       {showInput && (
         <Box
           component="form"

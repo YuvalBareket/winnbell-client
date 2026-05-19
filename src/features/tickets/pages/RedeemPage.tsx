@@ -79,7 +79,7 @@ const RedeemPage = () => {
   // Subscription and draw state
   const { data: subscription } = useSubscription(isBusinessAdmin);
 
-  // Entry mode — lightweight single-field fetch for user side,
+  // Entry mode - lightweight single-field fetch for user side,
   // business users always stay in 'code' mode (they generate, not submit receipts).
   const { data: entryModeData } = useEntryMode();
   const entryMode: EntryMode = isBusiness
@@ -118,7 +118,7 @@ const didAutoActivate = useRef(false);
     didAutoActivate.current = true;
     localStorage.removeItem('pendingTicketCode');
 
-    // 4. Trigger mutation — promo codes use a separate endpoint
+    // 4. Trigger mutation - promo codes use a separate endpoint
     if (pending.startsWith('PROMO')) {
       promoMutation.mutate(pending, {
         onSuccess: () => {
@@ -253,7 +253,7 @@ const didAutoActivate = useRef(false);
                 <BusinessVisual generatedCode={generatedCode} primaryColor={primaryColor} isDesktop={isDesktop} />
               </Box>
             ) : entryMode === 'receipt' ? (
-              /* AMOE Panel — white background */
+              /* AMOE Panel - white background */
               <Box
                 sx={{
                   bgcolor: 'white',
@@ -277,7 +277,7 @@ const didAutoActivate = useRef(false);
                     Free Weekly Entry
                   </Typography>
                   <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                    Every member gets 1 free entry per week — no purchase needed. Resets every Sunday.
+                    Every member gets 1 free entry per week - no purchase needed. Resets every Sunday.
                   </Typography>
                 </Box>
                 <Button
@@ -430,7 +430,7 @@ const didAutoActivate = useRef(false);
             </Box>
             {entryMode === 'receipt' ? (
               <>
-                {/* AMOE — compact row on mobile, hidden when any location is selected */}
+                {/* AMOE - compact row on mobile, hidden when any location is selected */}
                 {!receiptLocationSelected && <Paper
                   elevation={0}
                   onClick={() => navigate('/freeTicket')}

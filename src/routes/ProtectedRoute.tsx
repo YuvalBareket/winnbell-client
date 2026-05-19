@@ -17,7 +17,7 @@ const ProtectedRoute = () => {
     );
   }
 
-  // Clerk session exists but useClerkSync hasn't finished yet — wait, don't redirect
+  // Clerk session exists but useClerkSync hasn't finished yet - wait, don't redirect
   if (isSignedIn && !isAuthenticated) {
     return (
       <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}>
@@ -27,7 +27,7 @@ const ProtectedRoute = () => {
   }
 
   if (!isAuthenticated) {
-    // QR scan link — save location ID and send to landing page so the user
+    // QR scan link - save location ID and send to landing page so the user
     // sees the full app intro rather than a bare login form
     const params = new URLSearchParams(window.location.search);
     const lid = params.get('l');

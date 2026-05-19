@@ -131,7 +131,7 @@ const UsersTab: React.FC<Props> = ({ users, isMobile, onSnackError, onSnackSucce
           const flaggedCount = (users ?? []).filter((u: AdminUser) => u.risk_score >= 20).length;
           return flaggedCount > 0 ? (
             <Alert severity='error'>
-              <strong>{flaggedCount} {flaggedCount === 1 ? 'user' : 'users'} flagged for review</strong> — risk score &ge; 15. Their draw entries are quarantined.
+              <strong>{flaggedCount} {flaggedCount === 1 ? 'user' : 'users'} flagged for review</strong> - risk score &ge; 15. Their draw entries are quarantined.
             </Alert>
           ) : null;
         })()}
@@ -313,7 +313,7 @@ const UsersTab: React.FC<Props> = ({ users, isMobile, onSnackError, onSnackSucce
                           <Typography variant='body2'>{user.business_name}</Typography>
                         ) : (
                           <Typography variant='body2' color='text.secondary'>
-                            —
+-
                           </Typography>
                         )}
                       </TableCell>

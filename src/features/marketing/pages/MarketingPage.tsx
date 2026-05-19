@@ -103,7 +103,7 @@ const MarketingPage = () => {
         swaps.push({ svg, img });
       }
 
-      // 2. Capture poster canvas — use explicit pixel dimensions to avoid shadow bleed
+      // 2. Capture poster canvas - use explicit pixel dimensions to avoid shadow bleed
       const canvas = await html2canvas(posterRef.current, {
         scale: 3,
         width: POSTER_W,
@@ -120,7 +120,7 @@ const MarketingPage = () => {
         img.remove();
       });
 
-      // 4. Build PDF — use exact poster aspect ratio so nothing is cut
+      // 4. Build PDF - use exact poster aspect ratio so nothing is cut
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
       const pageW = pdf.internal.pageSize.getWidth();
@@ -169,7 +169,7 @@ const MarketingPage = () => {
           {/* ── Left: picker + full preview ── */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
 
-            {/* Thumbnail grid — 2×2, fixed pixel thumbnails with JS-computed scale */}
+            {/* Thumbnail grid - 2×2, fixed pixel thumbnails with JS-computed scale */}
             <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5, mb: 3 }}>
               <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
                 Choose a template
@@ -235,10 +235,10 @@ const MarketingPage = () => {
               </Box>
             </Paper>
 
-            {/* Full preview — boxShadow on outer wrapper, NOT on posterRef */}
+            {/* Full preview - boxShadow on outer wrapper, NOT on posterRef */}
             <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5 }}>
               <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
-                Preview — {selected.label}
+                Preview - {selected.label}
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
                 {/* Outer wrapper carries the shadow so html2canvas only captures the poster */}

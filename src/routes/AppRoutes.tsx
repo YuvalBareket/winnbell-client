@@ -15,6 +15,7 @@ import { useClerkSync } from '../shared/hooks/useClerkSync';
 
 import MainLayout from '../shared/components/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
+import RegionGate from '../shared/components/RegionGate';
 import LandingPage from '../features/landing/LandingPage';
 
 // Auth
@@ -22,6 +23,7 @@ import LoginPage from '../features/auth/pages/LoginPage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
 import VerifyEmailPage from '../features/auth/pages/VerifyEmailPage';
 import SSOCallbackPage from '../features/auth/pages/SSOCallbackPage';
+import RegionBlockedPage from '../features/auth/pages/RegionBlockedPage';
 
 // Tickets
 import PublicActivatePage from '../features/tickets/pages/PublicActivatePage';
@@ -84,8 +86,9 @@ const AppRoutes = () => {
             ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace />
             : <LandingPage />
       } />
-      <Route path='/login' element={<LoginPage />} />
-      <Route path='/register/:role?' element={<RegisterPage />} />
+      <Route path='/region-blocked' element={<RegionBlockedPage />} />
+      <Route path='/login' element={<RegionGate><LoginPage /></RegionGate>} />
+      <Route path='/register/:role?' element={<RegionGate><RegisterPage /></RegionGate>} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
       <Route path='/sso-callback' element={<SSOCallbackPage />} />
       <Route path='/activate' element={<PublicActivatePage />} />
@@ -101,7 +104,7 @@ const AppRoutes = () => {
           {/* Admin-only route */}
           {isAdmin && <Route path='/admin' element={<BusinessDashboard />} />}
 
-          {/* Business/User routes — not accessible to admin */}
+          {/* Business/User routes - not accessible to admin */}
           {!isAdmin && (
             <>
               <Route path='/nearby' element={isBusinessAdmin ? <BusinessHubPage /> : <NearbyPage />} />

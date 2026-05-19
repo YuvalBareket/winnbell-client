@@ -236,7 +236,7 @@ const NearbyPage = () => {
             scrollbarWidth: 'none',
           }}
         >
-          {/* Initial load spinner — only when no data yet */}
+          {/* Initial load spinner - only when no data yet */}
           {isLoading && (
             <Box display='flex' justifyContent='center' p={4}><CircularProgress /></Box>
           )}
@@ -245,7 +245,7 @@ const NearbyPage = () => {
             <Typography color='error' align='center' sx={{ p: 4 }}>Error loading nearby places.</Typography>
           )}
 
-          {/* Empty state — no filter results */}
+          {/* Empty state - no filter results */}
           {!isLoading && !isError && filteredLocations.length === 0 && (searchTerm.length > 0 || !!selectedSector) && (
             <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
               <SearchOff sx={{ fontSize: 56, color: 'text.disabled', mb: 1.5 }} />
@@ -261,7 +261,7 @@ const NearbyPage = () => {
             </Box>
           )}
 
-          {/* Empty state — no nearby partners at all */}
+          {/* Empty state - no nearby partners at all */}
           {!isLoading && !isError && filteredLocations.length === 0 && searchTerm.length === 0 && !selectedSector && (
             <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
               <StorefrontIcon sx={{ fontSize: 56, color: 'text.disabled', mb: 1.5 }} />

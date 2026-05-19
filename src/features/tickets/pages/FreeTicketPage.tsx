@@ -89,7 +89,7 @@ const FreeTicketPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* Main content — flex:1 pushes footer down naturally */}
+        {/* Main content - flex:1 pushes footer down naturally */}
         <Box
           sx={{
             flex: 1,
@@ -174,7 +174,7 @@ const FreeTicketPage: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Footer — in normal flow, pushed to bottom by flex:1 above */}
+        {/* Footer - in normal flow, pushed to bottom by flex:1 above */}
         <Box sx={{ p: 3, pb: 4 }}>
           <Button
             fullWidth
@@ -217,7 +217,7 @@ const FreeTicketPage: React.FC = () => {
     );
   }
 
-  // Desktop layout (md and up) — two-column premium design
+  // Desktop layout (md and up) - two-column premium design
   return (
     <Box
       sx={{
@@ -226,7 +226,7 @@ const FreeTicketPage: React.FC = () => {
         minHeight: '100dvh',
       }}
     >
-      {/* Left Column — Hero/Brand side */}
+      {/* Left Column - Hero/Brand side */}
       <Box
         sx={{
           background: GRADIENT_HERO,
@@ -310,7 +310,7 @@ const FreeTicketPage: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Right Column — Action side */}
+      {/* Right Column - Action side */}
       <Box
         sx={{
           backgroundColor: 'background.paper',

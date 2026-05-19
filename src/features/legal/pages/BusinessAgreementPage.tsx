@@ -14,14 +14,14 @@ const applySubstitutions = (text: string, businessName: string, effectiveDate: s
     .replace(/\\<date\\>/g, effectiveDate)
     .replace(/<date>/g, effectiveDate);
 
-  // Replace \[type of entity\] — first occurrence = Winnbell's, second = business's (left as-is)
+  // Replace \[type of entity\] - first occurrence = Winnbell's, second = business's (left as-is)
   let entityCount = 0;
   result = result.replace(/\\\[type of entity\\\]/gi, () => {
     entityCount++;
     return entityCount === 1 ? WINNBELL_ENTITY : '[Type of Entity]';
   });
 
-  // Replace \[jurisdiction\] — first occurrence = Winnbell's, second = business's (left as-is)
+  // Replace \[jurisdiction\] - first occurrence = Winnbell's, second = business's (left as-is)
   let jurisdictionCount = 0;
   result = result.replace(/\\\[jurisdiction\\\]/gi, () => {
     jurisdictionCount++;

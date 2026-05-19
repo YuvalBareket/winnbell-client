@@ -125,7 +125,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     ...((isBusiness || isManager) ? [{ label: 'Business Agreement', icon: <ArticleOutlined />, path: '/business-agreement' }] : []),
   ];
 
-  // Responsive item padding — compact on mobile so everything fits without scrolling
+  // Responsive item padding - compact on mobile so everything fits without scrolling
   const itemPy = { xs: 0.65, sm: 1.1 };
   const sectionMy = { xs: 0.75, sm: 1.5 };
   const labelMb = { xs: 0.4, sm: 0.75 };

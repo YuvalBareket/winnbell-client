@@ -31,3 +31,8 @@ export const syncUserFn = async (
   );
   return response.data;
 };
+
+export const getRegionConfig = async (): Promise<{ allowed_states: string[] }> => {
+  const response = await api.get<{ allowed_states: string[] }>('/auth/region-config');
+  return response.data;
+};

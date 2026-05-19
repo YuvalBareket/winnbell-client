@@ -126,7 +126,7 @@ const SubscribeStep3 = ({
         control={<Checkbox defaultChecked size='small' sx={{ pt: 0 }} />}
         label={
           <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5 }}>
-            Automatically renew for next campaign — cancel anytime before the 7-day cutoff
+            Automatically renew for next campaign - cancel anytime before the 7-day cutoff
           </Typography>
         }
       />

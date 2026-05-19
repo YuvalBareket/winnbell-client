@@ -5,7 +5,7 @@ import QRCode from 'react-qr-code';
 export const POSTER_W = 320;
 export const POSTER_H = 452; // ~A4 ratio 1:1.414
 
-// Thumbnail scale — a unitless decimal fraction (NOT a CSS percentage)
+// Thumbnail scale - a unitless decimal fraction (NOT a CSS percentage)
 export const THUMB_SCALE = 0.27;
 export const THUMB_W = Math.round(POSTER_W * THUMB_SCALE); // ~86px
 export const THUMB_H = Math.round(POSTER_H * THUMB_SCALE); // ~122px

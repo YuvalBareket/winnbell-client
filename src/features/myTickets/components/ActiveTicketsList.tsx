@@ -211,7 +211,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
               )}
             </Box>
 
-            {/* Cap breakdown — shown below the number */}
+            {/* Cap breakdown - shown below the number */}
             {isBusiness && !isLoading && cap !== null && perLocationCap !== null && (
               <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
                 {locationId
@@ -228,7 +228,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
           )}
         </Box>
 
-        {/* Progress bar — users only */}
+        {/* Progress bar - users only */}
         {!isBusiness && (
           <Box>
             {isLoading ? (
@@ -255,7 +255,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
                   ? 'You have the maximum entries for this campaign. Good luck!'
                   : ticketCount === 0
                     ? 'Submit receipts, use promo codes, or claim your free weekly entry.'
-                    : `You have ${CAP - ticketCount} more entries available — don't leave them unclaimed!`}
+                    : `You have ${CAP - ticketCount} more entries available - don't leave them unclaimed!`}
               </Typography>
             )}
           </Box>

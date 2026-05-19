@@ -6,7 +6,7 @@ import { updateBusinessUser } from '../../../store/slices/authSlice';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB original file
-const MAX_DIMENSION = 512; // px — logos are displayed small, 512 is plenty
+const MAX_DIMENSION = 512; // px - logos are displayed small, 512 is plenty
 const WEBP_QUALITY = 0.85;
 
 const convertToWebP = (file: File): Promise<File> =>

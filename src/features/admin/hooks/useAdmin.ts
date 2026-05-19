@@ -17,6 +17,8 @@ import {
   fetchAdminAnalytics,
   fetchLocationBreakdown,
   setUserRiskScore,
+  fetchPlatformSettings,
+  savePlatformSettings,
 } from '../api/adminApi';
 import type { AdminAnalytics, AdminUser, LocationBreakdownPage } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
@@ -199,6 +201,28 @@ export const useAdminAnalytics = (businessId?: number | null) => {
       return data as AdminAnalytics;
     },
     staleTime: 5 * 60_000,
+  });
+};
+
+export const usePlatformSettings = () => {
+  return useQuery({
+    queryKey: ['admin', 'platform-settings'],
+    queryFn: async () => {
+      const { data } = await fetchPlatformSettings();
+      return data;
+    },
+    staleTime: 60_000,
+  });
+};
+
+export const useSavePlatformSettings = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { global_entry_cap: number | null; allowed_states: string[] }) =>
+      savePlatformSettings(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'platform-settings'] });
+    },
   });
 };
 

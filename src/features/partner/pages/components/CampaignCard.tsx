@@ -380,7 +380,7 @@ const CampaignCard = ({
               )}
             </Stack>
 
-            {/* Edit form — canvas annotation */}
+            {/* Edit form - canvas annotation */}
             <AnimatePresence mode='wait'>
               {editingReceipt && (
                 <MotionBox

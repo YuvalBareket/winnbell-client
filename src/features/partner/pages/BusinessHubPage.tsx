@@ -161,7 +161,7 @@ const BusinessHubPage = () => {
 
       <Container maxWidth='md' sx={{ mt: -5 }}>
         <Stack spacing={3}>
-          {/* Onboarding banner — shown when not yet subscribed, desktop only */}
+          {/* Onboarding banner - shown when not yet subscribed, desktop only */}
           {!business.is_subscribed && (
             <Paper
               elevation={3}
@@ -360,7 +360,7 @@ const BusinessHubPage = () => {
         </Alert>
       </Snackbar>
 
-      {/* Profile preview popup — shows business profile as users see it */}
+      {/* Profile preview popup - shows business profile as users see it */}
       <MapBusinessPopup
         location={previewOpen && business.locations.length > 0 ? ({
           location_id: business.locations[0].id,

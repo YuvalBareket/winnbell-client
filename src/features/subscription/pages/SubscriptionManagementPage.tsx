@@ -154,7 +154,7 @@ export default function SubscriptionManagementPage() {
               <>Campaign cancelled. You've been removed from the campaign and a <strong>40% refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
             )}
             {cancelResult.refundType === 'none' && (
-              <>Campaign cancelled. The campaign has already commenced — your entry remains and no refund applies.</>
+              <>Campaign cancelled. The campaign has already commenced - your entry remains and no refund applies.</>
             )}
           </Alert>
         )}
@@ -222,7 +222,7 @@ export default function SubscriptionManagementPage() {
                         </Typography>
                         <Typography variant='h6' fontWeight={800} color='text.primary'>{periodEndLabel}</Typography>
                         <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
-                          {sub.cancel_at_period_end ? 'Your access continues until this date — no further charges' : 'Your next payment will be charged on this date'}
+                          {sub.cancel_at_period_end ? 'Your access continues until this date - no further charges' : 'Your next payment will be charged on this date'}
                         </Typography>
                       </Box>
                     )}
@@ -376,7 +376,7 @@ export default function SubscriptionManagementPage() {
             {cancellationRefundPreview === 'none' && (
               <>
                 <DialogContentText>
-                  The campaign has already started — your entry is locked in and no refund is available. Cancelling now only stops future monthly charges. Your plan stays active until <strong>{periodEndLabel}</strong>.
+                  The campaign has already started - your entry is locked in and no refund is available. Cancelling now only stops future monthly charges. Your plan stays active until <strong>{periodEndLabel}</strong>.
                 </DialogContentText>
               </>
             )}

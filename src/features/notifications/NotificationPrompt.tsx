@@ -32,7 +32,7 @@ const NotificationPrompt = () => {
     try {
       await subscribe();
     } catch {
-      // permission denied — dismissed via useEffect
+      // permission denied - dismissed via useEffect
       handleDismiss();
     }
   };

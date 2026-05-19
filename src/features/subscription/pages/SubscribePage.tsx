@@ -31,7 +31,7 @@ const FEATURES = [
 const STEP_COPY = [
   {
     headline: 'Start your campaign',
-    sub: 'Choose how customers earn their entry — set a spending goal or let every purchase count.',
+    sub: 'Choose how customers earn their entry - set a spending goal or let every purchase count.',
   },
   {
     headline: 'Make it crystal clear',
@@ -81,7 +81,7 @@ const SubscribePage = () => {
     }
   };
 
-  // ── STEP 2 — canvas marker ─────────────────────────────────────────────────
+  // ── STEP 2 - canvas marker ─────────────────────────────────────────────────
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -210,7 +210,7 @@ const SubscribePage = () => {
               <StepIndicator currentStep={step} />
             </Box>
 
-            {/* Header — animated per step */}
+            {/* Header - animated per step */}
             <AnimatePresence mode='wait'>
               <motion.div
                 key={`header-${step}`}
@@ -245,7 +245,7 @@ const SubscribePage = () => {
               </motion.div>
             </AnimatePresence>
 
-            {/* Step body — animated per step */}
+            {/* Step body - animated per step */}
             <AnimatePresence mode='wait'>
 
               {/* ── Step 1 ── */}

@@ -29,7 +29,7 @@ const SubscribeStep2 = ({
 
       {!imgFile && existingImageUrl ? (
         <>
-          {/* Already uploaded — show preview */}
+          {/* Already uploaded - show preview */}
           <Box sx={{ borderRadius: 2.5, overflow: 'hidden', border: '1px solid', borderColor: 'divider', mb: 2, lineHeight: 0 }}>
             <Box component='img' src={existingImageUrl} alt='Current receipt example'
               sx={{ display: 'block', width: '100%', maxHeight: 320, objectFit: 'contain' }} />

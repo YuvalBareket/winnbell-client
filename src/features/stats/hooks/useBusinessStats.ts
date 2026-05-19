@@ -8,6 +8,6 @@ export const useBusinessStats = (locationId?: number, drawId?: number) => {
     queryFn: () => fetchBusinessStats(locationId, drawId),
     staleTime: 5 * 60_000,
     gcTime:    15 * 60_000,
-    refetchOnWindowFocus: false, // historical data — no need to re-validate on focus
+    refetchOnWindowFocus: false, // historical data - no need to re-validate on focus
   });
 };

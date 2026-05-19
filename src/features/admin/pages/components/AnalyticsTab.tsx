@@ -81,7 +81,7 @@ const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
         <Stack spacing={3}>
           {/* Row 1: User Growth + Entry Source Mix side by side */}
           <Grid container spacing={2}>
-            {/* User Growth — platform-wide, not affected by business filter */}
+            {/* User Growth - platform-wide, not affected by business filter */}
             <Grid size={{ xs: 12, md: 4 }}>
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
                 <CardContent>
@@ -146,7 +146,7 @@ const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
 
           {/* Row 2: AMOE + Validation + Fraud */}
           <Grid container spacing={2}>
-            {/* AMOE — platform-wide */}
+            {/* AMOE - platform-wide */}
             <Grid size={{ xs: 12, md: 4 }}>
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
                 <CardContent>
@@ -243,7 +243,7 @@ const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
               </Card>
             </Grid>
 
-            {/* Fraud & Risk — platform-wide */}
+            {/* Fraud & Risk - platform-wide */}
             <Grid size={{ xs: 12, md: 4 }}>
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
                 <CardContent>
@@ -252,21 +252,21 @@ const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Box>
                         <Typography variant='body2' fontWeight={500}>High Risk</Typography>
-                        <Typography variant='caption' color='text.secondary'>Score ≥ 15 — throttled</Typography>
+                        <Typography variant='caption' color='text.secondary'>Score ≥ 15 - throttled</Typography>
                       </Box>
                       <Chip label={(analytics?.fraud?.high_risk ?? 0).toLocaleString()} color='error' />
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Box>
                         <Typography variant='body2' fontWeight={500}>Medium Risk</Typography>
-                        <Typography variant='caption' color='text.secondary'>Score 10–14 — image required</Typography>
+                        <Typography variant='caption' color='text.secondary'>Score 10–14 - image required</Typography>
                       </Box>
                       <Chip label={(analytics?.fraud?.medium_risk ?? 0).toLocaleString()} color='warning' />
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Box>
                         <Typography variant='body2' fontWeight={500}>Low Risk</Typography>
-                        <Typography variant='caption' color='text.secondary'>Score &lt; 10 — clean</Typography>
+                        <Typography variant='caption' color='text.secondary'>Score &lt; 10 - clean</Typography>
                       </Box>
                       <Chip label={(analytics?.fraud?.low_risk ?? 0).toLocaleString()} color='success' />
                     </Box>
@@ -298,7 +298,7 @@ const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
             </CardContent>
           </Card>
 
-          {/* Row 4: Location Breakdown — paginated, server-side */}
+          {/* Row 4: Location Breakdown - paginated, server-side */}
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
             <CardContent sx={{ pb: 0 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
@@ -375,7 +375,7 @@ const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
                         <TableCell align='center'>
                           {loc.quarantined > 0
                             ? <Typography variant='body2' fontWeight={600} color='error.main'>{loc.quarantined}</Typography>
-                            : <Typography variant='body2' color='text.disabled'>—</Typography>}
+                            : <Typography variant='body2' color='text.disabled'>-</Typography>}
                         </TableCell>
                         {!isMobile && <TableCell align='center'>{loc.receipt_tickets.toLocaleString()}</TableCell>}
                         {!isMobile && <TableCell align='center'>{loc.code_tickets.toLocaleString()}</TableCell>}
@@ -383,7 +383,7 @@ const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
                           <TableCell align='right'>
                             {loc.avg_transaction != null
                               ? `$${loc.avg_transaction.toFixed(2)}`
-                              : <Typography variant='body2' color='text.disabled'>—</Typography>}
+                              : <Typography variant='body2' color='text.disabled'>-</Typography>}
                           </TableCell>
                         )}
                         {!isMobile && (

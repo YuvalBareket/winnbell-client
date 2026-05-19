@@ -145,7 +145,7 @@ const ActivityPage = () => {
       <Container maxWidth='lg' sx={{ mt: -5 }}>
         <Stack spacing={3}>
 
-          {/* Not-live banner — business admin only, until subscribed */}
+          {/* Not-live banner - business admin only, until subscribed */}
           {!isLocationManager && !bizData?.is_subscribed && bizData && (
             <Paper
               elevation={0}
@@ -169,7 +169,7 @@ const ActivityPage = () => {
                     Your business isn't live yet
                   </Typography>
                   <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'none', sm: 'block' } }}>
-                    Customers can't find you until you subscribe — tap to get started.
+                    Customers can't find you until you subscribe - tap to get started.
                   </Typography>
                   <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'block', sm: 'none' } }}>
                     Tap to subscribe and go live
@@ -187,10 +187,10 @@ const ActivityPage = () => {
             </Paper>
           )}
 
-          {/* Filters — top priority */}
+          {/* Filters - top priority */}
           <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'white' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
-              {/* Location dropdown — only show if NOT a location manager */}
+              {/* Location dropdown - only show if NOT a location manager */}
               {!isLocationManager && locations.length > 0 && (
                 <FormControl size='small' sx={{ minWidth: 180 }}>
                   <InputLabel>All locations</InputLabel>
@@ -357,7 +357,7 @@ const ActivityPage = () => {
                           {item.location_name}
                         </Typography>
                         <Typography variant='h6' fontWeight={700} color='text.primary' sx={{ ml: 2, flexShrink: 0 }}>
-                          {item.transaction_amount !== null ? formatCurrency(item.transaction_amount) : '—'}
+                          {item.transaction_amount !== null ? formatCurrency(item.transaction_amount) : '-'}
                         </Typography>
                       </Stack>
 

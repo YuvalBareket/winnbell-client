@@ -13,11 +13,11 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How do businesses benefit?',
-    a: 'Partner businesses pay a subscription to be featured in the Winnbell campaign. In return, customers visit your location to earn entries — driving repeat foot traffic and sales throughout the campaign period.',
+    a: 'Partner businesses pay a subscription to be featured in the Winnbell campaign. In return, customers visit your location to earn entries - driving repeat foot traffic and sales throughout the campaign period.',
   },
   {
     q: 'How does the business subscription work?',
-    a: 'Businesses subscribe monthly to participate in Winnbell campaigns. There are no long-term commitments — you can cancel at any time. Pricing depends on the number of locations.',
+    a: 'Businesses subscribe monthly to participate in Winnbell campaigns. There are no long-term commitments - you can cancel at any time. Pricing depends on the number of locations.',
   },
 ];
 

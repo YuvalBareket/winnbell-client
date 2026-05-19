@@ -150,7 +150,7 @@ const StatsPage = () => {
             )}
           </Paper>
 
-          {/* Monthly distribution — bar chart */}
+          {/* Monthly distribution - bar chart */}
           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction='row' justifyContent='space-between' alignItems='center' mb={2}>
               <Typography variant='subtitle1' fontWeight={700}>Monthly Distribution</Typography>
@@ -174,7 +174,7 @@ const StatsPage = () => {
             )}
           </Paper>
 
-          {/* 30-day trend — line chart */}
+          {/* 30-day trend - line chart */}
           <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction='row' justifyContent='space-between' alignItems='center' mb={2}>
               <Typography variant='subtitle1' fontWeight={700}>30-Day Trend</Typography>

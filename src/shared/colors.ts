@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────
-//  Winnbell Design Tokens — single source of truth
+//  Winnbell Design Tokens - single source of truth
 //  Change a value here → it propagates everywhere
 // ─────────────────────────────────────────────
 
@@ -11,7 +11,7 @@ export const PRIMARY_DARK       = '#0052CC';   // draw card gradient start
 export const PRIMARY_DARKER     = '#0747A6';   // draw card gradient end
 export const BRAND_NAVY         = '#06347e';   // hero gradient end (BusinessHub, Drawer)
 
-// ── Accent — warm gold for rewards/wins ──────
+// ── Accent - warm gold for rewards/wins ──────
 export const ACCENT_GOLD        = '#F5A623';   // warm amber-gold accent
 export const ACCENT_GOLD_LIGHT  = '#FFF4E0';   // gold tint background
 export const ACCENT_GOLD_DARK   = '#D4871C';   // darker gold for contrast
@@ -39,11 +39,11 @@ export const BORDER_LIGHT       = '#E2E8F0';   // social buttons, input borders
 export const BORDER_OVERLAY     = 'rgba(0,0,0,0.1)';
 export const BORDER_SUBTLE      = '#F1F5F9';   // very light dividers
 
-// ── Status — Activated (green) ───────────────
+// ── Status - Activated (green) ───────────────
 export const STATUS_ACTIVATED_BG   = '#e8f5e9';
 export const STATUS_ACTIVATED_TEXT = '#2e7d32';
 
-// ── Status — Pending (amber) ─────────────────
+// ── Status - Pending (amber) ─────────────────
 export const STATUS_PENDING_BG     = '#fff3e0';
 export const STATUS_PENDING_TEXT   = '#e65100';
 

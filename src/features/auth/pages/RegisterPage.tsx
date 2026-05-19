@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box, Button, Typography, TextField, IconButton, InputAdornment, Paper, Container,
   Stack, Alert, CircularProgress, Divider, Checkbox, FormControlLabel,
@@ -121,6 +121,13 @@ const RegisterPage = () => {
   const [error, setError] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageVerified, setAgeVerified] = useState(false);
+  const [regionBlocked, setRegionBlocked] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('region_blocked') === '1') {
+      setRegionBlocked(true);
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -204,6 +211,12 @@ const RegisterPage = () => {
           {roleSubtitle}
         </Typography>
       </Box>
+
+      {regionBlocked && (
+        <Alert severity='error' sx={{ borderRadius: 2 }}>
+          Winnbell is not available in your region yet. We're expanding soon!
+        </Alert>
+      )}
 
       {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
 

@@ -26,16 +26,16 @@ const ForBusinesses = ({ onNavigate }: ForBusinessesProps) => {
             Grow your business with Winnbell
           </Typography>
           <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '1rem', md: '1.1rem' }, lineHeight: 1.7, maxWidth: 520, mx: 'auto' }}>
-            A subscription-based campaign that brings customers through your door — month after month.
+            A subscription-based campaign that brings customers through your door - month after month.
           </Typography>
         </Box>
 
         {/* Three Value Props */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: { xs: 3, md: 4 }, mb: { xs: 8, md: 10 } }}>
           {[
-            { icon: <CheckCircle sx={{ fontSize: 32, color: PRIMARY_MAIN }} />, title: 'Campaign marketing that works', desc: 'Your business joins the monthly Winnbell campaign. Customers visit you to earn entries — giving them a real reason to return.' },
+            { icon: <CheckCircle sx={{ fontSize: 32, color: PRIMARY_MAIN }} />, title: 'Campaign marketing that works', desc: 'Your business joins the monthly Winnbell campaign. Customers visit you to earn entries - giving them a real reason to return.' },
             { icon: <EmojiEvents sx={{ fontSize: 32, color: PRIMARY_MAIN }} />, title: 'Drive repeat customers', desc: 'Instead of one-time visits, customers come back throughout the campaign. More visits means more sales and stronger loyalty.' },
-            { icon: <Storefront sx={{ fontSize: 32, color: PRIMARY_MAIN }} />, title: 'Simple dashboard', desc: 'Set up your business profile in minutes. Manage locations, track campaign entries, and see results — all in one place.' },
+            { icon: <Storefront sx={{ fontSize: 32, color: PRIMARY_MAIN }} />, title: 'Simple dashboard', desc: 'Set up your business profile in minutes. Manage locations, track campaign entries, and see results - all in one place.' },
           ].map((item, i) => (
             <Box
               key={i}

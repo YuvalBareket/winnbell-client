@@ -277,7 +277,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               You're maxed out for this campaign! 🎉
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-              You've submitted all <strong>30 entries</strong> for this campaign. That's the maximum — sit back and wait for the results. Good luck!
+              You've submitted all <strong>30 entries</strong> for this campaign. That's the maximum - sit back and wait for the results. Good luck!
             </Typography>
           </Box>
         </Box>
@@ -317,7 +317,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               Daily entry limit reached
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-              You've used your entries for today. Come back tomorrow — or claim your free weekly entry below.
+              You've used your entries for today. Come back tomorrow - or claim your free weekly entry below.
             </Typography>
           </Box>
         </Box>
@@ -424,7 +424,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             onPaste={() => setReceiptWasPasted(true)}
             helperText={
               <Box component="span">
-                Find this on your receipt — may say "Receipt #" or "Order #"
+                Find this on your receipt - may say "Receipt #" or "Order #"
                 {selectedLocation?.receipt_example_image_url && (
                   <>
                     {' · '}

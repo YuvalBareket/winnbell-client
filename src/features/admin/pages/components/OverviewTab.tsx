@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -11,11 +11,17 @@ import {
   Chip,
   useMediaQuery,
   useTheme,
+  TextField,
+  Button,
+  CircularProgress,
+  Autocomplete,
 } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import { usePlatformSettings, useSavePlatformSettings } from '../../hooks/useAdmin';
+import { COUNTRIES } from '../../../../shared/constants/countries';
 
 interface Props {
   overview: any;
@@ -25,6 +31,26 @@ interface Props {
 const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const { data: platformSettings } = usePlatformSettings();
+  const saveMutation = useSavePlatformSettings();
+
+  const [localAllowedStates, setLocalAllowedStates] = useState<string[]>([]);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [countryInputValue, setCountryInputValue] = useState('');
+
+  useEffect(() => {
+    if (platformSettings) {
+      setLocalAllowedStates(platformSettings.allowed_states ?? []);
+    }
+  }, [platformSettings]);
+
+  const handleSaveSettings = () => {
+    saveMutation.mutate(
+      { global_entry_cap: null, allowed_states: localAllowedStates },
+      { onSuccess: () => setSettingsSaved(true) },
+    );
+  };
 
   return (
     <Stack spacing={3}>
@@ -165,6 +191,86 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
       </Grid>
 
       {/* Current Draw Card */}
+      {/* Platform Settings */}
+      <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+        <CardContent>
+          <Stack spacing={3}>
+            <Typography variant='h6' fontWeight={700}>Platform Settings</Typography>
+
+            {/* Country control */}
+            <Box>
+              <Typography variant='subtitle2' fontWeight={700} mb={1}>Allowed Countries</Typography>
+              <Typography variant='caption' color='text.secondary' display='block' mb={1.5}>
+                Users can only register from selected countries. Remove all to allow worldwide.
+              </Typography>
+              <Autocomplete
+                options={COUNTRIES}
+                getOptionLabel={(o) => o.name}
+                value={null}
+                inputValue={countryInputValue}
+                onInputChange={(_e, val) => setCountryInputValue(val)}
+                onChange={(_e, selected) => {
+                  if (selected && !localAllowedStates.includes(selected.code)) {
+                    setLocalAllowedStates((prev) => [...prev, selected.code]);
+                  }
+                  setCountryInputValue('');
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} size='small' placeholder='Search country...' sx={{ width: 300 }} />
+                )}
+              />
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1.5 }}>
+                {localAllowedStates.map((code) => {
+                  const country = COUNTRIES.find((c) => c.code === code);
+                  return (
+                    <Chip
+                      key={code}
+                      label={country?.name ?? code}
+                      size='small'
+                      onDelete={() => setLocalAllowedStates((prev) => prev.filter((x) => x !== code))}
+                    />
+                  );
+                })}
+              </Box>
+              {localAllowedStates.length > 0 && (
+                <Button
+                  size='small'
+                  color='error'
+                  variant='outlined'
+                  onClick={() => {
+                    setLocalAllowedStates([]);
+                    saveMutation.mutate(
+                      { global_entry_cap: null, allowed_states: [] },
+                      { onSuccess: () => setSettingsSaved(true) },
+                    );
+                  }}
+                  disabled={saveMutation.isPending}
+                  sx={{ mt: 1, fontWeight: 600 }}
+                >
+                  Open to everyone
+                </Button>
+              )}
+            </Box>
+
+            {settingsSaved && (
+              <Alert severity='success' onClose={() => setSettingsSaved(false)}>Settings saved successfully.</Alert>
+            )}
+
+            <Box>
+              <Button
+                variant='contained'
+                disableElevation
+                onClick={handleSaveSettings}
+                disabled={saveMutation.isPending}
+                sx={{ fontWeight: 700 }}
+              >
+                {saveMutation.isPending ? <CircularProgress size={20} color='inherit' /> : 'Save Settings'}
+              </Button>
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
+
       {currentOpenDraw ? (
         <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
           <CardContent>

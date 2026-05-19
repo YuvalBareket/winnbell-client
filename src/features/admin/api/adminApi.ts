@@ -54,3 +54,9 @@ export const fetchLocationBreakdown = (params: {
     },
   });
 };
+
+export const fetchPlatformSettings = () =>
+  api.get<{ global_entry_cap: number | null; allowed_states: string[] }>('/admin/settings');
+
+export const savePlatformSettings = (data: { global_entry_cap: number | null; allowed_states: string[] }) =>
+  api.patch('/admin/settings', data);
