@@ -24,6 +24,8 @@ export const closeDraw = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/close`);
 export const pickWinner = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/pick-winner`);
+export const reopenDraw = (drawId: number) =>
+  api.post(`/admin/draws/${drawId}/reopen`);
 export const fetchAdminOverview = () => api.get('/admin/overview');
 export const fetchAllUsers = () => api.get<AdminUser[]>('/admin/users');
 export const setUserRiskScore = async (userId: number, riskScore: number): Promise<void> => {

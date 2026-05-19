@@ -9,6 +9,7 @@ import {
   openDraw,
   closeDraw,
   pickWinner,
+  reopenDraw,
   fetchAdminOverview,
   fetchAllUsers,
   updateUserRole,
@@ -118,6 +119,18 @@ export const usePickWinner = () => {
     mutationFn: (drawId: number) => pickWinner(drawId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
+    },
+  });
+};
+
+export const useReopenDraw = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (drawId: number) => reopenDraw(drawId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
     },
   });

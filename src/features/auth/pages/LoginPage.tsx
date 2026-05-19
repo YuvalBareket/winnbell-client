@@ -160,35 +160,77 @@ const LoginPage = () => {
   // ─── 2FA step ───────────────────────────────────────────────────────────────
 
   if (needs2FA) {
-    return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', bgcolor: BG_PAGE }}>
-        <Container maxWidth='xs'>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
-            <Paper elevation={4} sx={{ width: 80, height: 80, bgcolor: 'primary.main', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+    const VerifyContent = () => (
+      <Stack sx={{ zoom: { xs: 1, md: 0.85 } }}>
+        <Box sx={{ mb: { xs: 6, md: 5 }, textAlign: isDesktop ? 'left' : 'center' }}>
+          {!isDesktop && (
+            <Paper elevation={4} sx={{ width: 80, height: 80, bgcolor: 'primary.main', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, mx: 'auto' }}>
               <MarkEmailRead sx={{ color: 'white', fontSize: 40 }} />
             </Paper>
-            <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>Check your email</Typography>
-            <Typography variant='body1' color='text.secondary' textAlign='center'>
-              We sent a verification code to {formData.email}
+          )}
+          <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>Check your email</Typography>
+          <Typography variant='body1' color='text.secondary'>
+            Enter the 6-digit code we sent to {formData.email}
+          </Typography>
+        </Box>
+        {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
+        <Stack spacing={3}>
+          <TextField
+            fullWidth
+            label='Verification code'
+            placeholder='Enter 6-digit code'
+            value={mfaCode}
+            onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            onKeyDown={(e) => e.key === 'Enter' && handleVerify2FA()}
+            inputMode='numeric'
+            autoFocus
+            inputProps={{ maxLength: 6, style: { letterSpacing: '0.3em', fontSize: '1.25rem' } }}
+          />
+          <Button variant='contained' size='large' onClick={handleVerify2FA} disabled={loading || mfaCode.length < 6}
+            endIcon={!loading && <ArrowBackIosNew sx={{ transform: 'rotate(180deg)' }} />}
+            sx={{ py: 2, borderRadius: 3, fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
+            {loading ? <CircularProgress size={24} color='inherit' /> : 'Verify & Sign In'}
+          </Button>
+          <Box sx={{ textAlign: 'center', pt: 1 }}>
+            <Typography variant='body2' color='text.secondary'>
+              Wrong email?{' '}
+              <Typography component='span' variant='body2' sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}
+                onClick={() => { setNeeds2FA(false); setMfaCode(''); setError(''); }}>
+                Go back
+              </Typography>
             </Typography>
           </Box>
-          {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
-          <Stack spacing={3}>
-            <TextField
-              fullWidth
-              label='Verification code'
-              value={mfaCode}
-              onChange={(e) => setMfaCode(e.target.value)}
-              placeholder='Enter 6-digit code'
-              inputProps={{ maxLength: 6 }}
-              InputProps={{ sx: { '& input': { textAlign: 'center', fontSize: { xs: '1.5rem', md: '1.25rem' }, letterSpacing: '0.5em' } } }}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: 'background.paper' } }}
-            />
-            <Button variant='contained' size='large' onClick={handleVerify2FA} disabled={loading || mfaCode.length < 6} sx={{ py: 2, borderRadius: 3, fontWeight: 700 }}>
-              {loading ? <CircularProgress size={24} color='inherit' /> : 'Verify & Sign In'}
-            </Button>
-            <Button variant='text' onClick={() => { setNeeds2FA(false); setMfaCode(''); setError(''); }}>Back</Button>
-          </Stack>
+        </Stack>
+      </Stack>
+    );
+
+    if (isDesktop) {
+      return (
+        <Box sx={{ display: 'flex', height: '100dvh', overflow: 'hidden' }}>
+          <BrandPanel />
+          <Box sx={{ width: '50%', overflowY: 'auto', bgcolor: BG_PAGE, display: 'flex', flexDirection: 'column', px: 7, py: 5 }}>
+            <Box sx={{ mb: 4 }}>
+              <IconButton onClick={() => { setNeeds2FA(false); setMfaCode(''); setError(''); }} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}` }}>
+                <ArrowBackIosNew fontSize='small' />
+              </IconButton>
+            </Box>
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400 }}>
+              {VerifyContent()}
+            </Box>
+          </Box>
+        </Box>
+      );
+    }
+
+    return (
+      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
+        <Box sx={{ p: 2 }}>
+          <IconButton onClick={() => { setNeeds2FA(false); setMfaCode(''); setError(''); }} sx={{ bgcolor: 'action.hover' }}>
+            <ArrowBackIosNew fontSize='small' />
+          </IconButton>
+        </Box>
+        <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 4, pb: 4 }}>
+          {VerifyContent()}
         </Container>
       </Box>
     );

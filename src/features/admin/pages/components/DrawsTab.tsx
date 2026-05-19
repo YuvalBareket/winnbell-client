@@ -32,6 +32,7 @@ import {
   useOpenDraw,
   useCloseDraw,
   usePickWinner,
+  useReopenDraw,
   useDrawBusinesses,
 } from '../../hooks/useAdmin';
 import { BG_PAGE } from '../../../../shared/colors';
@@ -55,7 +56,6 @@ const DrawBusinessesPanel: React.FC<{ drawId: number }> = ({ drawId }) => {
         {data.map((b) => (
           <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
             <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
-            <Typography variant='caption' color='text.secondary'>Fee: ${Number(b.fee_at_entry).toLocaleString()}</Typography>
           </Box>
         ))}
       </Stack>
@@ -75,6 +75,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const [confirmOpen, setConfirmOpen] = useState<number | null>(null);
   const [confirmClose, setConfirmClose] = useState<number | null>(null);
   const [confirmPick, setConfirmPick] = useState<number | null>(null);
+  const [confirmReopen, setConfirmReopen] = useState<number | null>(null);
   const [winnerResult, setWinnerResult] = useState<{
     winnerName: string;
     ticketCode: string;
@@ -87,6 +88,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const openDraw = useOpenDraw();
   const closeDraw = useCloseDraw();
   const pickWinner = usePickWinner();
+  const reopenDraw = useReopenDraw();
 
   const handleOpenDraw = async () => {
     if (!confirmOpen) return;
@@ -108,6 +110,17 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       onSnackError(e?.response?.data?.message ?? 'Failed to close campaign');
     }
     setConfirmClose(null);
+  };
+
+  const handleReopenDraw = async () => {
+    if (!confirmReopen) return;
+    try {
+      await reopenDraw.mutateAsync(confirmReopen);
+      onSnackSuccess('Campaign reopened successfully');
+    } catch (e: any) {
+      onSnackError(e?.response?.data?.message ?? 'Failed to reopen campaign');
+    }
+    setConfirmReopen(null);
   };
 
   const handlePickWinner = async () => {
@@ -178,6 +191,9 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                       {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
                         <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={() => setConfirmPick(draw.id)} fullWidth>Pick Winner</Button>
                       )}
+                      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
+                        <Button size='small' variant='outlined' color='info' startIcon={<LockOpenIcon />} onClick={() => setConfirmReopen(draw.id)} fullWidth>Reopen</Button>
+                      )}
                     </Stack>
                   </Stack>
                 </CardContent>
@@ -231,6 +247,9 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                           )}
                           {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
                             <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={() => setConfirmPick(draw.id)}>Pick Winner</Button>
+                          )}
+                          {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
+                            <Button size='small' variant='outlined' color='info' startIcon={<LockOpenIcon />} onClick={() => setConfirmReopen(draw.id)}>Reopen</Button>
                           )}
                           {draw.status?.toUpperCase() === 'CLOSED' && draw.winner_user_id && (
                             <Chip label='Winner Selected' size='small' color='success' />
@@ -315,6 +334,28 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
             disabled={pickWinner.isPending}
           >
             {pickWinner.isPending ? 'Picking...' : 'Pick Winner'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Reopen campaign confirmation */}
+      <Dialog open={!!confirmReopen} onClose={() => setConfirmReopen(null)}>
+        <DialogTitle>Reopen Campaign?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Reopening this campaign will set its status back to Open. This is only allowed if no
+            winner has been picked and no other campaign is currently open.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmReopen(null)}>Cancel</Button>
+          <Button
+            variant='contained'
+            color='info'
+            onClick={handleReopenDraw}
+            disabled={reopenDraw.isPending}
+          >
+            {reopenDraw.isPending ? 'Reopening...' : 'Reopen Campaign'}
           </Button>
         </DialogActions>
       </Dialog>
