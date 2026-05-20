@@ -118,14 +118,13 @@ const AppRoutes = () => {
               <Route path='/subscription/success' element={<SubscriptionSuccessPage />} />
               <Route path='/settings' element={<SettingsPage />} />
               <Route path='/marketing' element={<MarketingPage />} />
+              {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}
             </>
           )}
 
           {/* Redirect admin away from business pages */}
           {isAdmin && <Route path='*' element={<Navigate to='/admin' replace />} />}
         </Route>
-
-        {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}
       </Route>
 
       {/* Fallback */}

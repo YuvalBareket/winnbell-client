@@ -30,6 +30,8 @@ export interface BusinessLocation {
   id: number;
   name: string;
   address: string;
+  latitude: number | null;
+  longitude: number | null;
   manager_id: number | null;
   manager_name: string | null;
   is_active: boolean;

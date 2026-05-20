@@ -36,7 +36,7 @@ interface FormValues {
 const EditLocationModal = ({ open, onClose, location }: Props) => {
   const { mutate: updateLocation, isPending } = useUpdateLocation();
 
-  const { control, handleSubmit, reset, setValue, watch } = useForm<FormValues>({
+  const { control, handleSubmit, reset, setValue } = useForm<FormValues>({
     defaultValues: {
       name: '',
       address: '',
@@ -50,13 +50,11 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
       reset({
         name: location.name,
         address: location.address,
-        lat: null,
-        lon: null,
+        lat: location.latitude ?? null,
+        lon: location.longitude ?? null,
       });
     }
   }, [location, reset]);
-
-  const addressValue = watch('address');
 
   const onSubmit = (values: FormValues) => {
     if (!location) return;
@@ -124,9 +122,6 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
 
         <AddressAutoComplete
           label='Address'
-          defaultValue={
-            addressValue ? { label: addressValue, lat: null, lon: null } : null
-          }
           onSelect={(option) => {
             setValue('address', option?.label ?? '');
             setValue('lat', option?.lat ?? null);

@@ -53,7 +53,7 @@ const BusinessProfilePage = () => {
       businessName: user?.fullName || '',
       businessSector: '',
       description: '',
-      locations: [{ name: 'Main Branch', address: '', lat: null, lon: null }],
+      locations: [{ name: 'Main Branch', address: '', lat: null as number | null, lon: null as number | null }],
     },
   });
 
@@ -351,18 +351,25 @@ const BusinessProfilePage = () => {
                           name={`locations.${index}.address` as const}
                           control={control}
                           rules={{ required: 'Address is required' }}
-                          render={({ field: { onChange, value } }) => (
-                            <AddressAutoComplete
-                              label='Full address'
-                              placeholder='Start typing your address...'
-                              value={value ? { label: value, lat: 0, lon: 0 } : null}
-                              onSelect={(selected) => {
-                                onChange(selected?.label || '');
-                                setValue(`locations.${index}.lat`, selected?.lat as unknown as null);
-                                setValue(`locations.${index}.lon`, selected?.lon as unknown as null);
-                              }}
-                            />
-                          )}
+                          render={({ field: { onChange, value } }) => {
+                            const lat = watch(`locations.${index}.lat`);
+                            const lon = watch(`locations.${index}.lon`);
+                            const addressValue = value && lat && lon
+                              ? { label: value, lat: lat as number, lon: lon as number }
+                              : null;
+                            return (
+                              <AddressAutoComplete
+                                label='Full address'
+                                placeholder='Start typing your address...'
+                                value={addressValue}
+                                onSelect={(selected) => {
+                                  onChange(selected?.label || '');
+                                  setValue(`locations.${index}.lat`, selected?.lat ?? null);
+                                  setValue(`locations.${index}.lon`, selected?.lon ?? null);
+                                }}
+                              />
+                            );
+                          }}
                         />
                       </Stack>
                     </Paper>

@@ -8,6 +8,7 @@ import {
   Button,
   TextField,
   CircularProgress,
+  FormHelperText,
 } from '@mui/material';
 import { AddBusiness, Close } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
@@ -37,9 +38,13 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
   const form = useForm<AddLocationFormValues>({
     defaultValues: { name: '', address: '', lat: null, lon: null },
   });
+  const addressError = form.formState.errors.address?.message;
 
   const handleSubmit = (values: AddLocationFormValues) => {
-    if (!values.lat || !values.lon) return;
+    if (values.lat === null || values.lon === null) {
+      form.setError('address', { message: 'Please select an address from the suggestions' });
+      return;
+    }
     onSubmit({
       name: values.name,
       address: values.address,
@@ -87,15 +92,20 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
             />
           )}
         />
-        <AddressAutoComplete
-          label='Address'
-          defaultValue={null}
-          onSelect={(option) => {
-            form.setValue('address', option?.label ?? '');
-            form.setValue('lat', option?.lat ?? null);
-            form.setValue('lon', option?.lon ?? null);
-          }}
-        />
+        <Box>
+          <AddressAutoComplete
+            label='Address'
+            onSelect={(option) => {
+              form.setValue('address', option?.label ?? '');
+              form.setValue('lat', option?.lat ?? null);
+              form.setValue('lon', option?.lon ?? null);
+              if (option?.lat) form.clearErrors('address');
+            }}
+          />
+          {addressError && (
+            <FormHelperText error sx={{ ml: 1.5 }}>{addressError}</FormHelperText>
+          )}
+        </Box>
         <Stack direction='row' spacing={1.5} pt={1}>
           <Button
             variant='outlined'

@@ -4,10 +4,9 @@ import { useAddressAutocomplete } from '../hooks/useAutoCompleteAddewss';
 
 type AddressOption = {
   label: string;
-  lat: number | null;
-  lon: number | null;
+  lat: number;
+  lon: number;
   raw?: any;
-  isFreeText?: boolean;
 };
 
 type Props = {
@@ -56,40 +55,18 @@ const AddressAutoComplete = ({
     setInput(defaultValue?.label || '');
   }, [isControlled, value, defaultValue]);
 
-  const makeFreeText = (text: string): AddressOption => ({
-    label: text,
-    lat: null,
-    lon: null,
-    isFreeText: true,
-    raw: { freeText: true },
-  });
-
-  const commitFreeTextIfNeeded = () => {
-    const text = input.trim();
-    if (!text) return;
-
-    // if user already selected an option with same label, don't overwrite
-    const current = isControlled ? value : selected;
-    if (current?.label === text) return;
-
-    const free = makeFreeText(text);
-
-    if (!isControlled) setSelected(free);
-    onSelect?.(free);
-  };
+  const current = isControlled ? (value ?? null) : selected;
 
   return (
-    <Autocomplete<AddressOption, false, false, true>
+    <Autocomplete<AddressOption, false, false, false>
       sx={{ minWidth: '200px' }}
       disabled={disabled}
-      freeSolo
-      clearOnBlur={false}
-      value={isControlled ? (value ?? null) : selected}
+      value={current}
       inputValue={input}
       options={options}
       loading={loading}
       filterOptions={(x) => x}
-      getOptionLabel={(o) => (typeof o === 'string' ? o : o?.label || '')}
+      getOptionLabel={(o) => o?.label || ''}
       isOptionEqualToValue={(a, b) => {
         if (!a || !b) return false;
         return a.label === b.label && a.lat === b.lat && a.lon === b.lon;
@@ -99,20 +76,15 @@ const AddressAutoComplete = ({
       }}
       onInputChange={(_, v, reason) => {
         setInput(v);
-        // avoid spamming when clearing/resetting
         if (reason === 'input') setQuery(v);
+        // If user clears the field, clear the selection too
+        if (reason === 'clear') {
+          if (!isControlled) setSelected(null);
+          onSelect?.(null);
+        }
       }}
       onChange={(_, v) => {
         markSelected();
-
-        if (typeof v === 'string') {
-          const free = makeFreeText(v.trim());
-          if (!isControlled) setSelected(free);
-          setInput(free.label);
-          onSelect?.(free);
-          return;
-        }
-
         if (!isControlled) setSelected(v);
         setInput(v?.label || '');
         onSelect?.(v);
@@ -123,14 +95,8 @@ const AddressAutoComplete = ({
           label={label}
           placeholder={placeholder}
           onBlur={() => {
-            // if they just typed and left the field, accept it
-            commitFreeTextIfNeeded();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              // accept typed value even if no option selected
-              commitFreeTextIfNeeded();
-            }
+            // Reset input to the last confirmed selection — prevents saving free text
+            setInput(current?.label || '');
           }}
           InputProps={{
             ...params.InputProps,
