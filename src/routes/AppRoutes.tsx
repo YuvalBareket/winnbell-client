@@ -109,7 +109,7 @@ const AppRoutes = () => {
             <>
               <Route path='/nearby' element={isBusinessAdmin ? <BusinessHubPage /> : <NearbyPage />} />
               <Route path='/scan' element={<RedeemPage />} />
-              <Route path='/activity' element={<ActivityPage />} />
+              <Route path='/activity' element={isBusinessAdmin || isManager ? <ActivityPage /> : <Navigate to='/tickets' replace />} />
               <Route path='/tickets' element={<MyTicketsPage />} />
               <Route path='/draws/history' element={<DrawHistoryPage />} />
               <Route path='/stats' element={<StatsPage />} />

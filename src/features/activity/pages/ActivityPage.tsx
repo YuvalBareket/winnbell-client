@@ -261,7 +261,7 @@ const ActivityPage = () => {
           {isError && <Alert severity='error' sx={{ borderRadius: 3 }}>Failed to load activity. Please try again.</Alert>}
 
           {/* Activity feed */}
-          {isLoading ? (
+          {isError ? null : isLoading ? (
             <Stack spacing={2}>
               <Skeleton variant='rounded' height={110} sx={{ borderRadius: 3 }} />
               <Skeleton variant='rounded' height={110} sx={{ borderRadius: 3 }} />
