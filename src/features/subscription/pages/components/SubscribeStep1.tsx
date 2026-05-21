@@ -56,15 +56,15 @@ const SubscribeStep1 = ({
       </Typography>
       {parsedThreshold && parsedThreshold > 0 ? (
         <Stack spacing={0.75}>
-          {[parsedThreshold - 1, parsedThreshold, parsedThreshold + parsedThreshold * 0.5].map((amt) => {
-            const earns = amt >= parsedThreshold;
+          {[parsedThreshold - 1, parsedThreshold, parsedThreshold * 2].map((amt) => {
+            const entries = Math.floor(amt / parsedThreshold);
             return (
               <Stack key={amt} direction='row' alignItems='center' spacing={1}>
                 <Typography variant='body2' sx={{ color: 'text.secondary', minWidth: 80 }}>
                   ${amt.toFixed(2)}
                 </Typography>
-                <Typography variant='body2' fontWeight={700} sx={{ color: earns ? 'success.main' : 'text.disabled' }}>
-                  {earns ? '✓ 1 entry' : '✗ no entry'}
+                <Typography variant='body2' fontWeight={700} sx={{ color: entries > 0 ? 'success.main' : 'text.disabled' }}>
+                  {entries > 0 ? `✓ ${entries} ${entries === 1 ? 'entry' : 'entries'}` : '✗ no entry'}
                 </Typography>
               </Stack>
             );

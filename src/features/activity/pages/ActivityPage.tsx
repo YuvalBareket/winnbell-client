@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import {
   ReceiptLongOutlined, AttachMoneyOutlined,
-  FeedOutlined, QrCodeScannerOutlined, CardGiftcardOutlined,
+  FeedOutlined,
   RocketLaunch,
 } from '@mui/icons-material';
 import AppHeader from '../../../shared/components/AppHeader';
@@ -17,7 +17,7 @@ import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { fetchActivity, type DateRange, type ActivityItem } from '../api/activity.api';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN,
+  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
 } from '../../../shared/colors';
 import { formatCurrency, formatRelativeTime } from '../../../shared/utils/date';
 import KpiCard from '../../stats/components/KpiCard';
@@ -29,7 +29,7 @@ const ActivityPage = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
-  const [dateRange, setDateRange] = useState<DateRange>('30d');
+  const [dateRange, setDateRange] = useState<DateRange>('today');
   const [cursor, setCursor] = useState<number | undefined>(undefined);
   const [pages, setPages] = useState<ActivityItem[][]>([]);
 
@@ -40,7 +40,7 @@ const ActivityPage = () => {
     ? (user?.location_id ?? undefined)
     : (selectedLocation !== '' ? (selectedLocation as number) : undefined);
 
-  const { data: activity, isLoading, isError } = useQuery({
+  const { data: activity, isLoading, isFetching, isError } = useQuery({
     queryKey: ['business', 'activity', locationIdForQuery, dateRange, cursor],
     queryFn: () => fetchActivity({ location_id: locationIdForQuery, date_range: dateRange, cursor }),
     placeholderData: keepPreviousData,
@@ -71,6 +71,9 @@ const ActivityPage = () => {
     resetFilters();
   };
 
+  // Show skeletons on filter/location changes (cursor=undefined), but not during "load more"
+  const isRefreshing = isFetching && cursor === undefined;
+
   const displayItems = pages.flat();
   const nextCursor = activity?.next_cursor ?? null;
 
@@ -82,8 +85,6 @@ const ActivityPage = () => {
     switch (source) {
       case 'receipt':
         return { color: 'primary', label: 'Receipt' };
-      case 'code':
-        return { color: 'default', label: 'Code' };
       case 'free':
         return { color: 'success', label: 'Free' };
       case 'promo':
@@ -93,30 +94,17 @@ const ActivityPage = () => {
     }
   };
 
-  const getSourceIcon = (source: string) => {
-    switch (source) {
-      case 'code':
-        return <QrCodeScannerOutlined sx={{ fontSize: 18 }} />;
-      case 'free':
-      case 'promo':
-        return <CardGiftcardOutlined sx={{ fontSize: 18 }} />;
-      case 'receipt':
-      default:
-        return <ReceiptLongOutlined sx={{ fontSize: 18 }} />;
-    }
-  };
 
-  const getAccentColor = (source: string) => {
-    switch (source) {
-      case 'receipt':
-        return PRIMARY_MAIN;
-      case 'code':
-        return '#6b7280';
-      case 'free':
-      case 'promo':
-        return '#10b981';
+  const getPeriodLabel = (range: DateRange) => {
+    switch (range) {
+      case 'today':
+        return 'Today';
+      case '7d':
+        return 'Last 7 Days';
+      case '30d':
+        return 'Last 30 Days';
       default:
-        return '#999';
+        return 'Activity';
     }
   };
 
@@ -126,7 +114,7 @@ const ActivityPage = () => {
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Hero */}
-      <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
+      <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 10, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
         <Container maxWidth='lg'>
           <Stack direction='row' alignItems='center' spacing={2}>
             <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -135,14 +123,14 @@ const ActivityPage = () => {
             <Box>
               <Typography variant='h5' fontWeight={800}>Receipt Activity</Typography>
               <Typography variant='body2' sx={{ opacity: 0.75 }}>
-                Real-time receipt and entry submissions
+                Showing activity for {getPeriodLabel(dateRange)}
               </Typography>
             </Box>
           </Stack>
         </Container>
       </Box>
 
-      <Container maxWidth='lg' sx={{ mt: -5 }}>
+      <Container maxWidth='lg' sx={{ mt: -6 }}>
         <Stack spacing={3}>
 
           {/* Not-live banner - business admin only, until subscribed */}
@@ -153,7 +141,7 @@ const ActivityPage = () => {
               sx={{
                 p: 2,
                 borderRadius: 3,
-             
+
                 bgcolor: 'white',
                 display: 'flex',
                 alignItems: 'center',
@@ -187,8 +175,8 @@ const ActivityPage = () => {
             </Paper>
           )}
 
-          {/* Filters - top priority */}
-          <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'white' }}>
+          {/* Filters */}
+          <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: 'white' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
               {/* Location dropdown - only show if NOT a location manager */}
               {!isLocationManager && locations.length > 0 && (
@@ -203,7 +191,7 @@ const ActivityPage = () => {
                 </FormControl>
               )}
 
-              {/* Date range toggle */}
+              {/* Date range toggle - styled with filled selected state */}
               <ToggleButtonGroup
                 value={dateRange}
                 exclusive
@@ -211,7 +199,27 @@ const ActivityPage = () => {
                   if (newRange !== null) handleDateRangeChange(newRange as DateRange);
                 }}
                 size='small'
-                sx={{ height: 'fit-content' }}
+                sx={{
+                  height: 'fit-content',
+                  '& .MuiToggleButton-root': {
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    color: 'text.secondary',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      bgcolor: 'action.hover',
+                    },
+                  },
+                  '& .MuiToggleButton-root.Mui-selected': {
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    borderColor: 'primary.main',
+                    fontWeight: 600,
+                    '&:hover': {
+                      bgcolor: 'primary.dark',
+                    },
+                  },
+                }}
               >
                 <ToggleButton value='today' aria-label='today'>
                   Today
@@ -226,33 +234,26 @@ const ActivityPage = () => {
             </Stack>
           </Paper>
 
-          {/* KPI cards */}
+          {/* KPI cards - 2 cards, larger */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            {isLoading ? (
+            {isLoading || isRefreshing ? (
               <>
-                <Skeleton variant='rounded' height={88} sx={{ flex: 1, borderRadius: 3 }} />
-                <Skeleton variant='rounded' height={88} sx={{ flex: 1, borderRadius: 3 }} />
-                <Skeleton variant='rounded' height={88} sx={{ flex: 1, borderRadius: 3 }} />
+                <Skeleton variant='rounded' height={100} sx={{ flex: 1, borderRadius: 3 }} />
+                <Skeleton variant='rounded' height={100} sx={{ flex: 1, borderRadius: 3 }} />
               </>
             ) : (
               <>
                 <KpiCard
                   icon={<ReceiptLongOutlined sx={{ color: '#1976d2', fontSize: 22 }} />}
-                  label='Receipts Today'
-                  value={(activity?.summary.receipts_today ?? 0).toLocaleString()}
+                  label='Receipts'
+                  value={(activity?.summary.receipts_period ?? 0).toLocaleString()}
                   color='rgba(25,118,210,0.12)'
                 />
                 <KpiCard
                   icon={<AttachMoneyOutlined sx={{ color: '#388e3c', fontSize: 22 }} />}
-                  label='Revenue Today'
-                  value={formatCurrency(activity?.summary.revenue_today ?? 0)}
+                  label='Revenue'
+                  value={formatCurrency(activity?.summary.revenue_period ?? 0)}
                   color='rgba(56,142,60,0.12)'
-                />
-                <KpiCard
-                  icon={<ReceiptLongOutlined sx={{ color: '#7b1fa2', fontSize: 22 }} />}
-                  label='Receipts This Month'
-                  value={(activity?.summary.receipts_this_month ?? 0).toLocaleString()}
-                  color='rgba(123,31,162,0.12)'
                 />
               </>
             )}
@@ -261,12 +262,21 @@ const ActivityPage = () => {
           {isError && <Alert severity='error' sx={{ borderRadius: 3 }}>Failed to load activity. Please try again.</Alert>}
 
           {/* Activity feed */}
-          {isError ? null : isLoading ? (
-            <Stack spacing={2}>
-              <Skeleton variant='rounded' height={110} sx={{ borderRadius: 3 }} />
-              <Skeleton variant='rounded' height={110} sx={{ borderRadius: 3 }} />
-              <Skeleton variant='rounded' height={110} sx={{ borderRadius: 3 }} />
-            </Stack>
+          {isError ? null : isLoading || isRefreshing ? (
+            <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', bgcolor: 'white' }}>
+              <Box sx={{ px: 3, py: 1.5, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Typography variant='subtitle2' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.75rem' }}>
+                  Recent Activity
+                </Typography>
+              </Box>
+              <Stack spacing={0}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Box key={i} sx={{ px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider', '&:last-child': { borderBottom: 'none' } }}>
+                    <Skeleton variant='rectangular' height={60} sx={{ borderRadius: 1 }} />
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
           ) : displayItems.length === 0 ? (
             <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <FeedOutlined sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
@@ -278,92 +288,66 @@ const ActivityPage = () => {
               </Typography>
             </Paper>
           ) : (
-            <Stack spacing={2.5}>
+            <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', bgcolor: 'white' }}>
               {/* Section header with live indicator */}
-              <Stack direction='row' alignItems='center' spacing={1} sx={{ px: 0.5 }}>
-                <Typography variant='subtitle2' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.75rem' }}>
-                  Recent Activity
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  <Box
-                    sx={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      bgcolor: '#10b981',
-                      animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                      '@keyframes pulse': {
-                        '0%, 100%': { opacity: 1 },
-                        '50%': { opacity: 0.5 },
-                      },
-                    }}
-                  />
-                  <Typography variant='caption' color='text.secondary' sx={{ fontSize: '0.65rem' }}>
-                    LIVE
+              <Box sx={{ px: 3, py: 1.5, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Stack direction='row' alignItems='center' spacing={1}>
+                  <Typography variant='subtitle2' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.75rem' }}>
+                    Recent Activity
                   </Typography>
-                </Box>
-              </Stack>
-
-              {displayItems.map((item, idx) => {
-                const sourceBadge = getSourceBadgeColor(item.entry_source);
-                const accentColor = getAccentColor(item.entry_source);
-                const sourceIcon = getSourceIcon(item.entry_source);
-
-                return (
-                  <Paper
-                    key={idx}
-                    elevation={0}
-                    sx={{
-                      p: 2.5,
-                      borderRadius: 2.5,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderLeftWidth: 4,
-                      borderLeftColor: accentColor,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2.5,
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                        borderColor: accentColor,
-                        borderLeftColor: accentColor,
-                      },
-                    }}
-                  >
-                    {/* Left: source icon */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <Box
                       sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 1.5,
-                        bgcolor: accentColor + '12',
-                        display: 'flex',
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        bgcolor: '#10b981',
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        '@keyframes pulse': {
+                          '0%, 100%': { opacity: 1 },
+                          '50%': { opacity: 0.5 },
+                        },
+                      }}
+                    />
+                    <Typography variant='caption' color='text.secondary' sx={{ fontSize: '0.65rem' }}>
+                      LIVE
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Typography variant='caption' color='text.secondary' sx={{ fontSize: '0.75rem' }}>
+                  Amount
+                </Typography>
+              </Box>
+
+              {/* Activity rows */}
+              <Stack spacing={0}>
+                {displayItems.map((item, idx) => {
+                  const sourceBadge = getSourceBadgeColor(item.entry_source);
+
+                  return (
+                    <Box
+                      key={idx}
+                      sx={{
+                        px: 3,
+                        py: 2,
+                        borderBottom: idx === displayItems.length - 1 ? 'none' : '1px solid',
+                        borderColor: 'divider',
+                        display: 'grid',
+                        gridTemplateColumns: '1fr auto',
+                        gap: 2,
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        color: accentColor,
+                        transition: 'bgcolor 0.2s ease',
+                        '&:hover': {
+                          bgcolor: 'action.hover',
+                        },
                       }}
                     >
-                      {sourceIcon}
-                    </Box>
-
-                    {/* Middle: main content */}
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      {/* Top row: location and amount */}
-                      <Stack direction='row' justifyContent='space-between' alignItems='flex-start' sx={{ mb: 1 }}>
-                        <Typography variant='body2' fontWeight={700} color='text.primary' sx={{ flex: 1 }}>
+                      {/* Left: location, receipt ID, source chip */}
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant='body2' fontWeight={700} color='text.primary' sx={{ mb: 0.5 }}>
                           {item.location_name}
                         </Typography>
-                        <Typography variant='h6' fontWeight={700} color='text.primary' sx={{ ml: 2, flexShrink: 0 }}>
-                          {item.transaction_amount !== null ? formatCurrency(item.transaction_amount) : '-'}
-                        </Typography>
-                      </Stack>
-
-                      {/* Bottom row: source + receipt ID, timestamp + status */}
-                      <Stack direction='row' justifyContent='space-between' alignItems='center' spacing={2}>
-                        <Stack direction='row' alignItems='center' spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+                        <Stack direction='row' alignItems='center' spacing={1} sx={{ minWidth: 0 }}>
                           <Chip
                             label={sourceBadge.label}
                             size='small'
@@ -372,33 +356,36 @@ const ActivityPage = () => {
                             sx={{ fontWeight: 600, height: 24 }}
                           />
                           {item.receipt_identifier_masked && (
-                            <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap' }}>
+                            <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {item.receipt_identifier_masked}
                             </Typography>
                           )}
                         </Stack>
+                      </Box>
 
-                        {/* Right: timestamp, status */}
-                        <Stack direction='row' alignItems='center' spacing={1.5} sx={{ flexShrink: 0 }}>
-                          <Typography variant='caption' color='text.secondary'>
-                            {formatRelativeTime(item.created_at)}
-                          </Typography>
-                        </Stack>
-                      </Stack>
+                      {/* Right: amount and timestamp */}
+                      <Box sx={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <Typography variant='body2' fontWeight={700} color='text.primary' sx={{ mb: 0.25 }}>
+                          {item.transaction_amount !== null ? formatCurrency(item.transaction_amount) : '-'}
+                        </Typography>
+                        <Typography variant='caption' color='text.secondary'>
+                          {formatRelativeTime(item.created_at)}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Paper>
-                );
-              })}
+                  );
+                })}
+              </Stack>
 
               {/* Load more button */}
               {nextCursor !== null && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <Button variant='outlined' onClick={handleLoadMore}>
+                <Box sx={{ borderTop: '1px solid', borderColor: 'divider', p: 2, textAlign: 'center' }}>
+                  <Button variant='outlined' onClick={handleLoadMore} fullWidth>
                     Load more
                   </Button>
                 </Box>
               )}
-            </Stack>
+            </Paper>
           )}
 
         </Stack>

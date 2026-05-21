@@ -351,23 +351,30 @@ const BusinessProfilePage = () => {
                           name={`locations.${index}.address` as const}
                           control={control}
                           rules={{ required: 'Address is required' }}
-                          render={({ field: { onChange, value } }) => {
+                          render={({ field: { onChange, value }, fieldState: { error } }) => {
                             const lat = watch(`locations.${index}.lat`);
                             const lon = watch(`locations.${index}.lon`);
                             const addressValue = value && lat && lon
                               ? { label: value, lat: lat as number, lon: lon as number }
                               : null;
                             return (
-                              <AddressAutoComplete
-                                label='Full address'
-                                placeholder='Start typing your address...'
-                                value={addressValue}
-                                onSelect={(selected) => {
-                                  onChange(selected?.label || '');
-                                  setValue(`locations.${index}.lat`, selected?.lat ?? null);
-                                  setValue(`locations.${index}.lon`, selected?.lon ?? null);
-                                }}
-                              />
+                              <Box>
+                                <AddressAutoComplete
+                                  label='Full address'
+                                  placeholder='Start typing your address...'
+                                  value={addressValue}
+                                  onSelect={(selected) => {
+                                    onChange(selected?.label || '');
+                                    setValue(`locations.${index}.lat`, selected?.lat ?? null);
+                                    setValue(`locations.${index}.lon`, selected?.lon ?? null);
+                                  }}
+                                />
+                                {error && (
+                                  <Typography variant='caption' color='error' sx={{ mt: 0.5, ml: 1.5, display: 'block' }}>
+                                    {error.message}
+                                  </Typography>
+                                )}
+                              </Box>
                             );
                           }}
                         />

@@ -1,12 +1,10 @@
 import { api } from '../../../shared/api/client';
 
 export interface ActivitySummary {
-  receipts_today: number;
-  revenue_today: number;
-  entries_today: number;
-  entries_this_month: number;
+  receipts_period: number;
+  revenue_period: number;
+  entries_period: number;
   monthly_cap: number | null;
-  receipts_this_month: number;
 }
 
 export interface ActivityItem {
