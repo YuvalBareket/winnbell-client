@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Box,
   Typography,
   TextField,
   Button,
   Stack,
-  Container,
+  
   IconButton,
   Paper,
   LinearProgress,
@@ -86,19 +87,19 @@ const BusinessProfilePage = () => {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          p: { xs: 4, md: 6 },
+          p: { xs: '16px 24px', md: 6 },
           color: 'white',
           position: 'relative',
           overflow: 'hidden',
-          minHeight: { xs: 220, md: 'auto' },
+          minHeight: { xs: 'unset', md: 'auto' },
         }}
       >
-        {/* Decorative blobs */}
-        <Box sx={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(60px)', pointerEvents: 'none' }} />
-        <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: 'rgba(66,165,245,0.2)', filter: 'blur(50px)', pointerEvents: 'none' }} />
+        {/* Decorative blobs — desktop only */}
+        <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(60px)', pointerEvents: 'none' }} />
+        <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: 'rgba(66,165,245,0.2)', filter: 'blur(50px)', pointerEvents: 'none' }} />
 
         {/* Logo */}
-        <Stack direction='row' alignItems='center' spacing={1.5} mb={{ xs: 3, md: 5 }}>
+        <Stack direction='row' alignItems='center' spacing={1.5} mb={{ xs: 0, md: 5 }}>
           <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: ALPHA_WHITE_20, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <ConfirmationNumber sx={{ fontSize: 24 }} />
           </Box>
@@ -144,12 +145,12 @@ const BusinessProfilePage = () => {
           bgcolor: BG_PAGE,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
+          justifyContent: { xs: 'flex-start', md: 'center' },
           p: { xs: 3, sm: 4, md: 6 },
           overflowY: 'auto',
         }}
       >
-        <Container maxWidth='sm' disableGutters>
+        <Stack>
 
           {/* Mobile progress */}
           <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 3 }}>
@@ -217,37 +218,105 @@ const BusinessProfilePage = () => {
                       <Typography variant='body2' fontWeight={700} color='text.secondary' mb={1.5} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
                         Industry
                       </Typography>
-                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
-                        {registrationSectors.map((key) => {
-                          const s = BUSINESS_SECTORS[key];
-                          const active = selectedSector === key;
-                          return (
+                      <AnimatePresence mode='wait'>
+                        {selectedSector ? (
+                          <motion.div
+                            key='selected'
+                            initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                            transition={{ duration: 0.22, ease: 'easeOut' }}
+                          >
                             <Paper
-                              key={key}
                               elevation={0}
-                              onClick={() => setValue('businessSector', key, { shouldValidate: true })}
                               sx={{
                                 p: 2,
                                 borderRadius: 3,
                                 border: '2px solid',
-                                borderColor: active ? PRIMARY_MAIN : BORDER_LIGHT,
-                                bgcolor: active ? 'rgba(25,93,230,0.04)' : 'white',
-                                cursor: 'pointer',
-                                textAlign: 'center',
-                                transition: 'all 0.15s ease',
-                                '&:hover': { borderColor: active ? PRIMARY_MAIN : 'action.active', bgcolor: active ? 'rgba(25,93,230,0.06)' : 'action.hover' },
+                                borderColor: PRIMARY_MAIN,
+                                bgcolor: 'rgba(25,93,230,0.04)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
                               }}
                             >
-                              <Box sx={{ fontSize: 28, color: active ? PRIMARY_MAIN : s.color, mb: 0.5 }}>
-                                {s.icon}
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <motion.div
+                                  initial={{ scale: 0.5, rotate: -15 }}
+                                  animate={{ scale: 1, rotate: 0 }}
+                                  transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 18 }}
+                                  style={{ fontSize: 26, color: PRIMARY_MAIN, lineHeight: 1 }}
+                                >
+                                  {BUSINESS_SECTORS[selectedSector].icon}
+                                </motion.div>
+                                <Box>
+                                  <Typography variant='body2' fontWeight={700} color='primary.main'>
+                                    {BUSINESS_SECTORS[selectedSector].label}
+                                  </Typography>
+                                  <Typography variant='caption' color='text.secondary'>
+                                    Selected industry
+                                  </Typography>
+                                </Box>
                               </Box>
-                              <Typography variant='caption' fontWeight={active ? 800 : 600} color={active ? 'primary.main' : 'text.secondary'}>
-                                {s.label}
+                              <Typography
+                                variant='caption'
+                                fontWeight={600}
+                                color='primary.main'
+                                onClick={() => setValue('businessSector', '', { shouldValidate: false })}
+                                sx={{ cursor: 'pointer', textDecoration: 'underline', flexShrink: 0 }}
+                              >
+                                Change
                               </Typography>
                             </Paper>
-                          );
-                        })}
-                      </Box>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key='grid'
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 8 }}
+                            transition={{ duration: 0.2, ease: 'easeOut' }}
+                          >
+                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
+                              {registrationSectors.map((key, i) => {
+                                const s = BUSINESS_SECTORS[key];
+                                return (
+                                  <motion.div
+                                    key={key}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.03, duration: 0.18, ease: 'easeOut' }}
+                                    whileHover={{ scale: 1.04 }}
+                                    whileTap={{ scale: 0.96 }}
+                                  >
+                                    <Paper
+                                      elevation={0}
+                                      onClick={() => setValue('businessSector', key, { shouldValidate: true })}
+                                      sx={{
+                                        p: 2,
+                                        borderRadius: 3,
+                                        border: '2px solid',
+                                        borderColor: BORDER_LIGHT,
+                                        bgcolor: 'white',
+                                        cursor: 'pointer',
+                                        textAlign: 'center',
+                                        height: '100%',
+                                      }}
+                                    >
+                                      <Box sx={{ fontSize: 28, color: s.color, mb: 0.5 }}>
+                                        {s.icon}
+                                      </Box>
+                                      <Typography variant='caption' fontWeight={600} color='text.secondary'>
+                                        {s.label}
+                                      </Typography>
+                                    </Paper>
+                                  </motion.div>
+                                );
+                              })}
+                            </Box>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                       {error && (
                         <Typography variant='caption' color='error' sx={{ mt: 0.5, display: 'block' }}>
                           {error.message}
@@ -421,7 +490,7 @@ const BusinessProfilePage = () => {
             )}
 
           </form>
-        </Container>
+        </Stack>
       </Box>
     </Box>
   );
