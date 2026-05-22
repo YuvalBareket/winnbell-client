@@ -21,7 +21,7 @@ const LegalDocumentPage = ({ title, lastUpdated, content }: Props) => {
         </IconButton>
       </Box>
 
-      <Container maxWidth="sm" sx={{ pb: 8 }}>
+      <Container maxWidth="sm" sx={{ pb: 8, px: { xs: 3, sm: 4 } }}>
         <Typography variant="h4" fontWeight={800} sx={{ mb: 0.5 }}>
           {title}
         </Typography>

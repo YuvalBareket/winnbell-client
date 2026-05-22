@@ -28,6 +28,8 @@ import {
   SettingsOutlined,
   CampaignOutlined,
   HelpOutlineOutlined,
+  DashboardOutlined,
+  PeopleOutlined,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useState, Fragment } from 'react';
@@ -91,7 +93,12 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
 
   const mainNavItems: NavItem[] = isAdmin
     ? [
-        { label: 'Admin Dashboard', icon: <AdminPanelSettingsOutlined />, path: '/admin' },
+        { label: 'Overview', icon: <DashboardOutlined />, path: '/admin' },
+        { label: 'Campaigns', icon: <AdminPanelSettingsOutlined />, path: '/admin/campaigns' },
+        { label: 'Users', icon: <PeopleOutlined />, path: '/admin/users' },
+        { label: 'Businesses', icon: <BusinessOutlined />, path: '/admin/businesses' },
+        { label: 'Analytics', icon: <BarChartOutlined />, path: '/admin/analytics' },
+        { label: 'Settings', icon: <SettingsOutlined />, path: '/admin/settings' },
       ]
     : isBusiness
     ? [

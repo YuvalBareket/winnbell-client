@@ -26,22 +26,28 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import BlockIcon from '@mui/icons-material/Block';
-import { useAdminAnalytics, useLocationBreakdown } from '../../hooks/useAdmin';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts';
+import { useAdminAnalytics, useAdminBusinesses, useAllDraws, useCampaignComparison, useEntryVolume, useLocationBreakdown } from '../../hooks/useAdmin';
 import { BG_PAGE } from '../../../../shared/colors';
 
 interface Props {
-  businesses: any[] | undefined;
   isMobile: boolean;
 }
 
-const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
+const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
+  const { data: bizData } = useAdminBusinesses({ page: 1, limit: 200, search: '' });
+  const businesses = bizData?.rows;
+  const { data: draws } = useAllDraws();
   const [analyticsBusinessFilter, setAnalyticsBusinessFilter] = useState<number | null>(null);
+  const [analyticsDrawFilter, setAnalyticsDrawFilter] = useState<number | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
   const [locationSearchInput, setLocationSearchInput] = useState('');
   const [locationPage, setLocationPage] = useState(0);
   const [locationRowsPerPage, setLocationRowsPerPage] = useState(25);
 
-  const { data: analytics, isLoading: analyticsLoading } = useAdminAnalytics(analyticsBusinessFilter);
+  const { data: analytics, isLoading: analyticsLoading } = useAdminAnalytics(analyticsBusinessFilter, analyticsDrawFilter);
+  const { data: entryVolume } = useEntryVolume(analyticsDrawFilter, analyticsBusinessFilter);
+  const { data: campaignComparison } = useCampaignComparison();
   const { data: locationData, isLoading: locationLoading } = useLocationBreakdown({
     businessId: analyticsBusinessFilter,
     search: locationSearch,
@@ -51,14 +57,27 @@ const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
 
   return (
     <Stack spacing={3}>
-      {/* Business filter */}
+      {/* Filters */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-        <FormControl size='small' sx={{ minWidth: 220 }}>
-          <InputLabel>Filter by Business</InputLabel>
+        <FormControl size='small' sx={{ minWidth: 200 }}>
+          <InputLabel>Campaign</InputLabel>
+          <Select
+            value={analyticsDrawFilter ?? ''}
+            label='Campaign'
+            onChange={(e) => { setAnalyticsDrawFilter(String(e.target.value) === '' ? null : Number(e.target.value)); setLocationPage(0); }}
+          >
+            <MenuItem value=''>All Campaigns</MenuItem>
+            {draws?.map((d) => (
+              <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl size='small' sx={{ minWidth: 200 }}>
+          <InputLabel>Business</InputLabel>
           <Select
             value={analyticsBusinessFilter ?? ''}
-            label='Filter by Business'
-            onChange={(e) => setAnalyticsBusinessFilter(String(e.target.value) === '' ? null : Number(e.target.value))}
+            label='Business'
+            onChange={(e) => { setAnalyticsBusinessFilter(String(e.target.value) === '' ? null : Number(e.target.value)); setLocationPage(0); }}
           >
             <MenuItem value=''>All Businesses</MenuItem>
             {businesses?.map((b) => (
@@ -66,11 +85,11 @@ const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
             ))}
           </Select>
         </FormControl>
-        {analyticsBusinessFilter && (
+        {(analyticsDrawFilter || analyticsBusinessFilter) && (
           <Chip
-            label='Clear filter'
+            label='Clear filters'
             size='small'
-            onDelete={() => setAnalyticsBusinessFilter(null)}
+            onDelete={() => { setAnalyticsDrawFilter(null); setAnalyticsBusinessFilter(null); setLocationPage(0); }}
           />
         )}
       </Box>
@@ -296,6 +315,90 @@ const AnalyticsTab: React.FC<Props> = ({ businesses, isMobile }) => {
                 ))}
               </Grid>
             </CardContent>
+          </Card>
+
+          {/* Entry Volume Chart */}
+          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+            <CardContent>
+              <Typography variant='subtitle1' fontWeight={700} mb={2}>Entry Volume Over Time</Typography>
+              {!entryVolume || entryVolume.length === 0 ? (
+                <Box sx={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant='body2' color='text.secondary'>No data for selected filters.</Typography>
+                </Box>
+              ) : (
+                <ResponsiveContainer width='100%' height={200}>
+                  <AreaChart data={entryVolume} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id='entryGrad' x1='0' y1='0' x2='0' y2='1'>
+                        <stop offset='5%' stopColor='#1976d2' stopOpacity={0.25} />
+                        <stop offset='95%' stopColor='#1976d2' stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
+                    <XAxis dataKey='date' tick={{ fontSize: 11 }} tickFormatter={(v) => new Date(v).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} />
+                    <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                    <RTooltip formatter={(v) => [Number(v).toLocaleString(), 'Entries']} labelFormatter={(l) => new Date(l).toLocaleDateString()} />
+                    <Area type='monotone' dataKey='count' stroke='#1976d2' strokeWidth={2} fill='url(#entryGrad)' dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Campaign Comparison Table */}
+          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+            <CardContent sx={{ pb: 0 }}>
+              <Typography variant='subtitle1' fontWeight={700} mb={2}>Campaign Comparison</Typography>
+            </CardContent>
+            <TableContainer>
+              <Table size='small'>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: BG_PAGE }}>
+                    <TableCell>Campaign</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Date</TableCell>
+                    <TableCell align='right'>Prize</TableCell>
+                    <TableCell align='right'>Businesses</TableCell>
+                    <TableCell align='right'>Entries</TableCell>
+                    <TableCell align='right'>Quarantined</TableCell>
+                    <TableCell align='right'>Acceptance</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(campaignComparison ?? []).map((c) => {
+                    const total = c.total_entries + c.quarantined;
+                    const acceptRate = total > 0 ? ((c.total_entries / total) * 100).toFixed(1) : '—';
+                    return (
+                      <TableRow key={c.id} hover>
+                        <TableCell sx={{ fontWeight: 600, maxWidth: 180 }}>
+                          <Typography variant='body2' fontWeight={600} noWrap>{c.name}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip label={c.status} size='small' color={c.status === 'Open' ? 'primary' : c.status === 'Closed' ? 'success' : 'default'} />
+                        </TableCell>
+                        <TableCell>{new Date(c.draw_date).toLocaleDateString()}</TableCell>
+                        <TableCell align='right'>${Number(c.prize_amount).toLocaleString()}</TableCell>
+                        <TableCell align='right'>{c.business_count}</TableCell>
+                        <TableCell align='right' sx={{ fontWeight: 700 }}>{c.total_entries.toLocaleString()}</TableCell>
+                        <TableCell align='right' sx={{ color: c.quarantined > 0 ? 'error.main' : 'text.disabled' }}>
+                          {c.quarantined > 0 ? c.quarantined : '—'}
+                        </TableCell>
+                        <TableCell align='right'>
+                          <Typography variant='body2' color={parseFloat(acceptRate) > 90 ? 'success.main' : parseFloat(acceptRate) < 70 ? 'error.main' : 'text.primary'}>
+                            {acceptRate}{acceptRate !== '—' ? '%' : ''}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {(campaignComparison ?? []).length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8} align='center' sx={{ py: 3, color: 'text.secondary' }}>No campaigns yet.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </Card>
 
           {/* Row 4: Location Breakdown - paginated, server-side */}

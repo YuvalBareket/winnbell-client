@@ -13,6 +13,8 @@ import {
   FeedOutlined,
   SettingsOutlined,
   CampaignOutlined,
+  DashboardOutlined,
+  PeopleOutlined,
 } from '@mui/icons-material';
 
 export interface NavItem {
@@ -48,7 +50,12 @@ export const managerNavItems: NavItem[] = [
 ];
 
 export const adminNavItems: NavItem[] = [
-  { label: 'Admin Dashboard', Icon: AdminPanelSettingsOutlined, path: '/admin' },
+  { label: 'Overview', Icon: DashboardOutlined, path: '/admin' },
+  { label: 'Campaigns', Icon: AdminPanelSettingsOutlined, path: '/admin/campaigns' },
+  { label: 'Users', Icon: PeopleOutlined, path: '/admin/users' },
+  { label: 'Businesses', Icon: BusinessOutlined, path: '/admin/businesses' },
+  { label: 'Analytics', Icon: BarChartOutlined, path: '/admin/analytics' },
+  { label: 'Settings', Icon: SettingsOutlined, path: '/admin/settings' },
 ];
 
 export const legalNavItems: NavItem[] = [

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -20,6 +20,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  TablePagination,
   Paper,
   Dialog,
   DialogTitle,
@@ -28,6 +29,7 @@ import {
   DialogActions,
   IconButton,
   Tooltip,
+  Skeleton,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
@@ -37,12 +39,14 @@ import GppBadIcon from '@mui/icons-material/GppBad';
 import WarningIcon from '@mui/icons-material/Warning';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import {
+  useAdminUsers,
   useUpdateUserRole,
   useToggleUserActive,
   useSetUserRisk,
 } from '../../hooks/useAdmin';
 import type { AdminUser } from '../../types/admin.types';
 import { BG_PAGE } from '../../../../shared/colors';
+import UserDetailDrawer from './UserDetailDrawer';
 
 const ROLE_COLORS: Record<string, 'default' | 'primary' | 'secondary' | 'error'> = {
   user: 'default',
@@ -50,48 +54,64 @@ const ROLE_COLORS: Record<string, 'default' | 'primary' | 'secondary' | 'error'>
   admin: 'error',
 };
 
+function formatLastActive(value: string | null): string {
+  if (!value) return 'Never';
+  const date = new Date(value);
+  const diffMs = Date.now() - date.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+  if (diffHours < 24) return 'Today';
+  return date.toLocaleDateString();
+}
+
 interface Props {
-  users: AdminUser[] | undefined;
   isMobile: boolean;
   onSnackError: (msg: string) => void;
   onSnackSuccess: (msg: string) => void;
 }
 
-const UsersTab: React.FC<Props> = ({ users, isMobile, onSnackError, onSnackSuccess }) => {
-  const [userSearchQuery, setUserSearchQuery] = useState('');
-  const [userRoleFilter, setUserRoleFilter] = useState('all');
-  const [userRiskFilter, setUserRiskFilter] = useState('all');
+const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) => {
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [role, setRole] = useState('');
+  const [riskLevel, setRiskLevel] = useState('');
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState<number | null>(null);
   const [selectedRole, setSelectedRole] = useState('user');
   const [riskConfirmUser, setRiskConfirmUser] = useState<{ id: number; name: string; action: 'disqualify' | 'clear' } | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [role, riskLevel]);
+
+  const { data, isLoading } = useAdminUsers({
+    page,
+    limit: 50,
+    search: debouncedSearch,
+    role,
+    riskLevel,
+  });
 
   const updateUserRole = useUpdateUserRole();
   const toggleUserActive = useToggleUserActive();
   const setUserRisk = useSetUserRisk();
 
-  const filteredUsers = useMemo(() => {
-    if (!users) return [];
-    return users.filter((u: AdminUser) => {
-      const matchesSearch =
-        u.full_name.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(userSearchQuery.toLowerCase());
-      const matchesRole =
-        userRoleFilter === 'all' || u.role.toLowerCase() === userRoleFilter;
-      const matchesRisk =
-        userRiskFilter === 'all' ||
-        (userRiskFilter === 'high' && u.risk_score >= 20) ||
-        (userRiskFilter === 'medium' && u.risk_score >= 10 && u.risk_score < 20) ||
-        (userRiskFilter === 'low' && u.risk_score < 10);
-      return matchesSearch && matchesRole && matchesRisk;
-    });
-  }, [users, userSearchQuery, userRoleFilter, userRiskFilter]);
-
   const handleUpdateUserRole = async (userId: number) => {
     try {
       await updateUserRole.mutateAsync({ userId, role: selectedRole });
       onSnackSuccess('User role updated successfully');
-    } catch (e: any) {
-      onSnackError(e?.response?.data?.message ?? 'Failed to update user role');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to update user role';
+      onSnackError((e as any)?.response?.data?.message ?? msg);
     }
     setUserRoleDialogOpen(null);
   };
@@ -99,17 +119,16 @@ const UsersTab: React.FC<Props> = ({ users, isMobile, onSnackError, onSnackSucce
   const handleToggleUserActive = async (userId: number, currentStatus: boolean) => {
     try {
       await toggleUserActive.mutateAsync({ userId, is_active: !currentStatus });
-      onSnackSuccess(
-        `User ${!currentStatus ? 'activated' : 'deactivated'} successfully`
-      );
-    } catch (e: any) {
-      onSnackError(e?.response?.data?.message ?? 'Failed to update user status');
+      onSnackSuccess(`User ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to update user status';
+      onSnackError((e as any)?.response?.data?.message ?? msg);
     }
   };
 
   const handleConfirmRiskAction = async () => {
     if (!riskConfirmUser) return;
-    const riskScore = riskConfirmUser.action === 'disqualify' ? 20 : 18;
+    const riskScore = riskConfirmUser.action === 'disqualify' ? 20 : 0;
     try {
       await setUserRisk.mutateAsync({ userId: riskConfirmUser.id, riskScore });
       onSnackSuccess(
@@ -117,156 +136,155 @@ const UsersTab: React.FC<Props> = ({ users, isMobile, onSnackError, onSnackSucce
           ? `${riskConfirmUser.name} has been disqualified`
           : `Flag cleared for ${riskConfirmUser.name}`,
       );
-    } catch (e: any) {
-      onSnackError(e?.response?.data?.message ?? 'Failed to update risk score');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to update risk score';
+      onSnackError((e as any)?.response?.data?.message ?? msg);
     }
     setRiskConfirmUser(null);
   };
+
+  const flaggedCount = (data?.rows ?? []).filter((u: AdminUser) => u.risk_score >= 20).length;
+  const rows = data?.rows ?? [];
+  const isEmpty = !isLoading && rows.length === 0;
 
   return (
     <>
       <Stack spacing={3}>
         {/* Flagged users banner */}
-        {(() => {
-          const flaggedCount = (users ?? []).filter((u: AdminUser) => u.risk_score >= 20).length;
-          return flaggedCount > 0 ? (
-            <Alert severity='error'>
-              <strong>{flaggedCount} {flaggedCount === 1 ? 'user' : 'users'} flagged for review</strong> - risk score &ge; 15. Their draw entries are quarantined.
-            </Alert>
-          ) : null;
-        })()}
+        {flaggedCount > 0 && (
+          <Alert severity='error'>
+            <strong>{flaggedCount} {flaggedCount === 1 ? 'user' : 'users'} flagged for review</strong> - risk score &ge; 20. Their draw entries are quarantined.
+          </Alert>
+        )}
 
-        {/* Search and filters */}
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 2,
-            flexWrap: 'wrap',
-            alignItems: 'center',
+        {/* Search bar */}
+        <TextField
+          placeholder='Search by name or email…'
+          size='small'
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position='start'>
+                <SearchIcon fontSize='small' />
+              </InputAdornment>
+            ),
           }}
-        >
-          <TextField
-            placeholder='Search by name or email'
-            size='small'
-            value={userSearchQuery}
-            onChange={(e) => setUserSearchQuery(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position='start'>
-                  <SearchIcon fontSize='small' />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ flexGrow: 1, minWidth: 250 }}
-          />
+          sx={{ maxWidth: 480 }}
+        />
 
-          <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
-            {['all', 'user', 'business'].map((role: string) => (
-              <Chip
-                key={role}
-                label={role.charAt(0).toUpperCase() + role.slice(1)}
-                onClick={() => setUserRoleFilter(role)}
-                variant={userRoleFilter === role ? 'filled' : 'outlined'}
-                size='small'
-              />
-            ))}
-          </Stack>
-        </Box>
+        {/* Filter dropdowns */}
+        <Stack direction='row' spacing={2} sx={{ flexWrap: 'wrap' }}>
+          <FormControl size='small' sx={{ minWidth: 140 }}>
+            <InputLabel>Role</InputLabel>
+            <Select
+              value={role}
+              label='Role'
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <MenuItem value=''>All Roles</MenuItem>
+              <MenuItem value='user'>User</MenuItem>
+              <MenuItem value='business'>Business</MenuItem>
+            </Select>
+          </FormControl>
 
-        {/* Risk filter chips */}
-        <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
-          {[
-            { key: 'all', label: 'All' },
-            { key: 'high', label: 'High Risk' },
-            { key: 'medium', label: 'Medium Risk' },
-            { key: 'low', label: 'Low Risk' },
-          ].map((item) => (
-            <Chip
-              key={item.key}
-              label={item.label}
-              onClick={() => setUserRiskFilter(item.key)}
-              variant={userRiskFilter === item.key ? 'filled' : 'outlined'}
-              size='small'
-              color={item.key === 'high' ? 'error' : item.key === 'medium' ? 'warning' : item.key === 'low' ? 'success' : 'default'}
-            />
-          ))}
+          <FormControl size='small' sx={{ minWidth: 160 }}>
+            <InputLabel>Risk</InputLabel>
+            <Select
+              value={riskLevel}
+              label='Risk'
+              onChange={(e) => setRiskLevel(e.target.value)}
+            >
+              <MenuItem value=''>All Risk</MenuItem>
+              <MenuItem value='high'>High (&ge;20)</MenuItem>
+              <MenuItem value='medium'>Medium (10-19)</MenuItem>
+              <MenuItem value='low'>Low (&lt;10)</MenuItem>
+            </Select>
+          </FormControl>
         </Stack>
 
         {/* Users table / cards */}
         {isMobile ? (
           <Stack spacing={2}>
-            {filteredUsers.map((user: any) => (
-              <Card
-                key={user.id}
-                elevation={0}
-                sx={{ border: '1px solid', borderColor: 'divider' }}
-              >
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Box>
-                      <Typography variant='subtitle2' fontWeight={700}>
-                        {user.full_name}
-                      </Typography>
-                      <Typography variant='caption' color='text.secondary'>
-                        {user.email}
-                      </Typography>
-                    </Box>
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} variant='rounded' height={140} />
+                ))
+              : rows.map((user: AdminUser) => (
+                  <Card
+                    key={user.id}
+                    elevation={0}
+                    sx={{ border: '1px solid', borderColor: 'divider' }}
+                  >
+                    <CardContent>
+                      <Stack spacing={2}>
+                        <Box>
+                          <Typography variant='subtitle2' fontWeight={700}>
+                            {user.full_name}
+                          </Typography>
+                          <Typography variant='caption' color='text.secondary'>
+                            {user.email}
+                          </Typography>
+                        </Box>
 
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      <Chip
-                        label={user.role}
-                        size='small'
-                        color={ROLE_COLORS[user.role.toLowerCase()] || 'default'}
-                      />
-                      <Chip
-                        label={user.is_active ? 'Active' : 'Inactive'}
-                        size='small'
-                        variant={user.is_active ? 'filled' : 'outlined'}
-                        color={user.is_active ? 'success' : 'default'}
-                      />
-                      {user.business_name && (
-                        <Chip
-                          label={user.business_name}
-                          size='small'
-                          variant='outlined'
-                        />
-                      )}
-                    </Box>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                          <Chip
+                            label={user.role}
+                            size='small'
+                            color={ROLE_COLORS[user.role.toLowerCase()] || 'default'}
+                          />
+                          <Chip
+                            label={user.is_active ? 'Active' : 'Inactive'}
+                            size='small'
+                            variant={user.is_active ? 'filled' : 'outlined'}
+                            color={user.is_active ? 'success' : 'default'}
+                          />
+                          {user.business_name && (
+                            <Chip
+                              label={user.business_name}
+                              size='small'
+                              variant='outlined'
+                            />
+                          )}
+                        </Box>
 
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      {user.role.toLowerCase() !== 'admin' && (
-                        <Button
-                          size='small'
-                          variant='outlined'
-                          startIcon={<EditIcon />}
-                          onClick={() => {
-                            setSelectedRole(user.role.toLowerCase());
-                            setUserRoleDialogOpen(user.id);
-                          }}
-                        >
-                          Change Role
-                        </Button>
-                      )}
-                      <Tooltip
-                        title={
-                          user.is_active ? 'Deactivate user' : 'Activate user'
-                        }
-                      >
-                        <IconButton
-                          size='small'
-                          color={user.is_active ? 'default' : 'error'}
-                          onClick={() =>
-                            handleToggleUserActive(user.id, user.is_active)
-                          }
-                        >
-                          {user.is_active ? <CheckCircleIcon /> : <BlockIcon />}
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-            ))}
+                        <Stack direction='row' spacing={2}>
+                          <Typography variant='caption' color='text.secondary'>
+                            Entries: <strong>{user.entry_count > 0 ? user.entry_count : '—'}</strong>
+                          </Typography>
+                          <Typography variant='caption' color='text.secondary'>
+                            Last active: <strong>{formatLastActive(user.last_active_at)}</strong>
+                          </Typography>
+                        </Stack>
+
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          {user.role.toLowerCase() !== 'admin' && (
+                            <Button
+                              size='small'
+                              variant='outlined'
+                              startIcon={<EditIcon />}
+                              onClick={() => {
+                                setSelectedRole(user.role.toLowerCase());
+                                setUserRoleDialogOpen(user.id);
+                              }}
+                            >
+                              Change Role
+                            </Button>
+                          )}
+                          <Tooltip title={user.is_active ? 'Deactivate user' : 'Activate user'}>
+                            <IconButton
+                              size='small'
+                              color={user.is_active ? 'default' : 'error'}
+                              onClick={() => handleToggleUserActive(user.id, user.is_active)}
+                            >
+                              {user.is_active ? <CheckCircleIcon /> : <BlockIcon />}
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                ))}
           </Stack>
         ) : (
           <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
@@ -279,136 +297,167 @@ const UsersTab: React.FC<Props> = ({ users, isMobile, onSnackError, onSnackSucce
                   <TableCell>Status</TableCell>
                   <TableCell>Business</TableCell>
                   <TableCell>Risk</TableCell>
+                  <TableCell align='right'>Entries</TableCell>
+                  <TableCell>Last Active</TableCell>
                   <TableCell align='right'>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredUsers.map((user: AdminUser) => {
-                  const isDisqualified = user.risk_score >= 20;
-                  const riskChipColor: 'error' | 'warning' | 'success' =
-                    user.risk_score >= 20 ? 'error' : user.risk_score >= 10 ? 'warning' : 'success';
-                  const riskLabel = user.risk_score >= 20 ? 'HIGH' : user.risk_score >= 10 ? 'MEDIUM' : 'LOW';
-                  const RiskIcon = user.risk_score >= 20 ? GppBadIcon : user.risk_score >= 10 ? WarningIcon : VerifiedUserIcon;
-                  return (
-                    <TableRow key={user.id} hover>
-                      <TableCell>{user.full_name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.role}
-                          size='small'
-                          color={ROLE_COLORS[user.role.toLowerCase()] || 'default'}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.is_active ? 'Active' : 'Inactive'}
-                          size='small'
-                          variant={user.is_active ? 'filled' : 'outlined'}
-                          color={user.is_active ? 'success' : 'default'}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {user.business_name ? (
-                          <Typography variant='body2'>{user.business_name}</Typography>
-                        ) : (
-                          <Typography variant='body2' color='text.secondary'>
--
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Stack direction='row' spacing={0.5} alignItems='center'>
-                          <Chip
-                            icon={<RiskIcon />}
-                            label={riskLabel}
-                            size='small'
-                            color={riskChipColor}
-                          />
-                          <Typography variant='caption' color='text.secondary'>
-                            {user.risk_score}
-                          </Typography>
-                        </Stack>
-                      </TableCell>
-                      <TableCell align='right'>
-                        <Stack direction='row' spacing={0.5} justifyContent='flex-end'>
-                          {user.role.toLowerCase() !== 'admin' && (
-                            <Tooltip title='Change role'>
-                              <IconButton
-                                size='small'
-                                onClick={() => {
-                                  setSelectedRole(user.role.toLowerCase());
-                                  setUserRoleDialogOpen(user.id);
-                                }}
-                              >
-                                <EditIcon fontSize='small' />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                          <Tooltip
-                            title={
-                              user.is_active ? 'Deactivate' : 'Activate'
-                            }
-                          >
-                            <IconButton
+                {isLoading
+                  ? Array.from({ length: 5 }).map((_, i) => (
+                      <TableRow key={i}>
+                        {Array.from({ length: 9 }).map((__, j) => (
+                          <TableCell key={j}>
+                            <Skeleton variant='text' />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  : rows.map((user: AdminUser) => {
+                      const isDisqualified = user.risk_score >= 20;
+                      const riskChipColor: 'error' | 'warning' | 'success' =
+                        user.risk_score >= 20 ? 'error' : user.risk_score >= 10 ? 'warning' : 'success';
+                      const riskLabel = user.risk_score >= 20 ? 'HIGH' : user.risk_score >= 10 ? 'MEDIUM' : 'LOW';
+                      const RiskIcon = user.risk_score >= 20 ? GppBadIcon : user.risk_score >= 10 ? WarningIcon : VerifiedUserIcon;
+                      return (
+                        <TableRow key={user.id} hover sx={{ cursor: 'pointer' }} onClick={() => setSelectedUserId(user.id)}>
+                          <TableCell>{user.full_name}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={user.role}
                               size='small'
-                              color={user.is_active ? 'default' : 'error'}
-                              onClick={() =>
-                                handleToggleUserActive(user.id, user.is_active)
-                              }
-                            >
-                              {user.is_active ? (
-                                <CheckCircleIcon fontSize='small' />
-                              ) : (
-                                <BlockIcon fontSize='small' />
+                              color={ROLE_COLORS[user.role.toLowerCase()] || 'default'}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={user.is_active ? 'Active' : 'Inactive'}
+                              size='small'
+                              variant={user.is_active ? 'filled' : 'outlined'}
+                              color={user.is_active ? 'success' : 'default'}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {user.business_name ? (
+                              <Typography variant='body2'>{user.business_name}</Typography>
+                            ) : (
+                              <Typography variant='body2' color='text.secondary'>
+                                -
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Stack direction='row' spacing={0.5} alignItems='center'>
+                              <Chip
+                                icon={<RiskIcon />}
+                                label={riskLabel}
+                                size='small'
+                                color={riskChipColor}
+                              />
+                              <Typography variant='caption' color='text.secondary'>
+                                {user.risk_score}
+                              </Typography>
+                            </Stack>
+                          </TableCell>
+                          <TableCell align='right'>
+                            <Typography variant='body2'>
+                              {user.entry_count > 0 ? user.entry_count : '—'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant='body2' color='text.secondary'>
+                              {formatLastActive(user.last_active_at)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align='right' onClick={(e) => e.stopPropagation()}>
+                            <Stack direction='row' spacing={0.5} justifyContent='flex-end'>
+                              {user.role.toLowerCase() !== 'admin' && (
+                                <Tooltip title='Change role'>
+                                  <IconButton
+                                    size='small'
+                                    onClick={() => {
+                                      setSelectedRole(user.role.toLowerCase());
+                                      setUserRoleDialogOpen(user.id);
+                                    }}
+                                  >
+                                    <EditIcon fontSize='small' />
+                                  </IconButton>
+                                </Tooltip>
                               )}
-                            </IconButton>
-                          </Tooltip>
-                          {!isDisqualified ? (
-                            <Tooltip title='Disqualify user'>
-                              <IconButton
-                                size='small'
-                                color='error'
-                                onClick={() =>
-                                  setRiskConfirmUser({ id: user.id, name: user.full_name, action: 'disqualify' })
-                                }
-                              >
-                                <BlockIcon fontSize='small' />
-                              </IconButton>
-                            </Tooltip>
-                          ) : (
-                            <Tooltip title='Clear flag & restore entries'>
-                              <IconButton
-                                size='small'
-                                color='success'
-                                onClick={() =>
-                                  setRiskConfirmUser({ id: user.id, name: user.full_name, action: 'clear' })
-                                }
-                              >
-                                <CheckCircleIcon fontSize='small' />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                              <Tooltip title={user.is_active ? 'Deactivate' : 'Activate'}>
+                                <IconButton
+                                  size='small'
+                                  color={user.is_active ? 'default' : 'error'}
+                                  onClick={() => handleToggleUserActive(user.id, user.is_active)}
+                                >
+                                  {user.is_active ? (
+                                    <CheckCircleIcon fontSize='small' />
+                                  ) : (
+                                    <BlockIcon fontSize='small' />
+                                  )}
+                                </IconButton>
+                              </Tooltip>
+                              {!isDisqualified ? (
+                                <Tooltip title='Disqualify user'>
+                                  <IconButton
+                                    size='small'
+                                    color='error'
+                                    onClick={() =>
+                                      setRiskConfirmUser({ id: user.id, name: user.full_name, action: 'disqualify' })
+                                    }
+                                  >
+                                    <BlockIcon fontSize='small' />
+                                  </IconButton>
+                                </Tooltip>
+                              ) : (
+                                <Tooltip title='Clear flag & restore entries'>
+                                  <IconButton
+                                    size='small'
+                                    color='success'
+                                    onClick={() =>
+                                      setRiskConfirmUser({ id: user.id, name: user.full_name, action: 'clear' })
+                                    }
+                                  >
+                                    <CheckCircleIcon fontSize='small' />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                            </Stack>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
               </TableBody>
             </Table>
           </TableContainer>
         )}
 
-        {filteredUsers.length === 0 && (
-          <Alert severity='info'>No users match your search criteria.</Alert>
+        {/* Empty state */}
+        {isEmpty && (
+          <Box sx={{ textAlign: 'center', py: 6 }}>
+            <Typography variant='h6' gutterBottom>
+              No users found
+            </Typography>
+            <Typography variant='body2' color='text.secondary'>
+              Try adjusting your search or filters.
+            </Typography>
+          </Box>
         )}
+
+        {/* Pagination */}
+        <TablePagination
+          component='div'
+          count={data?.total ?? 0}
+          page={(data?.page ?? 1) - 1}
+          rowsPerPage={50}
+          rowsPerPageOptions={[50]}
+          onPageChange={(_, newPage) => setPage(newPage + 1)}
+        />
       </Stack>
 
       {/* User role update dialog */}
-      <Dialog
-        open={!!userRoleDialogOpen}
-        onClose={() => setUserRoleDialogOpen(null)}
-      >
+      <Dialog open={!!userRoleDialogOpen} onClose={() => setUserRoleDialogOpen(null)}>
         <DialogTitle>Change User Role</DialogTitle>
         <DialogContent sx={{ minWidth: 300 }}>
           <Box sx={{ mt: 2 }}>
@@ -429,9 +478,7 @@ const UsersTab: React.FC<Props> = ({ users, isMobile, onSnackError, onSnackSucce
           <Button onClick={() => setUserRoleDialogOpen(null)}>Cancel</Button>
           <Button
             variant='contained'
-            onClick={() =>
-              userRoleDialogOpen && handleUpdateUserRole(userRoleDialogOpen)
-            }
+            onClick={() => userRoleDialogOpen && handleUpdateUserRole(userRoleDialogOpen)}
             disabled={updateUserRole.isPending}
           >
             {updateUserRole.isPending ? 'Updating...' : 'Update'}
@@ -439,11 +486,10 @@ const UsersTab: React.FC<Props> = ({ users, isMobile, onSnackError, onSnackSucce
         </DialogActions>
       </Dialog>
 
+      <UserDetailDrawer userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
+
       {/* Risk action confirmation dialog */}
-      <Dialog
-        open={!!riskConfirmUser}
-        onClose={() => setRiskConfirmUser(null)}
-      >
+      <Dialog open={!!riskConfirmUser} onClose={() => setRiskConfirmUser(null)}>
         <DialogTitle>
           {riskConfirmUser?.action === 'disqualify' ? 'Disqualify User?' : 'Clear Flag?'}
         </DialogTitle>
@@ -451,7 +497,7 @@ const UsersTab: React.FC<Props> = ({ users, isMobile, onSnackError, onSnackSucce
           <DialogContentText>
             {riskConfirmUser?.action === 'disqualify'
               ? `Disqualify ${riskConfirmUser.name}? This will quarantine all their current campaign entries. They can no longer submit until their score is cleared.`
-              : `Clear flag for ${riskConfirmUser?.name}? This will restore their entries and set their risk score to 18 (on watch).`}
+              : `Clear flag for ${riskConfirmUser?.name}? This will restore their entries and reset their risk score to 0.`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -139,7 +139,9 @@ const AppSidebar = () => {
         </Typography>
         <List dense disablePadding>
           {mainNavItems.map(({ label, Icon, path }) => {
-            const active = location.pathname === path;
+            const active = path === '/admin'
+              ? location.pathname === '/admin'
+              : location.pathname === path || location.pathname.startsWith(path + '/');
             return (
               <ListItemButton
                 key={path}

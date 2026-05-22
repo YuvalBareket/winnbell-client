@@ -101,8 +101,18 @@ const AppRoutes = () => {
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>
-          {/* Admin-only route */}
-          {isAdmin && <Route path='/admin' element={<BusinessDashboard />} />}
+          {/* Admin-only routes */}
+          {isAdmin && (
+            <>
+              <Route path='/admin' element={<BusinessDashboard />} />
+              <Route path='/admin/campaigns' element={<BusinessDashboard />} />
+              <Route path='/admin/users' element={<BusinessDashboard />} />
+              <Route path='/admin/businesses' element={<BusinessDashboard />} />
+              <Route path='/admin/analytics' element={<BusinessDashboard />} />
+              <Route path='/admin/settings' element={<BusinessDashboard />} />
+              <Route path='*' element={<Navigate to='/admin' replace />} />
+            </>
+          )}
 
           {/* Business/User routes - not accessible to admin */}
           {!isAdmin && (
@@ -121,9 +131,6 @@ const AppRoutes = () => {
               {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}
             </>
           )}
-
-          {/* Redirect admin away from business pages */}
-          {isAdmin && <Route path='*' element={<Navigate to='/admin' replace />} />}
         </Route>
       </Route>
 

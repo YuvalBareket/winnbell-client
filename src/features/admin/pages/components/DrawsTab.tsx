@@ -21,6 +21,7 @@ import {
   DialogActions,
   IconButton,
   Skeleton,
+  Divider,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -28,14 +29,21 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockIcon from '@mui/icons-material/Lock';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/DeleteOutline';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import {
   useOpenDraw,
   useCloseDraw,
   usePickWinner,
   useReopenDraw,
   useDrawBusinesses,
+  useDeleteDraw,
+  useDuplicateDraw,
 } from '../../hooks/useAdmin';
 import { BG_PAGE } from '../../../../shared/colors';
+import EditDrawModal from './EditDrawModal';
 
 const STATUS_COLORS: Record<string, 'default' | 'warning' | 'primary' | 'success' | 'error'> = {
   upcoming: 'default',
@@ -46,7 +54,7 @@ const STATUS_COLORS: Record<string, 'default' | 'warning' | 'primary' | 'success
 const DrawBusinessesPanel: React.FC<{ drawId: number }> = ({ drawId }) => {
   const { data, isLoading } = useDrawBusinesses(drawId);
   if (isLoading) return <Box sx={{ p: 2 }}><Skeleton variant='rectangular' height={60} /></Box>;
-  if (!data?.length) return <Box sx={{ p: 2 }}><Typography variant='body2' color='text.secondary'>No businesses enrolled in this campaign.</Typography></Box>;
+  if (!data?.length) return <Box sx={{ p: 2 }}><Typography variant='body2' color='text.secondary'>No businesses enrolled.</Typography></Box>;
   return (
     <Box sx={{ px: 3, pb: 2, bgcolor: BG_PAGE }}>
       <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 1 }}>
@@ -71,10 +79,21 @@ interface Props {
   onCreateDraw: () => void;
 }
 
+const SectionHeader: React.FC<{ label: string; count: number }> = ({ label, count }) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+    <Typography variant='overline' fontWeight={700} color='text.secondary' sx={{ letterSpacing: 1 }}>
+      {label}
+    </Typography>
+    <Chip label={count} size='small' sx={{ height: 18, fontSize: 11 }} />
+    <Box flex={1}><Divider /></Box>
+  </Box>
+);
+
 const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuccess, onCreateDraw }) => {
+  const [editDraw, setEditDraw] = useState<any | null>(null);
   const [confirmOpen, setConfirmOpen] = useState<number | null>(null);
   const [confirmClose, setConfirmClose] = useState<number | null>(null);
-  const [confirmPick, setConfirmPick] = useState<number | null>(null);
+  const [confirmPick, setConfirmPick] = useState<{ id: number; entryCount: number } | null>(null);
   const [confirmReopen, setConfirmReopen] = useState<number | null>(null);
   const [winnerResult, setWinnerResult] = useState<{
     winnerName: string;
@@ -83,12 +102,15 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
     locationName: string | null;
     prizePool: number;
   } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [expandedDrawId, setExpandedDrawId] = useState<number | null>(null);
 
   const openDraw = useOpenDraw();
   const closeDraw = useCloseDraw();
   const pickWinner = usePickWinner();
   const reopenDraw = useReopenDraw();
+  const deleteDraw = useDeleteDraw();
+  const duplicateDraw = useDuplicateDraw();
 
   const handleOpenDraw = async () => {
     if (!confirmOpen) return;
@@ -126,7 +148,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const handlePickWinner = async () => {
     if (!confirmPick) return;
     try {
-      const { data } = await pickWinner.mutateAsync(confirmPick);
+      const { data } = await pickWinner.mutateAsync(confirmPick.id);
       setWinnerResult({
         winnerName: data.winnerName,
         ticketCode: data.ticketCode,
@@ -140,190 +162,239 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
     setConfirmPick(null);
   };
 
+  const handleDeleteDraw = async () => {
+    if (!confirmDelete) return;
+    try {
+      await deleteDraw.mutateAsync(confirmDelete);
+      onSnackSuccess('Campaign deleted');
+    } catch (e: any) {
+      onSnackError(e?.response?.data?.message ?? 'Failed to delete campaign');
+    }
+    setConfirmDelete(null);
+  };
+
+  const handleDuplicate = async (drawId: number) => {
+    try {
+      await duplicateDraw.mutateAsync(drawId);
+      onSnackSuccess('Campaign duplicated as Upcoming');
+    } catch (e: any) {
+      onSnackError(e?.response?.data?.message ?? 'Failed to duplicate campaign');
+    }
+  };
+
+  const active = draws?.filter((d) => d.status?.toUpperCase() === 'OPEN') ?? [];
+  const upcoming = draws?.filter((d) => d.status?.toUpperCase() === 'UPCOMING') ?? [];
+  const history = draws?.filter((d) => d.status?.toUpperCase() === 'CLOSED') ?? [];
+
+  const renderActions = (draw: any, inline = false) => (
+    <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }} justifyContent={inline ? 'flex-end' : undefined}>
+      {draw.status?.toUpperCase() === 'UPCOMING' && (
+        <Button size='small' variant='outlined' startIcon={<EditIcon />} onClick={(e) => { e.stopPropagation(); setEditDraw(draw); }} fullWidth={!inline}>Edit</Button>
+      )}
+      {draw.status?.toUpperCase() === 'UPCOMING' && (
+        <Button size='small' variant='outlined' color='error' startIcon={<DeleteIcon />} onClick={(e) => { e.stopPropagation(); setConfirmDelete(draw.id); }} fullWidth={!inline}>Delete</Button>
+      )}
+      {draw.status?.toUpperCase() === 'UPCOMING' && (
+        <Button size='small' variant='contained' color='success' startIcon={<LockOpenIcon />} onClick={(e) => { e.stopPropagation(); setConfirmOpen(draw.id); }} fullWidth={!inline}>Open</Button>
+      )}
+      {draw.status?.toUpperCase() === 'OPEN' && (
+        <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} onClick={(e) => { e.stopPropagation(); setConfirmClose(draw.id); }} fullWidth={!inline}>Close</Button>
+      )}
+      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
+        <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setConfirmPick({ id: draw.id, entryCount: draw.entry_count ?? 0 }); }} fullWidth={!inline}>Pick Winner</Button>
+      )}
+      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
+        <Button size='small' variant='outlined' color='info' startIcon={<LockOpenIcon />} onClick={(e) => { e.stopPropagation(); setConfirmReopen(draw.id); }} fullWidth={!inline}>Reopen</Button>
+      )}
+      {draw.status?.toUpperCase() === 'CLOSED' && draw.winner_user_id && (
+        <Chip label='Winner Selected' size='small' color='success' />
+      )}
+      <Button size='small' variant='outlined' startIcon={<ContentCopyIcon />} onClick={(e) => { e.stopPropagation(); handleDuplicate(draw.id); }} fullWidth={!inline} disabled={duplicateDraw.isPending}>
+        Duplicate
+      </Button>
+    </Stack>
+  );
+
+  const renderTable = (rows: any[]) => (
+    <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', mb: 3 }}>
+      <Table size='small'>
+        <TableHead>
+          <TableRow sx={{ backgroundColor: BG_PAGE }}>
+            <TableCell>Name</TableCell>
+            <TableCell>Prize Pool</TableCell>
+            <TableCell>Date</TableCell>
+            <TableCell align='center'>Entries</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell align='right'>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((draw) => (
+            <React.Fragment key={draw.id}>
+              <TableRow
+                hover
+                sx={{ cursor: 'pointer', '& > *': { borderBottom: expandedDrawId === draw.id ? 'none' : undefined } }}
+                onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}
+              >
+                <TableCell sx={{ fontWeight: 600 }}>
+                  <Stack direction='row' alignItems='center' spacing={0.5}>
+                    <IconButton size='small' sx={{ p: 0.25 }}>
+                      {expandedDrawId === draw.id ? <KeyboardArrowUpIcon fontSize='small' /> : <KeyboardArrowDownIcon fontSize='small' />}
+                    </IconButton>
+                    {draw.name}
+                  </Stack>
+                </TableCell>
+                <TableCell>${Number(draw.prize_amount ?? 0).toLocaleString()}</TableCell>
+                <TableCell>{new Date(draw.draw_date).toLocaleDateString()}</TableCell>
+                <TableCell align='center'>
+                  <Stack direction='row' alignItems='center' justifyContent='center' spacing={0.5}>
+                    <ConfirmationNumberOutlinedIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                    <Typography variant='body2' fontWeight={600}>{(draw.entry_count ?? 0).toLocaleString()}</Typography>
+                  </Stack>
+                </TableCell>
+                <TableCell>
+                  <Chip label={draw.status} size='small' color={STATUS_COLORS[draw.status?.toLowerCase()] ?? 'default'} />
+                </TableCell>
+                <TableCell align='right' onClick={(e) => e.stopPropagation()}>
+                  {renderActions(draw, true)}
+                </TableCell>
+              </TableRow>
+              {expandedDrawId === draw.id && (
+                <TableRow>
+                  <TableCell colSpan={6} sx={{ p: 0 }}>
+                    <DrawBusinessesPanel drawId={draw.id} />
+                  </TableCell>
+                </TableRow>
+              )}
+            </React.Fragment>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+
+  const renderCards = (rows: any[]) => (
+    <Stack spacing={2} sx={{ mb: 3 }}>
+      {rows.map((draw) => (
+        <Card key={draw.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+          <CardContent>
+            <Stack spacing={2}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant='subtitle2' fontWeight={700}>{draw.name}</Typography>
+                  <Typography variant='caption' color='text.secondary'>
+                    Prize: ${Number(draw.prize_amount ?? 0).toLocaleString()} · {(draw.entry_count ?? 0).toLocaleString()} entries
+                  </Typography>
+                </Box>
+                <IconButton size='small' onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}>
+                  {expandedDrawId === draw.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                </IconButton>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Chip label={draw.status} size='small' color={STATUS_COLORS[draw.status?.toLowerCase()] ?? 'default'} />
+                <Typography variant='caption' sx={{ alignSelf: 'center', color: 'text.secondary' }}>
+                  {new Date(draw.draw_date).toLocaleDateString()}
+                </Typography>
+              </Box>
+              {expandedDrawId === draw.id && <DrawBusinessesPanel drawId={draw.id} />}
+              {renderActions(draw)}
+            </Stack>
+          </CardContent>
+        </Card>
+      ))}
+    </Stack>
+  );
+
   return (
     <>
-      <Stack spacing={3}>
-        <Box display='flex' justifyContent='flex-end'>
-          <Button
-            variant='contained'
-            startIcon={<AddIcon />}
-            onClick={onCreateDraw}
-          >
-            New Campaign
-          </Button>
+      <Stack spacing={0}>
+        <Box display='flex' justifyContent='flex-end' mb={3}>
+          <Button variant='contained' startIcon={<AddIcon />} onClick={onCreateDraw}>New Campaign</Button>
         </Box>
 
-        {isMobile ? (
-          <Stack spacing={2}>
-            {draws?.map((draw) => (
-              <Card key={draw.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Box>
-                        <Typography variant='subtitle2' fontWeight={700}>{draw.name}</Typography>
-                        <Typography variant='caption' color='text.secondary'>Prize: ${Number(draw.prize_amount ?? 0).toLocaleString()}</Typography>
-                      </Box>
-                      <IconButton size='small' onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}>
-                        {expandedDrawId === draw.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                      </IconButton>
-                    </Box>
+        {active.length > 0 && (
+          <>
+            <SectionHeader label='Active' count={active.length} />
+            {isMobile ? renderCards(active) : renderTable(active)}
+          </>
+        )}
 
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      <Chip label={draw.status} size='small' color={STATUS_COLORS[draw.status?.toLowerCase()] ?? 'default'} />
-                      <Typography variant='caption' sx={{ alignSelf: 'center', color: 'text.secondary' }}>
-                        {new Date(draw.draw_date).toLocaleDateString()}
-                      </Typography>
-                      {draw.status?.toUpperCase() === 'CLOSED' && draw.winner_user_id && (
-                        <Chip label='Winner Selected' size='small' color='success' />
-                      )}
-                    </Box>
+        {upcoming.length > 0 && (
+          <>
+            <SectionHeader label='Upcoming' count={upcoming.length} />
+            {isMobile ? renderCards(upcoming) : renderTable(upcoming)}
+          </>
+        )}
 
-                    {expandedDrawId === draw.id && <DrawBusinessesPanel drawId={draw.id} />}
+        {history.length > 0 && (
+          <>
+            <SectionHeader label='History' count={history.length} />
+            {isMobile ? renderCards(history) : renderTable(history)}
+          </>
+        )}
 
-                    <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
-                      {draw.status?.toUpperCase() === 'UPCOMING' && (
-                        <Button size='small' variant='contained' color='success' startIcon={<LockOpenIcon />} onClick={() => setConfirmOpen(draw.id)} fullWidth>Open</Button>
-                      )}
-                      {draw.status?.toUpperCase() === 'OPEN' && (
-                        <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} onClick={() => setConfirmClose(draw.id)} fullWidth>Close</Button>
-                      )}
-                      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
-                        <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={() => setConfirmPick(draw.id)} fullWidth>Pick Winner</Button>
-                      )}
-                      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
-                        <Button size='small' variant='outlined' color='info' startIcon={<LockOpenIcon />} onClick={() => setConfirmReopen(draw.id)} fullWidth>Reopen</Button>
-                      )}
-                    </Stack>
-                  </Stack>
-                </CardContent>
-              </Card>
-            ))}
-          </Stack>
-        ) : (
-          <TableContainer
-            component={Paper}
-            elevation={0}
-            sx={{ border: '1px solid', borderColor: 'divider' }}
-          >
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: BG_PAGE }}>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Prize Pool</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align='right'>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {draws?.map((draw) => (
-                  <React.Fragment key={draw.id}>
-                    <TableRow
-                      hover
-                      sx={{ cursor: 'pointer', '& > *': { borderBottom: expandedDrawId === draw.id ? 'none' : undefined } }}
-                      onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}
-                    >
-                      <TableCell sx={{ fontWeight: 600 }}>
-                        <Stack direction='row' alignItems='center' spacing={0.5}>
-                          <IconButton size='small' sx={{ p: 0.25 }}>
-                            {expandedDrawId === draw.id ? <KeyboardArrowUpIcon fontSize='small' /> : <KeyboardArrowDownIcon fontSize='small' />}
-                          </IconButton>
-                          {draw.name}
-                        </Stack>
-                      </TableCell>
-                      <TableCell>${Number(draw.prize_amount ?? 0).toLocaleString()}</TableCell>
-                      <TableCell>{new Date(draw.draw_date).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <Chip label={draw.status} size='small' color={STATUS_COLORS[draw.status?.toLowerCase()] ?? 'default'} />
-                      </TableCell>
-                      <TableCell align='right' onClick={(e) => e.stopPropagation()}>
-                        <Stack direction='row' spacing={1} justifyContent='flex-end'>
-                          {draw.status?.toUpperCase() === 'UPCOMING' && (
-                            <Button size='small' variant='contained' color='success' startIcon={<LockOpenIcon />} onClick={() => setConfirmOpen(draw.id)}>Open</Button>
-                          )}
-                          {draw.status?.toUpperCase() === 'OPEN' && (
-                            <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} onClick={() => setConfirmClose(draw.id)}>Close</Button>
-                          )}
-                          {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
-                            <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={() => setConfirmPick(draw.id)}>Pick Winner</Button>
-                          )}
-                          {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
-                            <Button size='small' variant='outlined' color='info' startIcon={<LockOpenIcon />} onClick={() => setConfirmReopen(draw.id)}>Reopen</Button>
-                          )}
-                          {draw.status?.toUpperCase() === 'CLOSED' && draw.winner_user_id && (
-                            <Chip label='Winner Selected' size='small' color='success' />
-                          )}
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                    {expandedDrawId === draw.id && (
-                      <TableRow>
-                        <TableCell colSpan={5} sx={{ p: 0 }}>
-                          <DrawBusinessesPanel drawId={draw.id} />
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </React.Fragment>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        {!draws?.length && (
+          <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+            <Typography>No campaigns yet. Create one to get started.</Typography>
+          </Box>
         )}
       </Stack>
 
-      {/* Open campaign confirmation */}
+      {/* Open confirmation */}
       <Dialog open={!!confirmOpen} onClose={() => setConfirmOpen(null)}>
         <DialogTitle>Open Campaign?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Opening this campaign will allow businesses to generate entries and users to activate
-            them. Make sure you're ready before proceeding.
+            Opening this campaign will allow businesses to generate entries and users to activate them. Make sure you're ready before proceeding.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmOpen(null)}>Cancel</Button>
-          <Button
-            variant='contained'
-            color='success'
-            onClick={handleOpenDraw}
-            disabled={openDraw.isPending}
-          >
+          <Button variant='contained' color='success' onClick={handleOpenDraw} disabled={openDraw.isPending}>
             {openDraw.isPending ? 'Opening...' : 'Open Campaign'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Close campaign confirmation */}
+      {/* Close confirmation */}
       <Dialog open={!!confirmClose} onClose={() => setConfirmClose(null)}>
         <DialogTitle>Close Campaign?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Closing this campaign will prevent any new entries from being counted. You can pick a
-            winner after closing.
+            Closing this campaign will prevent any new entries from being counted. You can pick a winner after closing.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmClose(null)}>Cancel</Button>
-          <Button
-            variant='contained'
-            color='warning'
-            onClick={handleCloseDraw}
-            disabled={closeDraw.isPending}
-          >
+          <Button variant='contained' color='warning' onClick={handleCloseDraw} disabled={closeDraw.isPending}>
             {closeDraw.isPending ? 'Closing...' : 'Close Campaign'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Pick winner confirmation */}
-      <Dialog open={!!confirmPick} onClose={() => setConfirmPick(null)}>
+      {/* Pick winner pre-flight */}
+      <Dialog open={!!confirmPick} onClose={() => setConfirmPick(null)} maxWidth='xs' fullWidth>
         <DialogTitle>Pick a Winner?</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            This will randomly select a winner from all activated entries in this campaign. This
-            action cannot be undone.
-          </DialogContentText>
+          <Stack spacing={2}>
+            <DialogContentText>
+              This will randomly select one winner from all activated entries. This action cannot be undone.
+            </DialogContentText>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
+              <ConfirmationNumberOutlinedIcon color='primary' />
+              <Box>
+                <Typography variant='h6' fontWeight={800} lineHeight={1}>
+                  {(confirmPick?.entryCount ?? 0).toLocaleString()}
+                </Typography>
+                <Typography variant='caption' color='text.secondary'>eligible entries in pool</Typography>
+              </Box>
+            </Box>
+            {(confirmPick?.entryCount ?? 0) === 0 && (
+              <DialogContentText color='error'>
+                There are no eligible entries. You cannot pick a winner yet.
+              </DialogContentText>
+            )}
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmPick(null)}>Cancel</Button>
@@ -331,79 +402,77 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
             variant='contained'
             color='secondary'
             onClick={handlePickWinner}
-            disabled={pickWinner.isPending}
+            disabled={pickWinner.isPending || (confirmPick?.entryCount ?? 0) === 0}
           >
             {pickWinner.isPending ? 'Picking...' : 'Pick Winner'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Reopen campaign confirmation */}
+      {/* Reopen confirmation */}
       <Dialog open={!!confirmReopen} onClose={() => setConfirmReopen(null)}>
         <DialogTitle>Reopen Campaign?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Reopening this campaign will set its status back to Open. This is only allowed if no
-            winner has been picked and no other campaign is currently open.
+            Reopening this campaign will set its status back to Open. Only allowed if no winner has been picked and no other campaign is currently open.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmReopen(null)}>Cancel</Button>
-          <Button
-            variant='contained'
-            color='info'
-            onClick={handleReopenDraw}
-            disabled={reopenDraw.isPending}
-          >
+          <Button variant='contained' color='info' onClick={handleReopenDraw} disabled={reopenDraw.isPending}>
             {reopenDraw.isPending ? 'Reopening...' : 'Reopen Campaign'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Winner result dialog */}
-      <Dialog
-        open={!!winnerResult}
-        onClose={() => setWinnerResult(null)}
-        maxWidth='xs'
-        fullWidth
-      >
+      {/* Winner result */}
+      <Dialog open={!!winnerResult} onClose={() => setWinnerResult(null)} maxWidth='xs' fullWidth>
         <DialogTitle sx={{ textAlign: 'center' }}>
           <EmojiEventsIcon sx={{ fontSize: 48, color: 'warning.main', display: 'block', mx: 'auto', mb: 1 }} />
           Winner Selected
         </DialogTitle>
         <DialogContent>
           <Stack spacing={1} textAlign='center'>
-            <Typography variant='h6' fontWeight={800}>
-              {winnerResult?.winnerName}
-            </Typography>
+            <Typography variant='h6' fontWeight={800}>{winnerResult?.winnerName}</Typography>
             <Typography variant='body2' color='text.secondary'>
               Winning entry: <strong>{winnerResult?.ticketCode}</strong>
             </Typography>
             {winnerResult?.businessName && (
               <Typography variant='body2' color='text.secondary'>
-                Business:{' '}
-                <strong>
-                  {winnerResult.businessName}
-                  {winnerResult.locationName ? ` · ${winnerResult.locationName}` : ''}
-                </strong>
+                Business: <strong>{winnerResult.businessName}{winnerResult.locationName ? ` · ${winnerResult.locationName}` : ''}</strong>
               </Typography>
             )}
             <Typography variant='body2' color='text.secondary'>
-              Prize pool:{' '}
-              <strong>${Number(winnerResult?.prizePool ?? 0).toLocaleString()}</strong>
+              Prize pool: <strong>${Number(winnerResult?.prizePool ?? 0).toLocaleString()}</strong>
             </Typography>
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button
-            fullWidth
-            variant='contained'
-            onClick={() => setWinnerResult(null)}
-          >
-            Done
+          <Button fullWidth variant='contained' onClick={() => setWinnerResult(null)}>Done</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>
+        <DialogTitle>Delete Campaign?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>This will permanently delete the campaign. This cannot be undone.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDelete(null)}>Cancel</Button>
+          <Button variant='contained' color='error' onClick={handleDeleteDraw} disabled={deleteDraw.isPending}>
+            {deleteDraw.isPending ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      <EditDrawModal
+        open={!!editDraw}
+        draw={editDraw}
+        onClose={() => setEditDraw(null)}
+        onSuccess={() => onSnackSuccess('Campaign updated')}
+        onError={onSnackError}
+      />
     </>
   );
 };

@@ -1,18 +1,16 @@
 import { api } from '../../../shared/api/client';
 import type {
-  AdminUser,
-  BusinessStats,
+  AdminUsersPage,
+  BusinessStatsPage,
   CreateBusinessInput,
   CreateDrawInput,
   Draw,
-  TicketBatchRequest,
+  UpdateDrawInput,
 } from '../types/admin.types';
 
-export const fetchBusinesses = () =>
-  api.get<BusinessStats[]>('/admin/businesses');
+export const fetchBusinesses = (params: { page: number; limit: number; search?: string }) =>
+  api.get<BusinessStatsPage>('/admin/businesses', { params });
 export const fetchActiveDraws = () => api.get<Draw[]>('/admin/draws');
-export const generateTickets = (data: TicketBatchRequest) =>
-  api.post('/admin/generate-tickets', data);
 export const createBusiness = (data: CreateBusinessInput) =>
   api.post('/admin/business', data);
 export const fetchAllDraws = () => api.get<Draw[]>('/admin/draws-all');
@@ -27,7 +25,13 @@ export const pickWinner = (drawId: number) =>
 export const reopenDraw = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/reopen`);
 export const fetchAdminOverview = () => api.get('/admin/overview');
-export const fetchAllUsers = () => api.get<AdminUser[]>('/admin/users');
+export const fetchAllUsers = (params: {
+  page: number;
+  limit: number;
+  search?: string;
+  role?: string;
+  riskLevel?: string;
+}) => api.get<AdminUsersPage>('/admin/users', { params });
 export const setUserRiskScore = async (userId: number, riskScore: number): Promise<void> => {
   await api.patch(`/admin/users/${userId}/risk`, { risk_score: riskScore });
 };
@@ -37,8 +41,13 @@ export const toggleUserActive = (userId: number, is_active: boolean) =>
   api.patch(`/admin/users/${userId}/active`, { is_active });
 export const fetchDrawBusinesses = (drawId: number) =>
   api.get(`/admin/draws/${drawId}/businesses`);
-export const fetchAdminAnalytics = (businessId?: number | null) =>
-  api.get('/admin/analytics', { params: businessId ? { businessId } : undefined });
+export const fetchAdminAnalytics = (businessId?: number | null, drawId?: number | null) =>
+  api.get('/admin/analytics', {
+    params: {
+      ...(businessId ? { businessId } : {}),
+      ...(drawId ? { drawId } : {}),
+    },
+  });
 
 export const fetchLocationBreakdown = (params: {
   businessId?: number | null;
@@ -62,3 +71,26 @@ export const fetchPlatformSettings = () =>
 
 export const savePlatformSettings = (data: { global_entry_cap: number | null; allowed_states: string[] }) =>
   api.patch('/admin/settings', data);
+
+export const updateDraw = (drawId: number, data: UpdateDrawInput) =>
+  api.patch(`/admin/draws/${drawId}`, data);
+
+export const deleteDraw = (drawId: number) =>
+  api.delete(`/admin/draws/${drawId}`);
+
+export const fetchUserDetail = (userId: number) =>
+  api.get(`/admin/users/${userId}`);
+
+export const fetchEntryVolume = (params: { drawId?: number | null; businessId?: number | null }) =>
+  api.get('/admin/analytics/entry-volume', {
+    params: {
+      ...(params.drawId ? { drawId: params.drawId } : {}),
+      ...(params.businessId ? { businessId: params.businessId } : {}),
+    },
+  });
+
+export const fetchCampaignComparison = () =>
+  api.get('/admin/analytics/campaigns');
+
+export const duplicateDraw = (drawId: number) =>
+  api.post(`/admin/draws/${drawId}/duplicate`);

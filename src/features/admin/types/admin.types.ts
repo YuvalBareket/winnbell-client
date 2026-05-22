@@ -13,15 +13,39 @@ export interface AdminUser {
   business_id: number | null;
   business_name: string | null;
   business_active: boolean | null;
+  entry_count: number;
+  last_active_at: string | null;
+}
+
+export interface AdminUsersPage {
+  rows: AdminUser[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface BusinessStats {
   id: number;
   name: string;
   sector: string;
-  total_tickets_created: number;
+  entry_cap: number | null;
+  is_subscribed: boolean;
+  owner_name: string | null;
+  owner_email: string | null;
+  subscription_status: string | null;
+  current_period_end: string | null;
+  fee_at_entry: number | null;
+  location_count: number;
   total_activated: number;
-  ticket_balance: number;
+}
+
+export interface BusinessStatsPage {
+  rows: BusinessStats[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface Draw {
@@ -32,12 +56,13 @@ export interface Draw {
   status: 'Upcoming' | 'Open' | 'Closed';
   winner_user_id?: number;
   closed_at?: string;
+  entry_count?: number;
 }
 
-export interface TicketBatchRequest {
-  businessId: number;
-  drawId: number;
-  quantity: number;
+export interface UpdateDrawInput {
+  name?: string;
+  prize_amount?: number;
+  draw_date?: string;
 }
 
 export interface CreateBusinessInput {

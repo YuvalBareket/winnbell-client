@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   fetchBusinesses,
   fetchActiveDraws,
-  generateTickets,
   createBusiness,
   fetchAllDraws,
   createDraw,
@@ -20,18 +19,29 @@ import {
   setUserRiskScore,
   fetchPlatformSettings,
   savePlatformSettings,
+  updateDraw,
+  deleteDraw,
+  fetchUserDetail,
+  fetchEntryVolume,
+  fetchCampaignComparison,
+  duplicateDraw,
 } from '../api/adminApi';
-import type { AdminAnalytics, AdminUser, LocationBreakdownPage } from '../types/admin.types';
+import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
-export const useAdminBusinesses = () => {
+export const useAdminBusinesses = (params: { page: number; limit: number; search: string }) => {
   return useQuery({
-    queryKey: queryKeys.admin.businesses,
+    queryKey: [queryKeys.admin.businesses, params],
     queryFn: async () => {
-      const { data } = await fetchBusinesses();
-      return data;
+      const { data } = await fetchBusinesses({
+        page: params.page,
+        limit: params.limit,
+        search: params.search || undefined,
+      });
+      return data as BusinessStatsPage;
     },
     staleTime: 2 * 60_000,
+    placeholderData: (prev) => prev,
   });
 };
 
@@ -43,16 +53,6 @@ export const useActiveDraws = () => {
       return data;
     },
     staleTime: 30_000,
-  });
-};
-
-export const useGenerateTickets = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: generateTickets,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses });
-    },
   });
 };
 
@@ -147,14 +147,27 @@ export const useAdminOverview = () => {
   });
 };
 
-export const useAdminUsers = () => {
+export const useAdminUsers = (params: {
+  page: number;
+  limit: number;
+  search: string;
+  role: string;
+  riskLevel: string;
+}) => {
   return useQuery({
-    queryKey: queryKeys.admin.users,
+    queryKey: [queryKeys.admin.users, params],
     queryFn: async () => {
-      const { data } = await fetchAllUsers();
-      return data as AdminUser[];
+      const { data } = await fetchAllUsers({
+        page: params.page,
+        limit: params.limit,
+        search: params.search || undefined,
+        role: params.role || undefined,
+        riskLevel: params.riskLevel || undefined,
+      });
+      return data as AdminUsersPage;
     },
-    staleTime: 2 * 60_000,
+    staleTime: 60_000,
+    placeholderData: (prev) => prev,
   });
 };
 
@@ -206,11 +219,11 @@ export const useToggleUserActive = () => {
   });
 };
 
-export const useAdminAnalytics = (businessId?: number | null) => {
+export const useAdminAnalytics = (businessId?: number | null, drawId?: number | null) => {
   return useQuery({
-    queryKey: ['admin', 'analytics', businessId ?? null],
+    queryKey: ['admin', 'analytics', businessId ?? null, drawId ?? null],
     queryFn: async () => {
-      const { data } = await fetchAdminAnalytics(businessId);
+      const { data } = await fetchAdminAnalytics(businessId, drawId);
       return data as AdminAnalytics;
     },
     staleTime: 5 * 60_000,
@@ -253,5 +266,76 @@ export const useLocationBreakdown = (params: {
     },
     staleTime: 2 * 60_000,
     placeholderData: (prev) => prev,
+  });
+};
+
+export const useUpdateDraw = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ drawId, data }: { drawId: number; data: UpdateDrawInput }) =>
+      updateDraw(drawId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
+    },
+  });
+};
+
+export const useDeleteDraw = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (drawId: number) => deleteDraw(drawId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
+    },
+  });
+};
+
+export const useUserDetail = (userId: number | null) => {
+  return useQuery({
+    queryKey: ['admin', 'user-detail', userId],
+    queryFn: async () => {
+      const { data } = await fetchUserDetail(userId!);
+      return data as { user: any; entries: any[] };
+    },
+    enabled: userId !== null,
+    staleTime: 30_000,
+  });
+};
+
+export const useEntryVolume = (drawId?: number | null, businessId?: number | null) => {
+  return useQuery({
+    queryKey: ['admin', 'entry-volume', drawId ?? null, businessId ?? null],
+    queryFn: async () => {
+      const { data } = await fetchEntryVolume({ drawId, businessId });
+      return data as { date: string; count: number }[];
+    },
+    staleTime: 2 * 60_000,
+  });
+};
+
+export const useCampaignComparison = () => {
+  return useQuery({
+    queryKey: ['admin', 'campaign-comparison'],
+    queryFn: async () => {
+      const { data } = await fetchCampaignComparison();
+      return data as {
+        id: number; name: string; status: string; prize_amount: number;
+        draw_date: string; total_entries: number; quarantined: number; business_count: number;
+      }[];
+    },
+    staleTime: 2 * 60_000,
+  });
+};
+
+export const useDuplicateDraw = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (drawId: number) => duplicateDraw(drawId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
+    },
   });
 };
