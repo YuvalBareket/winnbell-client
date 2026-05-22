@@ -9,7 +9,7 @@ import {
   Login, Google, Apple, MarkEmailRead, Storefront, EmojiEvents, CardGiftcard,
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useSignIn } from '@clerk/clerk-react';
+import { useSignIn, useAuth } from '@clerk/clerk-react';
 import {
   BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
@@ -76,6 +76,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isLoaded, signIn, setActive } = useSignIn();
+  const { getToken } = useAuth();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -122,6 +123,7 @@ const LoginPage = () => {
       if (result.status === 'complete') {
         if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
+        await getToken(); // ensure session is fully persisted before navigating
         navigate('/');
       } else if (result.status === 'needs_second_factor') {
         await signIn.prepareSecondFactor({ strategy: 'email_code' });
@@ -148,6 +150,7 @@ const LoginPage = () => {
       if (result.status === 'complete') {
         if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
+        await getToken(); // ensure session is fully persisted before navigating
         navigate('/');
       }
     } catch (err: any) {
