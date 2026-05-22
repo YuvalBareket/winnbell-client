@@ -49,12 +49,12 @@ export const useClerkSync = () => {
         }
       })
       .catch((err: any) => {
+        dispatch(logout());
+        signOut();
         if (err?.response?.data?.message === 'REGION_RESTRICTED') {
-          dispatch(logout());
-          signOut();
           navigate('/region-blocked');
         } else {
-          console.error(err);
+          navigate('/login?error=session');
         }
       })
       .finally(() => { syncing.current = false; });

@@ -82,6 +82,7 @@ const LoginPage = () => {
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
   const inviteToken = searchParams.get('token');
+  const sessionError = searchParams.get('error') === 'session';
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -265,6 +266,12 @@ const LoginPage = () => {
         <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>Welcome Back</Typography>
         <Typography variant='body1' color='text.secondary'>Sign in to check your entries</Typography>
       </Box>
+
+      {sessionError && (
+        <Alert severity='warning' sx={{ mb: 3, borderRadius: 3 }}>
+          Your previous session didn't complete. Please sign in again.
+        </Alert>
+      )}
 
       {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
 

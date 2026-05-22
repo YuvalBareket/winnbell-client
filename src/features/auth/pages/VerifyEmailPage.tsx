@@ -4,7 +4,7 @@ import {
   IconButton, useMediaQuery, useTheme, TextField,
 } from '@mui/material';
 import { MarkEmailRead, ArrowBackIosNew, ArrowForward, ConfirmationNumber, Storefront, EmojiEvents, CardGiftcard } from '@mui/icons-material';
-import { useSignUp } from '@clerk/clerk-react';
+import { useSignUp, useAuth } from '@clerk/clerk-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
@@ -69,6 +69,7 @@ const BrandPanel = () => (
 
 const VerifyEmailPage = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
+  const { getToken } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const theme = useTheme();
@@ -102,6 +103,7 @@ const VerifyEmailPage = () => {
         if (role) sessionStorage.setItem('pendingRole', role);
         if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
+        await getToken();
         navigate('/');
       }
     } catch (err: any) {
