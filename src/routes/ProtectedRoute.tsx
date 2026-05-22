@@ -1,12 +1,14 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { CircularProgress, Box } from '@mui/material';
+import { CircularProgress, Box, Typography, Button } from '@mui/material';
 import { useAuth } from '@clerk/clerk-react';
 import { useAppSelector } from '../store/hook';
 import { selectIsAuthenticated } from '../store/selectors/authSelectors';
+import { useSyncStatus } from '../shared/context/SyncStatusContext';
 
 const ProtectedRoute = () => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const { isSignedIn, isLoaded } = useAuth();
+  const { syncError, retry } = useSyncStatus();
 
   // Clerk is still initializing
   if (!isLoaded) {
@@ -19,6 +21,33 @@ const ProtectedRoute = () => {
 
   // Clerk session exists but useClerkSync hasn't finished yet - wait, don't redirect
   if (isSignedIn && !isAuthenticated) {
+    if (syncError) {
+      return (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: '100dvh',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'background.default',
+          }}
+        >
+          <Box
+            component="img"
+            src="/winnbell_logo.png"
+            alt="Winnbell"
+            sx={{ width: 80, height: 'auto', mb: 3 }}
+          />
+          <Typography variant="body1" sx={{ mb: 3, textAlign: 'center', maxWidth: 320 }}>
+            We're having trouble connecting. Please check your connection and try again.
+          </Typography>
+          <Button variant="contained" onClick={retry}>
+            Retry
+          </Button>
+        </Box>
+      );
+    }
     return (
       <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}>
         <CircularProgress />

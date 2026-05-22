@@ -155,7 +155,7 @@ export const useAdminUsers = (params: {
   riskLevel: string;
 }) => {
   return useQuery({
-    queryKey: [queryKeys.admin.users, params],
+    queryKey: [...queryKeys.admin.users, params],
     queryFn: async () => {
       const { data } = await fetchAllUsers({
         page: params.page,
@@ -176,8 +176,10 @@ export const useSetUserRisk = () => {
   return useMutation({
     mutationFn: ({ userId, riskScore }: { userId: number; riskScore: number }) =>
       setUserRiskScore(userId, riskScore),
-    onSuccess: () => {
+    onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.overview });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'user-detail', userId] });
     },
   });
 };
@@ -215,6 +217,7 @@ export const useToggleUserActive = () => {
       toggleUserActive(userId, is_active),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.overview });
     },
   });
 };

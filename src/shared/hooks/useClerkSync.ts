@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth, useClerk } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
@@ -9,7 +9,7 @@ import { syncUserFn } from '../../features/auth/api/auth.api';
 // Single source of truth for syncing a Clerk session into Redux.
 // Runs whenever Clerk is signed in but Redux has no auth state.
 export const useClerkSync = () => {
-  const { isSignedIn, getToken } = useAuth();
+  const { isLoaded, isSignedIn, getToken } = useAuth();
   const { signOut } = useClerk();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -18,15 +18,17 @@ export const useClerkSync = () => {
   const isBusiness = useAppSelector(selectIsBusiness);
   const needsResync = isAuthenticated && isBusiness && currentUser?.businessLogoUrl === undefined;
   const syncing = useRef(false);
+  const [syncError, setSyncError] = useState(false);
 
   useEffect(() => {
     const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
-    const alreadySyncedThisSession = sessionStorage.getItem('synced');
-    if (!isSignedIn || (isAuthenticated && !needsResync && !pendingInviteToken && alreadySyncedThisSession) || syncing.current) return;
+    if (!isLoaded || !isSignedIn || (isAuthenticated && !needsResync && !pendingInviteToken) || syncing.current) return;
 
     syncing.current = true;
+    setSyncError(false);
 
     const pendingRole = sessionStorage.getItem('pendingRole');
+    const isFreshLogin = !localStorage.getItem('wasLoggedIn');
 
     getToken()
       .then((token) => {
@@ -36,27 +38,34 @@ export const useClerkSync = () => {
       .then((data) => {
         sessionStorage.removeItem('pendingRole');
         sessionStorage.removeItem('pendingInviteToken');
-        sessionStorage.setItem('synced', '1');
+        localStorage.setItem('wasLoggedIn', '1');
         dispatch(login({ user: data.user, token: data.token }));
-        const pendingLocationId = sessionStorage.getItem('pendingLocationId');
-        sessionStorage.removeItem('pendingLocationId');
-        if (localStorage.getItem('pendingTicketCode')) {
-          navigate('/scan');
-        } else if (data.user.role === 'Business' || data.user.location_id != null) {
-          navigate('/activity');
-        } else if (data.user.role === 'User') {
-          navigate(pendingLocationId ? `/scan?l=${pendingLocationId}` : '/scan');
+        // Only navigate on a fresh login — not on browser reopen re-sync
+        if (isFreshLogin) {
+          const pendingLocationId = sessionStorage.getItem('pendingLocationId');
+          sessionStorage.removeItem('pendingLocationId');
+          if (localStorage.getItem('pendingTicketCode')) {
+            navigate('/scan');
+          } else if (data.user.role === 'Business' || data.user.location_id != null) {
+            navigate('/activity');
+          } else if (data.user.role === 'User') {
+            navigate(pendingLocationId ? `/scan?l=${pendingLocationId}` : '/scan');
+          }
         }
       })
       .catch((err: any) => {
-        dispatch(logout());
-        signOut();
-        if (err?.response?.data?.message === 'REGION_RESTRICTED') {
+        const message = err?.response?.data?.message;
+        if (message === 'REGION_RESTRICTED') {
+          dispatch(logout());
+          signOut();
           navigate('/region-blocked');
         } else {
-          navigate('/login?error=session');
+          // All other errors (network, server, 401): do not sign out of Clerk.
+          setSyncError(true);
         }
       })
       .finally(() => { syncing.current = false; });
-  }, [isSignedIn, isAuthenticated, needsResync]);
+  }, [isLoaded, isSignedIn, isAuthenticated, needsResync]);
+
+  return { syncError, resetSyncError: () => setSyncError(false) };
 };

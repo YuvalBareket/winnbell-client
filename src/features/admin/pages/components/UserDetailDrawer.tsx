@@ -34,6 +34,27 @@ const SOURCE_LABELS: Record<string, string> = {
   promo: 'Promo',
 };
 
+const QUARANTINE_LABELS: Record<string, string> = {
+  high_risk_user: 'High risk user',
+  ocr_pending: 'Image pending review',
+  ocr_validation_failed: 'Image rejected',
+  ocr_error_pending_review: 'OCR error — pending review',
+  shared_receipt_suspected: 'Shared receipt',
+};
+
+const RISK_FLAG_LABELS: Record<string, string> = {
+  duplicate_identifier_cross_user: 'Cross-user duplicate',
+  high_submission_velocity: 'High velocity (≥4/day)',
+  elevated_submission_velocity: 'Elevated velocity (≥3/day)',
+  sustained_weekly_velocity: 'High weekly volume',
+  sustained_monthly_volume: 'High monthly volume',
+  rapid_submission: 'Rapid re-submit (<30s)',
+  sequential_guessing: 'Sequential guessing',
+  threshold_probing: 'Threshold probing',
+  amount_outlier: 'Amount outlier (>3×avg)',
+  suspiciously_fast_input: 'Suspiciously fast input',
+};
+
 const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
   const { data, isLoading } = useUserDetail(userId);
   const user = data?.user;
@@ -51,7 +72,7 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
       anchor='right'
       open={userId !== null}
       onClose={onClose}
-      PaperProps={{ sx: { width: { xs: '100vw', sm: 480 }, p: 0 } }}
+      PaperProps={{ sx: { width: { xs: '100vw', sm: 600, md: 680 }, p: 0 } }}
     >
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -104,6 +125,26 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
               ))}
             </Box>
 
+            {/* Accumulated risk flags */}
+            {Array.isArray(user.risk_flags) && user.risk_flags.length > 0 && (
+              <Box sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'warning.light', bgcolor: 'warning.50' }}>
+                <Typography variant='caption' color='text.secondary' display='block' mb={1}>
+                  Risk Signals (accumulated)
+                </Typography>
+                <Stack direction='row' spacing={0.5} flexWrap='wrap' gap={0.5}>
+                  {(user.risk_flags as string[]).map((flag) => (
+                    <Chip
+                      key={flag}
+                      label={RISK_FLAG_LABELS[flag] ?? flag}
+                      size='small'
+                      color='warning'
+                      sx={{ fontSize: 11 }}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+            )}
+
             <Divider />
 
             {/* Entry history */}
@@ -125,6 +166,7 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                       <TableCell>Source</TableCell>
                       <TableCell>Date</TableCell>
                       <TableCell>Status</TableCell>
+                      <TableCell>Risk Signals</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -144,9 +186,31 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                         </TableCell>
                         <TableCell>
                           {e.is_quarantined ? (
-                            <Chip label='Quarantined' size='small' color='error' />
+                            <Chip
+                              label={QUARANTINE_LABELS[e.quarantine_reason] ?? 'Quarantined'}
+                              size='small'
+                              color={e.quarantine_reason === 'ocr_pending' ? 'warning' : 'error'}
+                            />
                           ) : (
                             <Chip label='Active' size='small' color='success' />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {Array.isArray(e.risk_flags) && e.risk_flags.length > 0 ? (
+                            <Stack spacing={0.5}>
+                              {(e.risk_flags as string[]).map((flag) => (
+                                <Chip
+                                  key={flag}
+                                  label={RISK_FLAG_LABELS[flag] ?? flag}
+                                  size='small'
+                                  color='warning'
+                                  variant='outlined'
+                                  sx={{ fontSize: 10, height: 20 }}
+                                />
+                              ))}
+                            </Stack>
+                          ) : (
+                            <Typography variant='caption' color='text.disabled'>—</Typography>
                           )}
                         </TableCell>
                       </TableRow>

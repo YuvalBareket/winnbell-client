@@ -75,6 +75,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
 
   const handleLogout = () => {
     dispatch(logout());
+    localStorage.removeItem('wasLoggedIn');
     signOut();
   };
 

@@ -52,6 +52,7 @@ const AppSidebar = () => {
 
   const handleLogout = () => {
     dispatch(logout());
+    localStorage.removeItem('wasLoggedIn');
     signOut();
   };
 

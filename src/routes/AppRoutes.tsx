@@ -12,6 +12,7 @@ import {
   selectIsLocationManager,
 } from '../store/selectors/authSelectors';
 import { useClerkSync } from '../shared/hooks/useClerkSync';
+import { SyncStatusContext } from '../shared/context/SyncStatusContext';
 
 import MainLayout from '../shared/components/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
@@ -66,7 +67,8 @@ const AppRoutes = () => {
   const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
 
   // Syncs an active Clerk session into Redux (handles SSO callbacks)
-  useClerkSync();
+  const { syncError, resetSyncError } = useClerkSync();
+  const retry = () => { resetSyncError(); window.location.reload(); };
 
   // Redirect new business owners to setup after registration
   useEffect(() => {
@@ -77,6 +79,7 @@ const AppRoutes = () => {
 
 
   return (
+    <SyncStatusContext.Provider value={{ syncError, retry }}>
     <Routes>
       {/* --- Public Routes --- */}
       <Route path='/' element={
@@ -137,6 +140,7 @@ const AppRoutes = () => {
       {/* Fallback */}
       <Route path='*' element={<Navigate to='/' replace />} />
     </Routes>
+    </SyncStatusContext.Provider>
   );
 };
 

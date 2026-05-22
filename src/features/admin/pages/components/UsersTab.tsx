@@ -7,7 +7,6 @@ import {
   Stack,
   Alert,
   Chip,
-  Button,
   TextField,
   InputAdornment,
   Select,
@@ -27,12 +26,12 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Button,
   IconButton,
   Tooltip,
   Skeleton,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import EditIcon from '@mui/icons-material/Edit';
 import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import GppBadIcon from '@mui/icons-material/GppBad';
@@ -40,7 +39,6 @@ import WarningIcon from '@mui/icons-material/Warning';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import {
   useAdminUsers,
-  useUpdateUserRole,
   useToggleUserActive,
   useSetUserRisk,
 } from '../../hooks/useAdmin';
@@ -75,8 +73,6 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [role, setRole] = useState('');
   const [riskLevel, setRiskLevel] = useState('');
-  const [userRoleDialogOpen, setUserRoleDialogOpen] = useState<number | null>(null);
-  const [selectedRole, setSelectedRole] = useState('user');
   const [riskConfirmUser, setRiskConfirmUser] = useState<{ id: number; name: string; action: 'disqualify' | 'clear' } | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
@@ -88,7 +84,6 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
   }, [role, riskLevel]);
@@ -101,20 +96,8 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
     riskLevel,
   });
 
-  const updateUserRole = useUpdateUserRole();
   const toggleUserActive = useToggleUserActive();
   const setUserRisk = useSetUserRisk();
-
-  const handleUpdateUserRole = async (userId: number) => {
-    try {
-      await updateUserRole.mutateAsync({ userId, role: selectedRole });
-      onSnackSuccess('User role updated successfully');
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Failed to update user role';
-      onSnackError((e as any)?.response?.data?.message ?? msg);
-    }
-    setUserRoleDialogOpen(null);
-  };
 
   const handleToggleUserActive = async (userId: number, currentStatus: boolean) => {
     try {
@@ -128,7 +111,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
 
   const handleConfirmRiskAction = async () => {
     if (!riskConfirmUser) return;
-    const riskScore = riskConfirmUser.action === 'disqualify' ? 20 : 0;
+    const riskScore = riskConfirmUser.action === 'disqualify' ? 20 : 19;
     try {
       await setUserRisk.mutateAsync({ userId: riskConfirmUser.id, riskScore });
       onSnackSuccess(
@@ -153,7 +136,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
         {/* Flagged users banner */}
         {flaggedCount > 0 && (
           <Alert severity='error'>
-            <strong>{flaggedCount} {flaggedCount === 1 ? 'user' : 'users'} flagged for review</strong> - risk score &ge; 20. Their draw entries are quarantined.
+            <strong>{flaggedCount} {flaggedCount === 1 ? 'user' : 'users'} flagged for review</strong> — risk score &ge; 20. Their draw entries are quarantined.
           </Alert>
         )}
 
@@ -177,11 +160,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
         <Stack direction='row' spacing={2} sx={{ flexWrap: 'wrap' }}>
           <FormControl size='small' sx={{ minWidth: 140 }}>
             <InputLabel>Role</InputLabel>
-            <Select
-              value={role}
-              label='Role'
-              onChange={(e) => setRole(e.target.value)}
-            >
+            <Select value={role} label='Role' onChange={(e) => setRole(e.target.value)}>
               <MenuItem value=''>All Roles</MenuItem>
               <MenuItem value='user'>User</MenuItem>
               <MenuItem value='business'>Business</MenuItem>
@@ -190,11 +169,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
 
           <FormControl size='small' sx={{ minWidth: 160 }}>
             <InputLabel>Risk</InputLabel>
-            <Select
-              value={riskLevel}
-              label='Risk'
-              onChange={(e) => setRiskLevel(e.target.value)}
-            >
+            <Select value={riskLevel} label='Risk' onChange={(e) => setRiskLevel(e.target.value)}>
               <MenuItem value=''>All Risk</MenuItem>
               <MenuItem value='high'>High (&ge;20)</MenuItem>
               <MenuItem value='medium'>Medium (10-19)</MenuItem>
@@ -214,25 +189,18 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                   <Card
                     key={user.id}
                     elevation={0}
-                    sx={{ border: '1px solid', borderColor: 'divider' }}
+                    sx={{ border: '1px solid', borderColor: 'divider', cursor: 'pointer' }}
+                    onClick={() => setSelectedUserId(user.id)}
                   >
                     <CardContent>
                       <Stack spacing={2}>
                         <Box>
-                          <Typography variant='subtitle2' fontWeight={700}>
-                            {user.full_name}
-                          </Typography>
-                          <Typography variant='caption' color='text.secondary'>
-                            {user.email}
-                          </Typography>
+                          <Typography variant='subtitle2' fontWeight={700}>{user.full_name}</Typography>
+                          <Typography variant='caption' color='text.secondary'>{user.email}</Typography>
                         </Box>
 
                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                          <Chip
-                            label={user.role}
-                            size='small'
-                            color={ROLE_COLORS[user.role.toLowerCase()] || 'default'}
-                          />
+                          <Chip label={user.role} size='small' color={ROLE_COLORS[user.role.toLowerCase()] || 'default'} />
                           <Chip
                             label={user.is_active ? 'Active' : 'Inactive'}
                             size='small'
@@ -240,11 +208,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                             color={user.is_active ? 'success' : 'default'}
                           />
                           {user.business_name && (
-                            <Chip
-                              label={user.business_name}
-                              size='small'
-                              variant='outlined'
-                            />
+                            <Chip label={user.business_name} size='small' variant='outlined' />
                           )}
                         </Box>
 
@@ -257,20 +221,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                           </Typography>
                         </Stack>
 
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          {user.role.toLowerCase() !== 'admin' && (
-                            <Button
-                              size='small'
-                              variant='outlined'
-                              startIcon={<EditIcon />}
-                              onClick={() => {
-                                setSelectedRole(user.role.toLowerCase());
-                                setUserRoleDialogOpen(user.id);
-                              }}
-                            >
-                              Change Role
-                            </Button>
-                          )}
+                        <Box sx={{ display: 'flex', gap: 1 }} onClick={(e) => e.stopPropagation()}>
                           <Tooltip title={user.is_active ? 'Deactivate user' : 'Activate user'}>
                             <IconButton
                               size='small'
@@ -307,9 +258,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                   ? Array.from({ length: 5 }).map((_, i) => (
                       <TableRow key={i}>
                         {Array.from({ length: 9 }).map((__, j) => (
-                          <TableCell key={j}>
-                            <Skeleton variant='text' />
-                          </TableCell>
+                          <TableCell key={j}><Skeleton variant='text' /></TableCell>
                         ))}
                       </TableRow>
                     ))
@@ -324,11 +273,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                           <TableCell>{user.full_name}</TableCell>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>
-                            <Chip
-                              label={user.role}
-                              size='small'
-                              color={ROLE_COLORS[user.role.toLowerCase()] || 'default'}
-                            />
+                            <Chip label={user.role} size='small' color={ROLE_COLORS[user.role.toLowerCase()] || 'default'} />
                           </TableCell>
                           <TableCell>
                             <Chip
@@ -339,63 +284,31 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                             />
                           </TableCell>
                           <TableCell>
-                            {user.business_name ? (
-                              <Typography variant='body2'>{user.business_name}</Typography>
-                            ) : (
-                              <Typography variant='body2' color='text.secondary'>
-                                -
-                              </Typography>
-                            )}
+                            {user.business_name
+                              ? <Typography variant='body2'>{user.business_name}</Typography>
+                              : <Typography variant='body2' color='text.secondary'>-</Typography>}
                           </TableCell>
                           <TableCell>
                             <Stack direction='row' spacing={0.5} alignItems='center'>
-                              <Chip
-                                icon={<RiskIcon />}
-                                label={riskLabel}
-                                size='small'
-                                color={riskChipColor}
-                              />
-                              <Typography variant='caption' color='text.secondary'>
-                                {user.risk_score}
-                              </Typography>
+                              <Chip icon={<RiskIcon />} label={riskLabel} size='small' color={riskChipColor} />
+                              <Typography variant='caption' color='text.secondary'>{user.risk_score}</Typography>
                             </Stack>
                           </TableCell>
                           <TableCell align='right'>
-                            <Typography variant='body2'>
-                              {user.entry_count > 0 ? user.entry_count : '—'}
-                            </Typography>
+                            <Typography variant='body2'>{user.entry_count > 0 ? user.entry_count : '—'}</Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant='body2' color='text.secondary'>
-                              {formatLastActive(user.last_active_at)}
-                            </Typography>
+                            <Typography variant='body2' color='text.secondary'>{formatLastActive(user.last_active_at)}</Typography>
                           </TableCell>
                           <TableCell align='right' onClick={(e) => e.stopPropagation()}>
                             <Stack direction='row' spacing={0.5} justifyContent='flex-end'>
-                              {user.role.toLowerCase() !== 'admin' && (
-                                <Tooltip title='Change role'>
-                                  <IconButton
-                                    size='small'
-                                    onClick={() => {
-                                      setSelectedRole(user.role.toLowerCase());
-                                      setUserRoleDialogOpen(user.id);
-                                    }}
-                                  >
-                                    <EditIcon fontSize='small' />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
                               <Tooltip title={user.is_active ? 'Deactivate' : 'Activate'}>
                                 <IconButton
                                   size='small'
                                   color={user.is_active ? 'default' : 'error'}
                                   onClick={() => handleToggleUserActive(user.id, user.is_active)}
                                 >
-                                  {user.is_active ? (
-                                    <CheckCircleIcon fontSize='small' />
-                                  ) : (
-                                    <BlockIcon fontSize='small' />
-                                  )}
+                                  {user.is_active ? <CheckCircleIcon fontSize='small' /> : <BlockIcon fontSize='small' />}
                                 </IconButton>
                               </Tooltip>
                               {!isDisqualified ? (
@@ -403,9 +316,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                                   <IconButton
                                     size='small'
                                     color='error'
-                                    onClick={() =>
-                                      setRiskConfirmUser({ id: user.id, name: user.full_name, action: 'disqualify' })
-                                    }
+                                    onClick={() => setRiskConfirmUser({ id: user.id, name: user.full_name, action: 'disqualify' })}
                                   >
                                     <BlockIcon fontSize='small' />
                                   </IconButton>
@@ -415,9 +326,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                                   <IconButton
                                     size='small'
                                     color='success'
-                                    onClick={() =>
-                                      setRiskConfirmUser({ id: user.id, name: user.full_name, action: 'clear' })
-                                    }
+                                    onClick={() => setRiskConfirmUser({ id: user.id, name: user.full_name, action: 'clear' })}
                                   >
                                     <CheckCircleIcon fontSize='small' />
                                   </IconButton>
@@ -433,19 +342,13 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
           </TableContainer>
         )}
 
-        {/* Empty state */}
         {isEmpty && (
           <Box sx={{ textAlign: 'center', py: 6 }}>
-            <Typography variant='h6' gutterBottom>
-              No users found
-            </Typography>
-            <Typography variant='body2' color='text.secondary'>
-              Try adjusting your search or filters.
-            </Typography>
+            <Typography variant='h6' gutterBottom>No users found</Typography>
+            <Typography variant='body2' color='text.secondary'>Try adjusting your search or filters.</Typography>
           </Box>
         )}
 
-        {/* Pagination */}
         <TablePagination
           component='div'
           count={data?.total ?? 0}
@@ -455,36 +358,6 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
           onPageChange={(_, newPage) => setPage(newPage + 1)}
         />
       </Stack>
-
-      {/* User role update dialog */}
-      <Dialog open={!!userRoleDialogOpen} onClose={() => setUserRoleDialogOpen(null)}>
-        <DialogTitle>Change User Role</DialogTitle>
-        <DialogContent sx={{ minWidth: 300 }}>
-          <Box sx={{ mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
-                label='Role'
-              >
-                <MenuItem value='user'>User</MenuItem>
-                <MenuItem value='business'>Business</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setUserRoleDialogOpen(null)}>Cancel</Button>
-          <Button
-            variant='contained'
-            onClick={() => userRoleDialogOpen && handleUpdateUserRole(userRoleDialogOpen)}
-            disabled={updateUserRole.isPending}
-          >
-            {updateUserRole.isPending ? 'Updating...' : 'Update'}
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       <UserDetailDrawer userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
 
@@ -497,7 +370,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
           <DialogContentText>
             {riskConfirmUser?.action === 'disqualify'
               ? `Disqualify ${riskConfirmUser.name}? This will quarantine all their current campaign entries. They can no longer submit until their score is cleared.`
-              : `Clear flag for ${riskConfirmUser?.name}? This will restore their entries and reset their risk score to 0.`}
+              : `Clear flag for ${riskConfirmUser?.name}? This will restore their quarantined entries and lower their risk score to 19 (below the high-risk threshold).`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
