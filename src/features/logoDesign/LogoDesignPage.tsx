@@ -31,7 +31,7 @@ export default function LogoDesignPage() {
         sx={{
           width: 600,
           height: 600,
-          background: 'linear-gradient(135deg, #e8f0fe 3%, #195DE6 40%, #06347E 70%)',
+          background: 'linear-gradient(135deg, #e8f0fe 3%, #72b8f6 40%, #1a6eb8 70%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -41,7 +41,7 @@ export default function LogoDesignPage() {
           component='img'
           src='/winnbell_logo_white.png'
           alt='Winnbell'
-          sx={{ width: '70%', height: '70%', objectFit: 'contain', filter: 'drop-shadow(0 0px 30px rgba(255,255,255,0.8))' }}
+          sx={{ width: '70%', objectFit: 'contain',  }}
         />
       </Box>
 
