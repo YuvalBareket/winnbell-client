@@ -1,8 +1,8 @@
-import { AppBar, Toolbar, Typography, IconButton, Box, Avatar, Stack, Tooltip, CircularProgress } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Box, Avatar, Stack, Tooltip, CircularProgress } from '@mui/material';
 import { NotificationsNoneOutlined, NotificationsActiveOutlined } from '@mui/icons-material';
 import { useAppSelector } from '../../store/hook';
 import { selectCurrentUser } from '../../store/selectors/authSelectors';
-import { GRADIENT_PRIMARY, TEXT_PRIMARY } from '../colors';
+import { GRADIENT_PRIMARY } from '../colors';
 import { getUserInitials } from '../utils/string';
 import { useNotifications } from '../../features/notifications/useNotifications';
 
