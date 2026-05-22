@@ -29,11 +29,9 @@ const AppHeader = ({ onMenuOpen }: Props) => {
 
         {/* Brand */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Stack direction='row' alignItems='center' spacing={-1}>
-            <Box component='img' src='/winnbell_logo.png' alt='W' sx={{ height: 28, width: 'auto', objectFit: 'contain' }} />
-            <Typography sx={{ fontFamily: "'Damion', cursive", fontSize: '1.6rem', color: TEXT_PRIMARY, lineHeight: 1, mt: '4px' }}>
-              innbell
-            </Typography>
+          <Stack direction='row' alignItems='center' spacing={-0.3}>
+            <Box component='img' src='/winnbell_app_name.png' alt='W' sx={{ height: 26, width: 'auto', objectFit: 'contain' }} />
+
           </Stack>
         
         </Box>

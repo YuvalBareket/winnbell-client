@@ -73,11 +73,9 @@ const AppSidebar = () => {
       }}
     >
       {/* Brand */}
-      <Stack sx={{ px: 3, pt: 1.5, pb: 1.5 }} direction='row' alignItems='center' spacing={-1.2}>
-        <Box component='img' src='/winnbell_logo.png' alt='W' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
-        <Typography sx={{ fontFamily: "'Damion', cursive", fontSize: '1.9rem', color: TEXT_PRIMARY, lineHeight: 1, mt: '4px' }}>
-          innbell
-        </Typography>
+      <Stack sx={{ px: 3, pt: 1.5, pb: 1.5 }} direction='row' alignItems='center' spacing={-0.4}>
+        <Box component='img' src='/winnbell_app_name.png' alt='W' sx={{ height: 30, width: 'auto', objectFit: 'contain' }} />
+      
       </Stack>
 
       {/* User identity card */}
