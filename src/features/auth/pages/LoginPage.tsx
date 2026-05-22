@@ -9,7 +9,7 @@ import {
   Login, Google, Apple, MarkEmailRead, Storefront, EmojiEvents, CardGiftcard,
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useSignIn, useAuth } from '@clerk/clerk-react';
+import { useSignIn, useAuth, useClerk } from '@clerk/clerk-react';
 import {
   BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
@@ -77,6 +77,7 @@ const LoginPage = () => {
   const [searchParams] = useSearchParams();
   const { isLoaded, signIn, setActive } = useSignIn();
   const { getToken } = useAuth();
+  const { client } = useClerk();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -107,6 +108,11 @@ const LoginPage = () => {
       sessionStorage.removeItem('pendingInviteToken');
       const code = err.errors?.[0]?.code;
       if (code === 'session_exists' || code === 'identifier_already_signed_in') {
+        const existing = client?.activeSessions?.[0];
+        if (existing) {
+          await setActive({ session: existing.id });
+          await getToken();
+        }
         navigate('/');
         return;
       }
@@ -132,6 +138,11 @@ const LoginPage = () => {
     } catch (err: any) {
       const code = err.errors?.[0]?.code;
       if (code === 'session_exists' || code === 'identifier_already_signed_in') {
+        const existing = client?.activeSessions?.[0];
+        if (existing) {
+          await setActive({ session: existing.id });
+          await getToken();
+        }
         navigate('/');
         return;
       }
