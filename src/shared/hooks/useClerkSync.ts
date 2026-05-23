@@ -8,7 +8,7 @@ import { syncUserFn } from '../../features/auth/api/auth.api';
 
 // Single source of truth for syncing a Clerk session into Redux.
 // Runs whenever Clerk is signed in but Redux has no auth state.
-export const useClerkSync = () => {
+export const useClerkSync = (retryCount = 0) => {
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { signOut } = useClerk();
   const dispatch = useAppDispatch();
@@ -18,16 +18,17 @@ export const useClerkSync = () => {
   const isBusiness = useAppSelector(selectIsBusiness);
   const needsResync = isAuthenticated && isBusiness && currentUser?.businessLogoUrl === undefined;
   const syncing = useRef(false);
+  const isRegionBlocked = useRef(false);
   const [syncError, setSyncError] = useState(false);
 
   useEffect(() => {
-    const pendingInviteToken = sessionStorage.getItem('pendingInviteToken');
-    if (!isLoaded || !isSignedIn || (isAuthenticated && !needsResync && !pendingInviteToken) || syncing.current) return;
+    const pendingInviteToken = localStorage.getItem('pendingInviteToken');
+    if (!isLoaded || !isSignedIn || isRegionBlocked.current || (isAuthenticated && !needsResync && !pendingInviteToken) || syncing.current) return;
 
     syncing.current = true;
     setSyncError(false);
 
-    const pendingRole = sessionStorage.getItem('pendingRole');
+    const pendingRole = localStorage.getItem('pendingRole');
     const isFreshLogin = !localStorage.getItem('wasLoggedIn');
 
     getToken()
@@ -36,14 +37,14 @@ export const useClerkSync = () => {
         return syncUserFn(token, { role: pendingRole, inviteToken: pendingInviteToken });
       })
       .then((data) => {
-        sessionStorage.removeItem('pendingRole');
-        sessionStorage.removeItem('pendingInviteToken');
+        localStorage.removeItem('pendingRole');
+        localStorage.removeItem('pendingInviteToken');
         localStorage.setItem('wasLoggedIn', '1');
         dispatch(login({ user: data.user, token: data.token }));
         // Only navigate on a fresh login — not on browser reopen re-sync
         if (isFreshLogin) {
-          const pendingLocationId = sessionStorage.getItem('pendingLocationId');
-          sessionStorage.removeItem('pendingLocationId');
+          const pendingLocationId = localStorage.getItem('pendingLocationId');
+          localStorage.removeItem('pendingLocationId');
           if (localStorage.getItem('pendingTicketCode')) {
             navigate('/scan');
           } else if (data.user.role === 'Business' || data.user.location_id != null) {
@@ -53,11 +54,12 @@ export const useClerkSync = () => {
           }
         }
       })
-      .catch((err: any) => {
+      .catch(async (err: any) => {
         const message = err?.response?.data?.message;
         if (message === 'REGION_RESTRICTED') {
+          isRegionBlocked.current = true;
           dispatch(logout());
-          signOut();
+          await signOut();
           navigate('/region-blocked');
         } else {
           // All other errors (network, server, 401): do not sign out of Clerk.
@@ -65,7 +67,7 @@ export const useClerkSync = () => {
         }
       })
       .finally(() => { syncing.current = false; });
-  }, [isLoaded, isSignedIn, isAuthenticated, needsResync]);
+  }, [isLoaded, isSignedIn, isAuthenticated, needsResync, retryCount]);
 
-  return { syncError, resetSyncError: () => setSyncError(false) };
+  return { syncError };
 };

@@ -83,6 +83,14 @@ const VerifyEmailPage = () => {
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
 
+  // Guard: if Clerk has finished loading but there is no active sign-up flow,
+  // the user navigated here directly or their session expired — redirect to register.
+  useEffect(() => {
+    if (isLoaded && !signUp) {
+      navigate('/register', { replace: true, state: { message: 'Your session expired. Please start again.' } });
+    }
+  }, [isLoaded, signUp]);
+
   // Resend cooldown countdown
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
@@ -100,14 +108,14 @@ const VerifyEmailPage = () => {
     try {
       const result = await signUp.attemptEmailAddressVerification({ code });
       if (result.status === 'complete') {
-        if (role) sessionStorage.setItem('pendingRole', role);
-        if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
+        if (role) localStorage.setItem('pendingRole', role);
+        if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
         await getToken();
-        navigate('/');
       }
     } catch (err: any) {
       setError(err.errors?.[0]?.message || 'Verification failed. Check your code.');
+    } finally {
       setLoading(false);
     }
   };

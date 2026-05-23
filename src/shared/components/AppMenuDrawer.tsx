@@ -73,10 +73,14 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const { signOut } = useClerk();
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     dispatch(logout());
     localStorage.removeItem('wasLoggedIn');
-    signOut();
+    try {
+      await signOut();
+    } catch {
+      // signOut failure doesn't affect local logout — Redux and localStorage are already cleared
+    }
   };
 
   const handleNav = (path: string) => {

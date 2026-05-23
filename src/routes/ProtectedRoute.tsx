@@ -61,7 +61,7 @@ const ProtectedRoute = () => {
     const params = new URLSearchParams(window.location.search);
     const lid = params.get('l');
     if (window.location.pathname === '/scan' && lid) {
-      sessionStorage.setItem('pendingLocationId', lid);
+      localStorage.setItem('pendingLocationId', lid);
       return <Navigate to='/' replace />;
     }
     return <Navigate to='/login' replace />;

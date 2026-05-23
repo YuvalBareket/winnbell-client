@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { CircularProgress, Box } from '@mui/material';
 import { useAuth } from '@clerk/clerk-react';
@@ -67,8 +67,9 @@ const AppRoutes = () => {
   const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
 
   // Syncs an active Clerk session into Redux (handles SSO callbacks)
-  const { syncError, resetSyncError } = useClerkSync();
-  const retry = () => { resetSyncError(); window.location.reload(); };
+  const [retryCount, setRetryCount] = useState(0);
+  const { syncError } = useClerkSync(retryCount);
+  const retry = () => setRetryCount(c => c + 1);
 
   // Redirect new business owners to setup after registration
   useEffect(() => {

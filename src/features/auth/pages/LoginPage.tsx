@@ -98,7 +98,7 @@ const LoginPage = () => {
 
   const handleSocialLogin = async (provider: 'oauth_google' | 'oauth_apple') => {
     if (!isLoaded) return;
-    if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
+    if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
     try {
       await signIn.authenticateWithRedirect({
         strategy: provider,
@@ -106,15 +106,17 @@ const LoginPage = () => {
         redirectUrlComplete: '/',
       });
     } catch (err: any) {
-      sessionStorage.removeItem('pendingInviteToken');
+      localStorage.removeItem('pendingInviteToken');
       const code = err.errors?.[0]?.code;
       if (code === 'session_exists' || code === 'identifier_already_signed_in') {
         const existing = client?.activeSessions?.[0];
         if (existing) {
           await setActive({ session: existing.id });
           await getToken();
+        } else {
+          setError('Session conflict. Please refresh the page and try again.');
+          setLoading(false);
         }
-        navigate('/');
         return;
       }
       setError(err.errors?.[0]?.message || 'Social login failed');
@@ -128,10 +130,9 @@ const LoginPage = () => {
     try {
       const result = await signIn.create({ identifier: formData.email, password: formData.password });
       if (result.status === 'complete') {
-        if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
+        if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
         await getToken(); // ensure session is fully persisted before navigating
-        navigate('/');
       } else if (result.status === 'needs_second_factor') {
         await signIn.prepareSecondFactor({ strategy: 'email_code' });
         setNeeds2FA(true);
@@ -143,8 +144,10 @@ const LoginPage = () => {
         if (existing) {
           await setActive({ session: existing.id });
           await getToken();
+        } else {
+          setError('Session conflict. Please refresh the page and try again.');
+          setLoading(false);
         }
-        navigate('/');
         return;
       }
       setError(err.errors?.[0]?.message || 'Invalid email or password');
@@ -160,10 +163,9 @@ const LoginPage = () => {
     try {
       const result = await signIn.attemptSecondFactor({ strategy: 'email_code', code: mfaCode });
       if (result.status === 'complete') {
-        if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
+        if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
         await setActive({ session: result.createdSessionId });
         await getToken(); // ensure session is fully persisted before navigating
-        navigate('/');
       }
     } catch (err: any) {
       setError(err.errors?.[0]?.message || 'Invalid code');

@@ -8,7 +8,7 @@ import {
   ArrowBackIosNew, Person, Mail, Lock, Visibility, VisibilityOff, Handshake,
   Storefront, Google, Apple, ConfirmationNumber, EmojiEvents, CardGiftcard, Warning,
 } from '@mui/icons-material';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { useSignUp } from '@clerk/clerk-react';
 import {
   BG_PAGE, TEXT_HEADING, ROLE_MANAGER_BG, ROLE_MANAGER_HOVER, BORDER_LIGHT,
@@ -106,6 +106,7 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const { role } = useParams();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const { isLoaded, signUp } = useSignUp();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
@@ -136,13 +137,13 @@ const RegisterPage = () => {
   const handleSocialSignUp = async (provider: 'oauth_google' | 'oauth_apple') => {
     if (!isLoaded) return;
     const roleFormatted = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User';
-    sessionStorage.setItem('pendingRole', roleFormatted);
-    if (inviteToken) sessionStorage.setItem('pendingInviteToken', inviteToken);
+    localStorage.setItem('pendingRole', roleFormatted);
+    if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
     try {
       await signUp.authenticateWithRedirect({ strategy: provider, redirectUrl: '/sso-callback', redirectUrlComplete: '/' });
     } catch (err: any) {
-      sessionStorage.removeItem('pendingRole');
-      sessionStorage.removeItem('pendingInviteToken');
+      localStorage.removeItem('pendingRole');
+      localStorage.removeItem('pendingInviteToken');
       setError(err.errors[0]?.message || 'Social login failed');
     }
   };
@@ -216,6 +217,10 @@ const RegisterPage = () => {
         <Alert severity='error' sx={{ borderRadius: 2 }}>
           Winnbell is not available in your region yet. We're expanding soon!
         </Alert>
+      )}
+
+      {location.state?.message && (
+        <Alert severity='warning' sx={{ mb: 2, borderRadius: 3 }}>{location.state.message}</Alert>
       )}
 
       {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
