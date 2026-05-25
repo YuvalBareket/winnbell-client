@@ -165,6 +165,7 @@ const NearbyPage = () => {
           {/* Sector chips */}
           <Box sx={{
             display: 'flex', gap: 0.75, overflowX: 'auto', pb: 1,
+            touchAction: 'pan-x',
             '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none',
           }}>
             {[{ key: null, label: 'All', icon: null }, ...Object.entries(BUSINESS_SECTORS).filter(([k]) => k !== 'Free').map(([k, v]) => ({ key: k, label: v.label, icon: v.icon }))].map(({ key, label, icon }) => {
