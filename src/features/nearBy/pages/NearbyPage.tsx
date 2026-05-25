@@ -155,7 +155,7 @@ const NearbyPage = () => {
         />
 
         {/* Floating Search Bar */}
-        <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16, zIndex: 10, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ position: 'absolute', top: 7, left: 20, right: 20, zIndex: 10, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Paper
             elevation={3}
             sx={{ flex: 1, p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 3, height: 48 }}
@@ -178,7 +178,6 @@ const NearbyPage = () => {
               display: { xs: 'flex', md: 'none' },
               p: 0,
               flexShrink: 0,
-              '&:active': { transform: 'scale(0.93)', transition: 'transform 150ms ease-out' },
             }}
           >
             <Avatar
