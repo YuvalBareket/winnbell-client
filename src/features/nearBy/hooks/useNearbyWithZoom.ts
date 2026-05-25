@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NearbyLocation } from '../types/nearBy.types';
 import { getNearbyBusinesses } from '../api/nearBy.api';
 
@@ -9,7 +9,6 @@ export type ViewportBounds = {
   maxLng: number;
 };
 
-// True if the viewport is fully inside the last fetched (buffered) bounds
 function isCovered(viewport: ViewportBounds, fetched: ViewportBounds): boolean {
   return (
     viewport.minLat >= fetched.minLat &&
@@ -19,7 +18,6 @@ function isCovered(viewport: ViewportBounds, fetched: ViewportBounds): boolean {
   );
 }
 
-// Expand bounds by a fractional buffer in every direction
 function padBounds(b: ViewportBounds, factor: number): ViewportBounds {
   const latPad = (b.maxLat - b.minLat) * factor;
   const lngPad = (b.maxLng - b.minLng) * factor;
@@ -31,7 +29,7 @@ function padBounds(b: ViewportBounds, factor: number): ViewportBounds {
   };
 }
 
-export function useNearbyWithZoom() {
+export function useNearbyWithZoom(sector?: string | null) {
   const [locations, setLocations] = useState<NearbyLocation[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -41,35 +39,35 @@ export function useNearbyWithZoom() {
   const lastFetchedBoundsRef = useRef<ViewportBounds | null>(null);
   const lastZoomRef = useRef<number>(0);
   const accumulatedRef = useRef<Map<number, NearbyLocation>>(new Map());
+  const lastViewportRef = useRef<ViewportBounds | null>(null);
+  const sectorRef = useRef(sector);
+  sectorRef.current = sector;
 
   const doFetch = useCallback(async (viewport: ViewportBounds) => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
+    lastViewportRef.current = viewport;
     setIsFetching(true);
     setIsError(false);
 
-    // Fetch with 50% padding so panning within the buffer doesn't re-trigger
     const padded = padBounds(viewport, 0.5);
     lastFetchedBoundsRef.current = padded;
 
     try {
-      const results = await getNearbyBusinesses(padded);
+      const params = sectorRef.current
+        ? { ...padded, sector: sectorRef.current }
+        : padded;
+      const results = await getNearbyBusinesses(params);
 
-      // Merge into accumulated set
-      results.forEach((loc) => accumulatedRef.current.set(loc.location_id, loc));
-
-      // Evict locations that are outside the padded fetch area
       accumulatedRef.current.forEach((loc, id) => {
         const lat = Number(loc.latitude);
         const lng = Number(loc.longitude);
-        if (
-          lat < padded.minLat || lat > padded.maxLat ||
-          lng < padded.minLng || lng > padded.maxLng
-        ) {
+        if (lat < padded.minLat || lat > padded.maxLat || lng < padded.minLng || lng > padded.maxLng) {
           accumulatedRef.current.delete(id);
         }
       });
 
+      results.forEach((loc) => accumulatedRef.current.set(loc.location_id, loc));
       setLocations(Array.from(accumulatedRef.current.values()));
     } catch {
       setIsError(true);
@@ -79,14 +77,22 @@ export function useNearbyWithZoom() {
     }
   }, []);
 
+  // When sector changes, reset and re-fetch current viewport
+  useEffect(() => {
+    accumulatedRef.current.clear();
+    lastFetchedBoundsRef.current = null;
+    setLocations([]);
+    if (lastViewportRef.current) {
+      doFetch(lastViewportRef.current);
+    }
+  }, [sector, doFetch]);
+
   const onViewportChange = useCallback(
     (viewport: ViewportBounds, zoom: number) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-
       debounceRef.current = setTimeout(() => {
         const zoomedIn = zoom > lastZoomRef.current;
         lastZoomRef.current = zoom;
-        // Skip only when panning/zooming-out within the already-fetched buffer
         if (!zoomedIn && lastFetchedBoundsRef.current && isCovered(viewport, lastFetchedBoundsRef.current)) return;
         doFetch(viewport);
       }, 400);

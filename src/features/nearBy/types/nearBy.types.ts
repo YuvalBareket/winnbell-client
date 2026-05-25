@@ -30,4 +30,5 @@ export interface INearbyParams {
   maxLat: number;
   minLng: number;
   maxLng: number;
+  sector?: string;
 }

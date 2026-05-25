@@ -61,18 +61,16 @@ const NearbyPage = () => {
 
   // 2. Pull Location and Fetch Data
   const { userLocation } = useSelector((state: RootState) => state.auth);
-  const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyWithZoom();
+  const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyWithZoom(selectedSector);
 
   // 3. Find the specific location object for the popup
   const selectedLocation =
     locations.find((loc) => loc.location_id === selectedLocationId) || null;
 
   // 4. Filter locations based on search term, sector, and radius
-  const filteredLocations = locations.filter((loc) => {
-    const matchesSearch = loc.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSector = !selectedSector || loc.sector === selectedSector;
-    return matchesSearch && matchesSector;
-  });
+  const filteredLocations = locations.filter((loc) =>
+    loc.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <Box
