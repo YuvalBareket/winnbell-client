@@ -86,7 +86,8 @@ function getViewportRadius(map: google.maps.Map): { lat: number; lon: number; ra
   const dLat = lat2 - lat1;
   const dLon = (ne.lng() - center.lng()) * (Math.PI / 180);
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-  return { lat: center.lat(), lon: center.lng(), radiusKm: Math.ceil(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))) };
+  const fullRadius = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return { lat: center.lat(), lon: center.lng(), radiusKm: Math.ceil(fullRadius * 0.6) };
 }
 
 export default function BusinessMap({ locations, onBusinessClick, userLocation, onViewportChange }: Props) {
@@ -110,7 +111,7 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
 
       const map = new Map(containerRef.current, {
         center: { lat: 27.9944, lng: -81.7603 },
-        zoom: 10,
+        zoom: 12,
         styles: CLEAN_STYLES,
         disableDefaultUI: true,
         clickableIcons: false,
