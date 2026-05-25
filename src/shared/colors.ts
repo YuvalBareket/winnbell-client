@@ -97,3 +97,11 @@ export const ALPHA_GREEN_10    = 'rgba(46,125,50,0.1)';
 export const GLASS_BG          = 'rgba(255,255,255,0.72)';
 export const GLASS_BORDER      = 'rgba(255,255,255,0.5)';
 export const GLASS_BACKDROP    = 'blur(16px) saturate(180%)';
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+export const APP_HEADER_HEIGHT           = 60;  // AppHeader Toolbar height (mobile, static)
+export const BOTTOM_NAV_HEIGHT           = 76;  // BottomNavigation + safe area
+// Use MOBILE_CONTENT_HEIGHT for pages that show the AppHeader (most pages)
+export const MOBILE_CONTENT_HEIGHT       = 'calc(100dvh - 136px)'; // 60px header + 76px nav
+// Use MOBILE_CONTENT_HEIGHT_NO_HEADER for pages that hide the AppHeader (NearbyPage, ActivityPage)
+export const MOBILE_CONTENT_HEIGHT_NO_HEADER = 'calc(100dvh - 76px)';

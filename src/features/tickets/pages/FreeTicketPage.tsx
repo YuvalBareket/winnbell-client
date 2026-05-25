@@ -17,7 +17,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useNavigate } from 'react-router-dom';
 import { useFreeTicket } from '../hooks/useFreeTicket';
-import { AMBER_HOURGLASS, SHADOW_PRIMARY_MEDIUM, GRADIENT_HERO, ALPHA_WHITE_20, ALPHA_WHITE_10 } from '../../../shared/colors';
+import { AMBER_HOURGLASS, SHADOW_PRIMARY_MEDIUM, GRADIENT_HERO, ALPHA_WHITE_20, ALPHA_WHITE_10, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import FreeEntrySuccessDialog from '../components/FreeEntrySuccessDialog';
 
 const getNextSunday = (): Date => {
@@ -56,7 +56,7 @@ const FreeTicketPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box display='flex' justifyContent='center' alignItems='center' minHeight='100dvh'>
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight={{ xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }}>
         <CircularProgress color='primary' />
       </Box>
     );
@@ -72,7 +72,7 @@ const FreeTicketPage: React.FC = () => {
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          minHeight: '100dvh',
+          minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' },
           maxWidth: '480px',
           mx: 'auto',
           pt: 1,
@@ -223,7 +223,7 @@ const FreeTicketPage: React.FC = () => {
       sx={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        minHeight: '100dvh',
+        minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' },
       }}
     >
       {/* Left Column - Hero/Brand side */}

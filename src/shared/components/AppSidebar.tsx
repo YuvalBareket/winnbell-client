@@ -7,7 +7,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { logout } from '../../store/slices/authSlice';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl } from '../../store/selectors/authSelectors';
-import { useClerk } from '@clerk/clerk-react';
+import { supabase } from '../lib/supabase';
 import {
   userNavItems, managerNavItems, adminNavItems, legalNavItems, businessLegalNavItems, type NavItem,
 } from '../constants/navItems';
@@ -32,8 +32,6 @@ const AppSidebar = () => {
   const isAdmin = useAppSelector(selectIsAdmin);
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const businessLogoUrl = useAppSelector(selectBusinessLogoUrl);
-  const { signOut } = useClerk();
-
   const initials = getUserInitials(user?.fullName);
   const roleLabel = getRoleLabel(isAdmin, isBusiness, isManager);
   const roleColor = getRoleColor(isAdmin, isBusiness, isManager);
@@ -51,10 +49,11 @@ const AppSidebar = () => {
   const mainNavItems = isAdmin ? adminNavItems : isBusiness ? businessNavItems : isManager ? managerNavItems : userNavItems;
 
   const handleLogout = async () => {
+    navigate('/');
     dispatch(logout());
     localStorage.removeItem('wasLoggedIn');
     try {
-      await signOut();
+      await supabase.auth.signOut();
     } catch {
       // signOut failure doesn't affect local logout — Redux and localStorage are already cleared
     }

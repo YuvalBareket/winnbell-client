@@ -13,6 +13,7 @@ import {
   GRADIENT_HERO,
   ALPHA_WHITE_15,
   ALPHA_WHITE_30,
+  MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 
 const MyTicketsPage = () => {
@@ -47,7 +48,7 @@ const MyTicketsPage = () => {
 
   if (isDesktop) {
     return (
-      <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: 6 }}>
+      <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 6 }}>
         {/* Hero */}
         <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
           <Container maxWidth='lg'>
@@ -136,7 +137,7 @@ const MyTicketsPage = () => {
 
   // Mobile
   return (
-    <Box sx={{ minHeight: '100dvh' }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' } }}>
       {/* Hero */}
 
       <Box sx={{ pt:2}}>

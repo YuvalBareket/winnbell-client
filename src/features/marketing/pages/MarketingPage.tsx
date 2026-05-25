@@ -11,7 +11,7 @@ import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager, selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN,
+  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 import {
   POSTER_W, POSTER_H,
@@ -138,7 +138,7 @@ const MarketingPage = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: 8 }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8 }}>
       {/* Hero */}
       <Box sx={{
         background: GRADIENT_HERO, pt: 3, pb: isDesktop ? 9 : 6, px: 3,

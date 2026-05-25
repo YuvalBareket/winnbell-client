@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Box, Typography, Paper, Stack,
   IconButton,
@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../../shared/api/client';
 import {
-  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
+  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { getUploadUrl, updateCampaignSettingsApi } from '../../partner/api/business.api';
@@ -57,12 +57,6 @@ const SubscribePage = () => {
   const [thresholdInput, setThresholdInput] = useState('');
   const [savingThreshold, setSavingThreshold] = useState(false);
 
-  useEffect(() => {
-    if (businessData?.min_transaction_amount != null) {
-      setThresholdInput(String(businessData.min_transaction_amount));
-      setSavedThreshold(businessData.min_transaction_amount);
-    }
-  }, [businessData?.min_transaction_amount]);
 
   const parsedThreshold = thresholdInput.trim() === '' ? null : parseFloat(thresholdInput);
   const isThresholdValid = thresholdInput.trim() === '' || (!isNaN(parsedThreshold!) && parsedThreshold! > 0);
@@ -106,6 +100,22 @@ const SubscribePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Late-cycle detection: within 7 days of month-end, the business joins the NEXT campaign
+  const { joinsNextCampaign, nextCampaignDate } = (() => {
+    const now = new Date();
+    const firstOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const msUntil = firstOfNextMonth.getTime() - now.getTime();
+    const daysUntil = msUntil / (1000 * 60 * 60 * 24);
+    if (daysUntil <= 7) {
+      const campaignStart = new Date(now.getFullYear(), now.getMonth() + 2, 1);
+      return {
+        joinsNextCampaign: true,
+        nextCampaignDate: campaignStart.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      };
+    }
+    return { joinsNextCampaign: false, nextCampaignDate: null };
+  })();
+
   const handleSubscribe = async () => {
     setLoading(true);
     setError('');
@@ -120,6 +130,8 @@ const SubscribePage = () => {
       setError(
         msg.includes('already has an active subscription')
           ? 'Your business is already enrolled in a campaign. Go to Campaign Management to update settings.'
+          : msg.length > 0
+          ? msg
           : 'Something went wrong. Please try again.',
       );
       setLoading(false);
@@ -132,7 +144,7 @@ const SubscribePage = () => {
   return (
     <Box
       sx={{
-        minHeight: '100dvh',
+        minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' },
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
         '& > *': { minHeight: { md: '100dvh' }, alignItems: 'stretch' },
@@ -269,7 +281,7 @@ const SubscribePage = () => {
                   <SubscribeStep2
                     imgFile={imgFile}
                     setImgFile={setImgFile}
-                    existingImageUrl={businessData?.receipt_example_image_url ?? undefined}
+                    existingImageUrl={undefined}
                     isSaving={isSaving}
                     onSave={handleSaveReceipt}
                     onContinue={() => setStep(3)}
@@ -289,6 +301,8 @@ const SubscribePage = () => {
                     locationCount={locationCount}
                     loading={loading}
                     error={error}
+                    joinsNextCampaign={joinsNextCampaign}
+                    nextCampaignDate={nextCampaignDate}
                     onSubscribe={handleSubscribe}
                     onSkip={() => navigate('/nearby')}
                   />

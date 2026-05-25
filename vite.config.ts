@@ -53,7 +53,7 @@ export default defineConfig({
           'vendor-mui': ['@mui/material', '@mui/icons-material'],
           'vendor-redux': ['@reduxjs/toolkit', 'react-redux', 'redux-persist'],
           'vendor-query': ['@tanstack/react-query'],
-          'vendor-clerk': ['@clerk/clerk-react'],
+          'vendor-supabase': ['@supabase/supabase-js'],
         },
       },
     },

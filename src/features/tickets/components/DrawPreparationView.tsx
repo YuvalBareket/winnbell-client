@@ -100,7 +100,7 @@ const DrawPreparationView = ({
               </Box>
               <Box sx={{ p: 2, bgcolor: 'rgba(25,93,230,0.04)', borderRadius: 2, border: '1px solid rgba(25,93,230,0.1)' }}>
                 <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-                  When the campaign opens, you'll be able to generate unique entry codes for your customers. Each activated code enters them into the prize campaign.
+                  Once the campaign is live, your customers earn entries simply by shopping at your store and submitting their receipts through the Winnbell app. Every verified purchase automatically qualifies them for the monthly prize draw.
                 </Typography>
               </Box>
             </Box>

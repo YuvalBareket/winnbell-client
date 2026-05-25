@@ -4,14 +4,14 @@ import {
   IconButton, useMediaQuery, useTheme, TextField,
 } from '@mui/material';
 import { MarkEmailRead, ArrowBackIosNew, ArrowForward, ConfirmationNumber, Storefront, EmojiEvents, CardGiftcard } from '@mui/icons-material';
-import { useSignUp, useAuth } from '@clerk/clerk-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { supabase } from '../../../shared/lib/supabase';
+import { useNavigate } from 'react-router-dom';
 import {
   BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
 } from '../../../shared/colors';
 
-// ─── Brand Panel (reused from LoginPage) ─────────────────────────────────────
+// ─── Brand Panel ─────────────────────────────────────────────────────────────
 
 const BrandPanel = () => (
   <Box
@@ -68,28 +68,25 @@ const BrandPanel = () => (
 // ─── Main component ──────────────────────────────────────────────────────────
 
 const VerifyEmailPage = () => {
-  const { isLoaded, signUp, setActive } = useSignUp();
-  const { getToken } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
-  const inviteToken = searchParams.get('token');
-  const role = searchParams.get('role');
+
+  // Read email that RegisterPage stored before navigating here
+  const pendingEmail = localStorage.getItem('pendingEmail') || '';
 
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  // Guard: if Clerk has finished loading but there is no active sign-up flow,
-  // the user navigated here directly or their session expired — redirect to register.
+  // Guard: no pendingEmail means user navigated here directly or session expired
   useEffect(() => {
-    if (isLoaded && !signUp) {
+    if (!pendingEmail) {
       navigate('/register', { replace: true, state: { message: 'Your session expired. Please start again.' } });
     }
-  }, [isLoaded, signUp]);
+  }, []);
 
   // Resend cooldown countdown
   useEffect(() => {
@@ -101,34 +98,48 @@ const VerifyEmailPage = () => {
   }, [resendCooldown]);
 
   const handleVerify = async () => {
-    if (!isLoaded || code.length < 6) return;
+    if (code.length < 6 || !pendingEmail) return;
     setLoading(true);
     setError('');
 
     try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
-      if (result.status === 'complete') {
-        if (role) localStorage.setItem('pendingRole', role);
-        if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
-        await setActive({ session: result.createdSessionId });
-        await getToken();
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: pendingEmail,
+        token: code,
+        type: 'signup',
+      });
+
+      if (verifyError) {
+        setError(verifyError.message || 'Verification failed. Check your code.');
+        return;
       }
-    } catch (err: any) {
-      setError(err.errors?.[0]?.message || 'Verification failed. Check your code.');
+
+      // Clear pending items — useSupabaseSync will pick up the session
+      // and set pendingRole / pendingInviteToken from localStorage before clearing them
+      localStorage.removeItem('pendingEmail');
+    } catch {
+      setError('Verification failed. Check your code.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleResend = async () => {
-    if (!isLoaded || resendCooldown > 0) return;
+    if (resendCooldown > 0 || !pendingEmail) return;
     setError('');
     try {
-      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+      const { error: resendError } = await supabase.auth.resend({
+        type: 'signup',
+        email: pendingEmail,
+      });
+      if (resendError) {
+        setError(resendError.message || 'Failed to resend code.');
+        return;
+      }
       setCode('');
       setResendCooldown(30);
-    } catch (err: any) {
-      setError(err.errors?.[0]?.message || 'Failed to resend code.');
+    } catch {
+      setError('Failed to resend code.');
     }
   };
 
@@ -145,7 +156,7 @@ const VerifyEmailPage = () => {
         )}
         <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>Verify your email</Typography>
         <Typography variant='body1' color='text.secondary'>
-          Enter the 6-digit code we sent to your email address.
+          Enter the 6-digit code we sent to{pendingEmail ? ` ${pendingEmail}` : ' your email address'}.
         </Typography>
       </Box>
 

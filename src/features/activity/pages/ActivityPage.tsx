@@ -17,7 +17,7 @@ import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { fetchActivity, type DateRange, type ActivityItem } from '../api/activity.api';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
+  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, MOBILE_CONTENT_HEIGHT_NO_HEADER,
 } from '../../../shared/colors';
 import { formatCurrency, formatRelativeTime } from '../../../shared/utils/date';
 import KpiCard from '../../stats/components/KpiCard';
@@ -109,7 +109,7 @@ const ActivityPage = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
       <AppHeader onMenuOpen={() => setMenuOpen(true)} />
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 

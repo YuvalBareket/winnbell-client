@@ -9,7 +9,7 @@ import {
   Storefront, Google, Apple, ConfirmationNumber, EmojiEvents, CardGiftcard, Warning,
 } from '@mui/icons-material';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
-import { useSignUp } from '@clerk/clerk-react';
+import { supabase } from '../../../shared/lib/supabase';
 import {
   BG_PAGE, TEXT_HEADING, ROLE_MANAGER_BG, ROLE_MANAGER_HOVER, BORDER_LIGHT,
   NEUTRAL_SOCIAL_TEXT, SHADOW_PRIMARY_SOFT, GRADIENT_HERO,
@@ -107,7 +107,6 @@ const RegisterPage = () => {
   const { role } = useParams();
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const { isLoaded, signUp } = useSignUp();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -134,42 +133,61 @@ const RegisterPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSocialSignUp = async (provider: 'oauth_google' | 'oauth_apple') => {
-    if (!isLoaded) return;
+  const handleSocialSignUp = async (provider: 'google' | 'apple') => {
     const roleFormatted = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User';
     localStorage.setItem('pendingRole', roleFormatted);
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
-    try {
-      await signUp.authenticateWithRedirect({ strategy: provider, redirectUrl: '/sso-callback', redirectUrlComplete: '/' });
-    } catch (err: any) {
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/sso-callback`,
+      },
+    });
+    if (oauthError) {
       localStorage.removeItem('pendingRole');
       localStorage.removeItem('pendingInviteToken');
-      setError(err.errors[0]?.message || 'Social login failed');
+      setError(oauthError.message || 'Social login failed');
     }
   };
 
   const handleSubmit = async () => {
-    if (!isLoaded || !formData.fullName || !formData.email || !formData.password || !termsAccepted || !ageVerified) return;
+    if (!formData.fullName || !formData.email || !formData.password || !termsAccepted || !ageVerified) return;
     setLoading(true);
     setError('');
     try {
-      await signUp.create({
-        emailAddress: formData.email,
+      const roleFormatted = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User';
+      // Both pendingRole and inviteToken must be set BEFORE signUp in case onAuthStateChange
+      // fires during the call. pendingRole acts as a fallback if JWT metadata is unavailable.
+      localStorage.setItem('pendingRole', roleFormatted);
+      if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
+
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
         password: formData.password,
-        firstName: formData.fullName.split(' ')[0],
-        lastName: formData.fullName.split(' ').slice(1).join(' '),
-        unsafeMetadata: {
-          role: role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User',
-          inviteToken: inviteToken || null,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            role: roleFormatted,
+            invite_token: inviteToken || null,
+          },
         },
       });
-      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-      const roleFormatted = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User';
+      if (signUpError) {
+        localStorage.removeItem('pendingRole');
+        localStorage.removeItem('pendingInviteToken');
+        setError(signUpError.message || 'Registration failed');
+        return;
+      }
+
+      // Store email so VerifyEmailPage can display it
+      localStorage.setItem('pendingEmail', formData.email);
+
+      // Navigate to email verification — user must confirm before syncing
       const params = new URLSearchParams({ role: roleFormatted });
       if (inviteToken) params.set('token', inviteToken);
       navigate(`/verify-email?${params.toString()}`);
-    } catch (err: any) {
-      setError(err.errors[0]?.message || 'Registration failed');
+    } catch {
+      setError('Registration failed');
     } finally {
       setLoading(false);
     }
@@ -311,11 +329,11 @@ const RegisterPage = () => {
         </Divider>
 
         <Stack direction={'row'} spacing={2}>
-          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('oauth_google')} startIcon={<Google />} disabled={!termsAccepted || !ageVerified}
+          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('google')} startIcon={<Google />} disabled={!termsAccepted || !ageVerified}
             sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT }}>
             Google
           </Button>
-          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('oauth_apple')} startIcon={<Apple />} disabled={!termsAccepted || !ageVerified}
+          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('apple')} startIcon={<Apple />} disabled={!termsAccepted || !ageVerified}
             sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT }}>
             Apple
           </Button>

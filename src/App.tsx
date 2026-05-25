@@ -5,7 +5,6 @@ import { PersistGate } from 'redux-persist/integration/react'; // Import Gate
 import { store, persistor } from './store/store'; // Import persistor
 import { theme } from './shared/theme';
 import AppRoutes from './routes/AppRoutes';
-import { ClerkProvider } from '@clerk/clerk-react';
 import AccessGate from './shared/components/AccessGate';
 
 // Branded splash screen while Redux rehydrates
@@ -44,13 +43,10 @@ const LoadingState = () => (
     />
   </Box>
 );
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
 function App() {
   return (
     <AccessGate>
       <Provider store={store}>
-        <ClerkProvider publishableKey={PUBLISHABLE_KEY} allowedRedirectOrigins={['http://localhost:8081', 'https://winnbell-client.vercel.app', 'https://winnbell.com', 'https://www.winnbell.com']}>
         <PersistGate loading={<LoadingState />} persistor={persistor}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -59,7 +55,6 @@ function App() {
             </BrowserRouter>
           </ThemeProvider>
         </PersistGate>
-        </ClerkProvider>
       </Provider>
     </AccessGate>
   );

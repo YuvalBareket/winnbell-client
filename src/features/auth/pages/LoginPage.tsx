@@ -6,10 +6,10 @@ import {
 } from '@mui/material';
 import {
   ArrowBackIosNew, ConfirmationNumber, Mail, Lock, Visibility, VisibilityOff,
-  Login, Google, Apple, MarkEmailRead, Storefront, EmojiEvents, CardGiftcard,
+  Login, Google, Apple, Storefront, EmojiEvents, CardGiftcard,
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useSignIn, useAuth, useClerk } from '@clerk/clerk-react';
+import { supabase } from '../../../shared/lib/supabase';
 import {
   BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
@@ -75,9 +75,6 @@ const BrandPanel = () => (
 const LoginPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isLoaded, signIn, setActive } = useSignIn();
-  const { getToken } = useAuth();
-  const { client } = useClerk();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -87,8 +84,6 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [needs2FA, setNeeds2FA] = useState(false);
-  const [mfaCode, setMfaCode] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showResetMessage, setShowResetMessage] = useState(false);
 
@@ -96,168 +91,46 @@ const LoginPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSocialLogin = async (provider: 'oauth_google' | 'oauth_apple') => {
-    if (!isLoaded) return;
+  const handleSocialLogin = async (provider: 'google' | 'apple') => {
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
-    try {
-      await signIn.authenticateWithRedirect({
-        strategy: provider,
-        redirectUrl: '/sso-callback',
-        redirectUrlComplete: '/',
-      });
-    } catch (err: any) {
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/sso-callback`,
+      },
+    });
+    if (oauthError) {
       localStorage.removeItem('pendingInviteToken');
-      const code = err.errors?.[0]?.code;
-      if (code === 'session_exists' || code === 'identifier_already_signed_in') {
-        const existing = client?.activeSessions?.[0];
-        if (existing) {
-          await setActive({ session: existing.id });
-          await getToken();
-        } else {
-          setError('Session conflict. Please refresh the page and try again.');
-          setLoading(false);
-        }
-        return;
-      }
-      setError(err.errors?.[0]?.message || 'Social login failed');
+      setError(oauthError.message || 'Social login failed');
     }
   };
 
   const handleSubmit = async () => {
-    if (!isLoaded || !formData.email || !formData.password || !termsAccepted) return;
+    if (!formData.email || !formData.password || !termsAccepted) return;
     setLoading(true);
     setError('');
     try {
-      const result = await signIn.create({ identifier: formData.email, password: formData.password });
-      if (result.status === 'complete') {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+      if (signInError) {
+        setError(signInError.message || 'Invalid email or password');
+      } else {
         if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
-        await setActive({ session: result.createdSessionId });
-        await getToken(); // ensure session is fully persisted before navigating
-      } else if (result.status === 'needs_second_factor') {
-        await signIn.prepareSecondFactor({ strategy: 'email_code' });
-        setNeeds2FA(true);
+        // useSupabaseSync will pick up the new session automatically
       }
-    } catch (err: any) {
-      const code = err.errors?.[0]?.code;
-      if (code === 'session_exists' || code === 'identifier_already_signed_in') {
-        const existing = client?.activeSessions?.[0];
-        if (existing) {
-          await setActive({ session: existing.id });
-          await getToken();
-        } else {
-          setError('Session conflict. Please refresh the page and try again.');
-          setLoading(false);
-        }
-        return;
-      }
-      setError(err.errors?.[0]?.message || 'Invalid email or password');
+    } catch {
+      setError('Invalid email or password');
     } finally {
       setLoading(false);
     }
   };
-
-  const handleVerify2FA = async () => {
-    if (!isLoaded || !mfaCode) return;
-    setLoading(true);
-    setError('');
-    try {
-      const result = await signIn.attemptSecondFactor({ strategy: 'email_code', code: mfaCode });
-      if (result.status === 'complete') {
-        if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
-        await setActive({ session: result.createdSessionId });
-        await getToken(); // ensure session is fully persisted before navigating
-      }
-    } catch (err: any) {
-      setError(err.errors?.[0]?.message || 'Invalid code');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ─── 2FA step ───────────────────────────────────────────────────────────────
-
-  if (needs2FA) {
-    const VerifyContent = () => (
-      <Stack sx={{ zoom: { xs: 1, md: 0.85 } }}>
-        <Box sx={{ mb: { xs: 6, md: 5 }, textAlign: isDesktop ? 'left' : 'center' }}>
-          {!isDesktop && (
-            <Paper elevation={4} sx={{ width: 80, height: 80, bgcolor: 'primary.main', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, mx: 'auto' }}>
-              <MarkEmailRead sx={{ color: 'white', fontSize: 40 }} />
-            </Paper>
-          )}
-          <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>Check your email</Typography>
-          <Typography variant='body1' color='text.secondary'>
-            Enter the 6-digit code we sent to {formData.email}
-          </Typography>
-        </Box>
-        {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
-        <Stack spacing={3}>
-          <TextField
-            fullWidth
-            label='Verification code'
-            placeholder='Enter 6-digit code'
-            value={mfaCode}
-            onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            onKeyDown={(e) => e.key === 'Enter' && handleVerify2FA()}
-            inputMode='numeric'
-            autoFocus
-            inputProps={{ maxLength: 6, style: { letterSpacing: '0.3em', fontSize: '1.25rem' } }}
-          />
-          <Button variant='contained' size='large' onClick={handleVerify2FA} disabled={loading || mfaCode.length < 6}
-            endIcon={!loading && <ArrowBackIosNew sx={{ transform: 'rotate(180deg)' }} />}
-            sx={{ py: 2, borderRadius: 3, fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
-            {loading ? <CircularProgress size={24} color='inherit' /> : 'Verify & Sign In'}
-          </Button>
-          <Box sx={{ textAlign: 'center', pt: 1 }}>
-            <Typography variant='body2' color='text.secondary'>
-              Wrong email?{' '}
-              <Typography component='span' variant='body2' sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}
-                onClick={() => { setNeeds2FA(false); setMfaCode(''); setError(''); }}>
-                Go back
-              </Typography>
-            </Typography>
-          </Box>
-        </Stack>
-      </Stack>
-    );
-
-    if (isDesktop) {
-      return (
-        <Box sx={{ display: 'flex', height: '100dvh', overflow: 'hidden' }}>
-          <BrandPanel />
-          <Box sx={{ width: '50%', overflowY: 'auto', bgcolor: BG_PAGE, display: 'flex', flexDirection: 'column', px: 7, py: 5 }}>
-            <Box sx={{ mb: 4 }}>
-              <IconButton onClick={() => { setNeeds2FA(false); setMfaCode(''); setError(''); }} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}` }}>
-                <ArrowBackIosNew fontSize='small' />
-              </IconButton>
-            </Box>
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400 }}>
-              {VerifyContent()}
-            </Box>
-          </Box>
-        </Box>
-      );
-    }
-
-    return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
-        <Box sx={{ p: 2 }}>
-          <IconButton onClick={() => { setNeeds2FA(false); setMfaCode(''); setError(''); }} sx={{ bgcolor: 'action.hover' }}>
-            <ArrowBackIosNew fontSize='small' />
-          </IconButton>
-        </Box>
-        <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 4, pb: 4 }}>
-          {VerifyContent()}
-        </Container>
-      </Box>
-    );
-  }
 
   // ─── Form content (shared between mobile & desktop) ──────────────────────────
 
   const FormContent = () => (
-    <Stack sx={{          zoom: { xs: 1, md: 0.8 },
-}}>
+    <Stack sx={{ zoom: { xs: 1, md: 0.8 } }}>
       {/* Header */}
       <Box sx={{ mb: { xs: 6, md: 4 }, textAlign: isDesktop ? 'left' : 'center' }}>
         {!isDesktop && (
@@ -311,6 +184,7 @@ const LoginPage = () => {
           </Box>
           <TextField fullWidth name='password' value={formData.password} onChange={handleChange}
             type={showPassword ? 'text' : 'password'} placeholder='Enter your password'
+            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
             InputProps={{
               startAdornment: (<InputAdornment position='start'><Lock sx={{ color: 'text.secondary' }} /></InputAdornment>),
               endAdornment: (
@@ -352,11 +226,11 @@ const LoginPage = () => {
           <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700, px: 1 }}>OR</Typography>
         </Divider>
         <Stack direction={'row'} spacing={2}>
-          <Button fullWidth variant='outlined' startIcon={<Google />} onClick={() => handleSocialLogin('oauth_google')} disabled={!termsAccepted}
+          <Button fullWidth variant='outlined' startIcon={<Google />} onClick={() => handleSocialLogin('google')} disabled={!termsAccepted}
             sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none' }}>
             Google
           </Button>
-          <Button fullWidth variant='outlined' startIcon={<Apple />} onClick={() => handleSocialLogin('oauth_apple')} disabled={!termsAccepted}
+          <Button fullWidth variant='outlined' startIcon={<Apple />} onClick={() => handleSocialLogin('apple')} disabled={!termsAccepted}
             sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none' }}>
             Apple
           </Button>

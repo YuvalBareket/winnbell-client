@@ -36,7 +36,7 @@ import { useState, Fragment } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { logout } from '../../store/slices/authSlice';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl } from '../../store/selectors/authSelectors';
-import { useClerk } from '@clerk/clerk-react';
+import { supabase } from '../lib/supabase';
 import {
   ALPHA_WHITE_15,
   ALPHA_WHITE_20,
@@ -70,14 +70,14 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const isAdmin = useAppSelector(selectIsAdmin);
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const businessLogoUrl = useAppSelector(selectBusinessLogoUrl);
-  const { signOut } = useClerk();
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
 
   const handleLogout = async () => {
+    navigate('/');
     dispatch(logout());
     localStorage.removeItem('wasLoggedIn');
     try {
-      await signOut();
+      await supabase.auth.signOut();
     } catch {
       // signOut failure doesn't affect local logout — Redux and localStorage are already cleared
     }

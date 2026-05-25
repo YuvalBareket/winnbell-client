@@ -5,12 +5,11 @@ import {
 } from '@mui/material';
 import { SettingsOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useMutation } from '@tanstack/react-query';
-import { useUser } from '@clerk/clerk-react';
 import type { AxiosError } from 'axios';
 import { api } from '../../../shared/api/client';
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
-  BORDER_LIGHT, SHADOW_CARD, PRIMARY_MAIN,
+  BORDER_LIGHT, SHADOW_CARD, PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 
 interface ChangePasswordPayload {
@@ -21,10 +20,9 @@ interface ChangePasswordPayload {
 const SettingsPage = () => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-  const { user } = useUser();
-
-  const isSocialOnly =
-    (user?.externalAccounts?.length ?? 0) > 0 && !user?.passwordEnabled;
+  // Social-only accounts have no password set (provider will be 'google', 'apple', etc.)
+  // We detect this from the server response via the change-password endpoint returning SSO_ACCOUNT
+  const isSocialOnly = false; // resolved lazily via server error on submit
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -76,7 +74,7 @@ const SettingsPage = () => {
   const isSocialLoginError = serverMessage === 'Password cannot be changed for social login accounts';
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: 6 }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 6 }}>
       {/* Hero */}
       <Box
         sx={{

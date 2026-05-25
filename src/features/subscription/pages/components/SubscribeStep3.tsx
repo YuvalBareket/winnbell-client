@@ -1,8 +1,8 @@
 import {
   Box, Button, Typography, Stack, Divider, Skeleton,
-  IconButton, CircularProgress, FormControlLabel, Checkbox,
+  IconButton, CircularProgress, FormControlLabel, Checkbox, Alert,
 } from '@mui/material';
-import { Remove, Add, CreditCard } from '@mui/icons-material';
+import { Remove, Add, CreditCard, InfoOutlined } from '@mui/icons-material';
 import { TIER_MAP, TIER_KEYS, MAX_TIER } from './subscribeTiers';
 
 interface Props {
@@ -13,6 +13,8 @@ interface Props {
   locationCount: number | null;
   loading: boolean;
   error: string;
+  joinsNextCampaign?: boolean;
+  nextCampaignDate?: string | null;
   onSubscribe: () => void;
   onSkip: () => void;
 }
@@ -25,6 +27,8 @@ const SubscribeStep3 = ({
   locationCount,
   loading,
   error,
+  joinsNextCampaign,
+  nextCampaignDate,
   onSubscribe,
   onSkip,
 }: Props) => {
@@ -117,6 +121,16 @@ const SubscribeStep3 = ({
             Contact us
           </Typography>{' '}for a custom plan.
         </Typography>
+      )}
+
+      {joinsNextCampaign && nextCampaignDate && (
+        <Alert
+          icon={<InfoOutlined fontSize='small' />}
+          severity='info'
+          sx={{ mb: 2, borderRadius: 2, fontSize: '0.82rem', alignItems: 'flex-start' }}
+        >
+          You're signing up close to the end of this campaign. You'll be joining the campaign that starts on <strong>{nextCampaignDate}</strong> — your subscription begins immediately and your locations will appear on the map right away.
+        </Alert>
       )}
 
       {error && <Typography variant='body2' color='error' textAlign='center' mb={2}>{error}</Typography>}

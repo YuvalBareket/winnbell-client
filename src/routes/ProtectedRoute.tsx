@@ -1,16 +1,14 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { CircularProgress, Box, Typography, Button } from '@mui/material';
-import { useAuth } from '@clerk/clerk-react';
 import { useAppSelector } from '../store/hook';
 import { selectIsAuthenticated } from '../store/selectors/authSelectors';
 import { useSyncStatus } from '../shared/context/SyncStatusContext';
 
 const ProtectedRoute = () => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const { isSignedIn, isLoaded } = useAuth();
-  const { syncError, retry } = useSyncStatus();
+  const { isLoaded, isSignedIn, syncError, retry } = useSyncStatus();
 
-  // Clerk is still initializing
+  // Supabase is still initializing
   if (!isLoaded) {
     return (
       <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}>
@@ -19,7 +17,7 @@ const ProtectedRoute = () => {
     );
   }
 
-  // Clerk session exists but useClerkSync hasn't finished yet - wait, don't redirect
+  // Session exists but useSupabaseSync hasn't finished yet - wait, don't redirect
   if (isSignedIn && !isAuthenticated) {
     if (syncError) {
       return (
@@ -64,7 +62,7 @@ const ProtectedRoute = () => {
       localStorage.setItem('pendingLocationId', lid);
       return <Navigate to='/' replace />;
     }
-    return <Navigate to='/login' replace />;
+    return <Navigate to='/' replace />;
   }
 
   return <Outlet />;

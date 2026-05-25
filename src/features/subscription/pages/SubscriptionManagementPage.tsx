@@ -9,7 +9,7 @@ import {
   Lock, LockOpen,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { PRIMARY_MAIN, BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15 } from '../../../shared/colors';
+import { PRIMARY_MAIN, BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import { useSubscription } from '../hooks/useSubscription';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
@@ -105,7 +105,7 @@ export default function SubscriptionManagementPage() {
   const canCancel = sub.status !== 'Cancelled' && !sub.cancel_at_period_end;
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: { xs: 10, md: 6 } }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 10, md: 6 } }}>
       {/* Hero Header */}
       <Box
         sx={{

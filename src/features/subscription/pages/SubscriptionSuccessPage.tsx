@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAppDispatch } from '../../../store/hook';
 import { setBusinessActive } from '../../../store/slices/authSlice';
 import { api } from '../../../shared/api/client';
+import { MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 
 const SubscriptionSuccessPage = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const SubscriptionSuccessPage = () => {
 
   if (verifying) {
     return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Stack alignItems='center' spacing={2}>
           <CircularProgress />
           <Typography color='text.secondary' fontWeight={600}>Activating your business...</Typography>
@@ -39,7 +40,7 @@ const SubscriptionSuccessPage = () => {
 
   if (isError) {
     return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
         <Paper elevation={0} sx={{ p: 5, borderRadius: 4, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 420, width: '100%' }}>
           <Stack spacing={3} alignItems='center'>
             <ErrorOutline sx={{ fontSize: 72, color: 'warning.main' }} />
@@ -65,7 +66,7 @@ const SubscriptionSuccessPage = () => {
   }
 
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
       <Paper elevation={0} sx={{ p: 5, borderRadius: 4, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 420, width: '100%' }}>
         <Stack spacing={3} alignItems='center'>
           <CheckCircle sx={{ fontSize: 72, color: 'success.main' }} />

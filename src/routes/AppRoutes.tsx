@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { CircularProgress, Box } from '@mui/material';
-import { useAuth } from '@clerk/clerk-react';
 import { useAppSelector } from '../store/hook';
 import {
   selectIsRegularUser,
@@ -11,7 +10,7 @@ import {
   selectIsAdmin,
   selectIsLocationManager,
 } from '../store/selectors/authSelectors';
-import { useClerkSync } from '../shared/hooks/useClerkSync';
+import { useSupabaseSync } from '../shared/hooks/useSupabaseSync';
 import { SyncStatusContext } from '../shared/context/SyncStatusContext';
 
 import MainLayout from '../shared/components/MainLayout';
@@ -58,7 +57,6 @@ import MarketingPage from '../features/marketing/pages/MarketingPage';
 
 const AppRoutes = () => {
   const navigate = useNavigate();
-  const { isSignedIn, isLoaded } = useAuth();
   const isUser = useAppSelector(selectIsRegularUser);
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
@@ -66,9 +64,9 @@ const AppRoutes = () => {
   const isAdmin = useAppSelector(selectIsAdmin);
   const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
 
-  // Syncs an active Clerk session into Redux (handles SSO callbacks)
+  // Syncs an active Supabase session into Redux (handles SSO callbacks)
   const [retryCount, setRetryCount] = useState(0);
-  const { syncError } = useClerkSync(retryCount);
+  const { syncError, isLoaded, isSignedIn } = useSupabaseSync(retryCount);
   const retry = () => setRetryCount(c => c + 1);
 
   // Redirect new business owners to setup after registration
@@ -80,7 +78,7 @@ const AppRoutes = () => {
 
 
   return (
-    <SyncStatusContext.Provider value={{ syncError, retry }}>
+    <SyncStatusContext.Provider value={{ syncError, retry, isLoaded, isSignedIn }}>
     <Routes>
       {/* --- Public Routes --- */}
       <Route path='/' element={

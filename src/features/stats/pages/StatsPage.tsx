@@ -16,7 +16,7 @@ import { selectIsBusiness, selectIsLocationManager } from '../../../store/select
 import { useBusinessStats } from '../hooks/useBusinessStats';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN,
+  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 import { formatMonth, formatCurrency, formatDateShort } from '../../../shared/utils/date';
 import KpiCard from '../components/KpiCard';
@@ -45,7 +45,7 @@ const StatsPage = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
 
       {/* Hero */}
       <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>

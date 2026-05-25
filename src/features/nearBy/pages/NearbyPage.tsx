@@ -22,6 +22,7 @@ import {
   Storefront as StorefrontIcon,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
+import { MOBILE_CONTENT_HEIGHT_NO_HEADER } from '../../../shared/colors';
 
 // Architecture Imports
 import { useCurrentLocation } from '../hooks/useCurrentLocation';
@@ -83,7 +84,7 @@ const NearbyPage = () => {
     <Box
       sx={{
         width: '100%',
-        height: { xs: 'calc(100dvh - 60px)', md: '100dvh' },
+        height: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' },
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
         overflow: 'hidden',

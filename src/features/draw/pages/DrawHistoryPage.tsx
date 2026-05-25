@@ -6,7 +6,7 @@ import EmptyState from '../../../shared/components/EmptyState';
 import { useGetDrawHistory } from '../hooks/useGetDraws';
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, TEXT_HEADING,
-  TEXT_SECONDARY, BORDER_LIGHT,
+  TEXT_SECONDARY, BORDER_LIGHT, MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 import DrawHistoryCard from '../components/DrawHistoryCard';
 
@@ -18,7 +18,7 @@ const DrawHistoryPage = () => {
   const closedCampaigns = history?.filter(d => d.status?.toLowerCase() === 'closed') ?? [];
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
       {/* Hero Header */}
       <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 6, px: 3, color: 'white' }}>
         <Container maxWidth='lg'>

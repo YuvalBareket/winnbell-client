@@ -21,13 +21,13 @@ export const loginUserFn = async (
 };
 
 export const syncUserFn = async (
-  clerkToken: string,
+  accessToken: string,
   options?: { role?: string | null; inviteToken?: string | null },
 ): Promise<AuthResponse> => {
   const response = await api.post<AuthResponse>(
     '/auth/sync',
     { role: options?.role || null, inviteToken: options?.inviteToken || null },
-    { headers: { Authorization: `Bearer ${clerkToken}` } },
+    { headers: { Authorization: `Bearer ${accessToken}` } },
   );
   return response.data;
 };
