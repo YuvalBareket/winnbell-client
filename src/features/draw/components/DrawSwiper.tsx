@@ -2,7 +2,7 @@ import { UpcomingDrawCard } from './UpcomingDrawCard';
 import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import { EmojiEventsOutlined, Schedule } from '@mui/icons-material';
 import { useGetDraws } from '../hooks/useGetDraws';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { ALPHA_PRIMARY_10, PRIMARY_MAIN } from '../../../shared/colors';
 import { calculateDaysLeft, formatCurrency } from '../../../shared/utils/date';
 
@@ -14,31 +14,11 @@ interface DrawSwiperProps {
 
 export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwiperProps) => {
   const { data: draws, isLoading } = useGetDraws();
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (!draw_id && draws && draws.length > 0) {
       onDrawChange(draws[0].id);
     }
   }, [draws, onDrawChange]);
-
-  // Sync scroll position when draw_id changes externally
-  useEffect(() => {
-    if (!scrollRef.current || !draws || !draw_id) return;
-    const index = draws.findIndex((d) => d.id === draw_id);
-    if (index < 0) return;
-    const el = scrollRef.current;
-    el.scrollTo({ left: index * el.clientWidth, behavior: 'smooth' });
-  }, [draw_id, draws]);
-
-  const handleScroll = () => {
-    if (!scrollRef.current || !draws) return;
-    const { scrollLeft, clientWidth } = scrollRef.current;
-    const index = Math.round(scrollLeft / clientWidth);
-    if (draws[index] && draws[index].id !== draw_id) {
-      onDrawChange(draws[index].id);
-    }
-  };
   if (isLoading) {
     return (
       <Box sx={{ p: 2, pt: '0px', pb: 7 }}>
@@ -124,53 +104,11 @@ export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwipe
     );
   }
 
-  return (
-    <Box sx={{ width: '100%' }}>
-      <Box
-        ref={scrollRef}
-        onScroll={handleScroll}
-        sx={{
-          display: 'flex',
-          overflowX: 'auto',
-          scrollSnapType: 'x mandatory',
-          scrollBehavior: 'smooth',
-          '&::-webkit-scrollbar': { display: 'none' },
-          scrollbarWidth: 'none',
-          px: 2,
-          pt: 1,
-          pb: 0,
-          gap: 2,
-        }}
-      >
-        {draws.map((draw) => (
-          <Box
-            key={draw.id}
-            sx={{ flex: '0 0 calc(100% - 32px)', scrollSnapAlign: 'center' }}
-          >
-            <UpcomingDrawCard draw={draw} />
-          </Box>
-        ))}
-      </Box>
+  const activeDraw = draws.find((d) => d.id === draw_id) ?? draws[0];
 
-      {/* Dot indicators - only when multiple draws */}
-      {draws.length > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.75, mt: -2, mb: 1 }}>
-          {draws.map((draw) => (
-            <Box
-              key={draw.id}
-              onClick={() => onDrawChange(draw.id)}
-              sx={{
-                width: draw.id === draw_id ? 16 : 6,
-                height: 6,
-                borderRadius: 3,
-                bgcolor: draw.id === draw_id ? 'primary.main' : 'divider',
-                transition: 'width 0.25s ease, background-color 0.25s ease',
-                cursor: 'pointer',
-              }}
-            />
-          ))}
-        </Box>
-      )}
+  return (
+    <Box sx={{ px: 4, pt: 1 }}>
+      <UpcomingDrawCard draw={activeDraw} />
     </Box>
   );
 };
