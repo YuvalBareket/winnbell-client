@@ -209,9 +209,9 @@ const NearbyPage = () => {
         {/* Drag handle - mobile only */}
         <Box
           ref={dragHandleRef}
-          sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', pt: 1, pb: 0.5, cursor: 'grab', flexShrink: 0, touchAction: 'none' }}
+          sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', alignItems: 'center', pt: 2, pb: 1.5, cursor: 'grab', flexShrink: 0, touchAction: 'none' }}
         >
-          <Box sx={{ width: 36, height: 4, borderRadius: 2, bgcolor: 'divider' }} />
+          <Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: 'divider' }} />
         </Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pt: { xs: 0, md: 2 }, pb: 1.5 }}>
