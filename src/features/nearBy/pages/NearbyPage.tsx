@@ -29,6 +29,11 @@ import type { RootState } from '../../../store/store';
 import MapBusinessPopup from '../components/MapBusinessPopup';
 import { useNearbyWithZoom } from '../hooks/useNearbyWithZoom';
 import { BUSINESS_SECTORS } from '../../admin/data';
+import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import { useAppSelector } from '../../../store/hook';
+import { selectCurrentUser } from '../../../store/selectors/authSelectors';
+import { getUserInitials } from '../../../shared/utils/string';
+import { GRADIENT_PRIMARY } from '../../../shared/colors';
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -52,8 +57,11 @@ const listItemVariants = {
 const NearbyPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  // Use location_id as the state key to support multiple locations per business
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const user = useAppSelector(selectCurrentUser);
+  const initials = getUserInitials(user?.fullName);
 
   const SNAP_PERCENTS = [28, 50, 75];
   const getSnapPx = (p: number) => (p / 100) * window.innerHeight;
@@ -147,10 +155,10 @@ const NearbyPage = () => {
         />
 
         {/* Floating Search Bar */}
-        <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16, zIndex: 10 }}>
+        <Box sx={{ position: 'absolute', top: 16, left: 16, right: 16, zIndex: 10, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Paper
             elevation={3}
-            sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 3, height: 48 }}
+            sx={{ flex: 1, p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 3, height: 48 }}
           >
             <IconButton sx={{ p: '10px' }}>
               <Search sx={{ color: 'text.secondary' }} />
@@ -162,6 +170,32 @@ const NearbyPage = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </Paper>
+
+          {/* Avatar menu button - mobile only */}
+          <IconButton
+            onClick={() => setMenuOpen(true)}
+            sx={{
+              display: { xs: 'flex', md: 'none' },
+              p: 0,
+              flexShrink: 0,
+              '&:active': { transform: 'scale(0.93)', transition: 'transform 150ms ease-out' },
+            }}
+          >
+            <Avatar
+              sx={{
+                width: 40,
+                height: 40,
+                background: GRADIENT_PRIMARY,
+                color: 'white',
+                fontWeight: 800,
+                fontSize: 13,
+                borderRadius: '12px',
+                boxShadow: 2,
+              }}
+            >
+              {initials}
+            </Avatar>
+          </IconButton>
         </Box>
 
         {/* Recenter Button */}
@@ -400,6 +434,9 @@ const NearbyPage = () => {
         onClose={() => setSelectedLocationId(null)}
         userLocation={userLocation}
       />
+
+      {/* Mobile menu drawer */}
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
     </Box>
   );
 };
