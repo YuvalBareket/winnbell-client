@@ -171,11 +171,11 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
   const CAP = 30;
   const progress = Math.min((ticketCount / CAP) * 100, 100);
   const isMaxed = ticketCount >= CAP;
-  const progressColor = isMaxed ? '#2e7d32' : ticketCount >= 20 ? '#ed6c02' : '#195DE2';
+  const progressColor = isMaxed ? '#2e7d32' : ticketCount >= 20 ? '#ed6c02' : '#0292b7';
 
   if (!draw_id) return (
     <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
-      <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'rgba(25,93,230,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+      <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'rgba(2,146,183,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
         <ConfirmationNumberOutlined sx={{ fontSize: 32, color: 'primary.main' }} />
       </Box>
       <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>Select a campaign</Typography>
