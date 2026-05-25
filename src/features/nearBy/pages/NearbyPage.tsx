@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   Box,
@@ -55,6 +55,12 @@ const NearbyPage = () => {
   // Use location_id as the state key to support multiple locations per business
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
 
+  const SNAP_POINTS = [28, 50, 75]; // % of container height
+  const dragStartY = useRef<number | null>(null);
+  const dragStartHeight = useRef<number>(50);
+  const [sheetHeight, setSheetHeight] = useState(50); // % of 100dvh
+  const [isSnapping, setIsSnapping] = useState(false);
+
   // 1. Get Current Location (Updates Redux)
   const { refreshLocation } = useCurrentLocation();
 
@@ -71,6 +77,29 @@ const NearbyPage = () => {
     loc.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  const handleDragStart = (e: React.TouchEvent) => {
+    dragStartY.current = e.touches[0].clientY;
+    dragStartHeight.current = sheetHeight;
+    setIsSnapping(false);
+  };
+
+  const handleDragMove = (e: React.TouchEvent) => {
+    if (dragStartY.current === null) return;
+    const delta = dragStartY.current - e.touches[0].clientY;
+    const deltaPercent = (delta / window.innerHeight) * 100;
+    const next = Math.max(20, Math.min(82, dragStartHeight.current + deltaPercent));
+    setSheetHeight(next);
+  };
+
+  const handleDragEnd = () => {
+    dragStartY.current = null;
+    setIsSnapping(true);
+    const nearest = SNAP_POINTS.reduce((a, b) =>
+      Math.abs(b - sheetHeight) < Math.abs(a - sheetHeight) ? b : a
+    );
+    setSheetHeight(nearest);
+  };
+
   return (
     <Box
       sx={{
@@ -86,10 +115,11 @@ const NearbyPage = () => {
         sx={{
           position: 'relative',
           width: '100%',
-          height: { xs: '40vh', sm: '45vh', md: '100%' },
+          height: { xs: `${100 - sheetHeight}dvh`, sm: `${100 - sheetHeight}dvh`, md: '100%' },
           flex: { md: 1 },
           bgcolor: '#e3f2fd',
-          flexShrink: 0,
+          flexShrink: { md: 0 },
+          transition: { xs: isSnapping ? 'height 0.3s cubic-bezier(0.4,0,0.2,1)' : 'none', md: 'none' },
         }}
       >
         <BusinessMap
@@ -139,10 +169,11 @@ const NearbyPage = () => {
       <Paper
         elevation={0}
         sx={{
-          flex: { xs: 1, md: '0 0 380px' },
+          flex: { md: '0 0 380px' },
           width: { md: '380px' },
-          height: { md: '100%' },
-          mt: { xs: -3, md: 0 },
+          height: { xs: `${sheetHeight}dvh`, md: '100%' },
+          mt: { xs: '-24px', md: 0 },
+          transition: isSnapping ? 'height 0.3s cubic-bezier(0.4,0,0.2,1)' : 'none',
           borderTopLeftRadius: { xs: 24, md: 0 },
           borderTopRightRadius: { xs: 24, md: 0 },
           borderBottomLeftRadius: 0,
@@ -156,7 +187,17 @@ const NearbyPage = () => {
           overflow: 'hidden',
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pb: 1.5 }}>
+        {/* Drag handle - mobile only */}
+        <Box
+          sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', pt: 1, pb: 0.5, cursor: 'grab', flexShrink: 0 }}
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+        >
+          <Box sx={{ width: 36, height: 4, borderRadius: 2, bgcolor: 'divider' }} />
+        </Box>
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pt: { xs: 0, md: 2 }, pb: 1.5 }}>
           <Typography variant='h6' sx={{ fontWeight: 700 }}>Partners List</Typography>
           {isFetching && !isLoading && <CircularProgress size={14} thickness={5} />}
         </Box>
