@@ -17,8 +17,6 @@ import {
   SHADOW_NEUTRAL_SOFT,
   SHADOW_BOTTOM_NAV,
   SHADOW_PRIMARY_GLOW,
-  GLASS_BG,
-  GLASS_BACKDROP,
 } from '../colors';
 
 const SIDEBAR_WIDTH = 260;
@@ -96,10 +94,9 @@ const MainLayout = () => {
             zIndex: 1000,
             display: { xs: 'block', md: 'none' },
             overflow: 'visible',
-            bgcolor: GLASS_BG,
-            backdropFilter: GLASS_BACKDROP,
-            WebkitBackdropFilter: GLASS_BACKDROP,
-            borderTop: '1px solid rgba(255,255,255,0.5)',
+            bgcolor: 'background.paper',
+            borderTop: '1px solid',
+            borderColor: 'divider',
             boxShadow: SHADOW_BOTTOM_NAV,
           }}
           elevation={0}

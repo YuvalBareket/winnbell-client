@@ -170,25 +170,28 @@ const NearbyPage = () => {
             {[{ key: null, label: 'All', icon: null }, ...Object.entries(BUSINESS_SECTORS).filter(([k]) => k !== 'Free').map(([k, v]) => ({ key: k, label: v.label, icon: v.icon }))].map(({ key, label, icon }) => {
               const active = key === null ? !selectedSector : selectedSector === key;
               return (
-                <Chip
+                <Button
                   key={String(key)}
-                  label={label}
-                  icon={icon ? <Box sx={{ display: 'flex', '& svg': { fontSize: '13px !important' } }}>{icon as React.ReactElement}</Box> : undefined}
                   size='small'
                   onClick={() => setSelectedSector(key as string | null)}
+                  startIcon={icon ? <Box sx={{ display: 'flex', '& svg': { fontSize: '13px !important' } }}>{icon as React.ReactElement}</Box> : undefined}
                   sx={{
                     flexShrink: 0,
                     height: 26,
                     fontSize: '0.72rem',
                     fontWeight: 700,
                     borderRadius: 2,
+                    px: 1.25,
+                    minWidth: 'unset',
                     bgcolor: active ? 'primary.main' : 'transparent',
                     color: active ? 'white' : 'text.secondary',
                     border: '1px solid',
                     borderColor: active ? 'primary.main' : 'divider',
-                    '& .MuiChip-icon': { color: active ? 'white' : 'text.secondary', ml: '6px', mr: '-2px' },
+                    '& .MuiButton-startIcon': { mr: icon ? '4px' : 0, ml: 0 },
                   }}
-                />
+                >
+                  {label}
+                </Button>
               );
             })}
           </Box>
