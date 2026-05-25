@@ -77,7 +77,7 @@ export const theme = createTheme({
         },
         containedPrimary: {
           '&:hover': {
-            boxShadow: `0 4px 14px rgba(25,93,230,0.3)`,
+            boxShadow: `0 4px 14px rgba(2,146,183,0.3)`,
           },
         },
       },

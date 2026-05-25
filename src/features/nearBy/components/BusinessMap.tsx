@@ -31,7 +31,7 @@ const SECTOR_MAP: Record<string, { color: string; path: string }> = {
   Service:       { color: '#607d8b', path: 'm22.7 19-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4' },
 };
 
-const DEFAULT_COLOR = '#195de6';
+const DEFAULT_COLOR = '#0292b7';
 
 function makePinSvg(sector: string): string {
   const { color, path } = SECTOR_MAP[sector] ?? { color: DEFAULT_COLOR, path: '' };
@@ -160,8 +160,8 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
       userMarkerRef.current.setPosition(pos);
     } else {
       const userSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">
-        <circle cx="11" cy="11" r="10" fill="#195de6" opacity="0.25"/>
-        <circle cx="11" cy="11" r="6" fill="#195de6" stroke="white" stroke-width="2.5"/>
+        <circle cx="11" cy="11" r="10" fill="#0292b7" opacity="0.25"/>
+        <circle cx="11" cy="11" r="6" fill="#0292b7" stroke="white" stroke-width="2.5"/>
       </svg>`;
       userMarkerRef.current = new google.maps.Marker({
         map,
