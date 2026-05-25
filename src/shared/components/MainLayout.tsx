@@ -63,7 +63,7 @@ const MainLayout = () => {
           display: 'flex',
           flexDirection: 'column',
           pt: topPadding,
-          pb: { xs: '76px', md: isNearby ? 0 : 4 },
+          pb: { xs: isNearby ? 0 : '76px', md: isNearby ? 0 : 4 },
           ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
           width: { xs: '100%', md: `calc(100% - ${SIDEBAR_WIDTH}px)` },
           transition: 'margin 0.3s ease',
