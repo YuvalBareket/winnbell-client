@@ -42,7 +42,7 @@ const UserTicketRow = ({ ticket }: { ticket: UserTicket }) => {
           </Typography>
         </Box>
       </Box>
-      <TicketStatusSection code={ticket.code} status={ticket.status} />
+      <TicketStatusSection code={ticket.code} status={ticket.status} showStatus={false} />
     </Paper>
   );
 };
@@ -162,9 +162,11 @@ const iconBoxStyle = {
 const TicketStatusSection = ({
   code,
   status,
+  showStatus = true,
 }: {
   code: string;
   status: string;
+  showStatus?: boolean;
 }) => (
   <Box sx={{ textAlign: 'right' }}>
     <Typography
@@ -184,20 +186,22 @@ const TicketStatusSection = ({
     >
       {code}
     </Typography>
-    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-      <Chip
-        icon={<Circle sx={{ fontSize: '6px !important' }} />}
-        label={status.toUpperCase()}
-        size='small'
-        sx={{
-          height: 20,
-          fontSize: '0.65rem',
-          fontWeight: 700,
-          bgcolor: status === 'Activated' ? '#e8f5e9' : '#fff3e0',
-          color: status === 'Activated' ? '#2e7d32' : '#e65100',
-        }}
-      />
-    </Box>
+    {showStatus && (
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Chip
+          icon={<Circle sx={{ fontSize: '6px !important' }} />}
+          label={status.toUpperCase()}
+          size='small'
+          sx={{
+            height: 20,
+            fontSize: '0.65rem',
+            fontWeight: 700,
+            bgcolor: status === 'Activated' ? '#e8f5e9' : '#fff3e0',
+            color: status === 'Activated' ? '#2e7d32' : '#e65100',
+          }}
+        />
+      </Box>
+    )}
   </Box>
 );
 

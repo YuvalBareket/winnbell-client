@@ -10,7 +10,6 @@ import {
   Avatar,
   Stack,
   CircularProgress,
-  Slider,
   Chip,
 } from '@mui/material';
 import {
@@ -54,7 +53,6 @@ const listItemVariants = {
 const NearbyPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const [radiusKm, setRadiusKm] = useState(10);
   // Use location_id as the state key to support multiple locations per business
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
 
@@ -73,11 +71,7 @@ const NearbyPage = () => {
   const filteredLocations = locations.filter((loc) => {
     const matchesSearch = loc.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSector = !selectedSector || loc.sector === selectedSector;
-    const matchesRadius = !userLocation || haversineKm(
-      userLocation.latitude, userLocation.longitude,
-      loc.latitude, loc.longitude
-    ) <= radiusKm;
-    return matchesSearch && matchesSector && matchesRadius;
+    return matchesSearch && matchesSector;
   });
 
   return (
@@ -131,7 +125,7 @@ const NearbyPage = () => {
           onClick={() => refreshLocation()}
           sx={{
             position: 'absolute',
-            bottom: 25,
+            bottom: { xs: 34, md: 25 },
             right: 16,
             bgcolor: 'background.paper',
             boxShadow: 3,
@@ -207,22 +201,6 @@ const NearbyPage = () => {
             })}
           </Box>
 
-          {/* Radius row */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Typography variant='caption' fontWeight={600} color='text.secondary' sx={{ flexShrink: 0 }}>
-              Within
-            </Typography>
-            <Slider
-              value={radiusKm}
-              onChange={(_e, v) => setRadiusKm(v as number)}
-              min={1} max={50} step={1}
-              size='small'
-              sx={{ flex: 1, '& .MuiSlider-thumb': { width: 14, height: 14 } }}
-            />
-            <Typography variant='caption' fontWeight={700} color='primary.main' sx={{ flexShrink: 0, minWidth: 36, textAlign: 'right' }}>
-              {radiusKm} km
-            </Typography>
-          </Box>
         </Box>
 
         <Stack

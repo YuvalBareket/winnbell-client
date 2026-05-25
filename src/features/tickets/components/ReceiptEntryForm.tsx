@@ -75,8 +75,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [transactionAmount, setTransactionAmount] = useState('');
   const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
   const [errorMessage, setErrorMessage] = useState('');
-  const [receiptFirstKeystrokeAt, setReceiptFirstKeystrokeAt] = useState<number | null>(null);
-  const [receiptLastKeystrokeAt, setReceiptLastKeystrokeAt] = useState<number | null>(null);
+  const receiptKeystrokeTimesRef = useRef<number[]>([]);
   const [receiptWasPasted, setReceiptWasPasted] = useState(false);
   const [requiresImage, setRequiresImage] = useState(false);
   const [receiptImageUrl, setReceiptImageUrl] = useState<string | null>(null);
@@ -110,8 +109,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       setReceiptIdentifier('');
       setTransactionAmount('');
       setErrorMessage('');
-      setReceiptFirstKeystrokeAt(null);
-      setReceiptLastKeystrokeAt(null);
+      receiptKeystrokeTimesRef.current = [];
       setReceiptWasPasted(false);
       setRequiresImage(false);
       setReceiptImageUrl(null);
@@ -231,8 +229,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     setSelectedLocation(null);
     setSearchTerm('');
     setErrorMessage('');
-    setReceiptFirstKeystrokeAt(null);
-    setReceiptLastKeystrokeAt(null);
+    receiptKeystrokeTimesRef.current = [];
     setReceiptWasPasted(false);
     setRequiresImage(false);
     setReceiptImageUrl(null);
@@ -250,10 +247,15 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
 
     setErrorMessage('');
     const amount = parseFloat(transactionAmount);
-    const typingDurationMs =
-      receiptFirstKeystrokeAt != null && receiptLastKeystrokeAt != null
-        ? receiptLastKeystrokeAt - receiptFirstKeystrokeAt
-        : undefined;
+    const times = receiptKeystrokeTimesRef.current;
+    let typingDurationMs: number | undefined;
+    if (times.length >= 4) {
+      let min = Infinity;
+      for (let i = 0; i <= times.length - 4; i++) {
+        min = Math.min(min, times[i + 3] - times[i]);
+      }
+      typingDurationMs = min;
+    }
     const receiptInputMethod = receiptWasPasted ? 'pasted' : 'typed';
 
     submitReceiptEntry.mutate({
@@ -436,17 +438,17 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               const val = e.target.value;
               setReceiptIdentifier(val);
               if (val === '') {
-                setReceiptFirstKeystrokeAt(null);
-                setReceiptLastKeystrokeAt(null);
+                receiptKeystrokeTimesRef.current = [];
                 setReceiptWasPasted(false);
               }
             }}
             onKeyDown={() => {
-              const now = Date.now();
-              if (receiptFirstKeystrokeAt === null) setReceiptFirstKeystrokeAt(now);
-              setReceiptLastKeystrokeAt(now);
+              receiptKeystrokeTimesRef.current.push(Date.now());
             }}
-            onPaste={() => setReceiptWasPasted(true)}
+            onPaste={() => {
+              setReceiptWasPasted(true);
+              receiptKeystrokeTimesRef.current = [];
+            }}
             helperText={
               <Box component="span">
                 Find this on your receipt - may say "Receipt #" or "Order #"

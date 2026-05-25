@@ -18,17 +18,9 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Returns true if the query circle is fully contained in any previously fetched circle
+// New viewport is fully covered if it fits inside a previously fetched circle
 function isCovered(lat: number, lon: number, radius: number, fetched: FetchedCircle[]): boolean {
-  return fetched.some((f) => haversineKm(lat, lon, f.lat, f.lon) + radius <= f.radius);
-}
-
-// Returns true if the viewport center is already inside a fetched circle with a similar or larger radius.
-// Avoids re-fetching when the user pans a short distance within an already-loaded area.
-function isLargelyLoaded(lat: number, lon: number, radius: number, fetched: FetchedCircle[]): boolean {
-  return fetched.some(
-    (f) => haversineKm(lat, lon, f.lat, f.lon) < f.radius * 0.4 && radius <= f.radius * 1.1,
-  );
+  return fetched.some((f) => haversineKm(lat, lon, f.lat, f.lon) + radius <= f.radius * 0.95);
 }
 
 export function useNearbyWithZoom() {
@@ -50,6 +42,7 @@ export function useNearbyWithZoom() {
       const results = await getNearbyBusinesses({ latitude: lat, longitude: lon, radius });
       results.forEach((loc) => accumulatedRef.current.set(loc.location_id, loc));
       setLocations(Array.from(accumulatedRef.current.values()));
+      // Record the actual radius sent (not a capped version)
       fetchedCirclesRef.current.push({ lat, lon, radius });
     } catch {
       setIsError(true);
@@ -65,16 +58,12 @@ export function useNearbyWithZoom() {
 
       debounceRef.current = setTimeout(() => {
         if (isCovered(lat, lon, radiusKm, fetchedCirclesRef.current)) return;
-        if (isLargelyLoaded(lat, lon, radiusKm, fetchedCirclesRef.current)) return;
-
         doFetch(lat, lon, radiusKm);
-      }, 350);
+      }, 400);
     },
     [doFetch],
   );
 
-  // isLoading = true only on the very first fetch (no data yet) → shows skeleton
-  // isFetching = true on every fetch including background → for optional subtle indicator
   const isLoading = isFetching && locations.length === 0;
 
   return { locations, isLoading, isFetching, isError, onViewportChange };

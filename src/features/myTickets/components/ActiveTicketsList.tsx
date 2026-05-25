@@ -99,7 +99,20 @@ const UserTicketRow = ({ ticket, index }: { ticket: UserTicket; index: number })
           </Typography>
         </Box>
       </Box>
-      <TicketStatusSection code={ticket.code} status={ticket.status} />
+      <Box sx={{ textAlign: 'right', flexShrink: 0, ml: 1.5 }}>
+        <Typography
+          sx={{
+            fontFamily: '"Courier New", "Courier", monospace',
+            fontWeight: 700,
+            letterSpacing: '0.15em',
+            fontSize: '1.05rem',
+            color: 'primary.main',
+            lineHeight: 1,
+          }}
+        >
+          {ticket.code}
+        </Typography>
+      </Box>
     </TicketRowWrapper>
   );
 };

@@ -72,7 +72,7 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
       anchor='right'
       open={userId !== null}
       onClose={onClose}
-      PaperProps={{ sx: { width: { xs: '100vw', sm: 600, md: 680 }, p: 0 } }}
+      PaperProps={{ sx: { width: { xs: '100vw', sm: 600, md: 900, lg: 1000 }, p: 0 } }}
     >
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -166,6 +166,8 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                       <TableCell>Source</TableCell>
                       <TableCell>Date</TableCell>
                       <TableCell>Status</TableCell>
+                      <TableCell>Receipt</TableCell>
+                      <TableCell>Risk +</TableCell>
                       <TableCell>Risk Signals</TableCell>
                     </TableRow>
                   </TableHead>
@@ -193,6 +195,68 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                             />
                           ) : (
                             <Chip label='Active' size='small' color='success' />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {e.receipt_image_url ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0.5 }}>
+                              <Box
+                                component='a'
+                                href={e.receipt_image_url}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                sx={{ display: 'inline-block', lineHeight: 0 }}
+                              >
+                                <Box
+                                  component='img'
+                                  src={e.receipt_image_url}
+                                  alt='Receipt'
+                                  sx={{
+                                    width: 48,
+                                    height: 48,
+                                    objectFit: 'cover',
+                                    borderRadius: 1,
+                                    border: '1px solid',
+                                    borderColor: e.image_validation_status === 'failed' || e.image_validation_status === 'ocr_error' ? 'error.main' : e.image_validation_status === 'passed' ? 'success.main' : 'divider',
+                                    cursor: 'pointer',
+                                    transition: 'opacity 150ms',
+                                    '&:hover': { opacity: 0.8 },
+                                  }}
+                                />
+                              </Box>
+                              {e.image_validation_status && e.image_validation_status !== 'not_required' && (
+                                <Chip
+                                  label={
+                                    e.image_validation_status === 'passed' ? 'OCR ✓' :
+                                    e.image_validation_status === 'failed' ? 'OCR ✗' :
+                                    e.image_validation_status === 'ocr_error' ? 'OCR err' :
+                                    'OCR pending'
+                                  }
+                                  size='small'
+                                  color={
+                                    e.image_validation_status === 'passed' ? 'success' :
+                                    e.image_validation_status === 'failed' ? 'error' :
+                                    e.image_validation_status === 'ocr_error' ? 'warning' :
+                                    'default'
+                                  }
+                                  sx={{ fontSize: 10, height: 18 }}
+                                />
+                              )}
+                            </Box>
+                          ) : (
+                            <Typography variant='caption' color='text.disabled'>—</Typography>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {e.risk_score_delta > 0 ? (
+                            <Chip
+                              label={`+${e.risk_score_delta}`}
+                              size='small'
+                              color='error'
+                              sx={{ fontSize: 11, height: 20, fontWeight: 700 }}
+                            />
+                          ) : (
+                            <Typography variant='caption' color='text.disabled'>—</Typography>
                           )}
                         </TableCell>
                         <TableCell>
