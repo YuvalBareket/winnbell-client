@@ -23,7 +23,7 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
         mb: 4,
         background: GRADIENT_DRAW_CARD,
         color: 'white',
-        boxShadow: '0px 10px 50px 8px rgba(2, 146, 183, 0.55)',
+        boxShadow: '0px 10px 40px 2px rgba(2, 146, 183, 0.55)',
       }}
     >
       {/* Decorative Blur Orbs */}
