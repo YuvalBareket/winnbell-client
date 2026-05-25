@@ -55,6 +55,14 @@ export const theme = createTheme({
         },
       },
     },
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'transparent',
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
