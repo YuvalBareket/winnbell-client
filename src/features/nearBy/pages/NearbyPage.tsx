@@ -187,7 +187,6 @@ const NearbyPage = () => {
                     border: '1px solid',
                     borderColor: active ? 'primary.main' : 'divider',
                     '& .MuiChip-icon': { color: active ? 'white' : 'text.secondary', ml: '6px', mr: '-2px' },
-                    '&:hover': { bgcolor: active ? 'primary.dark' : 'action.hover' },
                   }}
                 />
               );

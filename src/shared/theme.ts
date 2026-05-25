@@ -69,14 +69,7 @@ export const theme = createTheme({
           borderRadius: 12,
           boxShadow: 'none',
           padding: '10px 22px',
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            boxShadow: 'none',
-            transform: 'translateY(-1px)',
-          },
-          '&:active': {
-            transform: 'translateY(0px)',
-          },
+          transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
         },
         sizeLarge: {
           padding: '12px 28px',
