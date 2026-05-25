@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import {
   Box,
   Typography,
@@ -55,11 +55,49 @@ const NearbyPage = () => {
   // Use location_id as the state key to support multiple locations per business
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
 
-  const SNAP_POINTS = [28, 50, 75]; // % of container height
-  const dragStartY = useRef<number | null>(null);
-  const dragStartHeight = useRef<number>(50);
-  const [sheetHeight, setSheetHeight] = useState(50); // % of 100dvh
-  const [isSnapping, setIsSnapping] = useState(false);
+  const SNAP_PERCENTS = [28, 50, 75];
+  const getSnapPx = (p: number) => (p / 100) * window.innerHeight;
+
+  // Motion value drives height — no React re-renders during drag
+  const sheetHeightMv = useMotionValue(getSnapPx(50));
+  const mapHeightMv = useTransform(sheetHeightMv, (h) => window.innerHeight - h);
+
+  const dragHandleRef = useRef<HTMLDivElement>(null);
+  const dragStartYRef = useRef(0);
+  const dragStartHeightRef = useRef(0);
+
+  useEffect(() => {
+    const el = dragHandleRef.current;
+    if (!el) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      dragStartYRef.current = e.touches[0].clientY;
+      dragStartHeightRef.current = sheetHeightMv.get();
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault(); // Non-passive — prevents browser overscroll/stretch
+      const delta = dragStartYRef.current - e.touches[0].clientY;
+      const next = Math.max(getSnapPx(20), Math.min(getSnapPx(85), dragStartHeightRef.current + delta));
+      sheetHeightMv.set(next);
+    };
+
+    const onTouchEnd = () => {
+      const current = sheetHeightMv.get();
+      const snapsPx = SNAP_PERCENTS.map(getSnapPx);
+      const nearest = snapsPx.reduce((a, b) => (Math.abs(b - current) < Math.abs(a - current) ? b : a));
+      animate(sheetHeightMv, nearest, { type: 'spring', stiffness: 500, damping: 45 });
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, []);
 
   // 1. Get Current Location (Updates Redux)
   const { refreshLocation } = useCurrentLocation();
@@ -77,29 +115,6 @@ const NearbyPage = () => {
     loc.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const handleDragStart = (e: React.TouchEvent) => {
-    dragStartY.current = e.touches[0].clientY;
-    dragStartHeight.current = sheetHeight;
-    setIsSnapping(false);
-  };
-
-  const handleDragMove = (e: React.TouchEvent) => {
-    if (dragStartY.current === null) return;
-    const delta = dragStartY.current - e.touches[0].clientY;
-    const deltaPercent = (delta / window.innerHeight) * 100;
-    const next = Math.max(20, Math.min(82, dragStartHeight.current + deltaPercent));
-    setSheetHeight(next);
-  };
-
-  const handleDragEnd = () => {
-    dragStartY.current = null;
-    setIsSnapping(true);
-    const nearest = SNAP_POINTS.reduce((a, b) =>
-      Math.abs(b - sheetHeight) < Math.abs(a - sheetHeight) ? b : a
-    );
-    setSheetHeight(nearest);
-  };
-
   return (
     <Box
       sx={{
@@ -112,14 +127,16 @@ const NearbyPage = () => {
     >
       {/* 1. MAP SECTION */}
       <Box
+        component={motion.div}
+        style={{ height: mapHeightMv } as unknown as React.CSSProperties}
         sx={{
           position: 'relative',
           width: '100%',
-          height: { xs: `${100 - sheetHeight}dvh`, sm: `${100 - sheetHeight}dvh`, md: '100%' },
           flex: { md: 1 },
           bgcolor: '#e3f2fd',
           flexShrink: { md: 0 },
-          transition: { xs: isSnapping ? 'height 0.3s cubic-bezier(0.4,0,0.2,1)' : 'none', md: 'none' },
+          // On desktop, override the motion value height so flexbox takes control
+          '@media (min-width: 900px)': { height: '100% !important' },
         }}
       >
         <BusinessMap
@@ -167,13 +184,15 @@ const NearbyPage = () => {
 
       {/* 2. PARTNERS LIST */}
       <Paper
+        component={motion.div}
         elevation={0}
+        style={{ height: sheetHeightMv } as unknown as React.CSSProperties}
         sx={{
           flex: { md: '0 0 380px' },
           width: { md: '380px' },
-          height: { xs: `${sheetHeight}dvh`, md: '100%' },
           mt: { xs: '-24px', md: 0 },
-          transition: isSnapping ? 'height 0.3s cubic-bezier(0.4,0,0.2,1)' : 'none',
+          // On desktop, override the motion value height so flexbox takes control
+          '@media (min-width: 900px)': { height: '100% !important' },
           borderTopLeftRadius: { xs: 24, md: 0 },
           borderTopRightRadius: { xs: 24, md: 0 },
           borderBottomLeftRadius: 0,
@@ -189,10 +208,8 @@ const NearbyPage = () => {
       >
         {/* Drag handle - mobile only */}
         <Box
-          sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', pt: 1, pb: 0.5, cursor: 'grab', flexShrink: 0 }}
-          onTouchStart={handleDragStart}
-          onTouchMove={handleDragMove}
-          onTouchEnd={handleDragEnd}
+          ref={dragHandleRef}
+          sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', pt: 1, pb: 0.5, cursor: 'grab', flexShrink: 0, touchAction: 'none' }}
         >
           <Box sx={{ width: 36, height: 4, borderRadius: 2, bgcolor: 'divider' }} />
         </Box>
