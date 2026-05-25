@@ -39,6 +39,7 @@ interface ReceiptEntryFormProps {
   onSuccess?: (ticketId: number) => void;
   onError?: (message: string) => void;
   onLocationSelect?: (hasLocation: boolean) => void;
+  onBlockedChange?: (blocked: boolean) => void;
 }
 
 const toParticipating = (n: NearbyLocation): ParticipatingLocation => ({
@@ -61,6 +62,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   onSuccess,
   onError,
   onLocationSelect,
+  onBlockedChange,
 }) => {
   // ──────────────────────────────────────────────────
   // State
@@ -132,6 +134,12 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   useEffect(() => {
     onLocationSelect?.(!!selectedLocation);
   }, [selectedLocation]);
+
+  // Notify parent when blocked state changes (throttled or daily limit)
+  useEffect(() => {
+    const blocked = riskLevel.isThrottled || riskLevel.isDailyLimitReached || riskLevel.isDrawCapped;
+    onBlockedChange?.(blocked);
+  }, [riskLevel.isThrottled, riskLevel.isDailyLimitReached, riskLevel.isDrawCapped]);
 
   // ──────────────────────────────────────────────────
   // Fetch nearby locations on mount
@@ -283,7 +291,24 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </Box>
       )}
 
-      {/* ── Daily Limit ─────────────────────────────── */}
+      {/* ── Daily receipt limit (5/day for all users) ── */}
+      {!riskLevel.isDrawCapped && riskLevel.isDailyLimitReached && !riskLevel.isThrottled && (
+        <Box sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 1.5 }}>
+          <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <AccessTime sx={{ fontSize: 26, color: 'text.secondary' }} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle2" fontWeight={700} color="text.primary" sx={{ mb: 0.5 }}>
+              Daily limit reached
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+              You've used your entries for today. Come back tomorrow - or claim your free weekly entry below.
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      {/* ── Throttled (high-risk user, 1/day) ───────── */}
       {!riskLevel.isDrawCapped && riskLevel.isThrottled && (
         <Box
           sx={{
@@ -323,7 +348,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </Box>
       )}
 
-      {!riskLevel.isDrawCapped && !riskLevel.isThrottled && <>
+      {!riskLevel.isDrawCapped && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached && <>
 
       {/* ── Step 1: Select Business ─────────────────── */}
       {!selectedLocation && isLocationFetching && (
@@ -542,7 +567,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             variant="contained"
             fullWidth
             onClick={handleSubmit}
-            disabled={!isFormValid || submitReceiptEntry.isPending || riskLevel.isThrottled}
+            disabled={!isFormValid || submitReceiptEntry.isPending || riskLevel.isThrottled || riskLevel.isDailyLimitReached}
             sx={{
               mt: 0.5,
               height: 52,

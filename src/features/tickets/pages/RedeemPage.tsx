@@ -69,6 +69,7 @@ const RedeemPage = () => {
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
   const [receiptLocationSelected, setReceiptLocationSelected] = useState(false);
+  const [receiptFormBlocked, setReceiptFormBlocked] = useState(false);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const primaryColor = PRIMARY_MAIN;
 
@@ -430,8 +431,8 @@ const didAutoActivate = useRef(false);
             </Box>
             {entryMode === 'receipt' ? (
               <>
-                {/* AMOE - compact row on mobile, hidden when any location is selected */}
-                {!receiptLocationSelected && <Paper
+                {/* AMOE - compact row on mobile, hidden when a location is selected (unless form is blocked) */}
+                {(!receiptLocationSelected || receiptFormBlocked) && <Paper
                   elevation={0}
                   onClick={() => navigate('/freeTicket')}
                   sx={{
@@ -454,7 +455,7 @@ const didAutoActivate = useRef(false);
                   </Box>
                   <Box component='span' sx={{ color: primaryColor || PRIMARY_MAIN, fontSize: 20, display: 'flex' }}>›</Box>
                 </Paper>}
-                <ReceiptEntryForm primaryColor={primaryColor} preselectedBusinessId={preselectedBusinessId} preselectedLocation={preselectedLocation} preselectedLocationId={qrLocationId} onLocationSelect={setReceiptLocationSelected} />
+                <ReceiptEntryForm primaryColor={primaryColor} preselectedBusinessId={preselectedBusinessId} preselectedLocation={preselectedLocation} preselectedLocationId={qrLocationId} onLocationSelect={setReceiptLocationSelected} onBlockedChange={setReceiptFormBlocked} />
               </>
             ) : (
               <UserActions

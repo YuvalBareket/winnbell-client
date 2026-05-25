@@ -85,6 +85,8 @@ export interface RiskLevelResponse {
   requiresImage: boolean;
   isThrottled: boolean;
   drawEntryCount: number;
+  dailyCount: number;
+  dailyLimit: number;
 }
 
 export const getMyRiskLevel = (): Promise<RiskLevelResponse> =>
