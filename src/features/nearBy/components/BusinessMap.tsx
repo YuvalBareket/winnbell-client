@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import type { NearbyLocation } from '../types/nearBy.types';
+import type { ViewportBounds } from '../hooks/useNearbyWithZoom';
 
 setOptions({
   key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? '',
@@ -34,8 +35,6 @@ const DEFAULT_COLOR = '#195de6';
 
 function makePinSvg(sector: string): string {
   const { color, path } = SECTOR_MAP[sector] ?? { color: DEFAULT_COLOR, path: '' };
-  // Pin is 38×46, circle center at (19, 18), radius 11
-  // Icon is 24×24 scaled to 16×16 (scale 0.667), translated to center in circle: (19-8, 18-8) = (11, 10)
   return `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="46" viewBox="0 0 38 46">
     <path d="M19 1C9.61 1 2 8.61 2 18c0 13.25 17 27 17 27S36 31.25 36 18C36 8.61 28.39 1 19 1z" fill="${color}" stroke="white" stroke-width="1.5"/>
     <circle cx="19" cy="18" r="11" fill="white" opacity="0.93"/>
@@ -54,40 +53,21 @@ function makePinIcon(sector: string): google.maps.Icon {
   };
 }
 
-// Inject pulse animation once
-if (!document.getElementById('user-location-pulse-style')) {
-  const s = document.createElement('style');
-  s.id = 'user-location-pulse-style';
-  s.textContent = `@keyframes user-location-pulse {
-    0%   { transform:scale(1);   opacity:0.6; }
-    70%  { transform:scale(2.4); opacity:0;   }
-    100% { transform:scale(2.4); opacity:0;   }
-  }`;
-  document.head.appendChild(s);
-}
-
 const mapsLib = importLibrary('maps');
 
 type Props = {
   locations: NearbyLocation[];
   onBusinessClick?: (locationId: number) => void;
   userLocation?: { latitude: number; longitude: number } | null;
-  onViewportChange?: (lat: number, lon: number, radiusKm: number) => void;
+  onViewportChange?: (bounds: ViewportBounds, zoom: number) => void;
 };
 
-function getViewportRadius(map: google.maps.Map): { lat: number; lon: number; radiusKm: number } {
-  const center = map.getCenter()!;
+function getViewportBounds(map: google.maps.Map): ViewportBounds | null {
   const bounds = map.getBounds();
-  if (!bounds) return { lat: center.lat(), lon: center.lng(), radiusKm: 10 };
+  if (!bounds) return null;
+  const sw = bounds.getSouthWest();
   const ne = bounds.getNorthEast();
-  const R = 6371;
-  const lat1 = center.lat() * (Math.PI / 180);
-  const lat2 = ne.lat() * (Math.PI / 180);
-  const dLat = lat2 - lat1;
-  const dLon = (ne.lng() - center.lng()) * (Math.PI / 180);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-  const fullRadius = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return { lat: center.lat(), lon: center.lng(), radiusKm: Math.ceil(fullRadius * 0.6) };
+  return { minLat: sw.lat(), maxLat: ne.lat(), minLng: sw.lng(), maxLng: ne.lng() };
 }
 
 export default function BusinessMap({ locations, onBusinessClick, userLocation, onViewportChange }: Props) {
@@ -121,8 +101,9 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
       setMapReady(true);
 
       map.addListener('idle', () => {
-        const v = getViewportRadius(map);
-        onViewportChangeRef.current?.(v.lat, v.lon, v.radiusKm);
+        const b = getViewportBounds(map);
+        const zoom = map.getZoom() ?? 12;
+        if (b) onViewportChangeRef.current?.(b, zoom);
       });
     });
 
@@ -137,7 +118,7 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
     };
   }, []);
 
-  // Sync business markers
+  // Sync business markers — max 50 come from server, render all as individual pins
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
@@ -154,7 +135,6 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
           icon: makePinIcon(loc.sector),
           title: loc.name,
           cursor: 'pointer',
-          animation: google.maps.Animation.DROP,
         });
         marker.addListener('click', () => onBusinessClickRef.current?.(id));
         markersByLocRef.current.set(id, marker);
@@ -169,7 +149,7 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
     });
   }, [locations, mapReady]);
 
-  // User location marker — pulsing blue dot via OverlayView (defined after API loads)
+  // User location marker
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !userLocation || !mapReady) return;

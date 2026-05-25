@@ -159,12 +159,7 @@ const NearbyPage = () => {
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pb: 1.5 }}>
           <Typography variant='h6' sx={{ fontWeight: 700 }}>Partners List</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {isFetching && !isLoading && <CircularProgress size={14} thickness={5} />}
-            <Typography variant='subtitle2' color='primary' sx={{ fontWeight: 700 }}>
-              {filteredLocations.length} Found
-            </Typography>
-          </Box>
+          {isFetching && !isLoading && <CircularProgress size={14} thickness={5} />}
         </Box>
 
         {/* Filter bar */}

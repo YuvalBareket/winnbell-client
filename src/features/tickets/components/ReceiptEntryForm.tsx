@@ -148,10 +148,14 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const radiusKm = 5;
+          const latDelta = radiusKm / 111;
+          const lngDelta = radiusKm / (111 * Math.cos(lat * (Math.PI / 180)));
           const nearby = await getNearbyBusinesses({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-            radius: 5,
+            minLat: lat - latDelta, maxLat: lat + latDelta,
+            minLng: lng - lngDelta, maxLng: lng + lngDelta,
           });
           setNearbyLocations(nearby.slice(0, 2));
         } catch {

@@ -25,6 +25,9 @@ export interface ILocationCoords {
   longitude: number;
 }
 
-export interface INearbyParams extends ILocationCoords {
-  radius?: number;
+export interface INearbyParams {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
 }

@@ -8,12 +8,17 @@ export const useNearbyBusinesses = () => {
   const { userLocation } = useSelector((state: RootState) => state.auth);
   return useQuery<NearbyLocation[]>({
     queryKey: ['businesses', 'nearby', userLocation],
-    queryFn: () =>
-      getNearbyBusinesses({
-        latitude: userLocation!.latitude,
-        longitude: userLocation!.longitude,
-        radius: 10,
-      }),
+    queryFn: () => {
+      const lat = userLocation!.latitude;
+      const lng = userLocation!.longitude;
+      const radiusKm = 10;
+      const latDelta = radiusKm / 111;
+      const lngDelta = radiusKm / (111 * Math.cos(lat * (Math.PI / 180)));
+      return getNearbyBusinesses({
+        minLat: lat - latDelta, maxLat: lat + latDelta,
+        minLng: lng - lngDelta, maxLng: lng + lngDelta,
+      });
+    },
     enabled: !!userLocation?.latitude && !!userLocation?.longitude,
   });
 };
