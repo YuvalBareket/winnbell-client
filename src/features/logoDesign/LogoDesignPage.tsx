@@ -31,7 +31,7 @@ export default function LogoDesignPage() {
         sx={{
           width: 600,
           height: 600,
-          background: 'linear-gradient(135deg, #e8f0fe 3%, #72b8f6 40%, #1a6eb8 70%)',
+          background: 'linear-gradient(135deg, #d0f0ef 0%, #42bdba 50%, #0292b7 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
