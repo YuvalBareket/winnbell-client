@@ -344,6 +344,7 @@ const NearbyPage = () => {
       <MapBusinessPopup
         location={selectedLocation}
         onClose={() => setSelectedLocationId(null)}
+        userLocation={userLocation}
       />
     </Box>
   );

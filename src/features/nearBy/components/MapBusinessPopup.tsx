@@ -13,12 +13,23 @@ import type { NearbyLocation } from '../types/nearBy.types';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 type Props = {
   location: NearbyLocation | null;
   onClose: () => void;
+  userLocation?: { latitude: number; longitude: number } | null;
 };
 
-const MapBusinessPopup: React.FC<Props> = ({ location, onClose }) => {
+const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
@@ -130,10 +141,13 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose }) => {
                     size='small'
                     sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#dcfce7', color: '#16a34a' }}
                   />
-                  {location.distance_km != null && (
+                  {userLocation && (
                     <Chip
                       icon={<LocationOn sx={{ fontSize: '11px !important', color: `${PRIMARY_MAIN} !important` }} />}
-                      label={location.distance_km < 1 ? `${(location.distance_km * 1000).toFixed(0)} m` : `${location.distance_km.toFixed(1)} km`}
+                      label={(() => {
+                        const d = haversineKm(userLocation.latitude, userLocation.longitude, Number(location.latitude), Number(location.longitude));
+                        return d < 1 ? `${(d * 1000).toFixed(0)} m` : `${d.toFixed(1)} km`;
+                      })()}
                       size='small'
                       sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: `${PRIMARY_MAIN}12`, color: PRIMARY_MAIN }}
                     />

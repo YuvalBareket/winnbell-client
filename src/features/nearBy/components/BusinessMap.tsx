@@ -153,6 +153,7 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
           icon: makePinIcon(loc.sector),
           title: loc.name,
           cursor: 'pointer',
+          animation: google.maps.Animation.DROP,
         });
         marker.addListener('click', () => onBusinessClickRef.current?.(id));
         markersByLocRef.current.set(id, marker);
