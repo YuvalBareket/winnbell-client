@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import {
   ArrowBackIosNew, ConfirmationNumber, Mail, Lock, Visibility, VisibilityOff,
-  Login, Google, Apple, Storefront, EmojiEvents, CardGiftcard,
+  Login, Google, Storefront, EmojiEvents, CardGiftcard,
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
@@ -91,7 +91,7 @@ const LoginPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'apple') => {
+  const handleSocialLogin = async (provider: 'google') => {
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
@@ -130,15 +130,22 @@ const LoginPage = () => {
   // ─── Form content (shared between mobile & desktop) ──────────────────────────
 
   const FormContent = () => (
-    <Stack sx={{ zoom: { xs: 1, md: 0.8 } }}>
+    <Stack sx={{ zoom: { xs: 0.9, md: 0.75 } }}>
       {/* Header */}
-      <Box sx={{ mb: { xs: 6, md: 4 }, textAlign: isDesktop ? 'left' : 'center' }}>
+      <Box sx={{ mb: { xs: 2, md: 3 }, textAlign: isDesktop ? 'left' : 'center' }}>
         {!isDesktop && (
-          <Paper elevation={4} sx={{ width: 80, height: 80, bgcolor: 'primary.main', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, transform: 'rotate(3deg)', mx: 'auto' }}>
-            <ConfirmationNumber sx={{ color: 'white', fontSize: 40 }} />
+          <Paper elevation={4} sx={{ width: 56, height: 56, bgcolor: 'primary.main', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, transform: 'rotate(3deg)', mx: 'auto' }}>
+            <ConfirmationNumber sx={{ color: 'white', fontSize: 28 }} />
           </Paper>
         )}
-        <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>Welcome Back</Typography>
+        <Stack direction='row' alignItems='center' gap={3} mb={1} justifyContent={isDesktop ? 'flex-start' : 'center'}>
+          {isDesktop && (
+            <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
+              <ArrowBackIosNew fontSize='small' />
+            </IconButton>
+          )}
+          <Typography variant='h4' sx={{ fontWeight: 700 }}>Welcome Back</Typography>
+        </Stack>
         <Typography variant='body1' color='text.secondary'>Sign in to check your entries</Typography>
       </Box>
 
@@ -160,9 +167,9 @@ const LoginPage = () => {
         </Alert>
       )}
 
-      <Stack spacing={3}>
+      <Stack spacing={1.5}>
         <Box>
-          <Typography variant='subtitle2' sx={{ ml: 1, mb: 1, fontWeight: 700 }}>Email</Typography>
+          <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Email</Typography>
           <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
             InputProps={{
               startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
@@ -172,7 +179,7 @@ const LoginPage = () => {
         </Box>
 
         <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, ml: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, ml: 1 }}>
             <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>Password</Typography>
             <Typography
               variant='caption'
@@ -199,6 +206,16 @@ const LoginPage = () => {
           />
         </Box>
 
+        <Box>
+          <Divider sx={{ mb: 2 }}>
+            <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700, px: 1 }}>OR</Typography>
+          </Divider>
+          <Button fullWidth variant='outlined' startIcon={<Google />} onClick={() => handleSocialLogin('google')} disabled={!termsAccepted}
+            sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none' }}>
+            Google
+          </Button>
+        </Box>
+
         <FormControlLabel
           control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
           label={
@@ -216,28 +233,12 @@ const LoginPage = () => {
 
         <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted}
           endIcon={!loading && <Login />}
-          sx={{ py: 2, borderRadius: 3, fontSize: '1rem', fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
+          sx={{ py: 1.5, borderRadius: 3, fontSize: '1rem', fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
           {loading ? <CircularProgress size={24} color='inherit' /> : 'Sign In'}
         </Button>
       </Stack>
 
-      <Box sx={{ mt: 4 }}>
-        <Divider sx={{ mb: 4 }}>
-          <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700, px: 1 }}>OR</Typography>
-        </Divider>
-        <Stack direction={'row'} spacing={2}>
-          <Button fullWidth variant='outlined' startIcon={<Google />} onClick={() => handleSocialLogin('google')} disabled={!termsAccepted}
-            sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none' }}>
-            Google
-          </Button>
-          <Button fullWidth variant='outlined' startIcon={<Apple />} onClick={() => handleSocialLogin('apple')} disabled={!termsAccepted}
-            sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none' }}>
-            Apple
-          </Button>
-        </Stack>
-      </Box>
-
-      <Box sx={{ mt: 'auto', pt: 4, textAlign: 'center' }}>
+      <Box sx={{ mt: 'auto', pt: 2, textAlign: 'center' }}>
         <Typography variant='body2' color='text.secondary' fontWeight={500}>
           Don't have an account?{' '}
           <Typography component='span' onClick={() => navigate(inviteToken ? `/register/?token=${inviteToken}` : '/register')}
@@ -264,15 +265,10 @@ const LoginPage = () => {
             bgcolor: BG_PAGE,
             display: 'flex',
             flexDirection: 'column',
-            px: 7,
-            py: 5,
+            px: 6,
+            py: 4,
           }}
         >
-          <Box sx={{ mb: 4 }}>
-            <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}` }}>
-              <ArrowBackIosNew fontSize='small' />
-            </IconButton>
-          </Box>
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400 }}>
             {FormContent()}
           </Box>
@@ -290,7 +286,7 @@ const LoginPage = () => {
           <ArrowBackIosNew fontSize='small' />
         </IconButton>
       </Box>
-      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 4, pb: 4 }}>
+      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 0, pb: 4 }}>
         {FormContent()}
       </Container>
     </Box>

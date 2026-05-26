@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import {
   ArrowBackIosNew, Person, Mail, Lock, Visibility, VisibilityOff, Handshake,
-  Storefront, Google, Apple, ConfirmationNumber, EmojiEvents, CardGiftcard, Warning,
+  Storefront, Google, ConfirmationNumber, EmojiEvents, CardGiftcard, Warning,
 } from '@mui/icons-material';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
@@ -223,9 +223,16 @@ const RegisterPage = () => {
             {roleIcon}
           </Paper>
         )}
-        <Typography variant='h4' sx={{ fontWeight: 800, mb: 1, color: TEXT_HEADING, textAlign: isDesktop ? 'left' : 'center' }}>
-          {roleTitle}
-        </Typography>
+        <Stack direction='row' alignItems='center' gap={3} mb={1}>
+          {isDesktop && (
+            <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
+              <ArrowBackIosNew fontSize='small' />
+            </IconButton>
+          )}
+          <Typography variant='h4' sx={{ fontWeight: 800, color: TEXT_HEADING, textAlign: isDesktop ? 'left' : 'center' }}>
+            {roleTitle}
+          </Typography>
+        </Stack>
         <Typography variant='body2' color='text.secondary' sx={{ textAlign: isDesktop ? 'left' : 'center', px: isDesktop ? 0 : 2 }}>
           {roleSubtitle}
         </Typography>
@@ -243,7 +250,7 @@ const RegisterPage = () => {
 
       {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
 
-      <Stack spacing={1.5}>
+      <Stack spacing={2.5}>
         <Box>
           <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Full Name</Typography>
           <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
@@ -280,6 +287,16 @@ const RegisterPage = () => {
               sx: { borderRadius: 3, bgcolor: 'background.paper' },
             }}
           />
+        </Box>
+
+        <Box>
+          <Divider sx={{ mb: 2 }}>
+            <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700 }}>OR</Typography>
+          </Divider>
+          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('google')} startIcon={<Google />} disabled={!termsAccepted || !ageVerified}
+            sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT }}>
+            Google
+          </Button>
         </Box>
 
         <Stack spacing={0.5}>
@@ -324,20 +341,6 @@ const RegisterPage = () => {
           {loading ? <CircularProgress size={24} color='inherit' /> : 'Create Account'}
         </Button>
 
-        <Divider sx={{ my: 0.5 }}>
-          <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700 }}>OR</Typography>
-        </Divider>
-
-        <Stack direction={'row'} spacing={2}>
-          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('google')} startIcon={<Google />} disabled={!termsAccepted || !ageVerified}
-            sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT }}>
-            Google
-          </Button>
-          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('apple')} startIcon={<Apple />} disabled={!termsAccepted || !ageVerified}
-            sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT }}>
-            Apple
-          </Button>
-        </Stack>
       </Stack>
 
       <Box sx={{ pt: 1, textAlign: 'center' }}>
@@ -371,11 +374,6 @@ const RegisterPage = () => {
             py: 5,
           }}
         >
-          <Box sx={{ mb: 3 }}>
-            <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}` }}>
-              <ArrowBackIosNew fontSize='small' />
-            </IconButton>
-          </Box>
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 420 }}>
             {FormContent()}
           </Box>
@@ -388,12 +386,12 @@ const RegisterPage = () => {
 
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
-      <Box sx={{ p: 1.5 }}>
+      <Box sx={{ px: 1.5, pt: 1, pb: 0}}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}>
           <ArrowBackIosNew fontSize='small' />
         </IconButton>
       </Box>
-      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pb: 4 }}>
+      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 0, pb: 4 }}>
         {FormContent()}
       </Container>
     </Box>
