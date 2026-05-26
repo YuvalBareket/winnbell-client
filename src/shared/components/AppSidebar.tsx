@@ -76,7 +76,7 @@ const AppSidebar = () => {
       }}
     >
       {/* Brand */}
-      <Stack sx={{ px: 3, pt: 1.5, pb: 1.5 }} direction='row' alignItems='center' spacing={-0.4}>
+      <Stack sx={{ px: 3, pt: 1.5, pb: 1.5, '@media (max-height: 700px)': { pt: 0.8, pb: 0.8 } }} direction='row' alignItems='center' spacing={-0.4}>
         <Box component='img' src='/winnbell_app_name.png' alt='W' sx={{ height: 30, width: 'auto', objectFit: 'contain' }} />
       
       </Stack>
@@ -84,7 +84,7 @@ const AppSidebar = () => {
       {/* User identity card */}
       <Box
         sx={{
-          mx: 2, mb: 0.5, px: 1.5, py: 0.75,
+          mx: 2, mb: 0.5, px: 1.5, py: 0.75, '@media (max-height: 700px)': { py: 0.8, mb: 0.6 },
           bgcolor: ALPHA_PRIMARY_04,
           borderRadius: 3,
           border: `1px solid ${ALPHA_PRIMARY_06}`,
@@ -151,7 +151,7 @@ const AppSidebar = () => {
                 key={path}
                 onClick={() => navigate(path)}
                 sx={{
-                  borderRadius: 2.5, mb: 0.2, px: 1.5, py: 0.5,
+                  borderRadius: 2.5, mb: 0.2, px: 1.5, py: 0.5, '@media (max-height: 700px)': { py: 0.5, mb: 0.1 },
                   bgcolor: active ? PRIMARY_MAIN : 'transparent',
                   boxShadow: active ? '0 2px 8px rgba(25,93,230,0.3)' : 'none',
                   '&:hover': {
@@ -205,7 +205,7 @@ const AppSidebar = () => {
               key={path}
               onClick={() => navigate(path)}
               sx={{
-                borderRadius: 2.5, mb: 0.2, px: 1.5,
+                borderRadius: 2.5, mb: 0.2, px: 1.5, '@media (max-height: 700px)': { py: 0.15, mb: 0.1 },
                 '&:hover': {
                   bgcolor: ALPHA_PRIMARY_06,
                   transform: 'translateX(2px)',
@@ -229,7 +229,7 @@ const AppSidebar = () => {
       <Divider sx={{ mx: 2.5 }} />
 
       {/* Logout */}
-      <List dense disablePadding sx={{ px: 1.5, py: 1 }}>
+      <List dense disablePadding sx={{ px: 1.5, py: 1, '@media (max-height: 700px)': { py: 0.5 } }}>
         <ListItemButton
           onClick={handleLogout}
           sx={{
@@ -248,7 +248,7 @@ const AppSidebar = () => {
         </ListItemButton>
       </List>
 
-      <Typography variant='caption' color={TEXT_TERTIARY} sx={{ px: 3, pb: 1.5, display: 'block', fontSize: '0.68rem' }}>
+      <Typography variant='caption' color={TEXT_TERTIARY} sx={{ px: 3, pb: 1.5, display: 'block', fontSize: '0.68rem', '@media (max-height: 700px)': { pb: 0.75 } }}>
         Winnbell v1.0 · {new Date().getFullYear()}
       </Typography>
     </Box>
