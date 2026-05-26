@@ -44,10 +44,9 @@ export const PosterClassic = ({ businessName, scanUrl, headline }: PosterProps) 
     <Box sx={{
       background: 'linear-gradient(135deg, #195DE2 0%, #4A90E2 100%)',
       color: 'white', py: 3, px: 3, textAlign: 'center', flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      <Typography sx={{ fontSize: 34, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.5px' }}>
-        Winnbell
-      </Typography>
+      <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
     </Box>
 
     {/* Body */}
@@ -74,10 +73,8 @@ export const PosterClassic = ({ businessName, scanUrl, headline }: PosterProps) 
 export const PosterDark = ({ businessName, scanUrl, headline }: PosterProps) => (
   <PosterWrap bg='#0D1B2A'>
     {/* Top */}
-    <Box sx={{ textAlign: 'center', pt: 3, pb: 1.5, flexShrink: 0 }}>
-      <Typography sx={{ fontSize: 34, fontWeight: 900, color: 'white', lineHeight: 1, letterSpacing: '-0.5px' }}>
-        Winnbell
-      </Typography>
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', pt: 3, pb: 1.5, flexShrink: 0 }}>
+      <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
     </Box>
 
     {/* Body */}
@@ -108,10 +105,8 @@ export const PosterDark = ({ businessName, scanUrl, headline }: PosterProps) => 
 export const PosterFresh = ({ businessName, scanUrl, headline }: PosterProps) => (
   <PosterWrap>
     {/* Header */}
-    <Box sx={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 60%, #34D399 100%)', color: 'white', py: 3, px: 3, textAlign: 'center', flexShrink: 0 }}>
-      <Typography sx={{ fontSize: 34, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.5px' }}>
-        Winnbell
-      </Typography>
+    <Box sx={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 60%, #34D399 100%)', py: 3, px: 3, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
     </Box>
 
     {/* Body */}
@@ -137,10 +132,8 @@ export const PosterFresh = ({ businessName, scanUrl, headline }: PosterProps) =>
 export const PosterPink = ({ businessName, scanUrl, headline }: PosterProps) => (
   <PosterWrap>
     {/* Header */}
-    <Box sx={{ background: 'linear-gradient(135deg, #EC4899 0%, #F472B6 60%, #FBCFE8 100%)', color: 'white', py: 3, px: 3, textAlign: 'center', flexShrink: 0 }}>
-      <Typography sx={{ fontSize: 34, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.5px' }}>
-        Winnbell
-      </Typography>
+    <Box sx={{ background: 'linear-gradient(135deg, #EC4899 0%, #F472B6 60%, #FBCFE8 100%)', py: 3, px: 3, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
     </Box>
 
     {/* Body */}

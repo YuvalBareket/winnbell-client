@@ -156,8 +156,9 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           const nearby = await getNearbyBusinesses({
             minLat: lat - latDelta, maxLat: lat + latDelta,
             minLng: lng - lngDelta, maxLng: lng + lngDelta,
+            limit: 2,
           });
-          setNearbyLocations(nearby.slice(0, 2));
+          setNearbyLocations(nearby);
         } catch {
           // Silent failure
         }

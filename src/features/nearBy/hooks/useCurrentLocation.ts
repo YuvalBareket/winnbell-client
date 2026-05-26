@@ -7,7 +7,6 @@ export function useCurrentLocation() {
   const dispatch = useDispatch();
 
   const refreshLocation = useCallback(async (): Promise<TCoords | null> => {
-    // 1. Check if Geolocation is supported
     if (!('geolocation' in navigator)) {
       console.error('Geolocation is not supported by this browser.');
       return null;
@@ -30,11 +29,9 @@ export function useCurrentLocation() {
         );
       });
 
-      // 2. Dispatch to Redux so other hooks (like useNearbyBusinesses) can see it
       dispatch(setUserLocation(coords));
       return coords;
     } catch (err: any) {
-      // code 1 = permission denied (don’t spam console)
       if (err?.code !== 1) {
         console.error('Location error:', err.message);
       }
@@ -42,7 +39,6 @@ export function useCurrentLocation() {
     }
   }, [dispatch]);
 
-  // 3. Automatically trigger on mount
   useEffect(() => {
     refreshLocation();
   }, [refreshLocation]);

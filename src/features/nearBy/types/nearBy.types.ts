@@ -31,4 +31,5 @@ export interface INearbyParams {
   minLng: number;
   maxLng: number;
   sector?: string;
+  limit?: number;
 }

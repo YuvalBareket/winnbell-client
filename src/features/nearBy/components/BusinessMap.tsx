@@ -118,7 +118,7 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
     };
   }, []);
 
-  // Sync business markers — max 50 come from server, render all as individual pins
+  // Sync business markers
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
