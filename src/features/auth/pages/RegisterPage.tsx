@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Button, Typography, TextField, IconButton, InputAdornment, Paper, Container,
   Stack, Alert, CircularProgress, Divider, Checkbox, FormControlLabel,
-  useMediaQuery, useTheme,
+  useMediaQuery, useTheme, Snackbar,
 } from '@mui/material';
 import {
   ArrowBackIosNew, Person, Mail, Lock, Visibility, VisibilityOff, Handshake,
@@ -122,6 +122,7 @@ const RegisterPage = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageVerified, setAgeVerified] = useState(false);
   const [regionBlocked, setRegionBlocked] = useState(false);
+  const [toast, setToast] = useState('');
 
   useEffect(() => {
     if (searchParams.get('region_blocked') === '1') {
@@ -293,8 +294,9 @@ const RegisterPage = () => {
           <Divider sx={{ mb: 2 }}>
             <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700 }}>OR</Typography>
           </Divider>
-          <Button fullWidth variant='outlined' onClick={() => handleSocialSignUp('google')} startIcon={<Google />} disabled={!termsAccepted || !ageVerified}
-            sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT }}>
+          <Button fullWidth variant='outlined' startIcon={<Google />}
+            onClick={() => (termsAccepted && ageVerified) ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
+            sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT, opacity: (termsAccepted && ageVerified) ? 1 : 0.5 }}>
             Google
           </Button>
         </Box>
@@ -378,6 +380,7 @@ const RegisterPage = () => {
             {FormContent()}
           </Box>
         </Box>
+        <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
       </Box>
     );
   }
@@ -394,6 +397,7 @@ const RegisterPage = () => {
       <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 0, pb: 4 }}>
         {FormContent()}
       </Container>
+      <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
     </Box>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Box, Button, Typography, TextField, IconButton, InputAdornment,
   Paper, Container, Divider, Stack, Alert, CircularProgress,
-  Checkbox, FormControlLabel, useMediaQuery, useTheme,
+  Checkbox, FormControlLabel, useMediaQuery, useTheme, Snackbar,
 } from '@mui/material';
 import {
   ArrowBackIosNew, ConfirmationNumber, Mail, Lock, Visibility, VisibilityOff,
@@ -86,6 +86,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showResetMessage, setShowResetMessage] = useState(false);
+  const [toast, setToast] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -210,8 +211,9 @@ const LoginPage = () => {
           <Divider sx={{ mb: 2 }}>
             <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700, px: 1 }}>OR</Typography>
           </Divider>
-          <Button fullWidth variant='outlined' startIcon={<Google />} onClick={() => handleSocialLogin('google')} disabled={!termsAccepted}
-            sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none' }}>
+          <Button fullWidth variant='outlined' startIcon={<Google />}
+            onClick={() => termsAccepted ? handleSocialLogin('google') : setToast('Please approve the terms first')}
+            sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none', opacity: termsAccepted ? 1 : 0.5 }}>
             Google
           </Button>
         </Box>
@@ -273,6 +275,7 @@ const LoginPage = () => {
             {FormContent()}
           </Box>
         </Box>
+        <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
       </Box>
     );
   }
@@ -289,6 +292,7 @@ const LoginPage = () => {
       <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 0, pb: 4 }}>
         {FormContent()}
       </Container>
+      <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
     </Box>
   );
 };
