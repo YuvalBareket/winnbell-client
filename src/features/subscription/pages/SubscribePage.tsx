@@ -166,7 +166,7 @@ const SubscribePage = () => {
         }}
       >
         <Box sx={{ position: 'absolute', top: -80, right: -80, width: 320, height: 320, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(70px)', pointerEvents: 'none' }} />
-        <Box sx={{ position: 'absolute', bottom: -80, left: -60, width: 260, height: 260, borderRadius: '50%', bgcolor: 'rgba(66,165,245,0.18)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+        <Box sx={{ position: 'absolute', bottom: -80, left: -60, width: 260, height: 260, borderRadius: '50%', bgcolor: 'rgba(66,189,186,0.18)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
         <Stack direction='row' alignItems='center' spacing={1.5}>
           <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: ALPHA_WHITE_20, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -235,7 +235,7 @@ const SubscribePage = () => {
                   sx={{
                     px: { xs: 3, md: 4 },
                     pb: 3,
-                    background: 'linear-gradient(135deg, rgba(25,93,230,0.04) 0%, rgba(127,166,255,0.06) 100%)',
+                    background: 'linear-gradient(135deg, rgba(2,146,183,0.04) 0%, rgba(66,189,186,0.06) 100%)',
                     borderBottom: '1px solid',
                     borderColor: 'divider',
                   }}

@@ -56,6 +56,7 @@ export interface BusinessData {
   entry_mode: EntryMode;
   entry_cap: number | null;              // NULL = falls back to global cap
   min_transaction_amount: number | null; // NULL = no minimum
+  pending_min_transaction_amount: number | null; // set when changed during active campaign
   global_entry_cap: number | null;       // platform ceiling set by admin
   subscription_status: string | null;
   current_period_end: string | null;

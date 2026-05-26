@@ -87,7 +87,7 @@ const SubscribeStep3 = ({
       <Divider sx={{ mb: 3 }} />
 
       {/* Price breakdown */}
-      <Box sx={{ bgcolor: 'rgba(25,93,230,0.06)', borderRadius: 2.5, p: 3, mb: 3 }}>
+      <Box sx={{ bgcolor: 'rgba(2,146,183,0.06)', borderRadius: 2.5, p: 3, mb: 3 }}>
         <Stack spacing={2}>
           <Stack direction='row' justifyContent='space-between'>
             <Typography variant='body2' color='text.secondary'>Entries per location</Typography>
@@ -106,7 +106,7 @@ const SubscribeStep3 = ({
           <Divider />
           <Stack direction='row' justifyContent='space-between' alignItems='center'>
             <Typography variant='body2' fontWeight={700}>{billingInterval === 'yearly' ? 'Total per year' : 'Total per month'}</Typography>
-            <Typography variant='h5' fontWeight={900} sx={{ background: 'linear-gradient(135deg, #195DE2 0%, #7FA6FF 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <Typography variant='h5' fontWeight={900} sx={{ background: 'linear-gradient(135deg, #0292b7 0%, #42bdba 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               {billingInterval === 'yearly' ? `$${totalYearly.toFixed(0)}` : `$${totalMonthly.toFixed(0)}`}
             </Typography>
           </Stack>
@@ -146,7 +146,7 @@ const SubscribeStep3 = ({
       />
 
       <Button fullWidth variant='contained' size='large' startIcon={loading ? undefined : <CreditCard />} onClick={onSubscribe} disabled={loading}
-        sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(25,93,230,0.35)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.45)' } }}>
+        sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(2,146,183,0.35)', '&:hover': { boxShadow: '0 6px 20px rgba(2,146,183,0.45)' } }}>
         {loading ? <CircularProgress size={24} color='inherit' /> : 'Start Campaign'}
       </Button>
 

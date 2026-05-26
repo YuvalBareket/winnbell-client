@@ -50,7 +50,7 @@ const SubscribeStep1 = ({
     />
 
     {/* Live preview */}
-    <Box sx={{ bgcolor: 'rgba(25,93,230,0.04)', borderRadius: 2, p: 2.5, mb: 3, border: '1px dashed', borderColor: 'rgba(25,93,230,0.18)' }}>
+    <Box sx={{ bgcolor: 'rgba(2,146,183,0.04)', borderRadius: 2, p: 2.5, mb: 3, border: '1px dashed', borderColor: 'rgba(2,146,183,0.18)' }}>
       <Typography variant='caption' fontWeight={800} color='primary.main' display='block' mb={1.5} sx={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
         Preview
       </Typography>
@@ -81,7 +81,7 @@ const SubscribeStep1 = ({
       fullWidth variant='contained' size='large'
       onClick={onContinue}
       disabled={!isThresholdValid || savingThreshold}
-      sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.4)' } }}
+      sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(2,146,183,0.3)', '&:hover': { boxShadow: '0 6px 20px rgba(2,146,183,0.4)' } }}
     >
       {savingThreshold ? <CircularProgress size={22} color='inherit' /> : 'Continue →'}
     </Button>

@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import {
   ReceiptLong, Edit, ChevronRight, Check, Close, TuneOutlined,
-  AttachMoneyOutlined, ImageOutlined, VisibilityOutlined,
+  AttachMoneyOutlined, ImageOutlined, VisibilityOutlined, WarningAmberOutlined,
 } from '@mui/icons-material';
 import CanvasAnnotationEditor from '../../../../shared/components/CanvasAnnotationEditor';
 import { useNavigate } from 'react-router-dom';
@@ -77,7 +77,8 @@ const CampaignCard = ({
 
   // ── Threshold handlers ────────────────────────────────
   const openThresholdEdit = () => {
-    setThresholdValue(business.min_transaction_amount != null ? String(business.min_transaction_amount) : '');
+    const prefill = business.pending_min_transaction_amount ?? business.min_transaction_amount;
+    setThresholdValue(prefill != null ? String(prefill) : '');
     setEditingThreshold(true);
   };
 
@@ -230,11 +231,21 @@ const CampaignCard = ({
                     Spending threshold
                   </Typography>
                   {!editingThreshold && (
-                    <Typography variant='body2' sx={{ color: business.min_transaction_amount != null ? 'text.primary' : 'text.disabled', fontWeight: 600, mt: 0.25 }}>
-                      {business.min_transaction_amount != null
-                        ? `${formatCurrency(business.min_transaction_amount)} per entry`
-                        : 'No minimum'}
-                    </Typography>
+                    <Box>
+                      <Typography variant='body2' sx={{ color: business.min_transaction_amount != null ? 'text.primary' : 'text.disabled', fontWeight: 600, mt: 0.25 }}>
+                        {business.min_transaction_amount != null
+                          ? `${formatCurrency(business.min_transaction_amount)} per entry`
+                          : 'No minimum'}
+                      </Typography>
+                      {business.pending_min_transaction_amount != null && (
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.75, px: 1, py: 0.25, borderRadius: 1.5, bgcolor: 'rgba(237,108,2,0.08)', border: '1px solid rgba(237,108,2,0.2)' }}>
+                          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'warning.main', flexShrink: 0 }} />
+                          <Typography variant='caption' sx={{ color: 'warning.dark', fontWeight: 700, lineHeight: 1 }}>
+                            Changes to {formatCurrency(business.pending_min_transaction_amount)} next campaign
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
                   )}
                 </Box>
               </Stack>
@@ -255,6 +266,19 @@ const CampaignCard = ({
                   exit='exit'
                 >
                   <Stack spacing={1.5} sx={{ mt: 1.5 }}>
+                    {business.is_participating && (
+                      <Box sx={{ display: 'flex', gap: 1.25, p: 1.5, borderRadius: 2, bgcolor: 'rgba(237,108,2,0.06)', border: '1px solid rgba(237,108,2,0.15)' }}>
+                        <WarningAmberOutlined sx={{ fontSize: 18, color: 'warning.main', flexShrink: 0 }} />
+                        <Box>
+                          <Typography variant='caption' fontWeight={800} sx={{ color: 'warning.dark', display: 'block', mb: 0.25 }}>
+                            Campaign is live
+                          </Typography>
+                          <Typography variant='caption' sx={{ color: 'text.secondary', lineHeight: 1.5 }}>
+                            Your current threshold stays active for this campaign. Any change you save here will take effect when the next campaign begins.
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
                     <TextField
                       value={thresholdValue}
                       onChange={(e) => {
@@ -283,9 +307,9 @@ const CampaignCard = ({
                       <Box
                         sx={{
                           px: 2, py: 1.25, borderRadius: 1.5,
-                          bgcolor: 'rgba(25,93,230,0.05)',
+                          bgcolor: 'rgba(2,146,183,0.05)',
                           border: '1px dashed',
-                          borderColor: 'rgba(25,93,230,0.2)',
+                          borderColor: 'rgba(2,146,183,0.2)',
                         }}
                       >
                         <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.65rem' }}>

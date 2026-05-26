@@ -21,7 +21,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
               p: { xs: 3, md: 4 },
               textAlign: 'center',
               transition: 'all 0.3s ease',
-              '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.1)' },
+              '&:hover': { boxShadow: '0 12px 32px rgba(2,146,183,0.1)' },
             }}
           >
             <ConfirmationNumber sx={{ fontSize: 40, color: PRIMARY_MAIN, mb: 2.5 }} />
@@ -58,13 +58,13 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
               bgcolor: 'background.paper',
               borderRadius: 3,
               border: '2px solid',
-              borderColor: '#6366F1',
+              borderColor: PRIMARY_MAIN,
               p: { xs: 3, md: 4 },
               textAlign: 'center',
               transition: 'all 0.3s ease',
               position: 'relative',
-              '&:hover': { boxShadow: '0 12px 32px rgba(99,102,241,0.2)' },
-              background: 'linear-gradient(135deg, rgba(99,102,241,0.03) 0%, rgba(99,102,241,0.01) 100%)',
+              '&:hover': { boxShadow: '0 12px 32px rgba(2,146,183,0.2)' },
+              background: 'linear-gradient(135deg, rgba(2,146,183,0.03) 0%, rgba(2,146,183,0.01) 100%)',
             }}
           >
             <Box
@@ -73,7 +73,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
                 top: -12,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                bgcolor: '#6366F1',
+                bgcolor: PRIMARY_MAIN,
                 color: 'white',
                 px: 2,
                 py: 0.5,
@@ -92,15 +92,15 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
             </Typography>
             <Stack spacing={1.5} sx={{ mb: 3.5, textAlign: 'left' }}>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#6366F1', flexShrink: 0 }} />
+                <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
                 Attract and keep customers
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#6366F1', flexShrink: 0 }} />
+                <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
                 Simple subscription, no long-term contract
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#6366F1', flexShrink: 0 }} />
+                <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
                 Easy dashboard, minimal effort
               </Typography>
             </Stack>
@@ -108,7 +108,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
               variant='contained'
               fullWidth
               onClick={() => onNavigate('/register/Business')}
-              sx={{ fontWeight: 700, borderRadius: 2, py: 1.4, bgcolor: '#6366F1', '&:hover': { bgcolor: '#4F46E5' } }}
+              sx={{ fontWeight: 700, borderRadius: 2, py: 1.4, bgcolor: PRIMARY_MAIN, '&:hover': { bgcolor: '#4F46E5' } }}
             >
               Partner with us
             </Button>
