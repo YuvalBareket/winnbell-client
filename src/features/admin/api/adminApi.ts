@@ -67,10 +67,19 @@ export const fetchLocationBreakdown = (params: {
 };
 
 export const fetchPlatformSettings = () =>
-  api.get<{ global_entry_cap: number | null; allowed_states: string[] }>('/admin/settings');
+  api.get<{
+    global_entry_cap: number | null;
+    allowed_states: string[];
+    founding_member_cap: number;
+    founding_phase_active: boolean;
+  }>('/admin/settings');
 
-export const savePlatformSettings = (data: { global_entry_cap: number | null; allowed_states: string[] }) =>
-  api.patch('/admin/settings', data);
+export const savePlatformSettings = (data: {
+  global_entry_cap: number | null;
+  allowed_states: string[];
+  founding_member_cap?: number;
+  founding_phase_active?: boolean;
+}) => api.patch('/admin/settings', data);
 
 export const updateDraw = (drawId: number, data: UpdateDrawInput) =>
   api.patch(`/admin/draws/${drawId}`, data);

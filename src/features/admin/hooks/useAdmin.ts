@@ -247,8 +247,12 @@ export const usePlatformSettings = () => {
 export const useSavePlatformSettings = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { global_entry_cap: number | null; allowed_states: string[] }) =>
-      savePlatformSettings(data),
+    mutationFn: (data: {
+      global_entry_cap: number | null;
+      allowed_states: string[];
+      founding_member_cap?: number;
+      founding_phase_active?: boolean;
+    }) => savePlatformSettings(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'platform-settings'] });
     },

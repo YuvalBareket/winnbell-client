@@ -12,33 +12,59 @@ import {
   Autocomplete,
   Alert,
   Divider,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
+import { WorkspacePremium } from '@mui/icons-material';
 import { usePlatformSettings, useSavePlatformSettings } from '../../hooks/useAdmin';
 import { COUNTRIES } from '../../../../shared/constants/countries';
+import { useFoundingAvailability } from '../../../subscription/hooks/useFoundingAvailability';
 
 const SettingsTab: React.FC = () => {
   const { data: platformSettings } = usePlatformSettings();
+  const { data: foundingAvailability } = useFoundingAvailability();
   const saveMutation = useSavePlatformSettings();
 
   const [localAllowedStates, setLocalAllowedStates] = useState<string[]>([]);
   const [countryInputValue, setCountryInputValue] = useState('');
   const [settingsSaved, setSettingsSaved] = useState(false);
 
+  // Founding partner state
+  const [foundingCap, setFoundingCap] = useState<number>(30);
+  const [foundingActive, setFoundingActive] = useState<boolean>(true);
+  const [foundingCapError, setFoundingCapError] = useState('');
+
   useEffect(() => {
     if (platformSettings) {
       setLocalAllowedStates(platformSettings.allowed_states ?? []);
+      setFoundingCap(platformSettings.founding_member_cap ?? 30);
+      setFoundingActive(platformSettings.founding_phase_active ?? true);
     }
   }, [platformSettings]);
 
   const handleSave = () => {
+    setFoundingCapError('');
+
+    const taken = foundingAvailability?.taken ?? 0;
+    if (foundingCap < taken) {
+      setFoundingCapError(`Cap cannot be lower than the current number of founding members (${taken}).`);
+      return;
+    }
+
     saveMutation.mutate(
-      { global_entry_cap: null, allowed_states: localAllowedStates },
+      {
+        global_entry_cap: null,
+        allowed_states: localAllowedStates,
+        founding_member_cap: foundingCap,
+        founding_phase_active: foundingActive,
+      },
       { onSuccess: () => setSettingsSaved(true) },
     );
   };
 
   return (
     <Stack spacing={3}>
+      {/* ── Allowed Countries ─────────────────────────────────────────────────── */}
       <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
         <CardContent>
           <Stack spacing={3}>
@@ -85,13 +111,11 @@ const SettingsTab: React.FC = () => {
 
               {localAllowedStates.length > 0 && (
                 <Button
-                  size='small'
-                  color='error'
-                  variant='outlined'
+                  size='small' color='error' variant='outlined'
                   onClick={() => {
                     setLocalAllowedStates([]);
                     saveMutation.mutate(
-                      { global_entry_cap: null, allowed_states: [] },
+                      { global_entry_cap: null, allowed_states: [], founding_member_cap: foundingCap, founding_phase_active: foundingActive },
                       { onSuccess: () => setSettingsSaved(true) },
                     );
                   }}
@@ -105,14 +129,86 @@ const SettingsTab: React.FC = () => {
 
             <Divider />
 
+            {/* ── Founding Partner Program ──────────────────────────────────── */}
+            <Box>
+              <Stack direction='row' alignItems='center' spacing={1} mb={0.5}>
+                <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 20 }} />
+                <Typography variant='h6' fontWeight={700}>Founding Partner Program</Typography>
+              </Stack>
+              <Typography variant='body2' color='text.secondary' mb={2.5}>
+                Control the early-bird founding partner offer. When active, businesses pay a one-time $1,000 flat fee for the full year instead of a recurring subscription.
+              </Typography>
+
+              <Stack spacing={2.5}>
+                {/* Toggle */}
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={foundingActive}
+                      onChange={(e) => setFoundingActive(e.target.checked)}
+                      color='primary'
+                    />
+                  }
+                  label={
+                    <Box>
+                      <Typography variant='body2' fontWeight={700}>
+                        {foundingActive ? 'Program is active' : 'Program is inactive'}
+                      </Typography>
+                      <Typography variant='caption' color='text.secondary'>
+                        {foundingActive
+                          ? 'Businesses see the founding partner checkout flow'
+                          : 'Subscribe page will show "not currently active"'}
+                      </Typography>
+                    </Box>
+                  }
+                />
+
+                {/* Cap input */}
+                <Stack direction='row' alignItems='flex-start' spacing={2}>
+                  <TextField
+                    label='Max founding partners'
+                    type='number'
+                    size='small'
+                    value={foundingCap}
+                    onChange={(e) => {
+                      setFoundingCap(Number(e.target.value));
+                      setFoundingCapError('');
+                    }}
+                    inputProps={{ min: 1, step: 1 }}
+                    error={!!foundingCapError}
+                    helperText={foundingCapError || 'Minimum: current number of paid members'}
+                    sx={{ width: 220 }}
+                  />
+
+                  {/* Live stats */}
+                  {foundingAvailability && (
+                    <Box sx={{ pt: 0.5 }}>
+                      <Typography variant='caption' color='text.secondary' display='block'>
+                        Spots taken
+                      </Typography>
+                      <Typography variant='body1' fontWeight={800}>
+                        {foundingAvailability.taken}
+                        <Typography component='span' variant='body2' color='text.secondary' fontWeight={400}>
+                          {' '}/ {foundingAvailability.cap} · {foundingAvailability.remaining} remaining
+                        </Typography>
+                      </Typography>
+                    </Box>
+                  )}
+                </Stack>
+              </Stack>
+            </Box>
+
+            <Divider />
+
             {settingsSaved && (
-              <Alert severity='success' onClose={() => setSettingsSaved(false)}>Settings saved successfully.</Alert>
+              <Alert severity='success' onClose={() => setSettingsSaved(false)}>
+                Settings saved successfully.
+              </Alert>
             )}
 
             <Box>
               <Button
-                variant='contained'
-                disableElevation
+                variant='contained' disableElevation
                 onClick={handleSave}
                 disabled={saveMutation.isPending}
                 sx={{ fontWeight: 700 }}

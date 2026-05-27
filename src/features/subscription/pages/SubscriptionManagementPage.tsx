@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import {
   ReceiptLong, CheckCircle, Cancel, EmojiEvents, ArrowBackIosNew,
-  Lock, LockOpen,
+  Lock, LockOpen, WorkspacePremium,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { PRIMARY_MAIN, BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
@@ -25,7 +25,7 @@ export default function SubscriptionManagementPage() {
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelError, setCancelError] = useState('');
-  const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'partial_40' | 'none'; refundAmount: number } | null>(null);
+  const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'partial_40' | 'prorated' | 'none'; refundAmount: number } | null>(null);
 
   const { data: sub, isLoading, isError } = useSubscription();
 
@@ -142,19 +142,22 @@ export default function SubscriptionManagementPage() {
 
         {cancelResult && (
           <Alert
-            severity={cancelResult.refundType === 'full' ? 'success' : cancelResult.refundType === 'partial_40' ? 'warning' : 'info'}
+            severity={cancelResult.refundType === 'none' ? 'info' : cancelResult.refundType === 'partial_40' ? 'warning' : 'success'}
             icon={<Cancel />}
             sx={{ mb: 3, borderRadius: 3 }}
             onClose={() => setCancelResult(null)}
           >
             {cancelResult.refundType === 'full' && (
-              <>Campaign cancelled. You've been removed from the campaign and a <strong>full refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
+              <>Membership cancelled. You've been removed from all upcoming campaigns and a <strong>full refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
+            )}
+            {cancelResult.refundType === 'prorated' && (
+              <>Membership cancelled. You've been removed from remaining upcoming campaigns and a <strong>prorated refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
             )}
             {cancelResult.refundType === 'partial_40' && (
               <>Campaign cancelled. You've been removed from the campaign and a <strong>40% refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
             )}
             {cancelResult.refundType === 'none' && (
-              <>Campaign cancelled. The campaign has already commenced - your entry remains and no refund applies.</>
+              <>Membership cancelled. All campaigns have already commenced. Your entries remain and no refund applies.</>
             )}
           </Alert>
         )}
@@ -189,15 +192,19 @@ export default function SubscriptionManagementPage() {
                   }}
                 >
                   <Stack direction='row' alignItems='center' spacing={2} mb={2}>
-                    <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <ReceiptLong sx={{ color: 'white', fontSize: 24 }} />
+                    <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: sub.is_founding ? 'rgba(245,158,11,0.15)' : 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {sub.is_founding
+                        ? <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
+                        : <ReceiptLong sx={{ color: 'white', fontSize: 24 }} />}
                     </Box>
                     <Box flex={1}>
                       <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        Current Plan
+                        {sub.is_founding ? 'Founding Partner' : 'Current Plan'}
                       </Typography>
                       <Typography variant='h6' fontWeight={800} lineHeight={1.2}>
-                        Partner {sub.billing_interval === 'yearly' ? 'Yearly' : 'Monthly'} Plan
+                        {sub.is_founding
+                          ? 'Founding Partner'
+                          : `Partner ${sub.billing_interval === 'yearly' ? 'Yearly' : 'Monthly'} Plan`}
                       </Typography>
                     </Box>
                   </Stack>
@@ -218,11 +225,15 @@ export default function SubscriptionManagementPage() {
                     {periodEndLabel && (
                       <Box>
                         <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
-                          {sub.cancel_at_period_end ? 'Cancels on' : 'Renews on'}
+                          {sub.is_founding ? 'Membership expires' : sub.cancel_at_period_end ? 'Cancels on' : 'Renews on'}
                         </Typography>
                         <Typography variant='h6' fontWeight={800} color='text.primary'>{periodEndLabel}</Typography>
                         <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
-                          {sub.cancel_at_period_end ? 'Your access continues until this date - no further charges' : 'Your next payment will be charged on this date'}
+                          {sub.is_founding
+                            ? 'One-time payment. All 12 monthly campaigns included, no renewal.'
+                            : sub.cancel_at_period_end
+                              ? 'Your access continues until this date - no further charges'
+                              : 'Your next payment will be charged on this date'}
                         </Typography>
                       </Box>
                     )}
@@ -252,7 +263,7 @@ export default function SubscriptionManagementPage() {
                   </Button>
                 )}
 
-                {sub.cancel_at_period_end && sub.status !== 'Cancelled' && (
+                {sub.cancel_at_period_end && sub.status !== 'Cancelled' && !sub.is_founding && (
                   <Button
                     fullWidth
                     variant='contained'
@@ -358,33 +369,46 @@ export default function SubscriptionManagementPage() {
         <DialogTitle sx={{ fontWeight: 800 }}>Are you sure you want to cancel?</DialogTitle>
         <DialogContent>
           <Stack spacing={1.5}>
-            {cancellationRefundPreview === 'full' && (
+            {sub.is_founding ? (
               <>
                 <DialogContentText>
-                  You'll be removed from the upcoming campaign and your full payment will be refunded. Your subscription ends immediately.
+                  Your founding partner membership will be cancelled. You'll be removed from all upcoming campaigns and receive a prorated refund based on the number of remaining campaigns.
                 </DialogContentText>
-                <Alert severity='info' icon={<LockOpen />} sx={{ borderRadius: 2, mt: 1.5 }}>
-                  You can cancel and get a full refund until <strong>{cancelDeadline}</strong>. After that, only a 40% refund applies.
-                </Alert>
+                {(sub.founding_draws_remaining ?? 0) > 0 && (
+                  <Alert severity='info' icon={<LockOpen />} sx={{ borderRadius: 2, mt: 1.5 }}>
+                    Estimated refund: <strong>${((sub.founding_draws_remaining ?? 0) / 12 * 1000).toFixed(2)}</strong> ({sub.founding_draws_remaining} of 12 campaigns remaining)
+                  </Alert>
+                )}
               </>
-            )}
-            {cancellationRefundPreview === 'partial_40' && (
-              <DialogContentText>
-                The free cancellation window has passed. You'll be removed from the campaign, but only 40% of your payment will be refunded. 60% stays in the prize pool.
-              </DialogContentText>
-            )}
-            {cancellationRefundPreview === 'none' && (
+            ) : (
               <>
-                <DialogContentText>
-                  The campaign has already started - your entry is locked in and no refund is available. Cancelling now only stops future monthly charges. Your plan stays active until <strong>{periodEndLabel}</strong>.
-                </DialogContentText>
+                {cancellationRefundPreview === 'full' && (
+                  <>
+                    <DialogContentText>
+                      You'll be removed from the upcoming campaign and your full payment will be refunded. Your subscription ends immediately.
+                    </DialogContentText>
+                    <Alert severity='info' icon={<LockOpen />} sx={{ borderRadius: 2, mt: 1.5 }}>
+                      You can cancel and get a full refund until <strong>{cancelDeadline}</strong>. After that, only a 40% refund applies.
+                    </Alert>
+                  </>
+                )}
+                {cancellationRefundPreview === 'partial_40' && (
+                  <DialogContentText>
+                    The free cancellation window has passed. You'll be removed from the campaign, but only 40% of your payment will be refunded. 60% stays in the prize pool.
+                  </DialogContentText>
+                )}
+                {cancellationRefundPreview === 'none' && (
+                  <DialogContentText>
+                    The campaign has already started - your entry is locked in and no refund is available. Cancelling now only stops future monthly charges. Your plan stays active until <strong>{periodEndLabel}</strong>.
+                  </DialogContentText>
+                )}
               </>
             )}
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setConfirmOpen(false)} variant='outlined' sx={{ borderRadius: 2, fontWeight: 700 }}>
-            Keep Subscription
+            Keep {sub.is_founding ? 'Membership' : 'Subscription'}
           </Button>
           <Button
             onClick={() => doCancel()}

@@ -96,25 +96,9 @@ const SubscribePage = () => {
 
   // ── STEP 3 ─────────────────────────────────────────────────────────────────
   const [selectedTier, setSelectedTier] = useState(500);
-  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState(false);
+  const [foundingLoading, setFoundingLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Late-cycle detection: within 7 days of month-end, the business joins the NEXT campaign
-  const { joinsNextCampaign, nextCampaignDate } = (() => {
-    const now = new Date();
-    const firstOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const msUntil = firstOfNextMonth.getTime() - now.getTime();
-    const daysUntil = msUntil / (1000 * 60 * 60 * 24);
-    if (daysUntil <= 7) {
-      const campaignStart = new Date(now.getFullYear(), now.getMonth() + 2, 1);
-      return {
-        joinsNextCampaign: true,
-        nextCampaignDate: campaignStart.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-      };
-    }
-    return { joinsNextCampaign: false, nextCampaignDate: null };
-  })();
 
   const handleSubscribe = async () => {
     setLoading(true);
@@ -122,7 +106,6 @@ const SubscribePage = () => {
     try {
       const { data } = await api.post<{ url: string }>('/business/subscription/checkout', {
         entries_per_location: selectedTier,
-        billing_interval: billingInterval,
       });
       window.location.href = data.url;
     } catch (err: any) {
@@ -135,6 +118,19 @@ const SubscribePage = () => {
           : 'Something went wrong. Please try again.',
       );
       setLoading(false);
+    }
+  };
+
+  const handleFoundingSubscribe = async () => {
+    setFoundingLoading(true);
+    setError('');
+    try {
+      const { data } = await api.post<{ url: string }>('/business/subscription/checkout', { founding: true });
+      window.location.href = data.url;
+    } catch (err: any) {
+      const msg = err.response?.data?.error ?? '';
+      setError(msg.length > 0 ? msg : 'Something went wrong. Please try again.');
+      setFoundingLoading(false);
     }
   };
 
@@ -296,14 +292,12 @@ const SubscribePage = () => {
                   <SubscribeStep3
                     selectedTier={selectedTier}
                     setSelectedTier={setSelectedTier}
-                    billingInterval={billingInterval}
-                    setBillingInterval={setBillingInterval}
                     locationCount={locationCount}
                     loading={loading}
+                    foundingLoading={foundingLoading}
                     error={error}
-                    joinsNextCampaign={joinsNextCampaign}
-                    nextCampaignDate={nextCampaignDate}
                     onSubscribe={handleSubscribe}
+                    onFoundingSubscribe={handleFoundingSubscribe}
                     onSkip={() => navigate('/nearby')}
                   />
                 </motion.div>
