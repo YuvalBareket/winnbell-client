@@ -86,7 +86,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
             >
               For you
             </Box>
-            <Storefront sx={{ fontSize: 40, color: '#6366F1', mb: 2.5 }} />
+            <Storefront sx={{ fontSize: 40, color:PRIMARY_MAIN, mb: 2.5 }} />
             <Typography variant='h5' sx={{ fontWeight: 800, color: TEXT_HEADING, mb: 1.5, fontSize: '1.3rem' }}>
               I own a business
             </Typography>
