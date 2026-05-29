@@ -12,8 +12,9 @@ import { useNavigate, useParams, useSearchParams, useLocation } from 'react-rout
 import { supabase } from '../../../shared/lib/supabase';
 import {
   BG_PAGE, TEXT_HEADING, ROLE_MANAGER_BG, ROLE_MANAGER_HOVER, BORDER_LIGHT,
-  NEUTRAL_SOCIAL_TEXT, SHADOW_PRIMARY_SOFT, GRADIENT_HERO,
-  ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
+  SHADOW_PRIMARY_SOFT, GRADIENT_HERO,
+  ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, ALPHA_PRIMARY_20,
+  GOOGLE_BLUE, SHADOW_GOOGLE, SHADOW_NEUTRAL_SOFT,
 } from '../../../shared/colors';
 
 // ─── Shared brand panel for desktop ─────────────────────────────────────────
@@ -65,7 +66,7 @@ const BrandPanel = ({ isBusinessOwner, isLocationManager }: { isBusinessOwner: b
     >
       {/* Decorative orbs */}
       <Box sx={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(60px)' }} />
-      <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: 'rgba(66,165,245,0.2)', filter: 'blur(50px)' }} />
+      <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: ALPHA_PRIMARY_20, filter: 'blur(50px)' }} />
 
       {/* Logo */}
       <Stack direction='row' alignItems='center' spacing={1.5} mb={5}>
@@ -294,10 +295,36 @@ const RegisterPage = () => {
           <Divider sx={{ mb: 2 }}>
             <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700 }}>OR</Typography>
           </Divider>
-          <Button fullWidth variant='outlined' startIcon={<Google />}
+          <Button
+            fullWidth
+            variant='contained'
+            startIcon={loading ? <CircularProgress size={20} color='inherit' /> : <Google />}
             onClick={() => (termsAccepted && ageVerified) ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
-            sx={{ borderRadius: 2, py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: BORDER_LIGHT, color: NEUTRAL_SOCIAL_TEXT, opacity: (termsAccepted && ageVerified) ? 1 : 0.5 }}>
-            Google
+            disabled={loading}
+            sx={{
+              py: 1.5,
+              borderRadius: 3,
+              textTransform: 'none',
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              border: `2px solid ${GOOGLE_BLUE}`,
+              fontWeight: 700,
+              fontSize: '1rem',
+              boxShadow: SHADOW_NEUTRAL_SOFT,
+              transition: 'all 0.2s ease-in-out',
+              opacity: 1,
+              '&:hover': {
+                bgcolor: 'background.paper',
+                boxShadow: SHADOW_GOOGLE,
+              },
+              '&:disabled': {
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                border: `2px solid ${GOOGLE_BLUE}`,
+                opacity: 1,
+              },
+            }}>
+            {loading ? 'Signing up...' : 'Continue with Google'}
           </Button>
         </Box>
 

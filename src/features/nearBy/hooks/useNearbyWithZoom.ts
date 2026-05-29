@@ -9,15 +9,6 @@ export type ViewportBounds = {
   maxLng: number;
 };
 
-function isCovered(viewport: ViewportBounds, fetched: ViewportBounds): boolean {
-  return (
-    viewport.minLat >= fetched.minLat &&
-    viewport.maxLat <= fetched.maxLat &&
-    viewport.minLng >= fetched.minLng &&
-    viewport.maxLng <= fetched.maxLng
-  );
-}
-
 function padBounds(b: ViewportBounds, factor: number): ViewportBounds {
   const latPad = (b.maxLat - b.minLat) * factor;
   const lngPad = (b.maxLng - b.minLng) * factor;
@@ -35,23 +26,23 @@ export function useNearbyWithZoom(sector?: string | null) {
   const [isError, setIsError] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fetchingRef = useRef(false);
-  const lastFetchedBoundsRef = useRef<ViewportBounds | null>(null);
-  const lastZoomRef = useRef<number>(0);
-  const accumulatedRef = useRef<Map<number, NearbyLocation>>(new Map());
+  const abortRef = useRef<AbortController | null>(null);
   const lastViewportRef = useRef<ViewportBounds | null>(null);
+  const accumulatedRef = useRef<Map<number, NearbyLocation>>(new Map());
   const sectorRef = useRef(sector);
   sectorRef.current = sector;
 
   const doFetch = useCallback(async (viewport: ViewportBounds) => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+    // Cancel any in-flight request for a stale viewport
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     lastViewportRef.current = viewport;
     setIsFetching(true);
     setIsError(false);
 
     const padded = padBounds(viewport, 0.5);
-    lastFetchedBoundsRef.current = padded;
 
     try {
       const params = sectorRef.current
@@ -59,6 +50,9 @@ export function useNearbyWithZoom(sector?: string | null) {
         : padded;
       const results = await getNearbyBusinesses(params);
 
+      if (controller.signal.aborted) return;
+
+      // Evict markers that have scrolled out of the padded fetch area
       accumulatedRef.current.forEach((loc, id) => {
         const lat = Number(loc.latitude);
         const lng = Number(loc.longitude);
@@ -69,33 +63,25 @@ export function useNearbyWithZoom(sector?: string | null) {
 
       results.forEach((loc) => accumulatedRef.current.set(loc.location_id, loc));
       setLocations(Array.from(accumulatedRef.current.values()));
-    } catch {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return;
       setIsError(true);
     } finally {
-      setIsFetching(false);
-      fetchingRef.current = false;
+      if (!controller.signal.aborted) setIsFetching(false);
     }
   }, []);
 
-  // When sector changes, reset and re-fetch current viewport
+  // When sector changes, reset accumulated markers and re-fetch current viewport
   useEffect(() => {
     accumulatedRef.current.clear();
-    lastFetchedBoundsRef.current = null;
     setLocations([]);
-    if (lastViewportRef.current) {
-      doFetch(lastViewportRef.current);
-    }
+    if (lastViewportRef.current) doFetch(lastViewportRef.current);
   }, [sector, doFetch]);
 
   const onViewportChange = useCallback(
-    (viewport: ViewportBounds, zoom: number) => {
+    (viewport: ViewportBounds) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        const zoomedIn = zoom > lastZoomRef.current;
-        lastZoomRef.current = zoom;
-        if (!zoomedIn && lastFetchedBoundsRef.current && isCovered(viewport, lastFetchedBoundsRef.current)) return;
-        doFetch(viewport);
-      }, 400);
+      debounceRef.current = setTimeout(() => doFetch(viewport), 400);
     },
     [doFetch],
   );

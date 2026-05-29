@@ -59,7 +59,7 @@ type Props = {
   locations: NearbyLocation[];
   onBusinessClick?: (locationId: number) => void;
   userLocation?: { latitude: number; longitude: number } | null;
-  onViewportChange?: (bounds: ViewportBounds, zoom: number) => void;
+  onViewportChange?: (bounds: ViewportBounds) => void;
 };
 
 function getViewportBounds(map: google.maps.Map): ViewportBounds | null {
@@ -102,8 +102,7 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
 
       map.addListener('idle', () => {
         const b = getViewportBounds(map);
-        const zoom = map.getZoom() ?? 12;
-        if (b) onViewportChangeRef.current?.(b, zoom);
+        if (b) onViewportChangeRef.current?.(b);
       });
     });
 

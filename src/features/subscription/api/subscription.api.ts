@@ -6,7 +6,7 @@ export const fetchSubscription = (): Promise<SubscriptionDetails> =>
 
 export const cancelSubscription = (): Promise<{
   removedFromDraw: boolean;
-  refundType: 'full' | 'partial_40' | 'prorated' | 'none';
+  refundType: 'full' | 'prorated' | 'none';
   refundAmount: number;
 }> => api.post('/business/subscription/cancel').then(r => r.data);
 

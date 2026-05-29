@@ -25,6 +25,8 @@ import {
   fetchEntryVolume,
   fetchCampaignComparison,
   duplicateDraw,
+  addBusinessToDraw,
+  removeBusinessFromDraw,
 } from '../api/adminApi';
 import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
@@ -343,6 +345,28 @@ export const useDuplicateDraw = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
+    },
+  });
+};
+
+export const useAddBusinessToDraw = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ drawId, businessId }: { drawId: number; businessId: number }) =>
+      addBusinessToDraw(drawId, businessId),
+    onSuccess: (_, { drawId }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'draw-businesses', drawId] });
+    },
+  });
+};
+
+export const useRemoveBusinessFromDraw = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ drawId, businessId }: { drawId: number; businessId: number }) =>
+      removeBusinessFromDraw(drawId, businessId),
+    onSuccess: (_, { drawId }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'draw-businesses', drawId] });
     },
   });
 };

@@ -13,6 +13,7 @@ import {
   useTheme,
   Button,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import PeopleIcon from '@mui/icons-material/People';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
@@ -67,8 +68,8 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
                     width: 40,
                     height: 40,
                     borderRadius: 1,
-                    backgroundColor: '#e3f2fd',
-                    color: '#1976d2',
+                    bgcolor: theme => alpha(theme.palette.primary.main, 0.1),
+                    color: 'primary.main',
                   }}
                 >
                   <PeopleIcon />
@@ -101,8 +102,8 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
                     width: 40,
                     height: 40,
                     borderRadius: 1,
-                    backgroundColor: '#e8f5e9',
-                    color: '#2e7d32',
+                    bgcolor: theme => alpha(theme.palette.success.main, 0.1),
+                    color: 'success.main',
                   }}
                 >
                   <StorefrontIcon />
@@ -134,8 +135,8 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
                     width: 40,
                     height: 40,
                     borderRadius: 1,
-                    backgroundColor: '#f3e5f5',
-                    color: '#7b1fa2',
+                    bgcolor: theme => alpha(theme.palette.secondary.main, 0.1),
+                    color: 'secondary.main',
                   }}
                 >
                   <CreditCardIcon />
@@ -167,8 +168,8 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
                     width: 40,
                     height: 40,
                     borderRadius: 1,
-                    backgroundColor: '#fff3e0',
-                    color: '#f57c00',
+                    bgcolor: theme => alpha(theme.palette.warning.main, 0.1),
+                    color: 'warning.main',
                   }}
                 >
                   <EmojiEventsIcon />

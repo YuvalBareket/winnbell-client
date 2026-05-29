@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -23,6 +23,8 @@ import {
   Skeleton,
   Divider,
 } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -41,6 +43,9 @@ import {
   useDrawBusinesses,
   useDeleteDraw,
   useDuplicateDraw,
+  useAddBusinessToDraw,
+  useRemoveBusinessFromDraw,
+  useAdminBusinesses,
 } from '../../hooks/useAdmin';
 import { BG_PAGE } from '../../../../shared/colors';
 import EditDrawModal from './EditDrawModal';
@@ -51,22 +56,112 @@ const STATUS_COLORS: Record<string, 'default' | 'warning' | 'primary' | 'success
   closed: 'success',
 };
 
-const DrawBusinessesPanel: React.FC<{ drawId: number }> = ({ drawId }) => {
+const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({ drawId, drawStatus }) => {
   const { data, isLoading } = useDrawBusinesses(drawId);
+  const addBiz = useAddBusinessToDraw();
+  const removeBiz = useRemoveBusinessFromDraw();
+  const [adding, setAdding] = useState(false);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [selectedBiz, setSelectedBiz] = useState<{ id: number; name: string } | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<{ id: number; name: string } | null>(null);
+
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleInputChange = useCallback((_: React.SyntheticEvent, value: string) => {
+    setSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedSearch(value), 300);
+  }, []);
+
+  const { data: bizPage } = useAdminBusinesses({ page: 1, limit: 20, search: debouncedSearch });
+
+  const enrolledIds = new Set((data ?? []).map((b) => b.id));
+  const availableBiz = (bizPage?.rows ?? []).filter((b: any) => !enrolledIds.has(b.id)).slice(0, 20);
+  const canEdit = drawStatus?.toUpperCase() !== 'CLOSED';
+
+  const handleAdd = async () => {
+    if (!selectedBiz) return;
+    await addBiz.mutateAsync({ drawId, businessId: selectedBiz.id });
+    setSelectedBiz(null);
+    setSearch('');
+    setDebouncedSearch('');
+    setAdding(false);
+  };
+
+  const handleRemoveConfirmed = async () => {
+    if (!confirmRemove) return;
+    await removeBiz.mutateAsync({ drawId, businessId: confirmRemove.id });
+    setConfirmRemove(null);
+  };
+
   if (isLoading) return <Box sx={{ p: 2 }}><Skeleton variant='rectangular' height={60} /></Box>;
-  if (!data?.length) return <Box sx={{ p: 2 }}><Typography variant='body2' color='text.secondary'>No businesses enrolled.</Typography></Box>;
+
   return (
     <Box sx={{ px: 3, pb: 2, bgcolor: BG_PAGE }}>
-      <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 1 }}>
-        Participating Businesses ({data.length})
-      </Typography>
-      <Stack spacing={0.5}>
-        {data.map((b) => (
-          <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
-            <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
-          </Box>
-        ))}
-      </Stack>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          Participating Businesses ({data?.length ?? 0})
+        </Typography>
+        {canEdit && (
+          <Button size='small' startIcon={<AddIcon />} onClick={() => setAdding(!adding)} sx={{ fontSize: 12 }}>
+            Add Business
+          </Button>
+        )}
+      </Box>
+
+      {canEdit && adding && (
+        <Box sx={{ display: 'flex', gap: 1, mb: 1.5, alignItems: 'center' }}>
+          <Autocomplete
+            sx={{ flex: 1 }}
+            size='small'
+            options={availableBiz}
+            getOptionLabel={(o: any) => o.name}
+            filterOptions={(x) => x}
+            inputValue={search}
+            value={selectedBiz}
+            onInputChange={handleInputChange}
+            onChange={(_: React.SyntheticEvent, val: any) => setSelectedBiz(val)}
+            noOptionsText={debouncedSearch ? 'No businesses found' : 'Type to search...'}
+            renderInput={(params) => <TextField {...params} label='Search business' />}
+          />
+          <Button size='small' variant='contained' onClick={handleAdd} disabled={!selectedBiz || addBiz.isPending}>
+            {addBiz.isPending ? 'Adding...' : 'Add'}
+          </Button>
+          <Button size='small' onClick={() => { setAdding(false); setSelectedBiz(null); setSearch(''); setDebouncedSearch(''); }}>Cancel</Button>
+        </Box>
+      )}
+
+      {!data?.length ? (
+        <Typography variant='body2' color='text.secondary'>No businesses enrolled.</Typography>
+      ) : (
+        <Stack spacing={0.5}>
+          {data.map((b) => (
+            <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+              <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
+              {canEdit && (
+                <IconButton size='small' color='error' onClick={() => setConfirmRemove({ id: b.id, name: b.name })} disabled={removeBiz.isPending}>
+                  <DeleteIcon fontSize='small' />
+                </IconButton>
+              )}
+            </Box>
+          ))}
+        </Stack>
+      )}
+
+      <Dialog open={!!confirmRemove} onClose={() => setConfirmRemove(null)} maxWidth='xs' fullWidth>
+        <DialogTitle>Remove Business?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to remove <strong>{confirmRemove?.name}</strong> from this campaign? They will no longer be able to generate entries.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmRemove(null)}>Cancel</Button>
+          <Button variant='contained' color='error' onClick={handleRemoveConfirmed} disabled={removeBiz.isPending}>
+            {removeBiz.isPending ? 'Removing...' : 'Remove'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
@@ -262,7 +357,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
               {expandedDrawId === draw.id && (
                 <TableRow>
                   <TableCell colSpan={6} sx={{ p: 0 }}>
-                    <DrawBusinessesPanel drawId={draw.id} />
+                    <DrawBusinessesPanel drawId={draw.id} drawStatus={draw.status} />
                   </TableCell>
                 </TableRow>
               )}
@@ -296,7 +391,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                   {new Date(draw.draw_date).toLocaleDateString()}
                 </Typography>
               </Box>
-              {expandedDrawId === draw.id && <DrawBusinessesPanel drawId={draw.id} />}
+              {expandedDrawId === draw.id && <DrawBusinessesPanel drawId={draw.id} drawStatus={draw.status} />}
               {renderActions(draw)}
             </Stack>
           </CardContent>

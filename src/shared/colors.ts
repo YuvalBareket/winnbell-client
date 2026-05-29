@@ -57,6 +57,8 @@ export const TABLE_HEADER_BG       = '#f5f5f5';
 export const GOLD_TROPHY    = '#fbbf24';  // trophy icon
 export const AMBER_HOURGLASS= '#f59e0b';  // hourglass icon
 export const VERIFIED_BLUE  = '#60a5fa';  // verified badge
+export const GOOGLE_BLUE    = '#4285F4';  // Google brand color — only for Google sign-in button
+export const SHADOW_GOOGLE  = '0 2px 8px rgba(66,133,244,0.3)'; // Google button hover shadow
 
 // ── Gradients ────────────────────────────────
 export const GRADIENT_PRIMARY     = `linear-gradient(135deg, #42bdba 0%, #0292b7 100%)`;

@@ -103,3 +103,9 @@ export const fetchCampaignComparison = () =>
 
 export const duplicateDraw = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/duplicate`);
+
+export const addBusinessToDraw = (drawId: number, businessId: number) =>
+  api.post(`/admin/draws/${drawId}/businesses/${businessId}`);
+
+export const removeBusinessFromDraw = (drawId: number, businessId: number) =>
+  api.delete(`/admin/draws/${drawId}/businesses/${businessId}`);

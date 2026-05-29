@@ -13,6 +13,7 @@ import { supabase } from '../../../shared/lib/supabase';
 import {
   BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
+  GOOGLE_BLUE, SHADOW_GOOGLE, SHADOW_NEUTRAL_SOFT,
 } from '../../../shared/colors';
 
 // ─── Shared brand panel for desktop ─────────────────────────────────────────
@@ -211,10 +212,36 @@ const LoginPage = () => {
           <Divider sx={{ mb: 2 }}>
             <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700, px: 1 }}>OR</Typography>
           </Divider>
-          <Button fullWidth variant='outlined' startIcon={<Google />}
+          <Button
+            fullWidth
+            variant='contained'
+            startIcon={loading ? <CircularProgress size={20} color='inherit' /> : <Google />}
             onClick={() => termsAccepted ? handleSocialLogin('google') : setToast('Please approve the terms first')}
-            sx={{ py: 1.5, borderRadius: 3, borderColor: 'divider', color: 'text.primary', textTransform: 'none', opacity: termsAccepted ? 1 : 0.5 }}>
-            Google
+            disabled={loading}
+            sx={{
+              py: 1.5,
+              borderRadius: 3,
+              textTransform: 'none',
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              border: `2px solid ${GOOGLE_BLUE}`,
+              fontWeight: 700,
+              fontSize: '1rem',
+              boxShadow: SHADOW_NEUTRAL_SOFT,
+              transition: 'all 0.2s ease-in-out',
+              opacity: 1,
+              '&:hover': {
+                bgcolor: 'background.paper',
+                boxShadow: SHADOW_GOOGLE,
+              },
+              '&:disabled': {
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                border: `2px solid ${GOOGLE_BLUE}`,
+                opacity: 1,
+              },
+            }}>
+            {loading ? 'Signing in...' : 'Continue with Google'}
           </Button>
         </Box>
 

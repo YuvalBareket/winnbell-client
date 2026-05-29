@@ -25,7 +25,7 @@ export default function SubscriptionManagementPage() {
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelError, setCancelError] = useState('');
-  const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'partial_40' | 'prorated' | 'none'; refundAmount: number } | null>(null);
+  const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'prorated' | 'none'; refundAmount: number } | null>(null);
 
   const { data: sub, isLoading, isError } = useSubscription();
 
@@ -65,23 +65,17 @@ export default function SubscriptionManagementPage() {
     ? new Date(sub.draw_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
 
-  const cancelDeadline = (() => {
-    if (!sub?.draw_date) return null;
-    const drawDate = new Date(sub.draw_date);
-    const cutoffDate = new Date(drawDate);
-    cutoffDate.setDate(cutoffDate.getDate() - 7);
-    return cutoffDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
-  })();
-
-  const cancellationRefundPreview = (() => {
-    if (!sub?.draw_date || sub.draw_status !== 'Upcoming') return 'none';
-    const drawDate = new Date(sub.draw_date);
-    const cutoffDate = new Date(drawDate);
-    cutoffDate.setDate(cutoffDate.getDate() - 7);
+  // Founding: 50% of remaining time; regular: no refund
+  const foundingRefundEstimate = (() => {
+    if (!sub?.is_founding || !sub.current_period_end) return 0;
     const now = new Date();
-    if (now < cutoffDate) return 'full';
-    if (now < drawDate) return 'partial_40';
-    return 'none';
+    const periodEnd = new Date(sub.current_period_end);
+    const createdAt = new Date(sub.current_period_end);
+    createdAt.setFullYear(createdAt.getFullYear() - 1);
+    const totalMs = periodEnd.getTime() - createdAt.getTime();
+    const remainingMs = Math.max(0, periodEnd.getTime() - now.getTime());
+    const fraction = totalMs > 0 ? remainingMs / totalMs : 0;
+    return Math.round(1200 * fraction * 0.5 * 100) / 100;
   })();
 
   if (isLoading) {
@@ -142,22 +136,15 @@ export default function SubscriptionManagementPage() {
 
         {cancelResult && (
           <Alert
-            severity={cancelResult.refundType === 'none' ? 'info' : cancelResult.refundType === 'partial_40' ? 'warning' : 'success'}
+            severity={cancelResult.refundType === 'none' ? 'info' : 'success'}
             icon={<Cancel />}
             sx={{ mb: 3, borderRadius: 3 }}
             onClose={() => setCancelResult(null)}
           >
-            {cancelResult.refundType === 'full' && (
-              <>Membership cancelled. You've been removed from all upcoming campaigns and a <strong>full refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
-            )}
-            {cancelResult.refundType === 'prorated' && (
-              <>Membership cancelled. You've been removed from remaining upcoming campaigns and a <strong>prorated refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
-            )}
-            {cancelResult.refundType === 'partial_40' && (
-              <>Campaign cancelled. You've been removed from the campaign and a <strong>40% refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
-            )}
-            {cancelResult.refundType === 'none' && (
-              <>Membership cancelled. All campaigns have already commenced. Your entries remain and no refund applies.</>
+            {cancelResult.refundType !== 'none' ? (
+              <>Founding membership cancelled. You have been removed from upcoming campaigns and a <strong>refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
+            ) : (
+              <>Subscription cancelled. You have been removed from the next campaign. Your plan stays active until the end of the current period.</>
             )}
           </Alert>
         )}
@@ -277,6 +264,19 @@ export default function SubscriptionManagementPage() {
                     {resuming ? <CircularProgress size={22} color='inherit' /> : 'Resume Campaign'}
                   </Button>
                 )}
+
+                {sub.status === 'Cancelled' && (
+                  <Button
+                    fullWidth
+                    variant='contained'
+                    color='primary'
+                    size='large'
+                    onClick={() => navigate('/subscribe')}
+                    sx={{ borderRadius: 3, fontWeight: 700, py: 1.75 }}
+                  >
+                    Start a New Plan
+                  </Button>
+                )}
               </Stack>
             </Stack>
 
@@ -372,37 +372,18 @@ export default function SubscriptionManagementPage() {
             {sub.is_founding ? (
               <>
                 <DialogContentText>
-                  Your founding partner membership will be cancelled. You'll be removed from all upcoming campaigns and receive a prorated refund based on the number of remaining campaigns.
+                  Your founding partner membership will be cancelled immediately. You'll be removed from all upcoming campaigns and receive a refund of 50% of your remaining membership time.
                 </DialogContentText>
-                {(sub.founding_draws_remaining ?? 0) > 0 && (
+                {foundingRefundEstimate > 0 && (
                   <Alert severity='info' icon={<LockOpen />} sx={{ borderRadius: 2, mt: 1.5 }}>
-                    Estimated refund: <strong>${((sub.founding_draws_remaining ?? 0) / 12 * 1000).toFixed(2)}</strong> ({sub.founding_draws_remaining} of 12 campaigns remaining)
+                    Estimated refund: <strong>${foundingRefundEstimate.toFixed(2)}</strong> (50% of remaining time)
                   </Alert>
                 )}
               </>
             ) : (
-              <>
-                {cancellationRefundPreview === 'full' && (
-                  <>
-                    <DialogContentText>
-                      You'll be removed from the upcoming campaign and your full payment will be refunded. Your subscription ends immediately.
-                    </DialogContentText>
-                    <Alert severity='info' icon={<LockOpen />} sx={{ borderRadius: 2, mt: 1.5 }}>
-                      You can cancel and get a full refund until <strong>{cancelDeadline}</strong>. After that, only a 40% refund applies.
-                    </Alert>
-                  </>
-                )}
-                {cancellationRefundPreview === 'partial_40' && (
-                  <DialogContentText>
-                    The free cancellation window has passed. You'll be removed from the campaign, but only 40% of your payment will be refunded. 60% stays in the prize pool.
-                  </DialogContentText>
-                )}
-                {cancellationRefundPreview === 'none' && (
-                  <DialogContentText>
-                    The campaign has already started - your entry is locked in and no refund is available. Cancelling now only stops future monthly charges. Your plan stays active until <strong>{periodEndLabel}</strong>.
-                  </DialogContentText>
-                )}
-              </>
+              <DialogContentText>
+                You'll be removed from the next upcoming campaign. No refund is issued - your subscription stays active until <strong>{periodEndLabel}</strong> and will not renew after that.
+              </DialogContentText>
             )}
           </Stack>
         </DialogContent>
