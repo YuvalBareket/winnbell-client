@@ -27,6 +27,8 @@ import {
   duplicateDraw,
   addBusinessToDraw,
   removeBusinessFromDraw,
+  fetchBusinessDetail,
+  adminImageDecision,
 } from '../api/adminApi';
 import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
@@ -368,5 +370,36 @@ export const useRemoveBusinessFromDraw = () => {
     onSuccess: (_, { drawId }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'draw-businesses', drawId] });
     },
+  });
+};
+
+export const useAdminImageDecision = (onSettled?: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ticketId, decision }: { ticketId: number; decision: 'approve' | 'reject' }) =>
+      adminImageDecision(ticketId, decision),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'user-detail'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'business-detail'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
+      onSettled?.();
+    },
+  });
+};
+
+export const useBusinessDetail = (businessId: number | null) => {
+  return useQuery({
+    queryKey: ['admin', 'business-detail', businessId],
+    queryFn: async () => {
+      const { data } = await fetchBusinessDetail(businessId!);
+      return data as {
+        business: any;
+        locations: any[];
+        entries: any[];
+        campaignSummary: { draw_id: number; draw_name: string; count: number; quarantined: number }[];
+      };
+    },
+    enabled: businessId !== null,
+    staleTime: 30_000,
   });
 };

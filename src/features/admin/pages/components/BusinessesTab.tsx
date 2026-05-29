@@ -25,6 +25,7 @@ import { BUSINESS_SECTORS } from '../../data';
 import { BG_PAGE } from '../../../../shared/colors';
 import { useAdminBusinesses } from '../../hooks/useAdmin';
 import { useDebounce } from '../../../../shared/hooks/useDebounce';
+import BusinessDetailDrawer from './BusinessDetailDrawer';
 
 interface Props {
   isMobile: boolean;
@@ -42,6 +43,7 @@ const SUB_COLOR: Record<string, { label: string; color: 'success' | 'warning' | 
 const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
+  const [selectedBizId, setSelectedBizId] = useState<number | null>(null);
   const debouncedSearch = useDebounce(search, 400);
 
   const { data, isLoading } = useAdminBusinesses({
@@ -65,6 +67,7 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
   };
 
   return (
+    <>
     <Stack spacing={3}>
       <Box display='flex' justifyContent='space-between' alignItems='center' flexWrap='wrap' gap={1}>
         <TextField
@@ -87,7 +90,7 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
             : businesses.map((biz) => {
                 const sectorData = BUSINESS_SECTORS[biz.sector as keyof typeof BUSINESS_SECTORS];
                 return (
-                  <Card key={biz.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
+                  <Card key={biz.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', cursor: 'pointer' }} onClick={() => setSelectedBizId(biz.id)}>
                     <CardContent>
                       <Stack spacing={1.5}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -158,7 +161,7 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
                 : businesses.map((biz) => {
                     const sectorData = BUSINESS_SECTORS[biz.sector as keyof typeof BUSINESS_SECTORS];
                     return (
-                      <TableRow key={biz.id} hover>
+                      <TableRow key={biz.id} hover sx={{ cursor: 'pointer' }} onClick={() => setSelectedBizId(biz.id)}>
                         <TableCell sx={{ fontWeight: 600, maxWidth: 200 }}>
                           <Typography variant='body2' fontWeight={600} noWrap>{biz.name}</Typography>
                         </TableCell>
@@ -204,6 +207,9 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
         </TableContainer>
       )}
     </Stack>
+
+    <BusinessDetailDrawer businessId={selectedBizId} onClose={() => setSelectedBizId(null)} />
+    </>
   );
 };
 

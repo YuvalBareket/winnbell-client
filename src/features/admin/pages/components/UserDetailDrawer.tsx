@@ -20,7 +20,9 @@ import GppBadIcon from '@mui/icons-material/GppBad';
 import WarningIcon from '@mui/icons-material/Warning';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
-import { useUserDetail } from '../../hooks/useAdmin';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import { useUserDetail, useAdminImageDecision } from '../../hooks/useAdmin';
 
 interface Props {
   userId: number | null;
@@ -57,6 +59,8 @@ const RISK_FLAG_LABELS: Record<string, string> = {
 
 const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
   const { data, isLoading } = useUserDetail(userId);
+  const imageDecision = useAdminImageDecision();
+  const [pendingTicket, setPendingTicket] = React.useState<number | null>(null);
   const user = data?.user;
   const entries = data?.entries ?? [];
 
@@ -227,8 +231,8 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                               {e.image_validation_status && e.image_validation_status !== 'not_required' && (
                                 <Chip
                                   label={
-                                    e.image_validation_status === 'passed' ? 'OCR ✓' :
-                                    e.image_validation_status === 'failed' ? 'OCR ✗' :
+                                    e.image_validation_status === 'passed' ? 'OCR ok' :
+                                    e.image_validation_status === 'failed' ? 'OCR fail' :
                                     e.image_validation_status === 'ocr_error' ? 'OCR err' :
                                     'OCR pending'
                                   }
@@ -242,17 +246,51 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                                   sx={{ fontSize: 10, height: 18 }}
                                 />
                               )}
+                              {e.image_validation_status && e.image_validation_status !== 'not_required' && (
+                                <Stack direction='row' spacing={0.25}>
+                                  {e.image_validation_status !== 'passed' && (
+                                    <IconButton
+                                      size='small'
+                                      color='success'
+                                      disabled={pendingTicket === e.id}
+                                      title='Approve image'
+                                      onClick={() => {
+                                        setPendingTicket(e.id);
+                                        imageDecision.mutate({ ticketId: e.id, decision: 'approve' }, { onSettled: () => setPendingTicket(null) });
+                                      }}
+                                      sx={{ p: 0.25 }}
+                                    >
+                                      <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                  )}
+                                  {e.image_validation_status !== 'failed' && (
+                                    <IconButton
+                                      size='small'
+                                      color='error'
+                                      disabled={pendingTicket === e.id}
+                                      title='Reject image'
+                                      onClick={() => {
+                                        setPendingTicket(e.id);
+                                        imageDecision.mutate({ ticketId: e.id, decision: 'reject' }, { onSettled: () => setPendingTicket(null) });
+                                      }}
+                                      sx={{ p: 0.25 }}
+                                    >
+                                      <CancelOutlinedIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                  )}
+                                </Stack>
+                              )}
                             </Box>
                           ) : (
                             <Typography variant='caption' color='text.disabled'>—</Typography>
                           )}
                         </TableCell>
                         <TableCell>
-                          {e.risk_score_delta > 0 ? (
+                          {e.risk_score_delta !== 0 ? (
                             <Chip
-                              label={`+${e.risk_score_delta}`}
+                              label={e.risk_score_delta > 0 ? `+${e.risk_score_delta}` : `${e.risk_score_delta}`}
                               size='small'
-                              color='error'
+                              color={e.risk_score_delta > 0 ? 'error' : 'success'}
                               sx={{ fontSize: 11, height: 20, fontWeight: 700 }}
                             />
                           ) : (
