@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import type { NearbyLocation } from '../types/nearBy.types';
-import { BUSINESS_SECTORS } from '../../admin/data';
+import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -35,8 +35,8 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
   const navigate = useNavigate();
 
   const sectorInfo = location
-    ? BUSINESS_SECTORS[location.sector] || BUSINESS_SECTORS.Retail
-    : BUSINESS_SECTORS.Retail;
+    ? BUSINESS_SECTORS[location.sector] || UNKNOWN_SECTOR
+    : UNKNOWN_SECTOR;
 
   const handleDirections = () => {
     if (!location) return;

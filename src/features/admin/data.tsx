@@ -1,4 +1,3 @@
-// src/features/admin/data/sectors.data.tsx
 import {
   LocalPizza,
   Coffee,
@@ -13,8 +12,10 @@ import {
   BakeryDining,
   LocalGroceryStore,
   School,
+  Storefront,
 } from '@mui/icons-material';
 import React from 'react';
+import { SECTOR_CONFIG } from '../../shared/sectorConfig';
 
 export const BUSINESS_SECTORS: Record<
   string,
@@ -25,84 +26,27 @@ export const BUSINESS_SECTORS: Record<
     bgColor: string;
   }
 > = {
-  Food: {
-    label: 'Food',
-    icon: <LocalPizza />,
-    color: '#1976d2',
-    bgColor: '#e3f2fd',
-  },
-  Coffee: {
-    label: 'Coffee',
-    icon: <Coffee />,
-    color: '#795548',
-    bgColor: '#efebe9',
-  },
-  Bakery: {
-    label: 'Bakery',
-    icon: <BakeryDining />,
-    color: '#e65100',
-    bgColor: '#fff3e0',
-  },
-  Grocery: {
-    label: 'Grocery',
-    icon: <LocalGroceryStore />,
-    color: '#2e7d32',
-    bgColor: '#e8f5e9',
-  },
-  Retail: {
-    label: 'Retail',
-    icon: <ShoppingBag />,
-    color: '#9c27b0',
-    bgColor: '#f3e5f5',
-  },
-  Beauty: {
-    label: 'Beauty',
-    icon: <Spa />,
-    color: '#c2185b',
-    bgColor: '#fce4ec',
-  },
-  Health: {
-    label: 'Health',
-    icon: <LocalHospital />,
-    color: '#00897b',
-    bgColor: '#e0f2f1',
-  },
-  Gym: {
-    label: 'Gym',
-    icon: <FitnessCenter />,
-    color: '#d32f2f',
-    bgColor: '#ffebee',
-  },
-  Auto: {
-    label: 'Auto',
-    icon: <DirectionsCar />,
-    color: '#37474f',
-    bgColor: '#eceff1',
-  },
-  Entertainment: {
-    label: 'Entertainment',
-    icon: <Theaters />,
-    color: '#f57c00',
-    bgColor: '#fff8e1',
-  },
-  Education: {
-    label: 'Education',
-    icon: <School />,
-    color: '#1565c0',
-    bgColor: '#e3f2fd',
-  },
-  Service: {
-    label: 'Service',
-    icon: <Build />,
-    color: '#607d8b',
-    bgColor: '#eceff1',
-  },
-  Free: {
-    label: 'Free',
-    icon: <CardGiftcard />,
-    color: '#607d8b',
-    bgColor: '#eceff1',
-  },
+  Food:          { label: 'Food',          icon: <LocalPizza />,       color: SECTOR_CONFIG.Food.color,          bgColor: SECTOR_CONFIG.Food.bgColor },
+  Coffee:        { label: 'Coffee',        icon: <Coffee />,           color: SECTOR_CONFIG.Coffee.color,        bgColor: SECTOR_CONFIG.Coffee.bgColor },
+  Bakery:        { label: 'Bakery',        icon: <BakeryDining />,     color: SECTOR_CONFIG.Bakery.color,        bgColor: SECTOR_CONFIG.Bakery.bgColor },
+  Grocery:       { label: 'Grocery',       icon: <LocalGroceryStore />,color: SECTOR_CONFIG.Grocery.color,       bgColor: SECTOR_CONFIG.Grocery.bgColor },
+  Retail:        { label: 'Retail',        icon: <ShoppingBag />,      color: SECTOR_CONFIG.Retail.color,        bgColor: SECTOR_CONFIG.Retail.bgColor },
+  Beauty:        { label: 'Beauty',        icon: <Spa />,              color: SECTOR_CONFIG.Beauty.color,        bgColor: SECTOR_CONFIG.Beauty.bgColor },
+  Health:        { label: 'Health',        icon: <LocalHospital />,    color: SECTOR_CONFIG.Health.color,        bgColor: SECTOR_CONFIG.Health.bgColor },
+  Gym:           { label: 'Gym',           icon: <FitnessCenter />,    color: SECTOR_CONFIG.Gym.color,           bgColor: SECTOR_CONFIG.Gym.bgColor },
+  Auto:          { label: 'Auto',          icon: <DirectionsCar />,    color: SECTOR_CONFIG.Auto.color,          bgColor: SECTOR_CONFIG.Auto.bgColor },
+  Entertainment: { label: 'Entertainment', icon: <Theaters />,         color: SECTOR_CONFIG.Entertainment.color, bgColor: SECTOR_CONFIG.Entertainment.bgColor },
+  Education:     { label: 'Education',     icon: <School />,           color: SECTOR_CONFIG.Education.color,     bgColor: SECTOR_CONFIG.Education.bgColor },
+  Service:       { label: 'Service',       icon: <Build />,            color: SECTOR_CONFIG.Service.color,       bgColor: SECTOR_CONFIG.Service.bgColor },
+  Free:          { label: 'Free',          icon: <CardGiftcard />,     color: SECTOR_CONFIG.Free.color,          bgColor: SECTOR_CONFIG.Free.bgColor },
 };
 
 export type BusinessSector = keyof typeof BUSINESS_SECTORS;
+
+/** Used when a business has a null or unrecognized sector — neutral grey, no misleading category */
+export const UNKNOWN_SECTOR = {
+  label: 'Other',
+  icon: <Storefront />,
+  color: '#78909c',
+  bgColor: '#eceff1',
+} as const;

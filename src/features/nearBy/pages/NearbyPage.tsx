@@ -28,7 +28,7 @@ import BusinessMap from '../components/BusinessMap';
 import type { RootState } from '../../../store/store';
 import MapBusinessPopup from '../components/MapBusinessPopup';
 import { useNearbyWithZoom } from '../hooks/useNearbyWithZoom';
-import { BUSINESS_SECTORS } from '../../admin/data';
+import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser } from '../../../store/selectors/authSelectors';
@@ -341,7 +341,7 @@ const NearbyPage = () => {
           )}
 
           {filteredLocations.map((partner, index) => {
-              const sectorInfo = BUSINESS_SECTORS[partner.sector] || BUSINESS_SECTORS.Retail;
+              const sectorInfo = BUSINESS_SECTORS[partner.sector] || UNKNOWN_SECTOR;
 
               return (
                 <motion.div key={partner.location_id} custom={index} variants={listItemVariants} initial="hidden" animate="visible">
