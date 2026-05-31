@@ -37,6 +37,35 @@ export const PosterWrap = ({ children, bg }: { children: React.ReactNode; bg?: s
 
 export interface PosterProps { businessName: string; scanUrl: string; headline: string }
 
+// ── QR code with centered logo bubble (WhatsApp-style) ───────────────────────
+const QRWithBrand = ({ value, size, fgColor }: {
+  value: string; size: number; fgColor?: string;
+}) => {
+  const bubbleSize = Math.round(size * 0.7);
+  const logoSize  = Math.round(size * 0.27);
+  return (
+    <Box sx={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <QRCode value={value} size={size} level='H' fgColor={fgColor} />
+      {/* Gradient fade bubble */}
+      <Box sx={{
+        position: 'absolute',
+        top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: bubbleSize, height: bubbleSize,
+        background: 'radial-gradient(circle, rgba(255,255,255,0.82) 15%, rgba(255, 255, 255, 0) 60%, rgba(255,255,255,0) 75%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Box
+          component='img'
+          src='/winnbell_icon.png'
+          alt='Winnbell'
+          sx={{ height: logoSize, width: 'auto', display: 'block',  }}
+        />
+      </Box>
+    </Box>
+  );
+};
+
 // ── Template 1: Classic Blue ──────────────────────────────────────────────────
 export const PosterClassic = ({ businessName, scanUrl, headline }: PosterProps) => (
   <PosterWrap>
@@ -55,7 +84,7 @@ export const PosterClassic = ({ businessName, scanUrl, headline }: PosterProps) 
         {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #195DE2', bgcolor: 'white' }}>
-        <QRCode value={scanUrl} size={120} level='H' />
+        <QRWithBrand value={scanUrl} size={120} />
       </Box>
 
     </Box>
@@ -85,7 +114,7 @@ export const PosterDark = ({ businessName, scanUrl, headline }: PosterProps) => 
       {/* Gold-framed QR */}
       <Box sx={{ p: '10px', background: 'linear-gradient(135deg, #F5B932, #E8A020)' }}>
         <Box sx={{ bgcolor: 'white', p: '8px' }}>
-          <QRCode value={scanUrl} size={115} level='H' />
+          <QRWithBrand value={scanUrl} size={115} />
         </Box>
       </Box>
     </Box>
@@ -115,7 +144,7 @@ export const PosterFresh = ({ businessName, scanUrl, headline }: PosterProps) =>
         {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #10B981', bgcolor: 'white' }}>
-        <QRCode value={scanUrl} size={120} level='H' fgColor='#059669' />
+        <QRWithBrand value={scanUrl} size={120} fgColor='#059669' />
       </Box>
     </Box>
 
@@ -142,7 +171,7 @@ export const PosterPink = ({ businessName, scanUrl, headline }: PosterProps) => 
         {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #EC4899', bgcolor: 'white' }}>
-        <QRCode value={scanUrl} size={120} level='H' fgColor='#BE185D' />
+        <QRWithBrand value={scanUrl} size={120} fgColor='#BE185D' />
       </Box>
     </Box>
 
