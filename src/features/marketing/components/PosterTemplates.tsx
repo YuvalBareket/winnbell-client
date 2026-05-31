@@ -38,8 +38,8 @@ export const PosterWrap = ({ children, bg }: { children: React.ReactNode; bg?: s
 export interface PosterProps { businessName: string; scanUrl: string; headline: string }
 
 // ── QR code with centered logo bubble (WhatsApp-style) ───────────────────────
-const QRWithBrand = ({ value, size, fgColor }: {
-  value: string; size: number; fgColor?: string;
+const QRWithBrand = ({ value, size, fgColor, logoFilter }: {
+  value: string; size: number; fgColor?: string; logoFilter?: string;
 }) => {
   const bubbleSize = Math.round(size * 0.7);
   const logoSize  = Math.round(size * 0.27);
@@ -52,14 +52,14 @@ const QRWithBrand = ({ value, size, fgColor }: {
         top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
         width: bubbleSize, height: bubbleSize,
-        background: 'radial-gradient(circle, rgba(255,255,255,0.82) 15%, rgba(255, 255, 255, 0) 60%, rgba(255,255,255,0) 75%)',
+        background: 'radial-gradient(circle, rgba(255,255,255,0.82) 15%, rgba(255,255,255,0) 60%, rgba(255,255,255,0) 75%)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <Box
           component='img'
-          src='/winnbell_icon.png'
+          src='/winnbell_icon.svg'
           alt='Winnbell'
-          sx={{ height: logoSize, width: 'auto', display: 'block',  }}
+          sx={{ height: logoSize, width: 'auto', display: 'block', filter: logoFilter }}
         />
       </Box>
     </Box>
@@ -84,7 +84,7 @@ export const PosterClassic = ({ businessName, scanUrl, headline }: PosterProps) 
         {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #195DE2', bgcolor: 'white' }}>
-        <QRWithBrand value={scanUrl} size={120} />
+        <QRWithBrand value={scanUrl} size={120} fgColor='#195DE2' logoFilter='brightness(0) saturate(100%) invert(27%) sepia(93%) saturate(1352%) hue-rotate(214deg) brightness(97%)' />
       </Box>
 
     </Box>
@@ -102,7 +102,7 @@ export const PosterClassic = ({ businessName, scanUrl, headline }: PosterProps) 
 export const PosterDark = ({ businessName, scanUrl, headline }: PosterProps) => (
   <PosterWrap bg='#0D1B2A'>
     {/* Top */}
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', pt: 3, pb: 1.5, flexShrink: 0 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 3, flexShrink: 0 }}>
       <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
     </Box>
 
@@ -112,9 +112,9 @@ export const PosterDark = ({ businessName, scanUrl, headline }: PosterProps) => 
         {headline}
       </Typography>
       {/* Gold-framed QR */}
-      <Box sx={{ p: '10px', background: 'linear-gradient(135deg, #F5B932, #E8A020)' }}>
-        <Box sx={{ bgcolor: 'white', p: '8px' }}>
-          <QRWithBrand value={scanUrl} size={115} />
+      <Box sx={{ border: '3px solid #F5B932' }}>
+        <Box sx={{ p: '10px', bgcolor: '#0D1B2A' }}>
+          <QRWithBrand value={scanUrl} size={120} logoFilter='brightness(0) saturate(100%) invert(79%) sepia(55%) saturate(591%) hue-rotate(357deg) brightness(101%)' />
         </Box>
       </Box>
     </Box>
@@ -144,7 +144,7 @@ export const PosterFresh = ({ businessName, scanUrl, headline }: PosterProps) =>
         {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #10B981', bgcolor: 'white' }}>
-        <QRWithBrand value={scanUrl} size={120} fgColor='#059669' />
+        <QRWithBrand value={scanUrl} size={120} fgColor='#059669' logoFilter='brightness(0) saturate(100%) invert(42%) sepia(100%) saturate(420%) hue-rotate(105deg) brightness(85%)' />
       </Box>
     </Box>
 
@@ -171,7 +171,7 @@ export const PosterPink = ({ businessName, scanUrl, headline }: PosterProps) => 
         {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #EC4899', bgcolor: 'white' }}>
-        <QRWithBrand value={scanUrl} size={120} fgColor='#BE185D' />
+        <QRWithBrand value={scanUrl} size={120} fgColor='#BE185D' logoFilter='brightness(0) saturate(100%) invert(16%) sepia(100%) saturate(1700%) hue-rotate(317deg) brightness(105%)' />
       </Box>
     </Box>
 
