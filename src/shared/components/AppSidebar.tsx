@@ -41,7 +41,7 @@ const AppSidebar = () => {
     { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
     { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
     { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
-    { label: 'Campaign', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
+    { label: 'My Plan', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
     { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
     { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
   ];

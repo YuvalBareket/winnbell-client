@@ -8,12 +8,19 @@ import {
   Skeleton,
   Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import {
   AddBusiness,
   Warning,
   CreditCard,
   PreviewOutlined,
+  AccountBalanceWalletOutlined,
+  ArrowForwardOutlined,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef } from 'react';
@@ -21,7 +28,9 @@ import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { useBusinessData } from '../hooks/useBusinessData';
 import { useAddLocation } from '../hooks/useAddLocation';
+import { useRemoveLocation } from '../hooks/useRemoveLocation';
 import { useInviteManager, useRemoveManager } from '../hooks/useInviteManager';
+import { useSubscription } from '../../../features/subscription/hooks/useSubscription';
 import EditLocationModal from './components/EditLocationModal';
 import EditBusinessDrawer from './components/EditBusinessDrawer';
 import CampaignCard from './components/CampaignCard';
@@ -42,14 +51,22 @@ import {
   ALPHA_WHITE_15,
   GRADIENT_HERO,
   MOBILE_CONTENT_HEIGHT,
+  STATUS_ACTIVATED_BG,
+  STATUS_ACTIVATED_TEXT,
+  ALPHA_GREEN_10,
+  TEXT_SECONDARY,
+  TEXT_TERTIARY,
+  TEXT_HEADING,
 } from '../../../shared/colors';
 
 const BusinessHubPage = () => {
   const navigate = useNavigate();
   const { data: business, isLoading, isError } = useBusinessData(true);
+  const { data: subscription } = useSubscription();
   const { mutateAsync: generateInvite, isPending: isInviting } = useInviteManager();
   const { mutate: doRemoveManager, isPending: isRemoving } = useRemoveManager();
   const { mutate: doAddLocation, isPending: isAddingLocation } = useAddLocation();
+  const { mutate: doRemoveLocation, isPending: isRemovingLocation } = useRemoveLocation();
   const { mutate: updateCampaignSettings, isPending: isUpdatingSettings } = useUpdateCampaignSettings();
   const { upload: uploadLogo, isUploading: isUploadingLogo, error: logoError, clearError: clearLogoError } = useUploadBusinessLogo();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -62,6 +79,21 @@ const BusinessHubPage = () => {
   const [inviteLink, setInviteLink] = useState('');
   const [removeManagerLocationId, setRemoveManagerLocationId] = useState<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [removingLocation, setRemovingLocation] = useState<BusinessLocation | null>(null);
+
+  const activeLocations = (business?.locations ?? []).filter((l) => l.is_active);
+
+  const planSummary = subscription ? {
+    feePerLocation: subscription.fee_at_entry ?? 0,
+    locationCount: subscription.active_location_count ?? 0,
+    billingInterval: subscription.billing_interval,
+    hasStripeSubscription: !!subscription.stripe_subscription_id,
+  } : null;
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   const handleAddLocation = (data: { name: string; address: string; lat: number; lon: number }) => {
     doAddLocation(
@@ -69,15 +101,31 @@ const BusinessHubPage = () => {
       {
         onSuccess: () => {
           setAddLocationOpen(false);
+          setSnackbar({ open: true, message: 'Location added and plan updated.', severity: 'success' });
+        },
+        onError: (err: unknown) => {
+          setAddLocationOpen(false);
+          const msg = (err as any)?.response?.data?.message;
+          setSnackbar({ open: true, message: msg || 'Failed to add location. Plan update may have failed.', severity: 'error' });
         },
       },
     );
   };
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
+
+  const handleConfirmRemoveLocation = () => {
+    if (!removingLocation) return;
+    const loc = removingLocation;
+    setRemovingLocation(null);
+    doRemoveLocation(loc.id, {
+      onSuccess: () => {
+        setSnackbar({ open: true, message: 'Location removed and plan updated.', severity: 'success' });
+      },
+      onError: (err: unknown) => {
+        const msg = (err as any)?.response?.data?.message;
+        setSnackbar({ open: true, message: msg || 'Failed to remove location. Plan update may have failed.', severity: 'error' });
+      },
+    });
+  };
 
   const handleGenerateInvite = async (locId: number) => {
     try {
@@ -241,7 +289,7 @@ const BusinessHubPage = () => {
               >
                 Branch Management
               </Typography>
-              {business.locations.length > 0 && (
+              {activeLocations.length > 0 && (
                 <Button
                   size='small'
                   variant='outlined'
@@ -254,7 +302,7 @@ const BusinessHubPage = () => {
               )}
             </Stack>
 
-            {business.locations.length === 0 ? (
+            {activeLocations.length === 0 ? (
               <Paper
                 elevation={0}
                 sx={{ p: 4, borderRadius: 3, textAlign: 'center', border: '1px dashed', borderColor: 'divider' }}
@@ -274,14 +322,17 @@ const BusinessHubPage = () => {
               </Paper>
             ) : (
               <Box sx={{ display: { xs: 'flex', md: 'grid' }, flexDirection: 'column', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
-                {business.locations.map((loc: BusinessLocation) => (
+                {activeLocations.map((loc: BusinessLocation) => (
                   <LocationCard
                     key={loc.id}
                     loc={loc}
                     onEdit={setEditingLocation}
+                    onRemove={setRemovingLocation}
                     onInvite={handleGenerateInvite}
                     onRemoveManager={setRemoveManagerLocationId}
                     isInviting={isInviting}
+                    isRemoving={isRemovingLocation}
+                    isLastLocation={activeLocations.length === 1}
                   />
                 ))}
               </Box>
@@ -301,6 +352,7 @@ const BusinessHubPage = () => {
         onClose={() => setAddLocationOpen(false)}
         onSubmit={handleAddLocation}
         isLoading={isAddingLocation}
+        planSummary={planSummary}
       />
 
       <EditBusinessDrawer
@@ -335,6 +387,71 @@ const BusinessHubPage = () => {
         isLoading={isRemoving}
       />
 
+      <Dialog open={!!removingLocation} onClose={() => setRemovingLocation(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ fontWeight: 800, pb: 0.5 }}>Remove Location</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2}>
+            <DialogContentText sx={{ fontSize: '0.88rem' }}>
+              You are about to remove <strong>{removingLocation?.name}</strong>. This action cannot be undone.
+            </DialogContentText>
+            {planSummary?.hasStripeSubscription && planSummary.feePerLocation > 0 && (() => {
+              const bUnit = planSummary.billingInterval === 'yearly' ? 'yr' : 'mo';
+              const currentTotal = planSummary.feePerLocation * planSummary.locationCount;
+              const newCount = Math.max(1, planSummary.locationCount - 1);
+              const newTotal = planSummary.feePerLocation * newCount;
+              const saving = currentTotal - newTotal;
+              return (
+                <Box sx={{ p: 2, borderRadius: 2.5, bgcolor: STATUS_ACTIVATED_BG, border: `1px solid ${ALPHA_GREEN_10}` }}>
+                  <Stack direction='row' alignItems='center' spacing={0.75} mb={0.75}>
+                    <AccountBalanceWalletOutlined sx={{ fontSize: 15, color: STATUS_ACTIVATED_TEXT }} />
+                    <Typography variant='caption' fontWeight={800} sx={{ color: STATUS_ACTIVATED_TEXT, textTransform: 'uppercase', letterSpacing: 0.8, fontSize: '0.62rem' }}>
+                      Billing adjustment
+                    </Typography>
+                  </Stack>
+                  <Typography variant='body2' sx={{ color: TEXT_SECONDARY, lineHeight: 1.6, mb: 1.5, fontSize: '0.8rem' }}>
+                    Your remaining locations stay fully active with no change to their entry allocations. Your billing adjusts from the next cycle.
+                  </Typography>
+                  <Stack direction='row' alignItems='center' spacing={1}>
+                    <Box sx={{ flex: 1, p: 1.5, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.03)', textAlign: 'center' }}>
+                      <Typography variant='caption' sx={{ color: TEXT_TERTIARY, fontWeight: 600, display: 'block', mb: 0.25 }}>Current</Typography>
+                      <Typography variant='body2' fontWeight={700} sx={{ color: TEXT_HEADING }}>
+                        ${currentTotal.toLocaleString()}/{bUnit}
+                      </Typography>
+                      <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                        {planSummary.locationCount} location{planSummary.locationCount !== 1 ? 's' : ''}
+                      </Typography>
+                    </Box>
+                    <ArrowForwardOutlined sx={{ fontSize: 16, color: TEXT_TERTIARY, flexShrink: 0 }} />
+                    <Box sx={{ flex: 1, p: 1.5, borderRadius: 2, bgcolor: ALPHA_GREEN_10, textAlign: 'center' }}>
+                      <Typography variant='caption' sx={{ color: STATUS_ACTIVATED_TEXT, fontWeight: 600, display: 'block', mb: 0.25 }}>After removal</Typography>
+                      <Typography variant='body1' fontWeight={800} sx={{ color: STATUS_ACTIVATED_TEXT }}>
+                        ${newTotal.toLocaleString()}/{bUnit}
+                      </Typography>
+                      {saving > 0 && (
+                        <Typography variant='caption' sx={{ color: STATUS_ACTIVATED_TEXT, fontWeight: 700 }}>
+                          saves ${saving.toLocaleString()}/{bUnit}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Stack>
+                </Box>
+              );
+            })()}
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setRemovingLocation(null)} sx={{ borderRadius: 2, textTransform: 'none' }}>Cancel</Button>
+          <Button
+            variant='contained'
+            color='error'
+            onClick={handleConfirmRemoveLocation}
+            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
+          >
+            Remove
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
@@ -363,8 +480,8 @@ const BusinessHubPage = () => {
 
       {/* Profile preview popup - shows business profile as users see it */}
       <MapBusinessPopup
-        location={previewOpen && business.locations.length > 0 ? ({
-          location_id: business.locations[0].id,
+        location={previewOpen && activeLocations.length > 0 ? ({
+          location_id: activeLocations[0].id,
           id: business.id,
           name: business.name,
           sector: business.sector as NearbyLocation['sector'],
@@ -375,11 +492,11 @@ const BusinessHubPage = () => {
           min_transaction_amount: business.min_transaction_amount,
           website_url: business.website_url,
           phone: business.phone,
-          address: business.locations[0].address,
+          address: activeLocations[0].address,
           latitude: 0,
           longitude: 0,
           distance_km: 0,
-          other_locations: business.locations.slice(1).map(l => ({ id: l.id, name: l.name, address: l.address })),
+          other_locations: activeLocations.slice(1).map(l => ({ id: l.id, name: l.name, address: l.address })),
         } satisfies NearbyLocation) : null}
         onClose={() => setPreviewOpen(false)}
       />

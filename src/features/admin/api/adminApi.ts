@@ -39,8 +39,10 @@ export const updateUserRole = (userId: number, role: string) =>
   api.patch(`/admin/users/${userId}/role`, { role });
 export const toggleUserActive = (userId: number, is_active: boolean) =>
   api.patch(`/admin/users/${userId}/active`, { is_active });
-export const fetchDrawBusinesses = (drawId: number) =>
-  api.get(`/admin/draws/${drawId}/businesses`);
+export const fetchDrawBusinesses = (drawId: number, page = 1, search = '', sector = '') =>
+  api.get(`/admin/draws/${drawId}/businesses`, {
+    params: { page, limit: 25, search: search || undefined, sector: sector || undefined },
+  });
 export const fetchAdminAnalytics = (businessId?: number | null, drawId?: number | null) =>
   api.get('/admin/analytics', {
     params: {
@@ -115,3 +117,8 @@ export const fetchBusinessDetail = (businessId: number) =>
 
 export const adminImageDecision = (ticketId: number, decision: 'approve' | 'reject') =>
   api.patch(`/admin/tickets/${ticketId}/image-decision`, { decision });
+
+export const fetchBusinessEntries = (businessId: number, drawId: number | null, page: number) =>
+  api.get(`/admin/businesses/${businessId}/entries`, {
+    params: { drawId: drawId ?? undefined, page, limit: 50 },
+  });

@@ -14,10 +14,9 @@ import {
   TableCell,
   Skeleton,
   Avatar,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
+  Button,
+  Autocomplete,
+  TextField,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -29,7 +28,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { useBusinessDetail, useAdminImageDecision } from '../../hooks/useAdmin';
+import { useBusinessDetail, useAdminImageDecision, useBusinessEntries } from '../../hooks/useAdmin';
 
 interface Props {
   businessId: number | null;
@@ -70,23 +69,26 @@ const ALL = '__all__';
 const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
   const { data, isLoading } = useBusinessDetail(businessId);
   const [selectedDrawId, setSelectedDrawId] = useState<string>(ALL);
+  const [entriesPage, setEntriesPage] = useState(1);
   const imageDecision = useAdminImageDecision();
   const [pendingTicket, setPendingTicket] = useState<number | null>(null);
 
   // Reset campaign selection when a different business opens
   useEffect(() => { setSelectedDrawId(ALL); }, [businessId]);
 
+  // Reset entries page when campaign filter changes
+  useEffect(() => { setEntriesPage(1); }, [selectedDrawId]);
+
   const biz = data?.business;
   const locations = data?.locations ?? [];
-  const allEntries = data?.entries ?? [];
   const campaignSummary = data?.campaignSummary ?? [];
 
-  // Filter entries by selected campaign
-  const entries = selectedDrawId === ALL
-    ? allEntries
-    : allEntries.filter((e: any) => String(e.draw_id) === selectedDrawId);
+  const drawIdForEntries = selectedDrawId !== ALL ? parseInt(selectedDrawId, 10) : null;
+  const { data: entriesData, isLoading: entriesLoading } = useBusinessEntries(businessId, drawIdForEntries, entriesPage);
+  const entries = entriesData?.rows ?? [];
+  const entriesTotal = entriesData?.total ?? 0;
 
-  // Recompute per-location counts from filtered entries
+  // Recompute per-location counts from current page entries (UI approximation)
   const locEntryCounts = new Map<number, { active: number; quarantined: number }>();
   for (const e of entries) {
     if (!e.location_id) continue;
@@ -105,8 +107,12 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
   const riskLabel = ownerRisk >= 20 ? 'HIGH' : ownerRisk >= 10 ? 'MEDIUM' : 'LOW';
   const RiskIcon = ownerRisk >= 20 ? GppBadIcon : ownerRisk >= 10 ? WarningIcon : VerifiedUserIcon;
 
-  const activeEntries = entries.filter((e: any) => !e.is_quarantined).length;
-  const quarantinedEntries = entries.filter((e: any) => e.is_quarantined).length;
+  const activeEntries = selectedDrawId === ALL
+    ? campaignSummary.reduce((s: number, c: any) => s + c.count - c.quarantined, 0)
+    : (campaignSummary.find((c: any) => String(c.draw_id) === selectedDrawId)?.count ?? 0) - (campaignSummary.find((c: any) => String(c.draw_id) === selectedDrawId)?.quarantined ?? 0);
+  const quarantinedEntries = selectedDrawId === ALL
+    ? campaignSummary.reduce((s: number, c: any) => s + c.quarantined, 0)
+    : campaignSummary.find((c: any) => String(c.draw_id) === selectedDrawId)?.quarantined ?? 0;
 
   return (
     <Drawer
@@ -159,21 +165,16 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
 
             {/* Campaign selector */}
             {campaignSummary.length > 0 && (
-              <FormControl size='small' sx={{ maxWidth: 280 }}>
-                <InputLabel>Campaign</InputLabel>
-                <Select
-                  value={selectedDrawId}
-                  label='Campaign'
-                  onChange={(e) => setSelectedDrawId(e.target.value)}
-                >
-                  <MenuItem value={ALL}>All campaigns</MenuItem>
-                  {campaignSummary.map((c: any) => (
-                    <MenuItem key={c.draw_id} value={String(c.draw_id)}>
-                      {c.draw_name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                size='small'
+                options={campaignSummary}
+                getOptionLabel={(opt: any) => opt.draw_name}
+                value={campaignSummary.find((c: any) => String(c.draw_id) === selectedDrawId) ?? null}
+                onChange={(_, val) => setSelectedDrawId(val ? String(val.draw_id) : ALL)}
+                isOptionEqualToValue={(a: any, b: any) => a.draw_id === b.draw_id}
+                renderInput={(params) => <TextField {...params} label='Campaign' placeholder='All campaigns' />}
+                sx={{ maxWidth: 280 }}
+              />
             )}
 
             {/* Stats — scoped to selected campaign */}
@@ -260,11 +261,15 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
               <Stack direction='row' alignItems='center' spacing={1} mb={1.5}>
                 <ConfirmationNumberOutlinedIcon fontSize='small' color='action' />
                 <Typography variant='subtitle2' fontWeight={700}>
-                  {activeCampaign ? `${activeCampaign.draw_name} Entries` : 'All Entries'} ({entries.length}{selectedDrawId === ALL && allEntries.length === 200 ? '+' : ''})
+                  {activeCampaign ? `${activeCampaign.draw_name} Entries` : 'All Entries'} ({entriesTotal})
                 </Typography>
               </Stack>
 
-              {entries.length === 0 ? (
+              {entriesLoading ? (
+                <Stack spacing={1}>
+                  {[...Array(5)].map((_, i) => <Skeleton key={i} variant='rounded' height={36} />)}
+                </Stack>
+              ) : entries.length === 0 ? (
                 <Typography variant='body2' color='text.secondary'>No entries{selectedDrawId !== ALL ? ' for this campaign' : ''} yet.</Typography>
               ) : (
                 <Table size='small'>
@@ -395,6 +400,15 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                     ))}
                   </TableBody>
                 </Table>
+              )}
+              {entriesTotal > 50 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.5 }}>
+                  <Button size='small' disabled={entriesPage === 1} onClick={() => setEntriesPage(p => p - 1)}>Previous</Button>
+                  <Typography variant='caption' color='text.secondary'>
+                    Page {entriesPage} of {Math.ceil(entriesTotal / 50)} ({entriesTotal} total)
+                  </Typography>
+                  <Button size='small' disabled={entriesPage >= Math.ceil(entriesTotal / 50)} onClick={() => setEntriesPage(p => p + 1)}>Next</Button>
+                </Box>
               )}
             </Box>
 

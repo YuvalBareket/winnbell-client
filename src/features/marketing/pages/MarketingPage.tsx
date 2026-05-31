@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import {
   Box, Container, Typography, Stack, Paper, Button,
   useMediaQuery, useTheme, Snackbar, Alert, Tooltip,
-  CircularProgress, MenuItem, Select, FormControl, InputLabel,
+  CircularProgress, Autocomplete, TextField,
 } from '@mui/material';
 import { CropFree, ContentCopy, FileDownload, CheckCircleOutline } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
@@ -59,7 +59,7 @@ const MarketingPage = () => {
   const posterRef = useRef<HTMLDivElement>(null);
 
   const businessName = businessData?.name ?? 'Your Business';
-  const locations = (isBusiness ? businessData?.locations : []) ?? [];
+  const locations = (isBusiness ? businessData?.locations?.filter((l) => l.is_active) : []) ?? [];
 
   const effectiveLocationId = isManager
     ? currentUser?.location_id ?? null
@@ -307,25 +307,22 @@ const MarketingPage = () => {
               </Box>
 
               {isBusiness && locations.length > 0 && (
-                <FormControl fullWidth size='small'>
-                  <InputLabel>Select Location</InputLabel>
-                  <Select
-                    value={selectedLocationId}
-                    label='Select Location'
-                    onChange={(e) => setSelectedLocationId(e.target.value as number)}
-                    renderValue={(val) => locations.find(l => l.id === val)?.name ?? ''}
-                    sx={{ borderRadius: 2 }}
-                  >
-                    {locations.map((loc) => (
-                      <MenuItem key={loc.id} value={loc.id}>
-                        <Box sx={{ overflow: 'hidden' }}>
-                          <Typography variant='body2' fontWeight={700} noWrap>{loc.name}</Typography>
-                          <Typography variant='caption' color='text.secondary' noWrap>{loc.address}</Typography>
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  size='small'
+                  fullWidth
+                  options={locations}
+                  getOptionLabel={(opt) => opt.name}
+                  value={locations.find(l => l.id === selectedLocationId) ?? null}
+                  onChange={(_, val) => setSelectedLocationId(val?.id ?? '')}
+                  isOptionEqualToValue={(a, b) => a.id === b.id}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label='Select Location'
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                    />
+                  )}
+                />
               )}
 
               {/* Download */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -17,15 +17,15 @@ import {
   TablePagination,
   TextField,
   InputAdornment,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Autocomplete,
+  CircularProgress,
   Skeleton,
   IconButton,
+  Tooltip,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import BlockIcon from '@mui/icons-material/Block';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts';
 import { useAdminAnalytics, useAdminBusinesses, useAllDraws, useCampaignComparison, useEntryVolume, useLocationBreakdown } from '../../hooks/useAdmin';
 import { BG_PAGE } from '../../../../shared/colors';
@@ -35,15 +35,25 @@ interface Props {
 }
 
 const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
-  const { data: bizData } = useAdminBusinesses({ page: 1, limit: 200, search: '' });
-  const businesses = bizData?.rows;
   const { data: draws } = useAllDraws();
-  const [analyticsBusinessFilter, setAnalyticsBusinessFilter] = useState<number | null>(null);
+  const [selectedBiz, setSelectedBiz] = useState<{ id: number; name: string } | null>(null);
   const [analyticsDrawFilter, setAnalyticsDrawFilter] = useState<number | null>(null);
+  const [bizInput, setBizInput] = useState('');
+  const [bizSearch, setBizSearch] = useState('');
+  const bizDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
   const [locationSearchInput, setLocationSearchInput] = useState('');
   const [locationPage, setLocationPage] = useState(0);
   const [locationRowsPerPage, setLocationRowsPerPage] = useState(25);
+
+  const analyticsBusinessFilter = selectedBiz?.id ?? null;
+  const isFiltered = !!(analyticsBusinessFilter || analyticsDrawFilter);
+  const { data: bizData, isLoading: bizLoading } = useAdminBusinesses({ page: 1, limit: 20, search: bizSearch });
+  const businesses = bizData?.rows ?? [];
+  // Always include currently selected business in options even if not in search results
+  const bizOptions = selectedBiz && !businesses.find(b => b.id === selectedBiz.id)
+    ? [selectedBiz, ...businesses]
+    : businesses;
 
   const { data: analytics, isLoading: analyticsLoading } = useAdminAnalytics(analyticsBusinessFilter, analyticsDrawFilter);
   const { data: entryVolume } = useEntryVolume(analyticsDrawFilter, analyticsBusinessFilter);
@@ -59,37 +69,53 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
     <Stack spacing={3}>
       {/* Filters */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-        <FormControl size='small' sx={{ minWidth: 200 }}>
-          <InputLabel>Campaign</InputLabel>
-          <Select
-            value={analyticsDrawFilter ?? ''}
-            label='Campaign'
-            onChange={(e) => { setAnalyticsDrawFilter(String(e.target.value) === '' ? null : Number(e.target.value)); setLocationPage(0); }}
-          >
-            <MenuItem value=''>All Campaigns</MenuItem>
-            {draws?.map((d) => (
-              <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl size='small' sx={{ minWidth: 200 }}>
-          <InputLabel>Business</InputLabel>
-          <Select
-            value={analyticsBusinessFilter ?? ''}
-            label='Business'
-            onChange={(e) => { setAnalyticsBusinessFilter(String(e.target.value) === '' ? null : Number(e.target.value)); setLocationPage(0); }}
-          >
-            <MenuItem value=''>All Businesses</MenuItem>
-            {businesses?.map((b) => (
-              <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Autocomplete
+          size='small'
+          options={draws ?? []}
+          getOptionLabel={(opt) => opt.name}
+          value={(draws ?? []).find(d => d.id === analyticsDrawFilter) ?? null}
+          onChange={(_, val) => { setAnalyticsDrawFilter(val?.id ?? null); setLocationPage(0); }}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          renderInput={(params) => <TextField {...params} label='Campaign' />}
+          sx={{ minWidth: 200 }}
+        />
+        <Autocomplete
+          size='small'
+          options={bizOptions}
+          getOptionLabel={(opt) => opt.name}
+          value={selectedBiz}
+          inputValue={bizInput}
+          onInputChange={(_, value) => {
+            setBizInput(value);
+            if (bizDebounceRef.current) clearTimeout(bizDebounceRef.current);
+            bizDebounceRef.current = setTimeout(() => setBizSearch(value), 300);
+          }}
+          onChange={(_, val) => { setSelectedBiz(val); setLocationPage(0); }}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          filterOptions={(x) => x}
+          loading={bizLoading}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label='Business'
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {bizLoading && <CircularProgress size={16} />}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          sx={{ minWidth: 200 }}
+        />
         {(analyticsDrawFilter || analyticsBusinessFilter) && (
           <Chip
             label='Clear filters'
             size='small'
-            onDelete={() => { setAnalyticsDrawFilter(null); setAnalyticsBusinessFilter(null); setLocationPage(0); }}
+            onDelete={() => { setAnalyticsDrawFilter(null); setSelectedBiz(null); setBizInput(''); setBizSearch(''); setLocationPage(0); }}
           />
         )}
       </Box>
@@ -104,9 +130,14 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
             <Grid size={{ xs: 12, md: 4 }}>
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
                 <CardContent>
-                  <Typography variant='subtitle1' fontWeight={700} sx={{ mb: 2 }}>
-                    User Growth
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Typography variant='subtitle1' fontWeight={700}>User Growth</Typography>
+                    {isFiltered && (
+                      <Tooltip title='Showing users who participated in the selected filters.' placement='top'>
+                        <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
+                      </Tooltip>
+                    )}
+                  </Box>
                   <Stack spacing={2}>
                     {[
                       { label: 'New This Week', value: analytics?.userGrowth?.new_this_week ?? 0, bg: '#e3f2fd', color: '#1976d2' },
@@ -127,8 +158,15 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
             <Grid size={{ xs: 12, md: 8 }}>
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
                 <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant='subtitle1' fontWeight={700}>Entry Source Mix</Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant='subtitle1' fontWeight={700}>Entry Source Mix</Typography>
+                      {isFiltered && (
+                        <Tooltip title='Showing data for selected filters.' placement='top'>
+                          <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
+                        </Tooltip>
+                      )}
+                    </Box>
                     <Typography variant='caption' color='text.secondary'>
                       Total: {(analytics?.entrySourceMix?.total ?? 0).toLocaleString()} entries
                     </Typography>
@@ -169,9 +207,14 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
             <Grid size={{ xs: 12, md: 4 }}>
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
                 <CardContent>
-                  <Typography variant='subtitle1' fontWeight={700} sx={{ mb: 2 }}>
-                    Free Weekly Entries (AMOE)
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Typography variant='subtitle1' fontWeight={700}>Free Weekly Entries (AMOE)</Typography>
+                    {analyticsDrawFilter && (
+                      <Tooltip title='Filtered by selected campaign.' placement='top'>
+                        <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
+                      </Tooltip>
+                    )}
+                  </Box>
                   <Stack spacing={1.5}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant='body2' color='text.secondary'>Total Requests</Typography>
@@ -204,7 +247,14 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
             <Grid size={{ xs: 12, md: 4 }}>
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
                 <CardContent>
-                  <Typography variant='subtitle1' fontWeight={700} sx={{ mb: 2 }}>Validation</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Typography variant='subtitle1' fontWeight={700}>Validation</Typography>
+                    {isFiltered && (
+                      <Tooltip title='Showing data for selected filters.' placement='top'>
+                        <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
+                      </Tooltip>
+                    )}
+                  </Box>
                   <Stack spacing={2}>
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
@@ -266,7 +316,14 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
             <Grid size={{ xs: 12, md: 4 }}>
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
                 <CardContent>
-                  <Typography variant='subtitle1' fontWeight={700} sx={{ mb: 2 }}>Fraud & Risk</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Typography variant='subtitle1' fontWeight={700}>Fraud & Risk</Typography>
+                    {isFiltered && (
+                      <Tooltip title='Showing risk scores of users who participated in the selected filters.' placement='top'>
+                        <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
+                      </Tooltip>
+                    )}
+                  </Box>
                   <Stack spacing={1.5}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Box>
@@ -298,7 +355,14 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
           {/* Row 3: Repeat Behavior */}
           <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
             <CardContent>
-              <Typography variant='subtitle1' fontWeight={700} sx={{ mb: 2 }}>Repeat Behavior</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant='subtitle1' fontWeight={700}>Repeat Behavior</Typography>
+                {isFiltered && (
+                  <Tooltip title='Showing data for selected filters.' placement='top'>
+                    <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
+                  </Tooltip>
+                )}
+              </Box>
               <Grid container spacing={2}>
                 {[
                   { label: 'Users who submitted', value: analytics?.repeatBehavior?.users_with_submissions ?? 0 },

@@ -94,6 +94,8 @@ export const ALPHA_WHITE_30    = 'rgba(255,255,255,0.3)';
 export const ALPHA_WHITE_70    = 'rgba(255,255,255,0.7)';
 export const ALPHA_WHITE_80    = 'rgba(255,255,255,0.8)';
 export const ALPHA_GREEN_10    = 'rgba(46,125,50,0.1)';
+export const ALPHA_GREEN_06    = 'rgba(46,125,50,0.06)';
+export const ALPHA_GREEN_15    = 'rgba(46,125,50,0.15)';
 
 // ── Glassmorphism utilities ─────────────────
 export const GLASS_BG          = 'rgba(255,255,255,0.72)';

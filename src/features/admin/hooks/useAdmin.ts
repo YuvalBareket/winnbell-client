@@ -28,6 +28,7 @@ import {
   addBusinessToDraw,
   removeBusinessFromDraw,
   fetchBusinessDetail,
+  fetchBusinessEntries,
   adminImageDecision,
 } from '../api/adminApi';
 import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput } from '../types/admin.types';
@@ -199,15 +200,18 @@ export const useUpdateUserRole = () => {
   });
 };
 
-export const useDrawBusinesses = (drawId: number | null) => {
+export const useDrawBusinesses = (drawId: number | null, page = 1, search = '', sector = '') => {
   return useQuery({
-    queryKey: ['admin', 'draw-businesses', drawId],
+    queryKey: ['admin', 'draw-businesses', drawId, page, search, sector],
     queryFn: async () => {
-      const { data } = await fetchDrawBusinesses(drawId!);
-      return data as Array<{
-        id: number; name: string; sector: string; logo_url: string | null;
-        fee_at_entry: number; contribution_amount: number; joined_at: string;
-      }>;
+      const { data } = await fetchDrawBusinesses(drawId!, page, search, sector);
+      return data as {
+        rows: Array<{
+          id: number; name: string; sector: string; logo_url: string | null;
+          fee_at_entry: number; contribution_amount: number; joined_at: string;
+        }>;
+        total: number;
+      };
     },
     enabled: drawId !== null,
     staleTime: 60_000,
@@ -395,9 +399,20 @@ export const useBusinessDetail = (businessId: number | null) => {
       return data as {
         business: any;
         locations: any[];
-        entries: any[];
         campaignSummary: { draw_id: number; draw_name: string; count: number; quarantined: number }[];
       };
+    },
+    enabled: businessId !== null,
+    staleTime: 30_000,
+  });
+};
+
+export const useBusinessEntries = (businessId: number | null, drawId: number | null, page: number) => {
+  return useQuery({
+    queryKey: ['admin', 'business-entries', businessId, drawId, page],
+    queryFn: async () => {
+      const { data } = await fetchBusinessEntries(businessId!, drawId, page);
+      return data as { rows: any[]; total: number };
     },
     enabled: businessId !== null,
     staleTime: 30_000,

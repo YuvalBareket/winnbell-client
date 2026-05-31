@@ -15,3 +15,6 @@ export const resumeSubscription = (): Promise<void> =>
 
 export const fetchFoundingAvailability = (): Promise<FoundingAvailability> =>
   api.get('/business/subscription/founding-availability').then(r => r.data);
+
+export const updateSubscriptionPlan = (entries_per_location: number) =>
+  api.put('/business/subscription/plan', { entries_per_location });

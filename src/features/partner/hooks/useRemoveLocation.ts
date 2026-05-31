@@ -1,12 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addLocation } from '../api/business.api';
-import type { UpdateLocationInput } from '../types/business.types';
+import { deleteLocation } from '../api/business.api';
 
-export const useAddLocation = () => {
+export const useRemoveLocation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: UpdateLocationInput) => addLocation(data),
+    mutationFn: (locationId: number) => deleteLocation(locationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business', 'my-details'] });
       queryClient.invalidateQueries({ queryKey: ['subscription'] });

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  Box, Container, Typography, Paper, Stack, MenuItem, Select,
-  FormControl, InputLabel, Skeleton, Alert, Chip, Button, ToggleButton, ToggleButtonGroup,
+  Box, Container, Typography, Paper, Stack, Skeleton, Alert, Chip, Button, ToggleButton, ToggleButtonGroup, Autocomplete, TextField,
 } from '@mui/material';
 import {
   ReceiptLongOutlined, AttachMoneyOutlined,
@@ -34,7 +33,7 @@ const ActivityPage = () => {
   const [pages, setPages] = useState<ActivityItem[][]>([]);
 
   const { data: bizData } = useBusinessData(true);
-  const locations = bizData?.locations ?? [];
+  const locations = bizData?.locations ?? []; // includes soft-deleted for historical filtering
 
   const locationIdForQuery = isLocationManager
     ? (user?.location_id ?? undefined)
@@ -180,15 +179,16 @@ const ActivityPage = () => {
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
               {/* Location dropdown - only show if NOT a location manager */}
               {!isLocationManager && locations.length > 0 && (
-                <FormControl size='small' sx={{ minWidth: 180 }}>
-                  <InputLabel>All locations</InputLabel>
-                  <Select value={selectedLocation} label='All locations' onChange={(e) => handleLocationChange(e.target.value as number | '')}>
-                    <MenuItem value=''>All locations</MenuItem>
-                    {locations.map((loc) => (
-                      <MenuItem key={loc.id} value={loc.id}>{loc.name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  size='small'
+                  options={locations}
+                  getOptionLabel={(opt) => opt.is_active ? opt.name : `${opt.name} (removed)`}
+                  value={locations.find(l => l.id === selectedLocation) ?? null}
+                  onChange={(_, val) => handleLocationChange(val?.id ?? '')}
+                  isOptionEqualToValue={(a, b) => a.id === b.id}
+                  renderInput={(params) => <TextField {...params} label='All locations' />}
+                  sx={{ minWidth: 180 }}
+                />
               )}
 
               {/* Date range toggle - styled with filled selected state */}

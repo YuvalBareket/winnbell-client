@@ -1,4 +1,4 @@
-import { Box, Container, FormControl, InputLabel, MenuItem, Paper, Select, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Container, Paper, Stack, Typography, useMediaQuery, useTheme, Autocomplete, TextField } from '@mui/material';
 import { ConfirmationNumber } from '@mui/icons-material';
 import { ActiveTicketsList } from '../components/ActiveTicketsList';
 import { DrawSwiper } from '../../draw/components/DrawSwiper';
@@ -93,20 +93,16 @@ const MyTicketsPage = () => {
               </Box>
               {isBusiness && !isManager && locations.length > 1 && (
                 <Box sx={{ px: 2, pt: 1.5, pb: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
-                  <FormControl size='small' fullWidth>
-                    <InputLabel>All locations</InputLabel>
-                    <Select
-                      value={selectedLocationId ?? ''}
-                      label='All locations'
-                      onChange={(e) => setSelectedLocationId(e.target.value ? Number(e.target.value) : undefined)}
-                      sx={{ borderRadius: 2 }}
-                    >
-                      <MenuItem value=''>All locations</MenuItem>
-                      {locations.map((loc) => (
-                        <MenuItem key={loc.id} value={loc.id}>{loc.name}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <Autocomplete
+                    size='small'
+                    fullWidth
+                    options={locations}
+                    getOptionLabel={(opt) => opt.name}
+                    value={locations.find(l => l.id === selectedLocationId) ?? null}
+                    onChange={(_, val) => setSelectedLocationId(val?.id ?? undefined)}
+                    isOptionEqualToValue={(a, b) => a.id === b.id}
+                    renderInput={(params) => <TextField {...params} label='All locations' sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />}
+                  />
                 </Box>
               )}
               <DrawSwiper
@@ -149,20 +145,16 @@ const MyTicketsPage = () => {
 
       {isBusiness && !isManager && locations.length > 1 && (
         <Box sx={{ px: 2, pt: 1.5 }}>
-          <FormControl size='small' fullWidth>
-            <InputLabel>All locations</InputLabel>
-            <Select
-              value={selectedLocationId ?? ''}
-              label='All locations'
-              onChange={(e) => setSelectedLocationId(e.target.value ? Number(e.target.value) : undefined)}
-              sx={{ borderRadius: 2 }}
-            >
-              <MenuItem value=''>All locations</MenuItem>
-              {locations.map((loc) => (
-                <MenuItem key={loc.id} value={loc.id}>{loc.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            size='small'
+            fullWidth
+            options={locations}
+            getOptionLabel={(opt) => opt.name}
+            value={locations.find(l => l.id === selectedLocationId) ?? null}
+            onChange={(_, val) => setSelectedLocationId(val?.id ?? undefined)}
+            isOptionEqualToValue={(a, b) => a.id === b.id}
+            renderInput={(params) => <TextField {...params} label='All locations' sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />}
+          />
         </Box>
       )}
 

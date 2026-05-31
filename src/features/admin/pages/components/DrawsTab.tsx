@@ -22,6 +22,9 @@ import {
   IconButton,
   Skeleton,
   Divider,
+  Select,
+  MenuItem,
+  InputAdornment,
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -35,6 +38,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutline';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
+import SearchIcon from '@mui/icons-material/Search';
 import {
   useOpenDraw,
   useCloseDraw,
@@ -48,6 +52,7 @@ import {
   useAdminBusinesses,
 } from '../../hooks/useAdmin';
 import { BG_PAGE } from '../../../../shared/colors';
+import { BUSINESS_SECTORS } from '../../data';
 import EditDrawModal from './EditDrawModal';
 
 const STATUS_COLORS: Record<string, 'default' | 'warning' | 'primary' | 'success' | 'error'> = {
@@ -57,7 +62,11 @@ const STATUS_COLORS: Record<string, 'default' | 'warning' | 'primary' | 'success
 };
 
 const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({ drawId, drawStatus }) => {
-  const { data, isLoading } = useDrawBusinesses(drawId);
+  const [page, setPage] = useState(1);
+  const [filterSearch, setFilterSearch] = useState('');
+  const [filterSearchDebounced, setFilterSearchDebounced] = useState('');
+  const [filterSector, setFilterSector] = useState('');
+  const { data, isLoading } = useDrawBusinesses(drawId, page, filterSearchDebounced, filterSector);
   const addBiz = useAddBusinessToDraw();
   const removeBiz = useRemoveBusinessFromDraw();
   const [adding, setAdding] = useState(false);
@@ -66,7 +75,29 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
   const [selectedBiz, setSelectedBiz] = useState<{ id: number; name: string } | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<{ id: number; name: string } | null>(null);
 
+  React.useEffect(() => {
+    setPage(1);
+    setFilterSearch('');
+    setFilterSearchDebounced('');
+    setFilterSector('');
+  }, [drawId]);
+
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const filterDebounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleFilterSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilterSearch(e.target.value);
+    if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current);
+    filterDebounceRef.current = setTimeout(() => {
+      setFilterSearchDebounced(e.target.value);
+      setPage(1);
+    }, 300);
+  };
+
+  const handleSectorChange = (e: React.ChangeEvent<{ value: unknown }>) => {
+    setFilterSector(e.target.value as string);
+    setPage(1);
+  };
   const handleInputChange = useCallback((_: React.SyntheticEvent, value: string) => {
     setSearch(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -75,7 +106,7 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
 
   const { data: bizPage } = useAdminBusinesses({ page: 1, limit: 20, search: debouncedSearch });
 
-  const enrolledIds = new Set((data ?? []).map((b) => b.id));
+  const enrolledIds = new Set((data?.rows ?? []).map((b) => b.id));
   const availableBiz = (bizPage?.rows ?? []).filter((b: any) => !enrolledIds.has(b.id)).slice(0, 20);
   const canEdit = drawStatus?.toUpperCase() !== 'CLOSED';
 
@@ -100,13 +131,39 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
     <Box sx={{ px: 3, pb: 2, bgcolor: BG_PAGE }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
         <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-          Participating Businesses ({data?.length ?? 0})
+          Participating Businesses ({data?.total ?? 0})
         </Typography>
         {canEdit && (
           <Button size='small' startIcon={<AddIcon />} onClick={() => setAdding(!adding)} sx={{ fontSize: 12 }}>
             Add Business
           </Button>
         )}
+      </Box>
+
+      {/* Filter row */}
+      <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
+        <TextField
+          size='small'
+          placeholder='Search by name...'
+          value={filterSearch}
+          onChange={handleFilterSearchChange}
+          sx={{ flex: 1 }}
+          InputProps={{
+            startAdornment: <InputAdornment position='start'><SearchIcon sx={{ fontSize: 16 }} /></InputAdornment>,
+          }}
+        />
+        <Select
+          size='small'
+          value={filterSector}
+          onChange={handleSectorChange as any}
+          displayEmpty
+          sx={{ minWidth: 130 }}
+        >
+          <MenuItem value=''>All Sectors</MenuItem>
+          {Object.entries(BUSINESS_SECTORS).filter(([k]) => k !== 'Free').map(([key, val]) => (
+            <MenuItem key={key} value={key}>{val.label}</MenuItem>
+          ))}
+        </Select>
       </Box>
 
       {canEdit && adding && (
@@ -131,11 +188,13 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
         </Box>
       )}
 
-      {!data?.length ? (
-        <Typography variant='body2' color='text.secondary'>No businesses enrolled.</Typography>
+      {!data?.rows?.length ? (
+        <Typography variant='body2' color='text.secondary'>
+          {filterSearchDebounced || filterSector ? 'No businesses match your filters.' : 'No businesses enrolled.'}
+        </Typography>
       ) : (
         <Stack spacing={0.5}>
-          {data.map((b) => (
+          {data.rows.map((b) => (
             <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
               <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
               {canEdit && (
@@ -146,6 +205,16 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
             </Box>
           ))}
         </Stack>
+      )}
+
+      {(data?.total ?? 0) > 25 && (
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1, pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
+          <Button size='small' disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
+          <Typography variant='caption' color='text.secondary'>
+            Page {page} of {Math.ceil((data?.total ?? 0) / 25)}
+          </Typography>
+          <Button size='small' disabled={page >= Math.ceil((data?.total ?? 0) / 25)} onClick={() => setPage(p => p + 1)}>Next</Button>
+        </Box>
       )}
 
       <Dialog open={!!confirmRemove} onClose={() => setConfirmRemove(null)} maxWidth='xs' fullWidth>

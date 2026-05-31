@@ -6,13 +6,27 @@ import {
 } from '@mui/material';
 import {
   ReceiptLong, CheckCircle, Cancel, EmojiEvents, ArrowBackIosNew,
-  Lock, LockOpen, WorkspacePremium,
+  Lock, LockOpen, WorkspacePremium, Edit, Add as AddIcon, Remove as RemoveIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { PRIMARY_MAIN, BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
-import { useSubscription } from '../hooks/useSubscription';
+import { useSubscription, useUpdateSubscriptionPlan } from '../hooks/useSubscription';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
+import { TIER_KEYS } from './components/subscribeTiers';
+
+const TIER_PRICE_MAP_CLIENT: Record<number, { monthly: { pricePerLocation: number }; yearly: { pricePerLocation: number } }> = {
+  250:  { monthly: { pricePerLocation: 250   }, yearly: { pricePerLocation: 3000  } },
+  500:  { monthly: { pricePerLocation: 490   }, yearly: { pricePerLocation: 5880  } },
+  750:  { monthly: { pricePerLocation: 720   }, yearly: { pricePerLocation: 8640  } },
+  1000: { monthly: { pricePerLocation: 940   }, yearly: { pricePerLocation: 11280 } },
+  1250: { monthly: { pricePerLocation: 1150  }, yearly: { pricePerLocation: 13800 } },
+  1500: { monthly: { pricePerLocation: 1350  }, yearly: { pricePerLocation: 16200 } },
+  1750: { monthly: { pricePerLocation: 1540  }, yearly: { pricePerLocation: 18480 } },
+  2000: { monthly: { pricePerLocation: 1720  }, yearly: { pricePerLocation: 20640 } },
+  2250: { monthly: { pricePerLocation: 1890  }, yearly: { pricePerLocation: 22680 } },
+  2500: { monthly: { pricePerLocation: 2000  }, yearly: { pricePerLocation: 24000 } },
+};
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   Active:    { bg: 'rgba(46,125,50,0.1)',   color: '#2e7d32' },
@@ -26,6 +40,9 @@ export default function SubscriptionManagementPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelError, setCancelError] = useState('');
   const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'prorated' | 'none'; refundAmount: number } | null>(null);
+  const [editPlanOpen, setEditPlanOpen] = useState(false);
+  const [newTier, setNewTier] = useState<number>(0);
+  const [updateError, setUpdateError] = useState('');
 
   const { data: sub, isLoading, isError } = useSubscription();
 
@@ -48,6 +65,8 @@ export default function SubscriptionManagementPage() {
       setCancelError(err.response?.data?.error ?? 'Could not resume subscription. Please try again.');
     },
   });
+
+  const { mutate: doUpdatePlan, isPending: updatingPlan } = useUpdateSubscriptionPlan();
 
   const isDrawLocked = (() => {
     if (!sub?.draw_date) return false;
@@ -193,6 +212,23 @@ export default function SubscriptionManagementPage() {
                           ? 'Founding Partner'
                           : `Partner ${sub.billing_interval === 'yearly' ? 'Yearly' : 'Monthly'} Plan`}
                       </Typography>
+                      {sub.fee_at_entry != null && (
+                        <Typography variant='body2' fontWeight={700} sx={{ color: PRIMARY_MAIN, mt: 0.5 }}>
+                          {sub.is_founding
+                            ? `$${Number(sub.fee_at_entry * 12).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / year`
+                            : sub.billing_interval === 'yearly'
+                              ? `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month · billed yearly`
+                              : `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month`}
+                        </Typography>
+                      )}
+                      {(sub.active_location_count != null || sub.entries_per_location != null) && (
+                        <Typography variant='caption' color='text.secondary' sx={{ mt: 0.25 }}>
+                          {[
+                            sub.active_location_count != null && `${sub.active_location_count} location${sub.active_location_count !== 1 ? 's' : ''}`,
+                            sub.entries_per_location != null && `${sub.entries_per_location} entries per location`,
+                          ].filter(Boolean).join(' · ')}
+                        </Typography>
+                      )}
                     </Box>
                   </Stack>
                   <Chip
@@ -231,6 +267,18 @@ export default function SubscriptionManagementPage() {
                       Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. It just will not renew after that.
                     </Alert>
                   )}
+                  <Box>
+                    <Button
+                      size='small'
+                      variant='outlined'
+                      startIcon={<Edit />}
+                      onClick={() => { setNewTier(sub.entries_per_location ?? 750); setEditPlanOpen(true); setUpdateError(''); }}
+                      disabled={sub.is_founding || sub.status === 'Cancelled'}
+                      sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+                    >
+                      Edit Plan
+                    </Button>
+                  </Box>
                 </Box>
               </Paper>
 
@@ -359,10 +407,92 @@ export default function SubscriptionManagementPage() {
               </Paper>
             )}
           </Box>
+
         </Stack>
 
 
       </Container>
+
+      {/* Edit Plan dialog */}
+      <Dialog open={editPlanOpen} onClose={() => setEditPlanOpen(false)} fullWidth maxWidth='xs' PaperProps={{ sx: { borderRadius: 4, p: 1 } }}>
+        <DialogTitle sx={{ fontWeight: 800 }}>Change Plan</DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ pt: 1 }}>
+            {/* Tier stepper */}
+            <Box>
+              <Typography variant='body2' color='text.secondary' mb={2}>
+                Entries per location per month
+              </Typography>
+              <Stack direction='row' alignItems='center' justifyContent='center' spacing={2}>
+                <IconButton
+                  size='small'
+                  disabled={TIER_KEYS.indexOf(newTier) === 0}
+                  onClick={() => setNewTier(TIER_KEYS[TIER_KEYS.indexOf(newTier) - 1])}
+                  sx={{ width: 44, height: 44, border: '1.5px solid', borderColor: 'divider', borderRadius: 2 }}
+                >
+                  <RemoveIcon />
+                </IconButton>
+                <Box sx={{ textAlign: 'center', minWidth: 140 }}>
+                  <Typography variant='h5' fontWeight={900}>{newTier.toLocaleString()}</Typography>
+                  <Typography variant='caption' color='text.secondary'>entries</Typography>
+                </Box>
+                <IconButton
+                  size='small'
+                  disabled={TIER_KEYS.indexOf(newTier) === TIER_KEYS.length - 1}
+                  onClick={() => setNewTier(TIER_KEYS[TIER_KEYS.indexOf(newTier) + 1])}
+                  sx={{ width: 44, height: 44, border: '1.5px solid', borderColor: 'divider', borderRadius: 2 }}
+                >
+                  <AddIcon />
+                </IconButton>
+              </Stack>
+            </Box>
+
+            {/* Price breakdown */}
+            <Box sx={{ bgcolor: 'rgba(2,146,183,0.05)', borderRadius: 2.5, p: 2.5, border: '1px solid rgba(2,146,183,0.15)' }}>
+              <Stack spacing={1.5}>
+                <Stack direction='row' justifyContent='space-between'>
+                  <Typography variant='body2' color='text.secondary'>Locations</Typography>
+                  <Typography variant='body2' fontWeight={700}>{sub.active_location_count ?? 1}</Typography>
+                </Stack>
+                <Stack direction='row' justifyContent='space-between'>
+                  <Typography variant='body2' color='text.secondary'>Price per location</Typography>
+                  <Typography variant='body2' fontWeight={700}>
+                    ${(TIER_PRICE_MAP_CLIENT[newTier]?.[(sub.billing_interval ?? 'monthly') as 'monthly' | 'yearly']?.pricePerLocation ?? 0).toLocaleString()}
+                  </Typography>
+                </Stack>
+                <Divider />
+                <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                  <Typography variant='body2' fontWeight={700}>New monthly total</Typography>
+                  <Typography variant='h6' fontWeight={900} color='primary.main'>
+                    ${((TIER_PRICE_MAP_CLIENT[newTier]?.[(sub.billing_interval ?? 'monthly') as 'monthly' | 'yearly']?.pricePerLocation ?? 0) * (sub.active_location_count ?? 1)).toLocaleString()}
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Box>
+
+            {updateError && <Alert severity='error' sx={{ borderRadius: 2 }}>{updateError}</Alert>}
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setEditPlanOpen(false)} variant='outlined' sx={{ borderRadius: 2, fontWeight: 700 }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setUpdateError('');
+              doUpdatePlan(newTier, {
+                onSuccess: () => setEditPlanOpen(false),
+                onError: (err: any) => setUpdateError(err.response?.data?.error ?? 'Failed to update plan'),
+              });
+            }}
+            variant='contained'
+            disabled={updatingPlan || newTier === (sub.entries_per_location ?? 0)}
+            sx={{ borderRadius: 2, fontWeight: 700 }}
+          >
+            {updatingPlan ? <CircularProgress size={20} color='inherit' /> : 'Confirm Change'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Confirm dialog */}
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 1 } }}>

@@ -1,26 +1,30 @@
 import {
   Paper, Box, Typography, Stack, IconButton, Divider, Button,
 } from '@mui/material';
-import { LocationOn, Edit, ChevronRight, Share, PersonRemove, Person } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { LocationOn, Edit, DeleteOutline, Share, PersonRemove, Person } from '@mui/icons-material';
 import type { BusinessLocation } from '../../types/business.types';
 
 interface LocationCardProps {
   loc: BusinessLocation;
   onEdit: (loc: BusinessLocation) => void;
+  onRemove: (loc: BusinessLocation) => void;
   onInvite: (locId: number) => void;
   onRemoveManager: (locId: number) => void;
   isInviting: boolean;
+  isRemoving: boolean;
+  isLastLocation: boolean;
 }
 
 const LocationCard = ({
   loc,
   onEdit,
+  onRemove,
   onInvite,
   onRemoveManager,
   isInviting,
+  isRemoving,
+  isLastLocation,
 }: LocationCardProps) => {
-  const navigate = useNavigate();
 
   return (
     <Paper
@@ -39,12 +43,18 @@ const LocationCard = ({
             {loc.address}
           </Typography>
         </Box>
-        <Stack direction='row' alignItems='center' ml={1}>
-          <IconButton sx={{ width: 44, height: 44 }} onClick={() => onEdit(loc)} aria-label='Edit location'>
+        <Stack direction='row' alignItems='center' ml={1} spacing={0.5}>
+          <IconButton sx={{ width: 40, height: 40 }} onClick={() => onEdit(loc)} aria-label='Edit location'>
             <Edit fontSize='small' />
           </IconButton>
-          <IconButton sx={{ width: 44, height: 44 }} onClick={() => navigate('/scan')} aria-label='Generate tickets'>
-            <ChevronRight />
+          <IconButton
+            sx={{ width: 40, height: 40, color: isLastLocation ? 'text.disabled' : 'error.main' }}
+            onClick={() => onRemove(loc)}
+            disabled={isRemoving || isLastLocation}
+            title={isLastLocation ? 'You must keep at least one location' : 'Remove location'}
+            aria-label='Remove location'
+          >
+            <DeleteOutline fontSize='small' />
           </IconButton>
         </Stack>
       </Stack>

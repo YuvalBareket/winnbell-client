@@ -111,7 +111,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
         { label: 'Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
-        { label: 'Campaign', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
+        { label: 'My Plan', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
         { label: 'Marketing', icon: <CampaignOutlined />, path: '/marketing' },
         { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
       ]

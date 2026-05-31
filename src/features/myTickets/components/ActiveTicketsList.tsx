@@ -1,6 +1,7 @@
-import { Box, Typography, Stack, Chip, Skeleton, Avatar, LinearProgress } from '@mui/material';
+import { Box, Typography, Stack, Chip, Skeleton, Avatar, LinearProgress, Button } from '@mui/material';
 import { Circle, Person, Storefront, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import EmptyState from '../../../shared/components/EmptyState';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -164,7 +165,9 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
   const isBusinessOwner = useAppSelector(selectIsBusiness);
   const isLocation = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessOwner || isLocation;
-  const { data: tickets, isLoading, totalCount, cap, perLocationCap, activeLocationCount } = useMyTickets(draw_id ?? 0, locationId);
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [draw_id, locationId]);
+  const { data: tickets, isLoading, totalCount, cap, perLocationCap, activeLocationCount } = useMyTickets(draw_id ?? 0, locationId, page);
 
   const ticketCount = tickets?.length ?? 0; // for user progress bar only
   const displayCount = isBusiness ? totalCount : ticketCount; // what to show in the header
@@ -309,6 +312,15 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
           />
         )}
       </Stack>
+      {isBusiness && totalCount > 50 && (
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, pb: 2 }}>
+          <Button size='small' variant='outlined' disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
+          <Typography variant='caption' color='text.secondary'>
+            {((page - 1) * 50) + 1}–{Math.min(page * 50, totalCount)} of {totalCount}
+          </Typography>
+          <Button size='small' variant='outlined' disabled={page * 50 >= totalCount} onClick={() => setPage(p => p + 1)}>Next</Button>
+        </Box>
+      )}
     </>
   );
 };

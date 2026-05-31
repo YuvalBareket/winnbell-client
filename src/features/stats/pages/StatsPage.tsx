@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
-  Box, Container, Typography, Paper, Stack, MenuItem, Select,
-  FormControl, InputLabel, Skeleton, Alert, Chip,
+  Box, Container, Typography, Paper, Stack, Skeleton, Alert, Chip, Autocomplete, TextField,
 } from '@mui/material';
 import {
   ReceiptLongOutlined, AttachMoneyOutlined, TrendingUpOutlined,
@@ -36,7 +35,7 @@ const StatsPage = () => {
     selectedDraw !== '' ? selectedDraw : undefined,
   );
 
-  const locations = bizData?.locations ?? [];
+  const locations = bizData?.locations ?? []; // includes soft-deleted for historical filtering
   const draws = stats?.draws ?? [];
 
   const formatDay = (d: string) => {
@@ -72,28 +71,28 @@ const StatsPage = () => {
             <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 {isBusiness && locations.length > 1 && (
-                  <FormControl size='small' sx={{ minWidth: 180 }}>
-                    <InputLabel>All branches</InputLabel>
-                    <Select value={selectedLocation} label='All branches' onChange={(e) => setSelectedLocation(e.target.value as number | '')}>
-                      <MenuItem value=''>All branches</MenuItem>
-                      {locations.map((loc) => (
-                        <MenuItem key={loc.id} value={loc.id}>{loc.name}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <Autocomplete
+                    size='small'
+                    options={locations}
+                    getOptionLabel={(opt) => opt.is_active ? opt.name : `${opt.name} (removed)`}
+                    value={locations.find(l => l.id === selectedLocation) ?? null}
+                    onChange={(_, val) => setSelectedLocation(val?.id ?? '')}
+                    isOptionEqualToValue={(a, b) => a.id === b.id}
+                    renderInput={(params) => <TextField {...params} label='All branches' />}
+                    sx={{ minWidth: 180 }}
+                  />
                 )}
                 {draws.length > 0 && (
-                  <FormControl size='small' sx={{ minWidth: 200 }}>
-                    <InputLabel>All campaigns</InputLabel>
-                    <Select value={selectedDraw} label='All campaigns' onChange={(e) => setSelectedDraw(e.target.value as number | '')}>
-                      <MenuItem value=''>All campaigns</MenuItem>
-                      {draws.map((d) => (
-                        <MenuItem key={d.draw_id} value={d.draw_id}>
-                          {d.draw_name} ({formatDateShort(d.draw_date)})
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <Autocomplete
+                    size='small'
+                    options={draws}
+                    getOptionLabel={(opt) => `${opt.draw_name} (${formatDateShort(opt.draw_date)})`}
+                    value={draws.find(d => d.draw_id === selectedDraw) ?? null}
+                    onChange={(_, val) => setSelectedDraw(val?.draw_id ?? '')}
+                    isOptionEqualToValue={(a, b) => a.draw_id === b.draw_id}
+                    renderInput={(params) => <TextField {...params} label='All campaigns' />}
+                    sx={{ minWidth: 200 }}
+                  />
                 )}
               </Stack>
             </Paper>
