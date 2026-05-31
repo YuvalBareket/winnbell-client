@@ -67,7 +67,7 @@ const MarketingPage = () => {
 
   const scanUrl = effectiveLocationId
     ? `${window.location.origin}/scan?l=${effectiveLocationId}`
-    : 'https://winnbell.com';
+    : window.location.origin;
 
   const thumbScale = isDesktop ? THUMB_SCALE : THUMB_SCALE_MOBILE;
   const thumbW = isDesktop ? THUMB_W : THUMB_W_MOBILE;
