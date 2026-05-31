@@ -10,6 +10,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
+import { api } from '../../../shared/api/client';
 import {
   BG_PAGE, TEXT_HEADING, ROLE_MANAGER_BG, ROLE_MANAGER_HOVER, BORDER_LIGHT,
   SHADOW_PRIMARY_SOFT, GRADIENT_HERO,
@@ -119,6 +120,7 @@ const RegisterPage = () => {
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageVerified, setAgeVerified] = useState(false);
@@ -136,6 +138,7 @@ const RegisterPage = () => {
   };
 
   const handleSocialSignUp = async (provider: 'google' | 'apple') => {
+    setGoogleLoading(true);
     const roleFormatted = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User';
     localStorage.setItem('pendingRole', roleFormatted);
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
@@ -149,14 +152,26 @@ const RegisterPage = () => {
       localStorage.removeItem('pendingRole');
       localStorage.removeItem('pendingInviteToken');
       setError(oauthError.message || 'Social login failed');
+      setGoogleLoading(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!formData.fullName || !formData.email || !formData.password || !termsAccepted || !ageVerified) return;
+    if (!formData.fullName) { setError('Please enter your full name.'); return; }
+    if (!formData.email) { setError('Please enter your email address.'); return; }
+    if (!formData.password) { setError('Please enter a password.'); return; }
+    if (!ageVerified || !termsAccepted) { setError('Please confirm your age and accept the terms.'); return; }
     setLoading(true);
     setError('');
     try {
+      // Check if email already exists before attempting Supabase signup
+      const { data: emailCheck } = await api.post('/auth/check-email', { email: formData.email });
+      if (emailCheck.exists) {
+        setError('An account with this email already exists. Please sign in instead.');
+        setLoading(false);
+        return;
+      }
+
       const roleFormatted = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User';
       // Both pendingRole and inviteToken must be set BEFORE signUp in case onAuthStateChange
       // fires during the call. pendingRole acts as a fallback if JWT metadata is unavailable.
@@ -298,9 +313,9 @@ const RegisterPage = () => {
           <Button
             fullWidth
             variant='contained'
-            startIcon={loading ? <CircularProgress size={20} color='inherit' /> : <Google />}
+            startIcon={googleLoading ? <CircularProgress size={20} color='inherit' /> : <Google />}
             onClick={() => (termsAccepted && ageVerified) ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
-            disabled={loading}
+            disabled={googleLoading}
             sx={{
               py: 1.5,
               borderRadius: 3,
@@ -324,7 +339,7 @@ const RegisterPage = () => {
                 opacity: 1,
               },
             }}>
-            {loading ? 'Signing up...' : 'Continue with Google'}
+            {googleLoading ? 'Signing up...' : 'Continue with Google'}
           </Button>
         </Box>
 

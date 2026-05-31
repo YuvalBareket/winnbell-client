@@ -84,6 +84,7 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showResetMessage, setShowResetMessage] = useState(false);
@@ -94,6 +95,7 @@ const LoginPage = () => {
   };
 
   const handleSocialLogin = async (provider: 'google') => {
+    setGoogleLoading(true);
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
@@ -104,11 +106,14 @@ const LoginPage = () => {
     if (oauthError) {
       localStorage.removeItem('pendingInviteToken');
       setError(oauthError.message || 'Social login failed');
+      setGoogleLoading(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!formData.email || !formData.password || !termsAccepted) return;
+    if (!formData.email) { setError('Please enter your email address.'); return; }
+    if (!formData.password) { setError('Please enter your password.'); return; }
+    if (!termsAccepted) { setError('Please accept the terms to continue.'); return; }
     setLoading(true);
     setError('');
     try {
@@ -215,9 +220,9 @@ const LoginPage = () => {
           <Button
             fullWidth
             variant='contained'
-            startIcon={loading ? <CircularProgress size={20} color='inherit' /> : <Google />}
+            startIcon={googleLoading ? <CircularProgress size={20} color='inherit' /> : <Google />}
             onClick={() => termsAccepted ? handleSocialLogin('google') : setToast('Please approve the terms first')}
-            disabled={loading}
+            disabled={googleLoading}
             sx={{
               py: 1.5,
               borderRadius: 3,
@@ -241,7 +246,7 @@ const LoginPage = () => {
                 opacity: 1,
               },
             }}>
-            {loading ? 'Signing in...' : 'Continue with Google'}
+            {googleLoading ? 'Signing in...' : 'Continue with Google'}
           </Button>
         </Box>
 
