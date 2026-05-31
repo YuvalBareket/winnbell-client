@@ -1,5 +1,9 @@
 import { Box, Typography } from '@mui/material';
 import QRCode from 'react-qr-code';
+import iconBlue  from '../assets/winnbell_icon_blue.svg';
+import iconGold  from '../assets/winnbell_icon_gold.svg';
+import iconGreen from '../assets/winnbell_icon_green.svg';
+import iconPink  from '../assets/winnbell_icon_pink.svg';
 
 // ── Poster dimensions (fixed, A4-ish ratio) ───────────────────────────────────
 export const POSTER_W = 320;
@@ -38,8 +42,8 @@ export const PosterWrap = ({ children, bg }: { children: React.ReactNode; bg?: s
 export interface PosterProps { businessName: string; scanUrl: string; headline: string }
 
 // ── QR code with centered logo bubble (WhatsApp-style) ───────────────────────
-const QRWithBrand = ({ value, size, fgColor, logoFilter }: {
-  value: string; size: number; fgColor?: string; logoFilter?: string;
+const QRWithBrand = ({ value, size, fgColor, logoSrc }: {
+  value: string; size: number; fgColor?: string; logoSrc?: string;
 }) => {
   const bubbleSize = Math.round(size * 0.7);
   const logoSize  = Math.round(size * 0.27);
@@ -57,9 +61,9 @@ const QRWithBrand = ({ value, size, fgColor, logoFilter }: {
       }}>
         <Box
           component='img'
-          src='/winnbell_icon.svg'
+          src={logoSrc ?? '/winnbell_icon.svg'}
           alt='Winnbell'
-          sx={{ height: logoSize, width: 'auto', display: 'block', filter: logoFilter }}
+          sx={{ height: logoSize, width: 'auto', display: 'block' }}
         />
       </Box>
     </Box>
@@ -75,7 +79,7 @@ export const PosterClassic = ({ businessName, scanUrl, headline }: PosterProps) 
       color: 'white', py: 3, px: 3, textAlign: 'center', flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+      <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
     </Box>
 
     {/* Body */}
@@ -84,7 +88,7 @@ export const PosterClassic = ({ businessName, scanUrl, headline }: PosterProps) 
         {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #195DE2', bgcolor: 'white' }}>
-        <QRWithBrand value={scanUrl} size={120} fgColor='#195DE2' logoFilter='brightness(0) saturate(100%) invert(27%) sepia(93%) saturate(1352%) hue-rotate(214deg) brightness(97%)' />
+        <QRWithBrand value={scanUrl} size={120} fgColor='#195DE2' logoSrc={iconBlue} />
       </Box>
 
     </Box>
@@ -103,7 +107,7 @@ export const PosterDark = ({ businessName, scanUrl, headline }: PosterProps) => 
   <PosterWrap bg='#0D1B2A'>
     {/* Top */}
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 3, flexShrink: 0 }}>
-      <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+      <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
     </Box>
 
     {/* Body */}
@@ -114,7 +118,7 @@ export const PosterDark = ({ businessName, scanUrl, headline }: PosterProps) => 
       {/* Gold-framed QR */}
       <Box sx={{ border: '3px solid #F5B932' }}>
         <Box sx={{ p: '10px', bgcolor: '#0D1B2A' }}>
-          <QRWithBrand value={scanUrl} size={120} logoFilter='brightness(0) saturate(100%) invert(79%) sepia(55%) saturate(591%) hue-rotate(357deg) brightness(101%)' />
+          <QRWithBrand value={scanUrl} size={120} logoSrc={iconGold} />
         </Box>
       </Box>
     </Box>
@@ -135,7 +139,7 @@ export const PosterFresh = ({ businessName, scanUrl, headline }: PosterProps) =>
   <PosterWrap>
     {/* Header */}
     <Box sx={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 60%, #34D399 100%)', py: 3, px: 3, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+      <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
     </Box>
 
     {/* Body */}
@@ -144,7 +148,7 @@ export const PosterFresh = ({ businessName, scanUrl, headline }: PosterProps) =>
         {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #10B981', bgcolor: 'white' }}>
-        <QRWithBrand value={scanUrl} size={120} fgColor='#059669' logoFilter='brightness(0) saturate(100%) invert(42%) sepia(100%) saturate(420%) hue-rotate(105deg) brightness(85%)' />
+        <QRWithBrand value={scanUrl} size={120} fgColor='#059669' logoSrc={iconGreen} />
       </Box>
     </Box>
 
@@ -162,7 +166,7 @@ export const PosterPink = ({ businessName, scanUrl, headline }: PosterProps) => 
   <PosterWrap>
     {/* Header */}
     <Box sx={{ background: 'linear-gradient(135deg, #EC4899 0%, #F472B6 60%, #FBCFE8 100%)', py: 3, px: 3, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+      <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
     </Box>
 
     {/* Body */}
@@ -171,7 +175,7 @@ export const PosterPink = ({ businessName, scanUrl, headline }: PosterProps) => 
         {headline}
       </Typography>
       <Box sx={{ p: '10px', border: '3px solid #EC4899', bgcolor: 'white' }}>
-        <QRWithBrand value={scanUrl} size={120} fgColor='#BE185D' logoFilter='brightness(0) saturate(100%) invert(16%) sepia(100%) saturate(1700%) hue-rotate(317deg) brightness(105%)' />
+        <QRWithBrand value={scanUrl} size={120} fgColor='#BE185D' logoSrc={iconPink} />
       </Box>
     </Box>
 

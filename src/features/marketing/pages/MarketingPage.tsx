@@ -88,6 +88,7 @@ const MarketingPage = () => {
     if (!posterRef.current) return;
     setDownloading(true);
     const swaps: Array<{ svg: SVGSVGElement; img: HTMLImageElement }> = [];
+    const logoSwaps: Array<{ img: HTMLImageElement; originalSrc: string }> = [];
     try {
       // 1. Convert every SVG inside the poster to a PNG img
       const svgEls = Array.from(posterRef.current.querySelectorAll<SVGSVGElement>('svg'));
@@ -103,6 +104,7 @@ const MarketingPage = () => {
         swaps.push({ svg, img });
       }
 
+
       // 2. Capture poster canvas - use explicit pixel dimensions to avoid shadow bleed
       const canvas = await html2canvas(posterRef.current, {
         scale: 3,
@@ -114,11 +116,12 @@ const MarketingPage = () => {
         imageTimeout: 0,
       });
 
-      // 3. Restore SVGs
+      // 3. Restore SVGs and logo imgs
       swaps.forEach(({ svg, img }) => {
         svg.style.display = '';
         img.remove();
       });
+      logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
 
       // 4. Build PDF - use exact poster aspect ratio so nothing is cut
       const imgData = canvas.toDataURL('image/png', 1.0);
@@ -130,6 +133,7 @@ const MarketingPage = () => {
       setSnackbar('Poster downloaded!');
     } catch (err) {
       swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
+      logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
       console.error(err);
       setSnackbar('Download failed. Please try again.');
     } finally {
