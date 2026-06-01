@@ -387,7 +387,7 @@ const BusinessHubPage = () => {
         isLoading={isRemoving}
       />
 
-      <Dialog open={!!removingLocation} onClose={() => setRemovingLocation(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+      <Dialog open={!!removingLocation} onClose={() => setRemovingLocation(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 1 } }}>
         <DialogTitle sx={{ fontWeight: 800, pb: 0.5 }}>Remove Location</DialogTitle>
         <DialogContent>
           <Stack spacing={2}>

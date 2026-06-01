@@ -31,11 +31,11 @@ const SubscribeStep3 = ({
   const { data: founding } = useFoundingAvailability();
   const [foundingMode, setFoundingMode] = useState(false);
 
-  const foundingAvailable = founding && founding.active && founding.remaining > 0;
+  const effectiveLocations  = locationCount || 1;
+  const foundingAvailable = founding && founding.active && founding.remaining > 0 && effectiveLocations <= 3;
 
   // Regular plan values
   const pricePerLocation    = TIER_MAP[selectedTier] ?? 0;
-  const effectiveLocations  = locationCount || 1;
 
   // Savings vs regular monthly plan
   const regularMonthlyForFounding = TIER_MAP[FOUNDING_ENTRIES] ?? 0;

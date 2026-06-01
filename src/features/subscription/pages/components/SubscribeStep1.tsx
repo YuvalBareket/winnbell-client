@@ -39,7 +39,7 @@ const SubscribeStep1 = ({
       helperText={
         thresholdInput !== '' && !isThresholdValid
           ? 'Must be a positive number'
-          : 'Leave blank to accept any purchase amount'
+          : 'Set the minimum receipt amount required to earn an entry'
       }
       InputProps={{
         startAdornment: <InputAdornment position='start'><Typography sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '1rem' }}>$</Typography></InputAdornment>,
@@ -56,7 +56,7 @@ const SubscribeStep1 = ({
       <Typography variant='caption' fontWeight={800} color='primary.main' display='block' mb={1.5} sx={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
         Preview
       </Typography>
-      {parsedThreshold && parsedThreshold > 0 ? (
+      {parsedThreshold != null && parsedThreshold > 0 ? (
         <Stack spacing={0.75}>
           {[parsedThreshold - 1, parsedThreshold, parsedThreshold * 2].map((amt) => {
             const entries = Math.floor(amt / parsedThreshold);
@@ -74,7 +74,7 @@ const SubscribeStep1 = ({
         </Stack>
       ) : (
         <Typography variant='body2' color='text.secondary'>
-          {thresholdInput === '' ? 'Any purchase amount earns 1 entry' : 'Enter an amount above to preview'}
+          Enter an amount above to preview
         </Typography>
       )}
     </Box>

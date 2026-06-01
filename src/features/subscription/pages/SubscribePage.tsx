@@ -48,7 +48,7 @@ const STEP_COPY = [
 const SubscribePage = () => {
   const navigate = useNavigate();
   const { data: businessData } = useBusinessData();
-  const locationCount = businessData?.locations?.length ?? null;
+  const locationCount = businessData?.locations?.filter(l => l.is_active).length ?? null;
 
   const [step, setStep] = useState(1);
   const [savedThreshold, setSavedThreshold] = useState<number | null>(null);
@@ -60,7 +60,7 @@ const SubscribePage = () => {
 
 
   const parsedThreshold = thresholdInput.trim() === '' ? null : parseFloat(thresholdInput);
-  const isThresholdValid = thresholdInput.trim() === '' || (!isNaN(parsedThreshold!) && parsedThreshold! > 0);
+  const isThresholdValid = parsedThreshold !== null && !isNaN(parsedThreshold) && parsedThreshold > 0;
 
   const handleThresholdContinue = async () => {
     if (!isThresholdValid) return;

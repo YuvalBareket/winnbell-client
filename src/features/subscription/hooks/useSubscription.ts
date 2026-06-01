@@ -6,7 +6,7 @@ import type { SubscriptionDetails } from '../types/subscription.types';
 export type { SubscriptionDetails };
 
 export const useSubscription = (enabled = true) => {
-  return useQuery({
+  return useQuery<SubscriptionDetails | null>({
     queryKey: queryKeys.subscription.all,
     queryFn: fetchSubscription,
     staleTime: 60_000,

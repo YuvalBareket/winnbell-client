@@ -193,7 +193,7 @@ const didAutoActivate = useRef(false);
 
   if (isDesktop) {
     if (isBusiness && (drawIsUpcoming || hasNoActiveDraw)) {
-      return <DrawPreparationView subscription={subscription} hasDescription={hasDescription} hasLocations={hasLocations} isDesktop={true} />;
+      return <DrawPreparationView subscription={subscription ?? undefined} hasDescription={hasDescription} hasLocations={hasLocations} isDesktop={true} />;
     }
 
     return (
@@ -383,7 +383,7 @@ const didAutoActivate = useRef(false);
   // ─── Mobile layout ──────────────────────────────────────────────────────────
 
   if (isBusiness && (drawIsUpcoming || hasNoActiveDraw)) {
-    return <DrawPreparationView subscription={subscription} hasDescription={hasDescription} hasLocations={hasLocations} isDesktop={false} />;
+    return <DrawPreparationView subscription={subscription ?? undefined} hasDescription={hasDescription} hasLocations={hasLocations} isDesktop={false} />;
   }
 
   return (

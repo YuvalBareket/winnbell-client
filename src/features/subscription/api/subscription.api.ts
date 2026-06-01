@@ -1,7 +1,7 @@
 import { api } from '../../../shared/api/client';
 import type { SubscriptionDetails, FoundingAvailability } from '../types/subscription.types';
 
-export const fetchSubscription = (): Promise<SubscriptionDetails> =>
+export const fetchSubscription = (): Promise<SubscriptionDetails | null> =>
   api.get('/business/subscription').then(r => r.data);
 
 export const cancelSubscription = (): Promise<{
