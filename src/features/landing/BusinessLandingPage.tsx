@@ -68,10 +68,7 @@ const BusinessLandingPage = () => {
               mb: { xs: 2, md: 3 },
             }}
           >
-            The cheapest marketing tool{' '}
-            <Box component='span' sx={{ opacity: 0.8 }}>
-              you'll ever use.
-            </Box>
+            Grow your customers, not your marketing budget.
           </Typography>
 
           <Typography
@@ -85,9 +82,7 @@ const BusinessLandingPage = () => {
               fontWeight: 400,
             }}
           >
-            One flat monthly subscription puts your business on the Winnbell map.
-            Every receipt submitted from your store is a paying customer - tracked,
-            attributed, and sitting in your dashboard.
+            The marketing platform designed to bring customers to your door.
           </Typography>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center'>

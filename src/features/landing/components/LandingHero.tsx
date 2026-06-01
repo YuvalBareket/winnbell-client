@@ -49,10 +49,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
             mb: { xs: 2, md: 3 },
           }}
         >
-          Shop local.{' '}
-          <Box component='span' sx={{ opacity: 0.8 }}>
-            Win monthly prizes.
-          </Box>
+          Shop local. Win monthly prizes.
         </Typography>
 
         <Typography
