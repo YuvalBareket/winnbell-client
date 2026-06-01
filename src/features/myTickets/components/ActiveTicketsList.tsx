@@ -37,7 +37,7 @@ const TicketRowWrapper = ({ children, index }: { children: React.ReactNode; inde
       sx={{
         border: '1px solid',
         borderColor: 'divider',
-        borderRadius: 2,
+        borderRadius: 6,
         p: 2,
         pl: 2.5,
         pr: 2.5,
@@ -395,7 +395,7 @@ const TicketSkeleton = () => (
       justifyContent: 'space-between',
       alignItems: 'center',
       border: '1px solid rgba(0,0,0,0.06)',
-      borderRadius: 2,
+      borderRadius: 6,
       bgcolor: 'background.paper',
     }}
   >

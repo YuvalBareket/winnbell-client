@@ -88,7 +88,7 @@ const LocationCard = ({
               color='error'
               startIcon={<PersonRemove sx={{ fontSize: '14px !important' }} />}
               onClick={() => onRemoveManager(loc.id)}
-              sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', fontSize: '0.75rem' }}
+              sx={{ fontWeight: 700, textTransform: 'none', fontSize: '0.75rem' }}
             >
               Remove
             </Button>
@@ -99,7 +99,7 @@ const LocationCard = ({
               startIcon={<Share />}
               disabled={isInviting}
               onClick={() => onInvite(loc.id)}
-              sx={{ borderRadius: 2, fontWeight: 800, textTransform: 'none', px: 2 }}
+              sx={{ fontWeight: 800, textTransform: 'none', px: 2 }}
             >
               {isInviting ? 'Generating...' : 'Invite Manager'}
             </Button>

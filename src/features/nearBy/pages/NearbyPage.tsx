@@ -158,7 +158,7 @@ const NearbyPage = () => {
         <Box sx={{ position: 'absolute', top: 7, left: 20, right: 20, zIndex: 10, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Paper
             elevation={3}
-            sx={{ flex: 1, p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 2, height: 48 }}
+            sx={{ flex: 1, p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 4, height: 48 }}
           >
             <IconButton sx={{ p: '10px' }}>
               <Search sx={{ color: 'text.secondary' }} />
@@ -272,7 +272,6 @@ const NearbyPage = () => {
                     height: 26,
                     fontSize: '0.72rem',
                     fontWeight: 700,
-                    borderRadius: 2,
                     px: 1.25,
                     minWidth: 'unset',
                     bgcolor: active ? 'primary.main' : 'transparent',
@@ -321,7 +320,7 @@ const NearbyPage = () => {
               <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5, mb: 2 }}>
                 Try adjusting your search or sector filter.
               </Typography>
-              <Button variant='outlined' size='small' sx={{ borderRadius: 2, fontWeight: 700 }} onClick={() => { setSearchTerm(''); setSelectedSector(null); }}>
+              <Button variant='outlined' size='small' sx={{ fontWeight: 700 }} onClick={() => { setSearchTerm(''); setSelectedSector(null); }}>
                 Clear Filters
               </Button>
             </Box>
@@ -350,7 +349,7 @@ const NearbyPage = () => {
                     onClick={() => setSelectedLocationId(partner.location_id)}
                     sx={{
                       p: 1.25,
-                      borderRadius: 2.5,
+                      borderRadius: 6,
                       border: '1px solid',
                       borderColor: 'divider',
                       display: 'flex',

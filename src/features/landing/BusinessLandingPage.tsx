@@ -96,7 +96,6 @@ const BusinessLandingPage = () => {
                 color: PRIMARY_MAIN,
                 fontWeight: 700,
                 fontSize: { xs: '0.95rem', md: '1rem' },
-                borderRadius: 2.5,
                 px: { xs: 2.5, sm: 4 },
                 py: { xs: 1.4, md: 1.6 },
                 width: { xs: '100%', sm: 'auto' },
@@ -160,7 +159,7 @@ const BusinessLandingPage = () => {
               size='large'
               endIcon={<ArrowForward />}
               onClick={() => navigate('/register/Business')}
-              sx={{ fontWeight: 700, fontSize: { xs: '0.95rem', md: '1.05rem' }, borderRadius: 2.5, px: { xs: 2.5, md: 5 }, py: { xs: 1.3, md: 1.6 }, width: { xs: '100%', md: 'auto' }, boxShadow: '0 8px 24px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' } }}
+              sx={{ fontWeight: 700, fontSize: { xs: '0.95rem', md: '1.05rem' }, px: { xs: 2.5, md: 5 }, py: { xs: 1.3, md: 1.6 }, width: { xs: '100%', md: 'auto' }, boxShadow: '0 8px 24px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' } }}
             >
               Create a business account
             </Button>

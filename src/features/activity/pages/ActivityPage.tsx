@@ -167,7 +167,7 @@ const ActivityPage = () => {
                 size='small'
                 variant='contained'
                 onClick={(e) => { e.stopPropagation(); navigate('/subscribe'); }}
-                sx={{ borderRadius: 2, fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' }, whiteSpace: 'nowrap' }}
+                sx={{ fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' }, whiteSpace: 'nowrap' }}
               >
                 Subscribe
               </Button>

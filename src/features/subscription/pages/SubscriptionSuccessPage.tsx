@@ -45,7 +45,7 @@ const SubscriptionSuccessPage = () => {
             <ErrorOutline sx={{ fontSize: 72, color: 'warning.main' }} />
             <Typography variant='h5' fontWeight={900}>Invalid session</Typography>
             <Typography variant='body1' color='text.secondary'>No payment session found. Please try subscribing again.</Typography>
-            <Button variant='contained' onClick={() => navigate('/partner/subscription')} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}>
+            <Button variant='contained' onClick={() => navigate('/partner/subscription')} sx={{ textTransform: 'none', fontWeight: 700 }}>
               Go to Subscription
             </Button>
           </Stack>
@@ -81,7 +81,7 @@ const SubscriptionSuccessPage = () => {
             <Button
               variant='outlined' size='large'
               onClick={() => navigate('/nearby')}
-              sx={{ py: 1.75, px: 4, borderRadius: 2, fontWeight: 800 }}
+              sx={{ py: 1.75, px: 4, fontWeight: 800 }}
             >
               Go to Dashboard
             </Button>
@@ -143,7 +143,7 @@ const SubscriptionSuccessPage = () => {
             variant='contained' size='large'
             startIcon={<Storefront />}
             onClick={() => navigate('/nearby')}
-            sx={{ py: 1.75, px: 4, borderRadius: 2, fontWeight: 800 }}
+            sx={{ py: 1.75, px: 4, fontWeight: 800 }}
           >
             Go to Dashboard
           </Button>

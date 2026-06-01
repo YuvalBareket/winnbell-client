@@ -46,7 +46,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
               variant='contained'
               fullWidth
               onClick={() => onNavigate('/register')}
-              sx={{ fontWeight: 700, borderRadius: 2, py: 1.4 }}
+              sx={{ fontWeight: 700, py: 1.4 }}
             >
               Start now
             </Button>
@@ -108,7 +108,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
               variant='contained'
               fullWidth
               onClick={() => onNavigate('/register/Business')}
-              sx={{ fontWeight: 700, borderRadius: 2, py: 1.4, bgcolor: PRIMARY_MAIN, '&:hover': { bgcolor: '#4F46E5' } }}
+              sx={{ fontWeight: 700, py: 1.4, bgcolor: PRIMARY_MAIN, '&:hover': { bgcolor: '#4F46E5' } }}
             >
               Partner with us
             </Button>

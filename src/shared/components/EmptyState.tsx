@@ -85,7 +85,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         variant='outlined'
         size='small'
         onClick={onAction}
-        sx={{ mt: 2.5, borderRadius: 2, fontWeight: 600 }}
+        sx={{ mt: 2.5, fontWeight: 600 }}
       >
         {actionLabel}
       </Button>

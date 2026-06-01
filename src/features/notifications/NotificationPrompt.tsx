@@ -88,7 +88,7 @@ const NotificationPrompt = () => {
         variant='contained'
         onClick={handleEnable}
         disabled={isSubscribing}
-        sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none', flexShrink: 0 }}
+        sx={{ fontWeight: 700, textTransform: 'none', flexShrink: 0 }}
       >
         Enable
       </Button>

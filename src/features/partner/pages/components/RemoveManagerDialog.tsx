@@ -30,13 +30,13 @@ const RemoveManagerDialog: React.FC<RemoveManagerDialogProps> = ({
       </Typography>
     </DialogContent>
     <DialogActions sx={{ px: 2.5, pb: 2.5, gap: 1 }}>
-      <Button onClick={onClose} sx={{ borderRadius: 2 }}>Cancel</Button>
+      <Button onClick={onClose}>Cancel</Button>
       <Button
         variant='contained'
         color='error'
         disabled={isLoading}
         onClick={onConfirm}
-        sx={{ borderRadius: 2, fontWeight: 700 }}
+        sx={{ fontWeight: 700 }}
       >
         {isLoading ? <CircularProgress size={20} color='inherit' /> : 'Remove Manager'}
       </Button>

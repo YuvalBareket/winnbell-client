@@ -106,7 +106,7 @@ const LogoCropDialog: React.FC<LogoCropDialogProps> = ({ open, imageSrc, onClose
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
         <Button onClick={onClose} sx={{ fontWeight: 600 }}>Cancel</Button>
-        <Button variant='contained' onClick={handleConfirm} sx={{ fontWeight: 700, borderRadius: 2 }}>
+        <Button variant='contained' onClick={handleConfirm} sx={{ fontWeight: 700 }}>
           Save
         </Button>
       </DialogActions>

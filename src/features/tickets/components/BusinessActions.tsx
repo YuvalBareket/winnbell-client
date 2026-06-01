@@ -58,7 +58,6 @@ const BusinessActions: React.FC<BusinessActionsProps> = ({
       }
       sx={{
         height: 64,
-        borderRadius: 2,
         fontSize: '1.2rem',
         fontWeight: 800,
         bgcolor: primaryColor,

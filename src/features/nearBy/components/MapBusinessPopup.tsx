@@ -324,7 +324,6 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
               onClick={handleSubmitReceipt}
               sx={{
                 py: 1.6,
-                borderRadius: 2,
                 fontWeight: 800,
                 fontSize: '0.95rem',
                 bgcolor: PRIMARY_MAIN,
@@ -344,7 +343,6 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
               onClick={handleDirections}
               sx={{
                 py: 1.4,
-                borderRadius: 2,
                 fontWeight: 700,
                 fontSize: '0.9rem',
                 borderColor: 'divider',

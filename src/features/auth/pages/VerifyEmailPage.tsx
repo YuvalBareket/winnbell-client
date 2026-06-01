@@ -189,7 +189,6 @@ const VerifyEmailPage = () => {
           endIcon={!loading && <ArrowForward />}
           sx={{
             py: 2,
-            borderRadius: 2,
             fontWeight: 700,
             boxShadow: SHADOW_PRIMARY_SOFT,
           }}

@@ -114,15 +114,15 @@ const CanvasAnnotationEditor = ({
       {/* Toolbar */}
       <Stack direction='row' spacing={1} sx={{ mb: 3 }}>
         <Button variant='outlined' size='small' startIcon={<UndoOutlined />} onClick={handleUndo}
-          disabled={pathCount === 0} sx={{ flex: 1, textTransform: 'none', borderRadius: 2, fontWeight: 700 }}>
+          disabled={pathCount === 0} sx={{ flex: 1, textTransform: 'none', fontWeight: 700 }}>
           Undo
         </Button>
         <Button variant='outlined' size='small' startIcon={<DeleteOutlineOutlined />} onClick={handleClearAll}
-          disabled={pathCount === 0} sx={{ flex: 1, textTransform: 'none', borderRadius: 2, fontWeight: 700 }}>
+          disabled={pathCount === 0} sx={{ flex: 1, textTransform: 'none', fontWeight: 700 }}>
           Clear
         </Button>
         <Button variant='outlined' size='small' onClick={handleNewPhoto}
-          sx={{ flex: 1, textTransform: 'none', borderRadius: 2, fontWeight: 700 }}>
+          sx={{ flex: 1, textTransform: 'none', fontWeight: 700 }}>
           New photo
         </Button>
       </Stack>
@@ -130,7 +130,7 @@ const CanvasAnnotationEditor = ({
       <input ref={fileInputRef} type='file' accept='image/*' hidden onChange={handleFileChange} />
 
       <Button fullWidth variant='contained' size='large' onClick={handleSaveClick} disabled={isSaving}
-        sx={{ py: 1.875, borderRadius: 2, fontWeight: 800, fontSize: '1rem', textTransform: 'none', mb: 1.5, boxShadow: '0 4px 14px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.4)' } }}>
+        sx={{ py: 1.875, fontWeight: 800, fontSize: '1rem', textTransform: 'none', mb: 1.5, boxShadow: '0 4px 14px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.4)' } }}>
         {isSaving ? <CircularProgress size={22} color='inherit' /> : 'Save & Continue →'}
       </Button>
     </>

@@ -274,7 +274,7 @@ export default function SubscriptionManagementPage() {
                       startIcon={<Edit />}
                       onClick={() => { setNewTier(sub.entries_per_location ?? 750); setEditPlanOpen(true); setUpdateError(''); }}
                       disabled={sub.is_founding || sub.status === 'Cancelled'}
-                      sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+                      sx={{ fontWeight: 700, textTransform: 'none' }}
                     >
                       Edit Plan
                     </Button>
@@ -474,7 +474,7 @@ export default function SubscriptionManagementPage() {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setEditPlanOpen(false)} variant='outlined' sx={{ borderRadius: 2, fontWeight: 700 }}>
+          <Button onClick={() => setEditPlanOpen(false)} variant='outlined' sx={{ fontWeight: 700 }}>
             Cancel
           </Button>
           <Button
@@ -487,7 +487,7 @@ export default function SubscriptionManagementPage() {
             }}
             variant='contained'
             disabled={updatingPlan || newTier === (sub.entries_per_location ?? 0)}
-            sx={{ borderRadius: 2, fontWeight: 700 }}
+            sx={{ fontWeight: 700 }}
           >
             {updatingPlan ? <CircularProgress size={20} color='inherit' /> : 'Confirm Change'}
           </Button>
@@ -518,7 +518,7 @@ export default function SubscriptionManagementPage() {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setConfirmOpen(false)} variant='outlined' sx={{ borderRadius: 2, fontWeight: 700 }}>
+          <Button onClick={() => setConfirmOpen(false)} variant='outlined' sx={{ fontWeight: 700 }}>
             Keep {sub.is_founding ? 'Membership' : 'Subscription'}
           </Button>
           <Button
@@ -526,7 +526,7 @@ export default function SubscriptionManagementPage() {
             color='error'
             variant='contained'
             disabled={cancelling}
-            sx={{ borderRadius: 2, fontWeight: 700 }}
+            sx={{ fontWeight: 700 }}
           >
             {cancelling ? <CircularProgress size={20} color='inherit' /> : 'Yes, Cancel'}
           </Button>

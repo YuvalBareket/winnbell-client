@@ -170,7 +170,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                 placeholder='Describe what you offer...'
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'white' } }}
+                sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
               />
             )}
           />
@@ -181,7 +181,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
               variant='outlined'
               onClick={onClose}
               disabled={isPending}
-              sx={{ borderRadius: 2, fontWeight: 700, py: 1.5, textTransform: 'none' }}
+              sx={{ fontWeight: 700, py: 1.5, textTransform: 'none' }}
             >
               Cancel
             </Button>
@@ -191,7 +191,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
               variant='contained'
               disabled={isPending}
               startIcon={isPending ? <CircularProgress size={16} color='inherit' /> : null}
-              sx={{ borderRadius: 2, fontWeight: 800, py: 1.5, textTransform: 'none' }}
+              sx={{ fontWeight: 800, py: 1.5, textTransform: 'none' }}
             >
               {isPending ? 'Saving…' : 'Save Changes'}
             </Button>

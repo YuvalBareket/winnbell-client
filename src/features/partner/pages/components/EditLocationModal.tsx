@@ -115,7 +115,7 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
               fullWidth
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'white' } }}
+              sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
             />
           )}
         />
@@ -134,7 +134,7 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
             variant='outlined'
             onClick={onClose}
             disabled={isPending}
-            sx={{ flex: 1, borderRadius: 2, textTransform: 'none', fontWeight: 700, py: 1.5 }}
+            sx={{ flex: 1, textTransform: 'none', fontWeight: 700, py: 1.5 }}
           >
             Cancel
           </Button>
@@ -143,7 +143,7 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
             variant='contained'
             disabled={isPending}
             startIcon={isPending ? <CircularProgress size={16} color='inherit' /> : null}
-            sx={{ flex: 1, borderRadius: 2, textTransform: 'none', fontWeight: 800, py: 1.5 }}
+            sx={{ flex: 1, textTransform: 'none', fontWeight: 800, py: 1.5 }}
           >
             {isPending ? 'Saving…' : 'Save'}
           </Button>

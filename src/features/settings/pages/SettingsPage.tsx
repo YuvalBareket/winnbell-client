@@ -463,7 +463,6 @@ const SettingsPage = () => {
                           sx={{
                             bgcolor: PRIMARY_MAIN,
                             fontWeight: 700,
-                            borderRadius: 2,
                             py: 1.2,
                             textTransform: 'none',
                             fontSize: '0.95rem',
@@ -562,7 +561,6 @@ const SettingsPage = () => {
                         color: '#d32f2f',
                         borderColor: '#d32f2f',
                         fontWeight: 700,
-                        borderRadius: 2,
                         textTransform: 'none',
                         flexShrink: 0,
                         transition: 'all 0.3s',
@@ -630,7 +628,6 @@ const SettingsPage = () => {
             onClick={() => setDeleteDialogOpen(false)}
             variant='outlined'
             sx={{
-              borderRadius: 2,
               textTransform: 'none',
               fontWeight: 600,
             }}
@@ -642,7 +639,6 @@ const SettingsPage = () => {
             variant='contained'
             disabled={deleteLoading}
             sx={{
-              borderRadius: 2,
               fontWeight: 700,
               textTransform: 'none',
               transition: 'all 0.3s',

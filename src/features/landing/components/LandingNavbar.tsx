@@ -38,7 +38,7 @@ const LandingNavbar = ({ onNavigate, variant = 'consumer' }: LandingNavbarProps)
         <Button
           variant='contained'
           onClick={() => onNavigate('/register')}
-          sx={{ fontWeight: 700, borderRadius: 2, px: { xs: 1.5, md: 2.5 }, py: { xs: 0.75, md: 1 }, boxShadow: 'none', fontSize: { xs: '0.85rem', md: '1rem' }, minHeight: 44 }}
+          sx={{ fontWeight: 700, px: { xs: 1.5, md: 2.5 }, py: { xs: 0.75, md: 1 }, boxShadow: 'none', fontSize: { xs: '0.85rem', md: '1rem' }, minHeight: 44 }}
         >
           Get started
         </Button>

@@ -42,7 +42,6 @@ const SelectedLocationPill: React.FC<Props> = ({ primaryColor, location, onChang
         sx={{
           color: primaryColor || PRIMARY_MAIN, fontWeight: 700,
           fontSize: '0.75rem', minWidth: 'auto', px: 1.5,
-          borderRadius: 2,
           '&:hover': { bgcolor: `${primaryColor || PRIMARY_MAIN}15` },
         }}
       >

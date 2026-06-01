@@ -102,7 +102,6 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
             helperText={error ? 'Incorrect' : ' '}
             autoFocus
             sx={{
-              '& .MuiOutlinedInput-root': { borderRadius: 2 },
             }}
           />
           <Button
@@ -111,7 +110,6 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
             variant="contained"
             size="small"
             sx={{
-              borderRadius: 2,
               textTransform: 'none',
               background: '#195DE6',
               fontWeight: 600,

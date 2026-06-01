@@ -295,7 +295,7 @@ const didAutoActivate = useRef(false);
                     fontWeight: 700,
                     px: 3,
                     py: 1.25,
-                    borderRadius: 2,
+                    borderRadius: 4,
                     '&:hover': { filter: 'brightness(0.92)' },
                   }}
                 >
@@ -440,7 +440,7 @@ const didAutoActivate = useRef(false);
                   elevation={0}
                   onClick={() => navigate('/freeTicket')}
                   sx={{
-                    p: 1.5, px: 2, borderRadius: 2,
+                    p: 1.5, px: 2, borderRadius: 4,
                     bgcolor: `${primaryColor || PRIMARY_MAIN}0A`,
                     border: `1px solid ${primaryColor || PRIMARY_MAIN}`,
                     cursor: 'pointer',

@@ -63,7 +63,6 @@ const BusinessSelector: React.FC<Props> = ({
         sx={{
           mb: 2,
           '& .MuiOutlinedInput-root': {
-            borderRadius: 2.5,
             bgcolor: 'background.paper',
             '& fieldset': { borderColor: 'divider' },
             '&:hover fieldset': { borderColor: primaryColor || PRIMARY_MAIN },

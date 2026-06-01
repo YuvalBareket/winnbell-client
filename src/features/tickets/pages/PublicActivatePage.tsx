@@ -85,7 +85,7 @@ const PublicActivatePage = () => {
           </Typography>
           <Button 
             variant="contained" 
-            sx={{ mt: 3, borderRadius: 2 }}
+            sx={{ mt: 3 }}
             onClick={() => navigate('/')}
           >
             Go Home
@@ -133,7 +133,7 @@ const PublicActivatePage = () => {
               fullWidth
               startIcon={<PersonAdd />}
               onClick={() => navigate('/register/user')}
-              sx={{ borderRadius: 2, fontWeight: 800, py: 1.5 }}
+              sx={{ fontWeight: 800, py: 1.5 }}
             >
               Create Free Account
             </Button>
@@ -143,7 +143,7 @@ const PublicActivatePage = () => {
               fullWidth
               startIcon={<Login />}
               onClick={() => navigate('/login')}
-              sx={{ borderRadius: 2, fontWeight: 700, py: 1.5 }}
+              sx={{ fontWeight: 700, py: 1.5 }}
             >
               Sign In
             </Button>

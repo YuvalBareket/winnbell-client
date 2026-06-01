@@ -126,7 +126,7 @@ const ResetPasswordPage = () => {
                 size='large'
                 onClick={handleSubmit}
                 disabled={loading}
-                sx={{ borderRadius: 2, fontWeight: 700, py: 1.5 }}
+                sx={{ fontWeight: 700, py: 1.5 }}
               >
                 {loading ? <CircularProgress size={22} color='inherit' /> : 'Update Password'}
               </Button>

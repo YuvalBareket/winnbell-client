@@ -191,7 +191,6 @@ const HowItWorksModal = ({ open, onClose }: Props) => {
             fontSize: '0.9rem',
             py: 1.2,
             textTransform: 'none',
-            borderRadius: 2,
           }}
         >
           Got it!

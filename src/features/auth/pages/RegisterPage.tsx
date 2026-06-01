@@ -279,7 +279,7 @@ const RegisterPage = () => {
           <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
             InputProps={{
               startAdornment: (<InputAdornment position='start'><Person sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              sx: { borderRadius: 2, bgcolor: 'background.paper' },
+              sx: { bgcolor: 'background.paper' },
             }}
           />
         </Box>
@@ -289,7 +289,7 @@ const RegisterPage = () => {
           <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
             InputProps={{
               startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              sx: { borderRadius: 2, bgcolor: 'background.paper' },
+              sx: { bgcolor: 'background.paper' },
             }}
           />
         </Box>
@@ -307,7 +307,7 @@ const RegisterPage = () => {
                   </IconButton>
                 </InputAdornment>
               ),
-              sx: { borderRadius: 2, bgcolor: 'background.paper' },
+              sx: { bgcolor: 'background.paper' },
             }}
           />
         </Box>
@@ -324,7 +324,6 @@ const RegisterPage = () => {
             disabled={googleLoading}
             sx={{
               py: 1.5,
-              borderRadius: 2,
               textTransform: 'none',
               bgcolor: 'background.paper',
               color: 'text.primary',
@@ -382,7 +381,7 @@ const RegisterPage = () => {
 
         <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted || !ageVerified} disableElevation
           sx={{
-            py: 1.5, borderRadius: 2, fontSize: '1rem', fontWeight: 700,
+            py: 1.5, fontSize: '1rem', fontWeight: 700,
             bgcolor: isLocationManager ? ROLE_MANAGER_BG : 'primary.main',
             boxShadow: SHADOW_PRIMARY_SOFT,
             '&:hover': { bgcolor: isLocationManager ? ROLE_MANAGER_HOVER : 'primary.dark' },

@@ -141,7 +141,7 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
 // --- Shared Helper Styles & Components ---
 const rowStyle = {
   p: 2,
-  borderRadius: 2,
+  borderRadius: 6,
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',

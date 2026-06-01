@@ -212,7 +212,7 @@ const LoginPage = () => {
           <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
             InputProps={{
               startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              sx: { borderRadius: 2.5, bgcolor: 'background.paper' },
+              sx: { bgcolor: 'background.paper' },
             }}
           />
         </Box>
@@ -247,7 +247,7 @@ const LoginPage = () => {
                   </IconButton>
                 </InputAdornment>
               ),
-              sx: { borderRadius: 2.5, bgcolor: 'background.paper' },
+              sx: { bgcolor: 'background.paper' },
             }}
           />
         </Box>
@@ -264,7 +264,6 @@ const LoginPage = () => {
             disabled={googleLoading}
             sx={{
               py: 1.5,
-              borderRadius: 2,
               textTransform: 'none',
               bgcolor: 'background.paper',
               color: 'text.primary',
@@ -306,7 +305,7 @@ const LoginPage = () => {
 
         <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted}
           endIcon={!loading && <Login />}
-          sx={{ py: 1.5, borderRadius: 2, fontSize: '1rem', fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
+          sx={{ py: 1.5, fontSize: '1rem', fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
           {loading ? <CircularProgress size={24} color='inherit' /> : 'Sign In'}
         </Button>
       </Stack>

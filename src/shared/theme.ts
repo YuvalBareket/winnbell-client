@@ -66,7 +66,7 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
+          borderRadius: 32,
           boxShadow: 'none',
           padding: '10px 22px',
           transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
@@ -74,7 +74,7 @@ export const theme = createTheme({
         sizeLarge: {
           padding: '12px 28px',
           fontSize: '0.95rem',
-          borderRadius: 12,
+          borderRadius: 32,
         },
         containedPrimary: {
           '&:hover': {
@@ -146,6 +146,13 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 8,
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: 32,
         },
       },
     },

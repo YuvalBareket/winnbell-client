@@ -323,7 +323,7 @@ const MarketingPage = () => {
                     <TextField
                       {...params}
                       label='Select Location'
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                      sx={{}}
                     />
                   )}
                 />
@@ -336,7 +336,7 @@ const MarketingPage = () => {
                 onClick={handleDownload}
                 disabled={downloading || !effectiveLocationId}
                 sx={{
-                  py: 1.6, borderRadius: 2.5, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
+                  py: 1.6, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
                   boxShadow: '0 4px 14px rgba(25,93,230,0.3)',
                   '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.4)' },
                 }}
@@ -357,7 +357,7 @@ const MarketingPage = () => {
                     startIcon={<ContentCopy fontSize='small' />}
                     onClick={handleCopy}
                     sx={{
-                      py: 1.2, borderRadius: 2.5, fontWeight: 700, textTransform: 'none',
+                      py: 1.2, fontWeight: 700, textTransform: 'none',
                       borderColor: copied ? 'success.main' : 'divider',
                       color: copied ? 'success.main' : 'text.secondary',
                       '&:hover': { borderColor: 'primary.main', color: 'primary.main', bgcolor: `${PRIMARY_MAIN}06` },

@@ -15,7 +15,7 @@ export const LocationCard: React.FC<LocationCardProps> = ({ location, primaryCol
     onClick={() => onSelect(location)}
     sx={{
       display: 'flex', alignItems: 'center', gap: 1.5,
-      p: 1.75, mb: 1, borderRadius: 2.5,
+      p: 1.75, mb: 1, borderRadius: 4,
       border: '1px solid', borderColor: 'divider',
       bgcolor: 'background.paper',
       cursor: 'pointer', transition: 'border-color 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out, transform 150ms ease-out',
@@ -58,7 +58,7 @@ export const NearbyLocationCard: React.FC<NearbyLocationCardProps> = ({ location
     onClick={() => onSelect(location)}
     sx={{
       display: 'flex', alignItems: 'center', gap: 1.5,
-      p: 1.75, mb: 1, borderRadius: 2.5,
+      p: 1.75, mb: 1, borderRadius: 4,
       border: '1px solid', borderColor: 'divider',
       bgcolor: 'background.paper',
       cursor: 'pointer', transition: 'border-color 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out, transform 150ms ease-out',

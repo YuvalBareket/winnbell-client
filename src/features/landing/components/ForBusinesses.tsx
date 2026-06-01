@@ -72,7 +72,6 @@ const ForBusinesses = ({ onNavigate }: ForBusinessesProps) => {
             sx={{
               fontWeight: 800,
               fontSize: { xs: '0.95rem', md: '1.05rem' },
-              borderRadius: 2.5,
               px: { xs: 2.5, md: 5 },
               py: { xs: 1.4, md: 1.8 },
               width: { xs: '100%', md: 'auto' },

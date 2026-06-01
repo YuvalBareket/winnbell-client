@@ -102,7 +102,7 @@ const MyTicketsPage = () => {
                     value={locations.find(l => l.id === selectedLocationId) ?? null}
                     onChange={(_, val) => setSelectedLocationId(val?.id ?? undefined)}
                     isOptionEqualToValue={(a, b) => a.id === b.id}
-                    renderInput={(params) => <TextField {...params} label='All locations' sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />}
+                    renderInput={(params) => <TextField {...params} label='All locations' sx={{}} />}
                   />
                 </Box>
               )}
@@ -154,7 +154,7 @@ const MyTicketsPage = () => {
             value={locations.find(l => l.id === selectedLocationId) ?? null}
             onChange={(_, val) => setSelectedLocationId(val?.id ?? undefined)}
             isOptionEqualToValue={(a, b) => a.id === b.id}
-            renderInput={(params) => <TextField {...params} label='All locations' sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />}
+            renderInput={(params) => <TextField {...params} label='All locations' sx={{}} />}
           />
         </Box>
       )}

@@ -244,7 +244,7 @@ const BusinessHubPage = () => {
                 size='small'
                 startIcon={<CreditCard sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
                 onClick={() => navigate('/subscribe')}
-                sx={{ borderRadius: 2, fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
+                sx={{ fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
               >
                 Start Campaign
               </Button>
@@ -265,7 +265,7 @@ const BusinessHubPage = () => {
               size='small'
               startIcon={<PreviewOutlined />}
               onClick={() => setPreviewOpen(true)}
-              sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', flexShrink: 0 }}
+              sx={{ fontWeight: 700, textTransform: 'none', flexShrink: 0 }}
             >
               Preview
             </Button>
@@ -294,7 +294,7 @@ const BusinessHubPage = () => {
                   variant='outlined'
                   startIcon={<AddBusiness />}
                   onClick={() => setAddLocationOpen(true)}
-                  sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+                  sx={{ fontWeight: 700, textTransform: 'none' }}
                 >
                   Add Location
                 </Button>
@@ -314,7 +314,7 @@ const BusinessHubPage = () => {
                 <Button
                   variant='contained'
                   onClick={() => setAddLocationOpen(true)}
-                  sx={{ mt: 3, borderRadius: 2, fontWeight: 800, textTransform: 'none', px: 4 }}
+                  sx={{ mt: 3, fontWeight: 800, textTransform: 'none', px: 4 }}
                 >
                   Add Location
                 </Button>
@@ -439,12 +439,12 @@ const BusinessHubPage = () => {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setRemovingLocation(null)} sx={{ borderRadius: 2, textTransform: 'none' }}>Cancel</Button>
+          <Button onClick={() => setRemovingLocation(null)} sx={{ textTransform: 'none' }}>Cancel</Button>
           <Button
             variant='contained'
             color='error'
             onClick={handleConfirmRemoveLocation}
-            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
+            sx={{ textTransform: 'none', fontWeight: 700 }}
           >
             Remove
           </Button>

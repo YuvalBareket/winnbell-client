@@ -66,7 +66,6 @@ const UserActions: React.FC<UserActionsProps> = ({
             </InputAdornment>
           ),
           sx: {
-            borderRadius: 2,
             bgcolor: 'action.hover',
             fontSize: '1.25rem',
             fontFamily: 'monospace',
@@ -93,7 +92,6 @@ const UserActions: React.FC<UserActionsProps> = ({
       sx={{
         background: GRADIENT_PRIMARY,
         height: 52,
-        borderRadius: 2,
         fontSize: '1rem',
         fontWeight: 800,
         boxShadow: SHADOW_PRIMARY_SOFT,
@@ -118,7 +116,7 @@ const UserActions: React.FC<UserActionsProps> = ({
           startIcon={<QrCodeScanner />}
           onClick={() => setScannerOpen(true)}
           disabled={redeemMutation.isPending}
-          sx={{ height: 48, borderRadius: 2, fontWeight: 700 }}
+          sx={{ height: 48, fontWeight: 700 }}
         >
           Scan QR Code
         </Button>

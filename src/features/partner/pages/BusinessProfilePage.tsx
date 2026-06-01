@@ -205,7 +205,7 @@ const BusinessProfilePage = () => {
                           </InputAdornment>
                         ),
                       }}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'white' } }}
+                      sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
                     />
                   )}
                 />
@@ -343,7 +343,7 @@ const BusinessProfilePage = () => {
                       error={!!error}
                       helperText={error?.message}
                       placeholder='Describe what you offer and what makes you special...'
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'white' } }}
+                      sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
                     />
                   )}
                 />
@@ -354,7 +354,7 @@ const BusinessProfilePage = () => {
                   variant='contained'
                   endIcon={<ArrowForward />}
                   onClick={goNext}
-                  sx={{ py: 1.75, borderRadius: 2, fontWeight: 800, fontSize: '1rem' }}
+                  sx={{ py: 1.75, fontWeight: 800, fontSize: '1rem' }}
                 >
                   Continue to Locations
                 </Button>
@@ -414,7 +414,7 @@ const BusinessProfilePage = () => {
                               fullWidth
                               label='Branch name'
                               placeholder='e.g. Downtown, Main Branch'
-                              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                              sx={{}}
                             />
                           )}
                         />
@@ -458,7 +458,7 @@ const BusinessProfilePage = () => {
                   variant='outlined'
                   startIcon={<AddLocation />}
                   onClick={() => append({ name: '', address: '', lat: null, lon: null })}
-                  sx={{ borderRadius: 2, fontWeight: 700, alignSelf: 'flex-start' }}
+                  sx={{ fontWeight: 700, alignSelf: 'flex-start' }}
                 >
                   Add Another Location
                 </Button>
@@ -469,7 +469,7 @@ const BusinessProfilePage = () => {
                     variant='outlined'
                     startIcon={<ArrowBack />}
                     onClick={() => setStep(0)}
-                    sx={{ borderRadius: 2, fontWeight: 700, flex: 1 }}
+                    sx={{ fontWeight: 700, flex: 1 }}
                   >
                     Back
                   </Button>
@@ -479,7 +479,7 @@ const BusinessProfilePage = () => {
                     type='submit'
                     disabled={isPending}
                     endIcon={isPending ? undefined : <CheckCircle />}
-                    sx={{ borderRadius: 2, fontWeight: 800, flex: 2, py: 1.75 }}
+                    sx={{ fontWeight: 800, flex: 2, py: 1.75 }}
                   >
                     {isPending ? <CircularProgress size={22} color='inherit' /> : 'Complete Setup'}
                   </Button>

@@ -46,7 +46,6 @@ const SubscribeStep1 = ({
       }}
       sx={{
         mb: 3,
-        '& .MuiOutlinedInput-root': { borderRadius: 2.5 },
         '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: 'primary.main' },
       }}
     />
@@ -85,7 +84,7 @@ const SubscribeStep1 = ({
       fullWidth variant='contained' size='large'
       onClick={onContinue}
       disabled={!isThresholdValid || savingThreshold}
-      sx={{ py: 1.875, borderRadius: 2, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(2,146,183,0.3)', '&:hover': { boxShadow: '0 6px 20px rgba(2,146,183,0.4)' } }}
+      sx={{ py: 1.875, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(2,146,183,0.3)', '&:hover': { boxShadow: '0 6px 20px rgba(2,146,183,0.4)' } }}
     >
       {savingThreshold ? <CircularProgress size={22} color='inherit' /> : 'Continue →'}
     </Button>

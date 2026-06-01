@@ -77,7 +77,6 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
               color: PRIMARY_MAIN,
               fontWeight: 700,
               fontSize: { xs: '0.95rem', md: '1rem' },
-              borderRadius: 2.5,
               px: { xs: 2.5, sm: 4 },
               py: { xs: 1.4, md: 1.6 },
               width: { xs: '100%', sm: 'auto' },

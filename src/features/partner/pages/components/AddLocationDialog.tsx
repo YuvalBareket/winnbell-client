@@ -101,7 +101,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
               fullWidth
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'white' } }}
+              sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
             />
           )}
         />
@@ -157,7 +157,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
           <Button
             variant='outlined'
             onClick={onClose}
-            sx={{ flex: 1, borderRadius: 2, fontWeight: 700, py: 1.5, textTransform: 'none' }}
+            sx={{ flex: 1, fontWeight: 700, py: 1.5, textTransform: 'none' }}
           >
             Cancel
           </Button>
@@ -166,7 +166,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
             form='add-location-form'
             variant='contained'
             disabled={isLoading}
-            sx={{ flex: 1, borderRadius: 2, fontWeight: 800, py: 1.5, textTransform: 'none' }}
+            sx={{ flex: 1, fontWeight: 800, py: 1.5, textTransform: 'none' }}
           >
             {isLoading ? <CircularProgress size={20} color='inherit' /> : 'Add Location'}
           </Button>

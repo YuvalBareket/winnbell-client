@@ -59,7 +59,7 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, onViewEntr
               size="large"
               startIcon={<ConfirmationNumberIcon />}
               onClick={onViewEntries}
-              sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, borderRadius: 2, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+              sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
             >
               View My Entries
             </Button>

@@ -183,7 +183,6 @@ const FreeTicketPage: React.FC = () => {
             endIcon={canActivate ? <BoltIcon /> : <LockIcon />}
             sx={{
               py: 2,
-              borderRadius: 2,
               fontSize: '1.1rem',
               fontWeight: 700,
               textTransform: 'none',
@@ -383,7 +382,6 @@ const FreeTicketPage: React.FC = () => {
           sx={{
             py: 2,
             px: 5,
-            borderRadius: 2,
             fontSize: '1rem',
             fontWeight: 700,
             textTransform: 'none',

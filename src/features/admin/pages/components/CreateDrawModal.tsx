@@ -87,12 +87,11 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
             onChange={(e) => setFormData({ ...formData, draw_date: e.target.value })}
           />
           <Box display='flex' justifyContent='flex-end' gap={1} mt={1}>
-            <Button onClick={onClose} sx={{ borderRadius: 2 }}>Cancel</Button>
+            <Button onClick={onClose}>Cancel</Button>
             <Button
               variant='contained'
               onClick={handleSubmit}
               disabled={mutation.isPending || !formData.name || !formData.draw_date || !formData.prize_amount}
-              sx={{ borderRadius: 2 }}
             >
               {mutation.isPending ? 'Saving...' : 'Create Campaign'}
             </Button>

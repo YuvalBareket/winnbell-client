@@ -44,20 +44,20 @@ const InviteManagerDialog: React.FC<InviteManagerDialogProps> = ({
           value={inviteUrl || ''}
           InputProps={{ readOnly: true }}
           variant='outlined'
-          sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          sx={{ mb: 2 }}
         />
         <Typography variant='caption' color='text.secondary'>
           They can use this link to set up their account and manage your location.
         </Typography>
       </DialogContent>
       <DialogActions sx={{ gap: 1, p: 2 }}>
-        <Button onClick={onClose} sx={{ borderRadius: 2 }}>
+        <Button onClick={onClose}>
           Close
         </Button>
         <Button
           variant='contained'
           onClick={handleCopyLink}
-          sx={{ borderRadius: 2, fontWeight: 800, textTransform: 'none' }}
+          sx={{ fontWeight: 800, textTransform: 'none' }}
         >
           Copy Link
         </Button>
