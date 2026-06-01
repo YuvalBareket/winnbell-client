@@ -306,7 +306,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
           <EmptyState
             icon={<ConfirmationNumberOutlined />}
             title='No entries yet'
-            description='Submit a receipt at a partner business to earn your first entry'
+            description='Claim your free weekly entry or submit a receipt at a partner business'
             actionLabel='Scan a receipt'
             onAction={() => navigate('/scan')}
           />

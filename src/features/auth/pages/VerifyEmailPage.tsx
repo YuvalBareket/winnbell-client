@@ -41,18 +41,18 @@ const BrandPanel = () => (
 
     {/* Headline */}
     <Typography variant='h3' fontWeight={900} lineHeight={1.15} mb={2}>
-      Win More,<br />Every Day
+      Real Prizes.<br />Every Month.
     </Typography>
     <Typography variant='body1' sx={{ opacity: 0.8, mb: 5, lineHeight: 1.7, maxWidth: 340 }}>
-      Join thousands of members earning tickets at local partner businesses and entering monthly prize draws.
+      Join thousands of members supporting local businesses and competing for real monthly prizes. No purchase necessary.
     </Typography>
 
     {/* Feature bullets */}
     <Stack spacing={2.5}>
       {[
-        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn tickets at local partner shops' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Enter monthly prize draws automatically' },
-        { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Win amazing prizes every month' },
+        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local partner businesses' },
+        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your free weekly entry - no purchase needed' },
+        { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
       ].map((item, i) => (
         <Stack key={i} direction='row' alignItems='center' spacing={1.5}>
           <Box sx={{ width: 34, height: 34, borderRadius: 1.5, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

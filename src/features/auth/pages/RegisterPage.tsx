@@ -37,22 +37,22 @@ const BrandPanel = ({ isBusinessOwner, isLocationManager }: { isBusinessOwner: b
         { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Track performance and engagement' },
       ]
     : [
-        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local partner shops' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Enter monthly campaigns automatically' },
-        { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Win amazing prizes every month' },
+        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local partner businesses' },
+        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your free weekly entry - no purchase needed' },
+        { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
       ];
 
   const headline = isBusinessOwner
     ? 'Grow Your\nBusiness'
     : isLocationManager
     ? 'Manage Your\nBranch'
-    : 'Win More,\nEvery Day';
+    : 'Real Prizes.\nEvery Month.';
 
   const tagline = isBusinessOwner
-    ? 'Partner with Winnbell and turn every purchase into a chance for your customers to win.'
+    ? 'Partner with Winnbell. Customers can submit receipts at your location to earn campaign entries - bringing them back month after month.'
     : isLocationManager
     ? 'Complete your onboarding to start managing your branch and issuing entries.'
-    : 'Join thousands of members earning entries at local partner businesses and winning monthly campaigns.';
+    : 'Join thousands of members supporting local businesses and competing for real monthly prizes. No purchase necessary.';
 
   return (
     <Box

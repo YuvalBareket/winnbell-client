@@ -100,7 +100,7 @@ const DrawPreparationView = ({
               </Box>
               <Box sx={{ p: 2, bgcolor: 'rgba(25,93,230,0.04)', borderRadius: 2, border: '1px solid rgba(25,93,230,0.1)' }}>
                 <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-                  Once the campaign is live, your customers earn entries simply by shopping at your store and submitting their receipts through the Winnbell app. Every verified purchase automatically qualifies them for the monthly prize draw.
+                  Once the campaign is live, customers can submit receipts from your store through the Winnbell app to earn campaign entries. Members also receive one free entry per week regardless of any purchase.
                 </Typography>
               </Box>
             </Box>

@@ -5,15 +5,15 @@ import { PRIMARY_MAIN, TEXT_SECONDARY, TEXT_HEADING } from '../../../shared/colo
 const FAQ_ITEMS = [
   {
     q: 'Is it free for consumers?',
-    a: 'Yes, completely. Sign up, submit your receipts, and enter draws for free.',
+    a: 'Yes, completely. Every member receives one free campaign entry every week - no purchase required. You can also earn additional entries by submitting receipts from partner businesses. No purchase is necessary to participate or win.',
   },
   {
     q: 'How are winners chosen?',
-    a: 'Winners are selected randomly from all eligible entries in the campaign pool. Every entry has an equal chance.',
+    a: 'At the end of each monthly campaign, one winner is selected at random from all eligible entries in the pool. Every entry - whether earned from a receipt or claimed as the free weekly entry - has an equal chance of winning.',
   },
   {
     q: 'How do businesses benefit?',
-    a: 'Partner businesses pay a subscription to be featured in the Winnbell campaign. In return, customers visit your location to earn entries - driving repeat foot traffic and sales throughout the campaign period.',
+    a: 'Partner businesses pay a subscription to be featured in the Winnbell campaign and listed on the Winnbell map. Customers who visit a partner location can submit receipts to earn campaign entries, giving them a free, non-purchase-required reason to choose your business.',
   },
   {
     q: 'How does the business subscription work?',

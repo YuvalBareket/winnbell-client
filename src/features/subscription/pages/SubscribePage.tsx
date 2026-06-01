@@ -31,7 +31,7 @@ const FEATURES = [
 const STEP_COPY = [
   {
     headline: 'Start your campaign',
-    sub: 'Choose how customers earn their entry - set a spending goal or let every purchase count.',
+    sub: 'Set a minimum receipt amount for entry eligibility, or accept any receipt amount from your store.',
   },
   {
     headline: 'Make it crystal clear',
@@ -197,7 +197,7 @@ const SubscribePage = () => {
         </Stack>
 
         <Typography variant='caption' sx={{ opacity: 0.5, display: { xs: 'none', md: 'block' } }}>
-          Trusted by businesses across the city
+          Simple monthly subscription. Cancel anytime.
         </Typography>
       </Box>
 

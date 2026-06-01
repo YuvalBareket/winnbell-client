@@ -3,10 +3,10 @@ import { TEXT_HEADING } from '../../../shared/colors';
 
 interface LandingNavbarProps {
   onNavigate: (path: string) => void;
-  onScrollToBusinesses: () => void;
+  variant?: 'consumer' | 'business';
 }
 
-const LandingNavbar = ({ onNavigate, onScrollToBusinesses }: LandingNavbarProps) => {
+const LandingNavbar = ({ onNavigate, variant = 'consumer' }: LandingNavbarProps) => {
   return (
     <Box
       component='nav'
@@ -23,10 +23,10 @@ const LandingNavbar = ({ onNavigate, onScrollToBusinesses }: LandingNavbarProps)
       <Stack direction='row' spacing={1} alignItems='center'>
         <Button
           variant='text'
-          onClick={onScrollToBusinesses}
+          onClick={() => onNavigate(variant === 'business' ? '/' : '/for-business')}
           sx={{ color: TEXT_HEADING, fontWeight: 600, fontSize: '0.9rem', display: { xs: 'none', sm: 'inline-flex' } }}
         >
-          For Businesses
+          {variant === 'business' ? 'For Users' : 'For Businesses'}
         </Button>
         <Button
           variant='text'

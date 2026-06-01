@@ -4,18 +4,18 @@ import { PRIMARY_MAIN, TEXT_SECONDARY, TEXT_HEADING } from '../../../shared/colo
 const STEPS = [
   {
     num: '01',
-    title: 'Visit a partner',
-    body: 'Find a Winnbell partner near you - a cafe, shop, or restaurant - and make a purchase.',
+    title: 'Join for free',
+    body: 'Create your free account and claim your weekly free entry. No purchase necessary - ever.',
   },
   {
     num: '02',
-    title: 'Submit your receipt',
-    body: 'Scan the QR code or enter your receipt details to earn a free entry for the current campaign.',
+    title: 'Earn entries',
+    body: 'Visit a Winnbell partner business and submit your receipt to earn additional campaign entries.',
   },
   {
     num: '03',
     title: 'Win prizes',
-    body: 'At the end of each draw period, one winner is selected at random from all eligible entries.',
+    body: 'At the end of each monthly campaign, one winner is selected at random from all eligible entries.',
   },
 ];
 
@@ -28,7 +28,7 @@ const HowItWorks = () => {
             How it works
           </Box>
           <Typography variant='h2' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '2rem', md: '2.8rem' }, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-            Three steps to winning
+            Three steps to your first entry
           </Typography>
         </Box>
 

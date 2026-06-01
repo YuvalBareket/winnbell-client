@@ -17,6 +17,7 @@ import MainLayout from '../shared/components/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
 import RegionGate from '../shared/components/RegionGate';
 import LandingPage from '../features/landing/LandingPage';
+import BusinessLandingPage from '../features/landing/BusinessLandingPage';
 
 // Auth
 import LoginPage from '../features/auth/pages/LoginPage';
@@ -89,6 +90,7 @@ const AppRoutes = () => {
             ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace />
             : <LandingPage />
       } />
+      <Route path='/for-business' element={<BusinessLandingPage />} />
       <Route path='/region-blocked' element={<RegionBlockedPage />} />
       <Route path='/login' element={<RegionGate><LoginPage /></RegionGate>} />
       <Route path='/register/:role?' element={<RegionGate><RegisterPage /></RegionGate>} />

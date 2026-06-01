@@ -1,25 +1,75 @@
-import { Box, Typography, Container } from '@mui/material';
-import { PRIMARY_MAIN, TEXT_SECONDARY, TEXT_HEADING } from '../../../shared/colors';
+import { Box, Typography, Stack, Container } from '@mui/material';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import MoneyOffIcon from '@mui/icons-material/MoneyOff';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { PRIMARY_MAIN, TEXT_SECONDARY, BG_SUBTLE, ALPHA_PRIMARY_06, BORDER_SUBTLE } from '../../../shared/colors';
+
+const TrustItem = ({ icon: Icon, label }: { icon: React.ComponentType<any>; label: string }) => {
+  const isLink = label === 'See official rules';
+
+  return (
+    <Box
+      component={isLink ? 'a' : 'div'}
+      onClick={isLink ? () => window.location.href = '/rules' : undefined}
+      sx={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 1.25,
+        px: 2.5,
+        py: 2,
+        bgcolor: ALPHA_PRIMARY_06,
+        border: '1px solid',
+        borderColor: BORDER_SUBTLE,
+        borderRadius: 2,
+        cursor: isLink ? 'pointer' : 'default',
+        transition: 'all 0.2s ease-in-out',
+        textDecoration: 'none',
+        '&:hover': isLink ? {
+          bgcolor: BG_SUBTLE,
+          borderColor: PRIMARY_MAIN,
+          transform: 'translateY(-2px)',
+        } : {},
+      }}
+    >
+      <Icon
+        sx={{
+          fontSize: '1.75rem',
+          color: PRIMARY_MAIN,
+        }}
+      />
+      <Typography
+        sx={{
+          color: isLink ? PRIMARY_MAIN : TEXT_SECONDARY,
+          fontSize: '0.85rem',
+          fontWeight: isLink ? 700 : 600,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
+        {label}
+        {isLink && <OpenInNewIcon sx={{ fontSize: '0.75rem' }} />}
+      </Typography>
+    </Box>
+  );
+};
 
 const Testimonial = () => {
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider' }}>
+    <Box sx={{ py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider' }}>
       <Container maxWidth='md'>
-        <Box sx={{ maxWidth: 560, mx: 'auto' }}>
-          <Box sx={{ display: 'inline-block', borderRadius: 99, px: 1.5, py: 0.5, fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', bgcolor: 'rgba(25,93,230,0.08)', color: PRIMARY_MAIN, mb: 3 }}>
-            What partners say
-          </Box>
-          <Box sx={{ borderLeft: '4px solid', borderColor: 'primary.main', pl: { xs: 2.5, md: 4 }, py: 1 }}>
-            <Typography sx={{ fontStyle: 'italic', color: TEXT_HEADING, fontSize: { xs: '1.1rem', md: '1.3rem' }, lineHeight: 1.7, fontWeight: 400, mb: 2.5, letterSpacing: '-0.01em' }}>
-              Winnbell gives us a reason to bring customers back every month. The dashboard is easy to use and the results speak for themselves.
-            </Typography>
-            <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', fontWeight: 600 }}>
-              Alex M.
-              <Box component='span' sx={{ mx: 1, opacity: 0.3 }}>|</Box>
-              Restaurant Owner, Dublin
-            </Typography>
-          </Box>
-        </Box>
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={2}
+          justifyContent='center'
+          alignItems='stretch'
+        >
+          <TrustItem icon={VerifiedUserIcon} label='Every entry has equal odds' />
+          <TrustItem icon={MoneyOffIcon} label='No purchase necessary' />
+          <TrustItem icon={OpenInNewIcon} label='See official rules' />
+        </Stack>
       </Container>
     </Box>
   );

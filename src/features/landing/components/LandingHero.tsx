@@ -4,10 +4,9 @@ import { PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15 } from '../../../shared/col
 
 interface LandingHeroProps {
   onNavigate: (path: string) => void;
-  onScrollToBusinesses: () => void;
 }
 
-const LandingHero = ({ onNavigate, onScrollToBusinesses }: LandingHeroProps) => {
+const LandingHero = ({ onNavigate }: LandingHeroProps) => {
   return (
     <Box
       sx={{
@@ -50,9 +49,9 @@ const LandingHero = ({ onNavigate, onScrollToBusinesses }: LandingHeroProps) => 
             mb: 3,
           }}
         >
-          Every purchase.{' '}
+          Shop local.{' '}
           <Box component='span' sx={{ opacity: 0.8 }}>
-            A chance to win.
+            Win monthly prizes.
           </Box>
         </Typography>
 
@@ -67,8 +66,8 @@ const LandingHero = ({ onNavigate, onScrollToBusinesses }: LandingHeroProps) => 
             fontWeight: 400,
           }}
         >
-          Shop at local businesses, submit your receipt, and collect free entries
-          for the monthly campaign. No catch, no cost.
+          Support local businesses, earn campaign entries, and compete for real cash prizes
+          every month. Free to join. No purchase necessary.
         </Typography>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent='center' alignItems='center' sx={{ mb: 4 }}>
@@ -109,7 +108,7 @@ const LandingHero = ({ onNavigate, onScrollToBusinesses }: LandingHeroProps) => 
         <Button
           variant='text'
           endIcon={<ArrowForward sx={{ fontSize: '0.9rem !important' }} />}
-          onClick={onScrollToBusinesses}
+          onClick={() => onNavigate('/for-business')}
           sx={{
             color: 'rgba(255,255,255,0.8)',
             fontWeight: 500,

@@ -1,5 +1,5 @@
 import { Box, Typography, Stack } from '@mui/material';
-import { PRIMARY_MAIN, TEXT_SECONDARY, TEXT_HEADING } from '../../../shared/colors';
+import { PRIMARY_MAIN, TEXT_SECONDARY } from '../../../shared/colors';
 
 interface LandingFooterProps {
   onNavigate: (path: string) => void;
@@ -18,10 +18,7 @@ const LandingFooter = ({ onNavigate }: LandingFooterProps) => {
         justifyContent: 'space-between', gap: 2,
       }}
     >
-      <Typography fontWeight={900} fontSize='1.1rem' letterSpacing='-0.03em'>
-        <span style={{ color: TEXT_HEADING }}>Winn</span>
-        <span style={{ color: PRIMARY_MAIN }}>bell</span>
-      </Typography>
+      <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 28, width: 'auto', objectFit: 'contain' }} />
       <Stack direction='row' spacing={2.5}>
         {[{ label: 'Terms', path: '/terms' }, { label: 'Privacy', path: '/privacy' }].map(({ label, path }) => (
           <Typography key={label} component='a' onClick={() => onNavigate(path)} variant='caption' sx={{ color: TEXT_SECONDARY, cursor: 'pointer', textDecoration: 'none', fontWeight: 500, '&:hover': { color: PRIMARY_MAIN } }}>

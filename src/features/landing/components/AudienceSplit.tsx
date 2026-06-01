@@ -31,11 +31,11 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
             <Stack spacing={1.5} sx={{ mb: 3.5, textAlign: 'left' }}>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
-                Earn free entries with every purchase
+                Earn entries and claim your free weekly entry
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
-                Win real prizes monthly
+                Compete for real cash prizes every month
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
@@ -93,15 +93,15 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
             <Stack spacing={1.5} sx={{ mb: 3.5, textAlign: 'left' }}>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
-                Attract and keep customers
+                Get listed on the Winnbell map so customers can find you
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
-                Simple subscription, no long-term contract
+                Simple monthly subscription, cancel anytime
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
-                Easy dashboard, minimal effort
+                Dashboard to manage locations, track entries, and assign branch managers
               </Typography>
             </Stack>
             <Button

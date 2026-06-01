@@ -32,14 +32,14 @@ const steps = [
   },
   {
     icon: StorefrontOutlined,
-    title: 'Shop at Partners',
-    description: 'Shop at any participating partner business in the Winnbell network',
+    title: 'Visit Partner Businesses',
+    description: 'Find participating partner businesses near you using the Winnbell map',
     color: '#10b981', // green
   },
   {
     icon: ReceiptLongOutlined,
     title: 'Submit Your Receipt',
-    description: 'Upload your receipt to earn campaign entries. The more receipts, the more entries (up to 30 per campaign)',
+    description: 'Visit a participating partner business and submit your receipt to earn a campaign entry. Up to 30 entries per campaign per member.',
     color: '#f59e0b', // amber
   },
   {
