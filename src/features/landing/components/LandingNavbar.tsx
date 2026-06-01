@@ -19,7 +19,7 @@ const LandingNavbar = ({ onNavigate, variant = 'consumer' }: LandingNavbarProps)
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}
     >
-      <Box component='img' src='/winnbell_app_name.png' alt='Winnbell' sx={{ height: 32, width: 'auto', objectFit: 'contain' }} />
+      <Box component='img' src='/winnbell_app_name.svg' alt='Winnbell' sx={{ height: 40, width: 'auto', objectFit: 'contain' }} />
       <Stack direction='row' spacing={{ xs: 0.75, md: 1 }} alignItems='center'>
         <Button
           variant='text'
