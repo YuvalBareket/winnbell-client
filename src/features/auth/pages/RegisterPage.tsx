@@ -443,7 +443,7 @@ const RegisterPage = () => {
   // ─── Mobile layout (original) ────────────────────────────────────────────────
 
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
+    <Box sx={{ height: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
       <Box sx={{ px: 1.5, pt: 1, pb: 0}}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}>
           <ArrowBackIosNew fontSize='small' />

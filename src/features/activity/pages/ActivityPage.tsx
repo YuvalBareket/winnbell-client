@@ -108,7 +108,7 @@ const ActivityPage = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' }, pb: { xs: 12, md: 6 }, zoom: { xs: 0.9, md: 1 } }}>
       <AppHeader onMenuOpen={() => setMenuOpen(true)} />
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 

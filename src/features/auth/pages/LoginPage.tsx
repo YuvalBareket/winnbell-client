@@ -361,7 +361,7 @@ const LoginPage = () => {
   // ─── Mobile layout (original) ────────────────────────────────────────────────
 
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
+    <Box sx={{ height: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
       <Box sx={{ p: 2 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'action.hover' }}>
           <ArrowBackIosNew fontSize='small' />

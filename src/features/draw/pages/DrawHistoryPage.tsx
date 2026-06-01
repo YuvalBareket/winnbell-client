@@ -18,7 +18,7 @@ const DrawHistoryPage = () => {
   const closedCampaigns = history?.filter(d => d.status?.toLowerCase() === 'closed') ?? [];
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 }, zoom: { xs: 0.9, md: 1 } }}>
       {/* Hero Header */}
       <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 6, px: 3, color: 'white' }}>
         <Container maxWidth='lg'>

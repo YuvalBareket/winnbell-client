@@ -77,6 +77,7 @@ const FreeTicketPage: React.FC = () => {
           mx: 'auto',
           pt: 1,
           overflowY: 'auto',
+          zoom: { xs: 0.9, md: 1 },
         }}
       >
         {/* Header */}

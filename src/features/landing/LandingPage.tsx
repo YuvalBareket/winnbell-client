@@ -16,7 +16,7 @@ const LandingPage = () => {
   const scrollToBusinesses = () => document.getElementById('for-businesses')?.scrollIntoView({ behavior: 'smooth' });
 
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+    <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', overflowX: 'hidden', zoom: { xs: 0.9, md: 1 } }}>
       <LandingNavbar onNavigate={navigate} onScrollToBusinesses={scrollToBusinesses} />
       <LandingHero onNavigate={navigate} onScrollToBusinesses={scrollToBusinesses} />
       <AudienceSplit onNavigate={navigate} />

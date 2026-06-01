@@ -197,7 +197,7 @@ const didAutoActivate = useRef(false);
     }
 
     return (
-      <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: 6 }}>
+      <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: 6, zoom: { xs: 0.9, md: 1 } }}>
         {/* Hero */}
         <Box
           sx={{

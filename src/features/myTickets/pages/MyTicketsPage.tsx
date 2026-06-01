@@ -142,7 +142,7 @@ const MyTicketsPage = () => {
 
   // Mobile
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, zoom: { xs: 0.9, md: 1 } }}>
       {/* Hero */}
 
       <Box sx={{ pt:2}}>
