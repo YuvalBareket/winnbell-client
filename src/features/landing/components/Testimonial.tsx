@@ -16,9 +16,9 @@ const TrustItem = ({ icon: Icon, label }: { icon: React.ComponentType<any>; labe
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 1.25,
-        px: 2.5,
-        py: 2,
+        gap: { xs: 0.75, md: 1.25 },
+        px: { xs: 1.5, md: 2.5 },
+        py: { xs: 1.5, md: 2 },
         bgcolor: ALPHA_PRIMARY_06,
         border: '1px solid',
         borderColor: BORDER_SUBTLE,
@@ -35,18 +35,19 @@ const TrustItem = ({ icon: Icon, label }: { icon: React.ComponentType<any>; labe
     >
       <Icon
         sx={{
-          fontSize: '1.75rem',
+          fontSize: { xs: '1.5rem', md: '1.75rem' },
           color: PRIMARY_MAIN,
         }}
       />
       <Typography
         sx={{
           color: isLink ? PRIMARY_MAIN : TEXT_SECONDARY,
-          fontSize: '0.85rem',
+          fontSize: { xs: '0.75rem', md: '0.85rem' },
           fontWeight: isLink ? 700 : 600,
           display: 'flex',
           alignItems: 'center',
           gap: 0.5,
+          textAlign: 'center',
         }}
       >
         {label}
@@ -58,11 +59,11 @@ const TrustItem = ({ icon: Icon, label }: { icon: React.ComponentType<any>; labe
 
 const Testimonial = () => {
   return (
-    <Box sx={{ py: { xs: 4, md: 5 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider' }}>
+    <Box sx={{ py: { xs: 3, md: 5 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider' }}>
       <Container maxWidth='md'>
         <Stack
           direction={{ xs: 'column', md: 'row' }}
-          spacing={2}
+          spacing={{ xs: 1.5, md: 2 }}
           justifyContent='center'
           alignItems='stretch'
         >

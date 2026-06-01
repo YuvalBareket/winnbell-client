@@ -27,12 +27,12 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
         <Box
           sx={{
             display: 'inline-block',
-            borderRadius: 99, px: 1.5, py: 0.5,
-            fontSize: '0.65rem', fontWeight: 700,
+            borderRadius: 99, px: { xs: 1.25, md: 1.5 }, py: { xs: 0.4, md: 0.5 },
+            fontSize: { xs: '0.6rem', md: '0.65rem' }, fontWeight: 700,
             letterSpacing: '0.15em', textTransform: 'uppercase',
             bgcolor: ALPHA_WHITE_15,
             color: 'white',
-            mb: 3,
+            mb: { xs: 2, md: 3 },
           }}
         >
           Win real prizes
@@ -42,11 +42,11 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
           variant='h1'
           sx={{
             fontWeight: 900,
-            fontSize: { xs: '2.6rem', sm: '3.5rem', md: '4.5rem' },
-            lineHeight: 1.05,
+            fontSize: { xs: '2.1rem', sm: '3.5rem', md: '4.5rem' },
+            lineHeight: 1.1,
             letterSpacing: '-0.03em',
             color: 'white',
-            mb: 3,
+            mb: { xs: 2, md: 3 },
           }}
         >
           Shop local.{' '}
@@ -58,9 +58,9 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
         <Typography
           sx={{
             color: 'rgba(255,255,255,0.75)',
-            fontSize: { xs: '1rem', md: '1.15rem' },
-            lineHeight: 1.7,
-            mb: 5,
+            fontSize: { xs: '0.9rem', md: '1.15rem' },
+            lineHeight: 1.6,
+            mb: { xs: 3, md: 5 },
             maxWidth: 480,
             mx: 'auto',
             fontWeight: 400,
@@ -70,7 +70,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
           every month. Free to join. No purchase necessary.
         </Typography>
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent='center' alignItems='center' sx={{ mb: 4 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center' sx={{ mb: { xs: 2.5, md: 4 } }}>
           <Button
             variant='contained'
             size='large'
@@ -79,10 +79,11 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
               bgcolor: 'white',
               color: PRIMARY_MAIN,
               fontWeight: 700,
-              fontSize: '1rem',
+              fontSize: { xs: '0.95rem', md: '1rem' },
               borderRadius: 2.5,
-              px: 4,
-              py: 1.6,
+              px: { xs: 2.5, sm: 4 },
+              py: { xs: 1.4, md: 1.6 },
+              width: { xs: '100%', sm: 'auto' },
               boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
               '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' },
             }}
@@ -96,8 +97,9 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
             sx={{
               color: 'white',
               fontWeight: 600,
-              fontSize: '0.95rem',
+              fontSize: { xs: '0.9rem', md: '0.95rem' },
               opacity: 0.85,
+              width: { xs: '100%', sm: 'auto' },
               '&:hover': { bgcolor: 'transparent', opacity: 1 },
             }}
           >
@@ -112,8 +114,9 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
           sx={{
             color: 'rgba(255,255,255,0.8)',
             fontWeight: 500,
-            fontSize: '0.85rem',
+            fontSize: { xs: '0.8rem', md: '0.85rem' },
             opacity: 0.9,
+            mt: { xs: 1, sm: 0 },
             '&:hover': { bgcolor: 'transparent', opacity: 1, color: 'white' },
             textTransform: 'none',
           }}

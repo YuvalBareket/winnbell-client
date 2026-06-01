@@ -23,11 +23,11 @@ const HowItWorks = () => {
   return (
     <Box sx={{ py: { xs: 8, md: 12 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.default' }}>
       <Container maxWidth='lg'>
-        <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
-          <Box sx={{ display: 'inline-block', borderRadius: 99, px: 1.5, py: 0.5, fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', bgcolor: 'rgba(25,93,230,0.08)', color: PRIMARY_MAIN, mb: 2 }}>
+        <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 8 } }}>
+          <Box sx={{ display: 'inline-block', borderRadius: 99, px: { xs: 1.25, md: 1.5 }, py: { xs: 0.4, md: 0.5 }, fontSize: { xs: '0.6rem', md: '0.65rem' }, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', bgcolor: 'rgba(25,93,230,0.08)', color: PRIMARY_MAIN, mb: 1.5 }}>
             How it works
           </Box>
-          <Typography variant='h2' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '2rem', md: '2.8rem' }, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+          <Typography variant='h2' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '1.75rem', md: '2.8rem' }, letterSpacing: '-0.03em', lineHeight: 1.15 }}>
             Three steps to your first entry
           </Typography>
         </Box>
@@ -49,18 +49,18 @@ const HowItWorks = () => {
         </Box>
 
         {/* Mobile */}
-        <Stack spacing={3} sx={{ display: { xs: 'flex', md: 'none' } }}>
+        <Stack spacing={2} sx={{ display: { xs: 'flex', md: 'none' } }}>
           {STEPS.map((step) => (
-            <Stack key={step.num} direction='row' spacing={2.5} alignItems='flex-start'>
+            <Stack key={step.num} direction='row' spacing={1.5} alignItems='flex-start'>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: PRIMARY_MAIN, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.1rem', flexShrink: 0, boxShadow: '0 6px 18px rgba(25,93,230,0.3)' }}>
+                <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: PRIMARY_MAIN, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1rem', flexShrink: 0, boxShadow: '0 6px 18px rgba(25,93,230,0.3)' }}>
                   {step.num}
                 </Box>
-                <Box sx={{ width: 2, flex: 1, bgcolor: 'rgba(25,93,230,0.12)', mt: 1, minHeight: 20 }} />
+                <Box sx={{ width: 2, flex: 1, bgcolor: 'rgba(25,93,230,0.12)', mt: 0.75, minHeight: 16 }} />
               </Box>
-              <Box sx={{ flex: 1, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 2.5, mb: 1 }}>
-                <Typography variant='h6' sx={{ fontWeight: 800, color: TEXT_HEADING, mb: 0.5, fontSize: '1rem' }}>{step.title}</Typography>
-                <Typography variant='body2' sx={{ color: TEXT_SECONDARY, lineHeight: 1.65 }}>{step.body}</Typography>
+              <Box sx={{ flex: 1, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 2, mb: 0.5 }}>
+                <Typography variant='h6' sx={{ fontWeight: 800, color: TEXT_HEADING, mb: 0.5, fontSize: '0.95rem' }}>{step.title}</Typography>
+                <Typography variant='body2' sx={{ color: TEXT_SECONDARY, lineHeight: 1.6, fontSize: '0.875rem' }}>{step.body}</Typography>
               </Box>
             </Stack>
           ))}

@@ -44,16 +44,16 @@ const BusinessLandingPage = () => {
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 0.75,
-              borderRadius: 99, px: 1.5, py: 0.5,
-              fontSize: '0.65rem', fontWeight: 700,
+              gap: { xs: 0.5, md: 0.75 },
+              borderRadius: 99, px: { xs: 1.25, md: 1.5 }, py: { xs: 0.4, md: 0.5 },
+              fontSize: { xs: '0.6rem', md: '0.65rem' }, fontWeight: 700,
               letterSpacing: '0.15em', textTransform: 'uppercase',
               bgcolor: ALPHA_WHITE_15,
               color: 'white',
-              mb: 3,
+              mb: { xs: 2, md: 3 },
             }}
           >
-            <Storefront sx={{ fontSize: '0.85rem' }} />
+            <Storefront sx={{ fontSize: { xs: '0.75rem', md: '0.85rem' } }} />
             For business owners
           </Box>
 
@@ -61,11 +61,11 @@ const BusinessLandingPage = () => {
             variant='h1'
             sx={{
               fontWeight: 900,
-              fontSize: { xs: '2.4rem', sm: '3.2rem', md: '4rem' },
-              lineHeight: 1.05,
+              fontSize: { xs: '2rem', sm: '3.2rem', md: '4rem' },
+              lineHeight: 1.1,
               letterSpacing: '-0.03em',
               color: 'white',
-              mb: 3,
+              mb: { xs: 2, md: 3 },
             }}
           >
             The cheapest marketing tool{' '}
@@ -77,9 +77,9 @@ const BusinessLandingPage = () => {
           <Typography
             sx={{
               color: 'rgba(255,255,255,0.75)',
-              fontSize: { xs: '1rem', md: '1.15rem' },
-              lineHeight: 1.7,
-              mb: 5,
+              fontSize: { xs: '0.9rem', md: '1.15rem' },
+              lineHeight: 1.6,
+              mb: { xs: 3, md: 5 },
               maxWidth: 520,
               mx: 'auto',
               fontWeight: 400,
@@ -90,7 +90,7 @@ const BusinessLandingPage = () => {
             attributed, and sitting in your dashboard.
           </Typography>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent='center' alignItems='center'>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center'>
             <Button
               variant='contained'
               size='large'
@@ -100,10 +100,11 @@ const BusinessLandingPage = () => {
                 bgcolor: 'white',
                 color: PRIMARY_MAIN,
                 fontWeight: 700,
-                fontSize: '1rem',
+                fontSize: { xs: '0.95rem', md: '1rem' },
                 borderRadius: 2.5,
-                px: 4,
-                py: 1.6,
+                px: { xs: 2.5, sm: 4 },
+                py: { xs: 1.4, md: 1.6 },
+                width: { xs: '100%', sm: 'auto' },
                 boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' },
               }}
@@ -117,8 +118,9 @@ const BusinessLandingPage = () => {
               sx={{
                 color: 'rgba(255,255,255,0.8)',
                 fontWeight: 500,
-                fontSize: '0.9rem',
+                fontSize: { xs: '0.85rem', md: '0.9rem' },
                 opacity: 0.9,
+                width: { xs: '100%', sm: 'auto' },
                 '&:hover': { bgcolor: 'transparent', opacity: 1, color: 'white' },
                 textTransform: 'none',
               }}
@@ -133,12 +135,12 @@ const BusinessLandingPage = () => {
       <ForBusinesses onNavigate={navigate} onScrollToBusinesses={() => {}} />
 
       {/* Business-focused bottom CTA */}
-      <Box sx={{ py: { xs: 8, md: 10 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.paper', textAlign: 'center', borderTop: '1px solid', borderColor: 'divider' }}>
+      <Box sx={{ py: { xs: 6, md: 10 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.paper', textAlign: 'center', borderTop: '1px solid', borderColor: 'divider' }}>
         <Container maxWidth='sm'>
-          <Typography variant='h3' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.03em', lineHeight: 1.1, mb: 2 }}>
+          <Typography variant='h3' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '1.6rem', md: '2.2rem' }, letterSpacing: '-0.03em', lineHeight: 1.15, mb: { xs: 1.5, md: 2 } }}>
             Ready to get listed?
           </Typography>
-          <Typography sx={{ color: TEXT_SECONDARY, fontSize: '1.05rem', lineHeight: 1.65, mb: 2, maxWidth: 400, mx: 'auto' }}>
+          <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '0.95rem', md: '1.05rem' }, lineHeight: 1.6, mb: { xs: 1.5, md: 2 }, maxWidth: 400, mx: 'auto' }}>
             Simple monthly subscription. Your locations go live the same day. Cancel anytime.
           </Typography>
           <Box
@@ -148,12 +150,12 @@ const BusinessLandingPage = () => {
               border: '1px solid',
               borderColor: 'divider',
               borderRadius: 2,
-              px: 2.5,
-              py: 1,
-              mb: 4,
+              px: { xs: 2, md: 2.5 },
+              py: { xs: 0.75, md: 1 },
+              mb: { xs: 3, md: 4 },
             }}
           >
-            <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', fontWeight: 600 }}>
+            <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '0.75rem', md: '0.85rem' }, fontWeight: 600, whiteSpace: 'nowrap' }}>
               No setup fees. No long-term contracts.
             </Typography>
           </Box>
@@ -163,7 +165,7 @@ const BusinessLandingPage = () => {
               size='large'
               endIcon={<ArrowForward />}
               onClick={() => navigate('/register/Business')}
-              sx={{ fontWeight: 700, fontSize: '1.05rem', borderRadius: 2.5, px: 5, py: 1.6, boxShadow: '0 8px 24px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' } }}
+              sx={{ fontWeight: 700, fontSize: { xs: '0.95rem', md: '1.05rem' }, borderRadius: 2.5, px: { xs: 2.5, md: 5 }, py: { xs: 1.3, md: 1.6 }, width: { xs: '100%', md: 'auto' }, boxShadow: '0 8px 24px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' } }}
             >
               Create a business account
             </Button>
