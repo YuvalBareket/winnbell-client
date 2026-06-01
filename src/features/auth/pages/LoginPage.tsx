@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box, Button, Typography, TextField, IconButton, InputAdornment,
   Paper, Container, Divider, Stack, Alert, CircularProgress,
@@ -8,8 +8,11 @@ import {
   ArrowBackIosNew, ConfirmationNumber, Mail, Lock, Visibility, VisibilityOff,
   Login, Google, Storefront, EmojiEvents, CardGiftcard,
 } from '@mui/icons-material';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
+import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
+import { useAppSelector } from '../../../store/hook';
+import { selectIsAuthenticated, selectIsAdmin, selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import {
   BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
@@ -91,6 +94,19 @@ const LoginPage = () => {
   const [resetState, setResetState] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
   const [toast, setToast] = useState('');
 
+  const { syncError, isLoaded } = useSyncStatus();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAdmin = useAppSelector(selectIsAdmin);
+  const isBusinessAdmin = useAppSelector(selectIsBusiness);
+  const isManager = useAppSelector(selectIsLocationManager);
+
+  useEffect(() => {
+    if (syncError && loading) {
+      setLoading(false);
+      setError('Something went wrong signing you in. Please try again.');
+    }
+  }, [syncError]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -124,13 +140,21 @@ const LoginPage = () => {
       });
       if (signInError) {
         setError(signInError.message || 'Invalid email or password');
+        setLoading(false);
       } else {
         if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
-        // useSupabaseSync will pick up the new session automatically
+        if (isAuthenticated) {
+          // Redux already has a valid session — useSupabaseSync will early-return because
+          // nothing changed server-side. Navigate directly using the role we already know.
+          const dest = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan';
+          navigate(dest, { replace: true });
+        }
+        // If not yet authenticated: keep loading=true — useSupabaseSync will call /auth/sync
+        // on the SIGNED_IN event (first-time login) and navigate when done.
+        // Loading resets via the syncError useEffect if sync fails.
       }
     } catch {
       setError('Invalid email or password');
-    } finally {
       setLoading(false);
     }
   };
@@ -298,6 +322,13 @@ const LoginPage = () => {
       </Box>
     </Stack>
   );
+
+  // ─── Redirect already-authenticated users ───────────────────────────────────
+
+  if (isLoaded && isAuthenticated) {
+    const dest = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan';
+    return <Navigate to={dest} replace />;
+  }
 
   // ─── Desktop layout ──────────────────────────────────────────────────────────
 

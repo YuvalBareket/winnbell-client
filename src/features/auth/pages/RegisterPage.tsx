@@ -8,9 +8,12 @@ import {
   ArrowBackIosNew, Person, Mail, Lock, Visibility, VisibilityOff, Handshake,
   Storefront, Google, ConfirmationNumber, EmojiEvents, CardGiftcard, Warning,
 } from '@mui/icons-material';
-import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
-import { supabase } from '../../../shared/lib/supabase';
+import { useNavigate, useParams, useSearchParams, useLocation, Navigate } from 'react-router-dom';
 import { api } from '../../../shared/api/client';
+import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
+import { useAppSelector } from '../../../store/hook';
+import { selectIsAuthenticated, selectIsAdmin, selectIsBusiness, selectIsLocationManager as selectIsLocMgr } from '../../../store/selectors/authSelectors';
+import { supabase } from '../../../shared/lib/supabase';
 import {
   BG_PAGE, TEXT_HEADING, ROLE_MANAGER_BG, ROLE_MANAGER_HOVER, BORDER_LIGHT,
   SHADOW_PRIMARY_SOFT, GRADIENT_HERO,
@@ -117,6 +120,12 @@ const RegisterPage = () => {
   const isBusinessOwner = roleLower === 'business' && !inviteToken;
   const isLocationManager = inviteToken !== null;
 
+  const { isLoaded: syncLoaded } = useSyncStatus();
+  const isAuth = useAppSelector(selectIsAuthenticated);
+  const isAdminUser = useAppSelector(selectIsAdmin);
+  const isBusinessUser = useAppSelector(selectIsBusiness);
+  const isManagerUser = useAppSelector(selectIsLocMgr);
+
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -164,7 +173,6 @@ const RegisterPage = () => {
     setLoading(true);
     setError('');
     try {
-      // Check if email already exists before attempting Supabase signup
       const { data: emailCheck } = await api.post('/auth/check-email', { email: formData.email });
       if (emailCheck.exists) {
         setError('An account with this email already exists. Please sign in instead.');
@@ -178,7 +186,7 @@ const RegisterPage = () => {
       localStorage.setItem('pendingRole', roleFormatted);
       if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
 
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -195,14 +203,6 @@ const RegisterPage = () => {
         setError(signUpError.message || 'Registration failed');
         return;
       }
-      // Supabase returns identities=[] when the email is already registered (avoids email enumeration)
-      if (!signUpData.user?.identities?.length) {
-        localStorage.removeItem('pendingRole');
-        localStorage.removeItem('pendingInviteToken');
-        setError('An account with this email already exists. Please sign in instead.');
-        return;
-      }
-
       // Store email so VerifyEmailPage can display it
       localStorage.setItem('pendingEmail', formData.email);
 
@@ -405,6 +405,13 @@ const RegisterPage = () => {
       </Box>
     </Stack>
   );
+
+  // ─── Redirect already-authenticated users ───────────────────────────────────
+
+  if (syncLoaded && isAuth) {
+    const dest = isAdminUser ? '/admin' : (isBusinessUser || isManagerUser) ? '/activity' : '/scan';
+    return <Navigate to={dest} replace />;
+  }
 
   // ─── Desktop layout ──────────────────────────────────────────────────────────
 

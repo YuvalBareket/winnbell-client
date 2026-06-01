@@ -34,10 +34,10 @@ export const useSupabaseSync = (retryCount = 0) => {
       setIsSignedIn(!!session);
 
       if (!session) {
-        // Clean up all pending localStorage state so stale values never block the next login
+        // Clean up pending role/invite state — but NOT pendingEmail, which is
+        // actively used by VerifyEmailPage and must survive session events.
         localStorage.removeItem('pendingRole');
         localStorage.removeItem('pendingInviteToken');
-        localStorage.removeItem('pendingEmail');
         if (isAuthenticatedRef.current) {
           dispatch(logout());
           localStorage.removeItem('wasLoggedIn');
@@ -53,6 +53,9 @@ export const useSupabaseSync = (retryCount = 0) => {
       const pendingInviteToken = localStorage.getItem('pendingInviteToken');
       const pendingRole = localStorage.getItem('pendingRole');
 
+      // Navigate after an explicit login/signup action, not on silent session restore
+      const isFreshLogin = event === 'SIGNED_IN' || event === 'USER_UPDATED';
+
       if (
         isRegionBlocked.current ||
         (isAuthenticatedRef.current && !needsResyncRef.current && !pendingInviteToken && !pendingRole) ||
@@ -61,9 +64,6 @@ export const useSupabaseSync = (retryCount = 0) => {
 
       syncing.current = true;
       setSyncError(false);
-
-      // Navigate after an explicit login/signup action, not on silent session restore
-      const isFreshLogin = event === 'SIGNED_IN' || event === 'USER_UPDATED';
 
       try {
         // Role is embedded in the Supabase JWT user_metadata for password sign-ups.

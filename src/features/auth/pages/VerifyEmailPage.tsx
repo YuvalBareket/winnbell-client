@@ -110,7 +110,12 @@ const VerifyEmailPage = () => {
       });
 
       if (verifyError) {
-        setError(verifyError.message || 'Verification failed. Check your code.');
+        const msg = verifyError.message || '';
+        if (msg.toLowerCase().includes('already confirmed') || msg.toLowerCase().includes('already registered')) {
+          setError('This email is already verified. Please sign in instead.');
+        } else {
+          setError(msg || 'Invalid or expired code. Check your email and try again.');
+        }
         return;
       }
 

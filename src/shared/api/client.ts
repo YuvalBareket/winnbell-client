@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { store } from '../../store/store';
 import { logout } from '../../store/slices/authSlice';
+import { supabase } from '../lib/supabase';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/',
@@ -31,13 +32,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Instead of manual localStorage.clear(),
-      // dispatch the Redux action to clear the whole state
+      const wasAuthenticated = store.getState().auth.isAuthenticated;
       store.dispatch(logout());
-
-      // Force redirect if not handled by a router guard
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      // Only sign out of Supabase if the user had an active session.
+      // Calling signOut() with no session fires SIGNED_OUT which clears
+      // pendingEmail and breaks the registration/verification flow.
+      if (wasAuthenticated) {
+        supabase.auth.signOut();
       }
     }
     return Promise.reject(error);
