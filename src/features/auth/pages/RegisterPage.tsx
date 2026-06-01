@@ -233,8 +233,7 @@ const RegisterPage = () => {
   // ─── Form content (shared between mobile & desktop) ──────────────────────────
 
   const FormContent = () => (
-    <Stack sx={{          zoom: { xs: 0.9, md: 0.75 },
-}}>
+    <Stack sx={{ zoom: { xs: 0.85, md: 0.75 } }}>
       {/* Header */}
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: isDesktop ? 'flex-start' : 'center', mb: 2 }}>
         {!isDesktop && (

@@ -151,7 +151,7 @@ const VerifyEmailPage = () => {
   // ─── Form content (shared between mobile & desktop) ──────────────────────
 
   const FormContent = () => (
-    <Stack sx={{ zoom: { xs: 1, md: 0.85 } }}>
+    <Stack sx={{ zoom: { xs: 0.85, md: 0.85 } }}>
       {/* Header */}
       <Box sx={{ mb: { xs: 6, md: 5 }, textAlign: isDesktop ? 'left' : 'center' }}>
         {!isDesktop && (

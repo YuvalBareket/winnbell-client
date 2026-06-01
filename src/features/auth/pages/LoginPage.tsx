@@ -162,7 +162,7 @@ const LoginPage = () => {
   // ─── Form content (shared between mobile & desktop) ──────────────────────────
 
   const FormContent = () => (
-    <Stack sx={{ zoom: { xs: 0.9, md: 0.75 } }}>
+    <Stack sx={{ zoom: { xs: 0.85, md: 0.75 } }}>
       {/* Header */}
       <Box sx={{ mb: { xs: 2, md: 3 }, textAlign: isDesktop ? 'left' : 'center' }}>
         {!isDesktop && (
