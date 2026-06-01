@@ -31,7 +31,7 @@ import {
   DashboardOutlined,
   PeopleOutlined,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, Fragment } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { logout } from '../../store/slices/authSlice';
@@ -64,6 +64,7 @@ interface NavItem {
 const AppMenuDrawer = ({ open, onClose }: Props) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useAppSelector(selectCurrentUser);
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
@@ -111,6 +112,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
         { label: 'Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
+        { label: 'Campaigns Hub', icon: <EmojiEventsOutlined />, path: '/draws/history' },
         { label: 'My Plan', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
         { label: 'Marketing', icon: <CampaignOutlined />, path: '/marketing' },
         { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
@@ -245,6 +247,9 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                   py: itemPy,
                   px: 1.5,
                   transition: 'all 0.15s ease',
+                  ...(location.pathname === item.path && {
+                    bgcolor: ALPHA_PRIMARY_06,
+                  }),
                   '&:hover': {
                     bgcolor: ALPHA_PRIMARY_06,
                     transform: 'translateX(3px)',
@@ -255,7 +260,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
               >
                 <ListItemIcon
                   className='nav-icon'
-                  sx={{ minWidth: 34, color: 'text.secondary', transition: 'color 0.15s ease', '& svg': { fontSize: { xs: 20, sm: 24 } } }}
+                  sx={{ minWidth: 34, color: location.pathname === item.path ? PRIMARY_MAIN : 'text.secondary', transition: 'color 0.15s ease', '& svg': { fontSize: { xs: 20, sm: 24 } } }}
                 >
                   {item.icon}
                 </ListItemIcon>

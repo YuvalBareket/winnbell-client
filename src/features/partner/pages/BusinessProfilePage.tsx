@@ -11,6 +11,7 @@ import {
   Paper,
   LinearProgress,
   InputAdornment,
+  Alert,
 } from '@mui/material';
 import {
   AddLocation,
@@ -60,13 +61,16 @@ const BusinessProfilePage = () => {
 
   const { fields, append, remove } = useFieldArray({ control, name: 'locations' });
   const { mutate: setupBusiness, isPending } = useBusinessSetup();
+  const [setupError, setSetupError] = useState('');
 
   const selectedSector = watch('businessSector');
 
   const onSubmit = (data: BusinessSetupInput) => {
+    setSetupError('');
     setupBusiness(data, {
       onError: (err: unknown) => {
-        console.error('Setup failed:', err instanceof Error ? err.message : err);
+        const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+        setSetupError(msg);
       },
     });
   };
@@ -482,6 +486,10 @@ const BusinessProfilePage = () => {
                     {isPending ? <CircularProgress size={22} color='inherit' /> : 'Complete Setup'}
                   </Button>
                 </Stack>
+
+                {setupError && (
+                  <Alert severity='error' sx={{ borderRadius: 2 }}>{setupError}</Alert>
+                )}
 
                 <Typography variant='caption' color='text.disabled' textAlign='center'>
                   You can add or edit locations later from your business hub.

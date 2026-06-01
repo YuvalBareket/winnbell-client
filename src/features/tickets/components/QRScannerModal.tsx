@@ -52,7 +52,9 @@ const QRScannerModal: React.FC<Props> = ({ open, onScan, onClose }) => {
 
     return () => {
       clearTimeout(timer);
-      scanner?.stop().catch(() => {});
+      if (!didScan.current) {
+        scanner?.stop().catch(() => {});
+      }
     };
   }, [open]);
 

@@ -1,5 +1,5 @@
 import {
-  Box, Button, Typography, Stack, TextField, InputAdornment, CircularProgress,
+  Box, Button, Typography, Stack, TextField, InputAdornment, CircularProgress, Alert,
 } from '@mui/material';
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
   isThresholdValid: boolean;
   parsedThreshold: number | null;
   savingThreshold: boolean;
+  errorMessage?: string;
   onContinue: () => void;
   onSkip: () => void;
 }
@@ -18,6 +19,7 @@ const SubscribeStep1 = ({
   isThresholdValid,
   parsedThreshold,
   savingThreshold,
+  errorMessage,
   onContinue,
   onSkip,
 }: Props) => (
@@ -76,6 +78,8 @@ const SubscribeStep1 = ({
         </Typography>
       )}
     </Box>
+
+    {errorMessage && <Alert severity='error' sx={{ borderRadius: 2, mb: 2 }}>{errorMessage}</Alert>}
 
     <Button
       fullWidth variant='contained' size='large'

@@ -56,6 +56,7 @@ const SubscribePage = () => {
   // ── STEP 1 ─────────────────────────────────────────────────────────────────
   const [thresholdInput, setThresholdInput] = useState('');
   const [savingThreshold, setSavingThreshold] = useState(false);
+  const [thresholdError, setThresholdError] = useState('');
 
 
   const parsedThreshold = thresholdInput.trim() === '' ? null : parseFloat(thresholdInput);
@@ -64,12 +65,14 @@ const SubscribePage = () => {
   const handleThresholdContinue = async () => {
     if (!isThresholdValid) return;
     setSavingThreshold(true);
+    setThresholdError('');
     try {
       await updateCampaignSettingsApi({ min_transaction_amount: parsedThreshold });
       setSavedThreshold(parsedThreshold);
       setStep(2);
     } catch (err) {
       console.error('Failed to save threshold:', err);
+      setThresholdError('Failed to save settings. Please check your connection and try again.');
     } finally {
       setSavingThreshold(false);
     }
@@ -265,6 +268,7 @@ const SubscribePage = () => {
                     isThresholdValid={isThresholdValid}
                     parsedThreshold={parsedThreshold}
                     savingThreshold={savingThreshold}
+                    errorMessage={thresholdError}
                     onContinue={handleThresholdContinue}
                     onSkip={() => navigate('/nearby')}
                   />

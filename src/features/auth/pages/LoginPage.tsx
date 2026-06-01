@@ -81,13 +81,14 @@ const LoginPage = () => {
 
   const inviteToken = searchParams.get('token');
   const sessionError = searchParams.get('error') === 'session';
+  const accountDeleted = searchParams.get('deleted') === '1';
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [showResetMessage, setShowResetMessage] = useState(false);
+  const [resetState, setResetState] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
   const [toast, setToast] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,15 +163,22 @@ const LoginPage = () => {
         </Alert>
       )}
 
+      {accountDeleted && (
+        <Alert severity='info' sx={{ mb: 3, borderRadius: 3 }}>
+          Your account has been deleted. If this was a mistake, please contact support.
+        </Alert>
+      )}
+
       {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
 
-      {showResetMessage && (
-        <Alert
-          severity='info'
-          onClose={() => setShowResetMessage(false)}
-          sx={{ mb: 3, borderRadius: 3 }}
-        >
-          Password reset is not available yet. Please contact support.
+      {resetState === 'sent' && (
+        <Alert severity='success' onClose={() => setResetState('idle')} sx={{ mb: 3, borderRadius: 3 }}>
+          Reset link sent. Check your inbox and follow the link to set a new password.
+        </Alert>
+      )}
+      {resetState === 'error' && (
+        <Alert severity='error' onClose={() => setResetState('idle')} sx={{ mb: 3, borderRadius: 3 }}>
+          Could not send reset email. Check the address and try again.
         </Alert>
       )}
 
@@ -191,9 +199,16 @@ const LoginPage = () => {
             <Typography
               variant='caption'
               sx={{ fontWeight: 700, color: 'primary.main', cursor: 'pointer' }}
-              onClick={() => setShowResetMessage(true)}
+              onClick={async () => {
+        if (!formData.email) { setError('Enter your email above first, then click Forgot.'); return; }
+        setResetState('loading');
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        setResetState(resetError ? 'error' : 'sent');
+      }}
             >
-              Forgot?
+              {resetState === 'loading' ? 'Sending...' : 'Forgot?'}
             </Typography>
           </Box>
           <TextField fullWidth name='password' value={formData.password} onChange={handleChange}

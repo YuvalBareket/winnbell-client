@@ -114,25 +114,18 @@ const MainLayout = () => {
                 '&.Mui-selected': {
                   color: 'primary.main',
                 },
-                '& .MuiBottomNavigationAction-label': {
-                  fontWeight: 600,
-                  fontSize: '0.68rem',
-                  mt: 0.3,
-                  '&.Mui-selected': {
-                    fontWeight: 800,
-                    fontSize: '0.7rem',
-                  },
-                },
               },
             }}
           >
             <BottomNavigationAction
               value='/nearby'
+              showLabel={false}
               icon={<Storefront />}
             />
 
             <BottomNavigationAction
               value={mobileMainPath}
+              showLabel={false}
               icon={
                 <Box
                   sx={{
@@ -158,6 +151,7 @@ const MainLayout = () => {
 
             <BottomNavigationAction
               value='/tickets'
+              showLabel={false}
               icon={<ConfirmationNumber />}
             />
           </BottomNavigation>

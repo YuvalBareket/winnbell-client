@@ -3,12 +3,12 @@ import type { AxiosError } from 'axios';
 
 import type { AuthResponse, RegisterRequest } from '../types/auth.types';
 import { registerUserFn } from '../api/auth.api';
-import { useDispatch } from 'react-redux';
 import { login } from '../../../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '../../../store/hook';
 
 export const useRegister = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   return useMutation<AuthResponse, AxiosError<{ message: string }>, RegisterRequest>({
     mutationFn: registerUserFn,

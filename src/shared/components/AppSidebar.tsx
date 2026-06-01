@@ -14,7 +14,7 @@ import {
 import {
   BusinessOutlined, ConfirmationNumberOutlined,
   BarChartOutlined, ReceiptLongOutlined, FeedOutlined,
-  SettingsOutlined, CampaignOutlined,
+  SettingsOutlined, CampaignOutlined, EmojiEventsOutlined,
 } from '@mui/icons-material';
 import {
   GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING, ALPHA_PRIMARY_04, ALPHA_PRIMARY_06, GRADIENT_SIDEBAR,
@@ -41,6 +41,7 @@ const AppSidebar = () => {
     { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
     { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
     { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
+    { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
     { label: 'My Plan', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
     { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
     { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },

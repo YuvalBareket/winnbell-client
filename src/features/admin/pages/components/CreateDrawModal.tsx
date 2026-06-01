@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   Box,
@@ -32,6 +32,10 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     prize_amount: '',
     draw_date: '',
   });
+
+  useEffect(() => {
+    if (!open) setFormData({ name: '', prize_amount: '', draw_date: '' });
+  }, [open]);
 
   const handleSubmit = () => {
     mutation.mutate(

@@ -11,8 +11,14 @@ export const activateFreeTicket = async () => {
   return data;
 };
 
-export const getFreeTicketStatus = async () => {
-  const { data } = await api.get(`/tickets/free-status`);
+export interface FreeTicketStatusResponse {
+  canActivate: boolean;
+  reason?: string;
+  nextAvailableDate?: string;
+}
+
+export const getFreeTicketStatus = async (): Promise<FreeTicketStatusResponse> => {
+  const { data } = await api.get<FreeTicketStatusResponse>(`/tickets/free-status`);
   return data;
 };
 

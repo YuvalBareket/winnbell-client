@@ -178,7 +178,7 @@ const RegisterPage = () => {
       localStorage.setItem('pendingRole', roleFormatted);
       if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
 
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -193,6 +193,13 @@ const RegisterPage = () => {
         localStorage.removeItem('pendingRole');
         localStorage.removeItem('pendingInviteToken');
         setError(signUpError.message || 'Registration failed');
+        return;
+      }
+      // Supabase returns identities=[] when the email is already registered (avoids email enumeration)
+      if (!signUpData.user?.identities?.length) {
+        localStorage.removeItem('pendingRole');
+        localStorage.removeItem('pendingInviteToken');
+        setError('An account with this email already exists. Please sign in instead.');
         return;
       }
 

@@ -10,17 +10,23 @@ const SSOCallbackPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Give Supabase a moment to process the hash params, then redirect home.
-    // If the session is already set, useSupabaseSync will handle navigation.
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        // Hash not yet processed — Supabase client handles it automatically;
-        // just wait for the onAuthStateChange event to fire in useSupabaseSync.
-      } else {
+      if (data.session) {
         navigate('/', { replace: true });
       }
     });
-  }, []);
+
+    // If no session materialises within 10s, redirect to login
+    const timeout = setTimeout(() => {
+      supabase.auth.getSession().then(({ data }) => {
+        if (!data.session) {
+          navigate('/login?error=session', { replace: true });
+        }
+      });
+    }, 10000);
+
+    return () => clearTimeout(timeout);
+  }, [navigate]);
 
   return (
     <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}>

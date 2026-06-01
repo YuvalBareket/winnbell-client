@@ -462,7 +462,7 @@ export default function SubscriptionManagementPage() {
                 </Stack>
                 <Divider />
                 <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                  <Typography variant='body2' fontWeight={700}>New monthly total</Typography>
+                  <Typography variant='body2' fontWeight={700}>New {(sub.billing_interval ?? 'monthly') === 'yearly' ? 'yearly' : 'monthly'} total</Typography>
                   <Typography variant='h6' fontWeight={900} color='primary.main'>
                     ${((TIER_PRICE_MAP_CLIENT[newTier]?.[(sub.billing_interval ?? 'monthly') as 'monthly' | 'yearly']?.pricePerLocation ?? 0) * (sub.active_location_count ?? 1)).toLocaleString()}
                   </Typography>

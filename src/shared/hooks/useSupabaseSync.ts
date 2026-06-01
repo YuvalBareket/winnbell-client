@@ -28,6 +28,7 @@ export const useSupabaseSync = (retryCount = 0) => {
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   useEffect(() => {
+    syncing.current = false;
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setIsLoaded(true);
       setIsSignedIn(!!session);
@@ -93,14 +94,22 @@ export const useSupabaseSync = (retryCount = 0) => {
             navigate(pendingLocationId ? `/scan?l=${pendingLocationId}` : '/scan');
           }
         }
-      } catch (err: any) {
-        const status = err?.response?.status;
-        const message = err?.response?.data?.message;
+      } catch (err: unknown) {
+        const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
+        const status = axiosErr?.response?.status;
+        const message = axiosErr?.response?.data?.message;
         if (message === 'REGION_RESTRICTED') {
           isRegionBlocked.current = true;
           dispatch(logout());
           await supabase.auth.signOut();
           navigate('/region-blocked');
+        } else if (status === 403 && message === 'ACCOUNT_DELETED') {
+          dispatch(logout());
+          localStorage.removeItem('wasLoggedIn');
+          localStorage.removeItem('pendingRole');
+          localStorage.removeItem('pendingInviteToken');
+          await supabase.auth.signOut();
+          navigate('/login?deleted=1');
         } else if (status === 401) {
           // Token is expired or invalid — sign out and redirect so user can log in again
           dispatch(logout());

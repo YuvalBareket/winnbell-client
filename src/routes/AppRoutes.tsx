@@ -23,6 +23,7 @@ import LoginPage from '../features/auth/pages/LoginPage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
 import VerifyEmailPage from '../features/auth/pages/VerifyEmailPage';
 import SSOCallbackPage from '../features/auth/pages/SSOCallbackPage';
+import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage';
 import RegionBlockedPage from '../features/auth/pages/RegionBlockedPage';
 
 // Tickets
@@ -74,7 +75,7 @@ const AppRoutes = () => {
     if (isAuthenticated && requiresBusinessSetup) {
       navigate('/partner/setup-business', { replace: true });
     }
-  }, [isAuthenticated, requiresBusinessSetup]);
+  }, [isAuthenticated, requiresBusinessSetup, navigate]);
 
 
   return (
@@ -93,8 +94,8 @@ const AppRoutes = () => {
       <Route path='/register/:role?' element={<RegionGate><RegisterPage /></RegionGate>} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
       <Route path='/sso-callback' element={<SSOCallbackPage />} />
+      <Route path='/reset-password' element={<ResetPasswordPage />} />
       <Route path='/activate' element={<PublicActivatePage />} />
-      <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
       <Route path='/terms' element={<TermsOfServicePage />} />
       <Route path='/privacy' element={<PrivacyPolicyPage />} />
       <Route path='/rules' element={<OfficialRulesPage />} />
@@ -102,6 +103,8 @@ const AppRoutes = () => {
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>
+        {/* Business setup - protected but no sidebar layout */}
+        <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
         <Route element={<MainLayout />}>
           {/* Admin-only routes */}
           {isAdmin && (

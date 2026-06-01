@@ -18,7 +18,7 @@ export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwipe
     if (!draw_id && draws && draws.length > 0) {
       onDrawChange(draws[0].id);
     }
-  }, [draws, onDrawChange]);
+  }, [draws, draw_id, onDrawChange]);
   if (isLoading) {
     return (
       <Box sx={{ p: 2, pt: '0px', pb: 7 }}>

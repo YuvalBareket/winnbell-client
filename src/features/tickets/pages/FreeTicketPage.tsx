@@ -63,7 +63,7 @@ const FreeTicketPage: React.FC = () => {
   }
 
   const canActivate = status?.canActivate;
-  const noCampaign = !canActivate && (status as any)?.reason === 'no_campaign';
+  const noCampaign = !canActivate && status?.reason === 'no_campaign';
 
   // Mobile layout (xs/sm)
   if (!isDesktop) {
@@ -161,7 +161,7 @@ const FreeTicketPage: React.FC = () => {
           {/* Description */}
           <Box sx={{ maxWidth: '320px' }}>
             <Typography variant='h5' sx={{ fontWeight: 700, mb: 1.5 }}>
-              {canActivate ? 'Your Entry is Waiting!' : noCampaign ? 'No Active Campaign' : 'Entry Request Pending'}
+              {canActivate ? 'Your Entry is Waiting!' : noCampaign ? 'No Active Campaign' : 'Already Claimed This Week'}
             </Typography>
             <Typography variant='body1' color='text.secondary' sx={{ lineHeight: 1.6 }}>
               Winnbell gives you one free entry every week, from Sunday to Sunday.

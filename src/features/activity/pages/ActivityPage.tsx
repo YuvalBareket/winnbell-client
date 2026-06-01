@@ -295,24 +295,26 @@ const ActivityPage = () => {
                   <Typography variant='subtitle2' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.75rem' }}>
                     Recent Activity
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        bgcolor: '#10b981',
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        '@keyframes pulse': {
-                          '0%, 100%': { opacity: 1 },
-                          '50%': { opacity: 0.5 },
-                        },
-                      }}
-                    />
-                    <Typography variant='caption' color='text.secondary' sx={{ fontSize: '0.65rem' }}>
-                      LIVE
-                    </Typography>
-                  </Box>
+                  {dateRange === 'today' && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <Box
+                        sx={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          bgcolor: '#10b981',
+                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                          '@keyframes pulse': {
+                            '0%, 100%': { opacity: 1 },
+                            '50%': { opacity: 0.5 },
+                          },
+                        }}
+                      />
+                      <Typography variant='caption' color='text.secondary' sx={{ fontSize: '0.65rem' }}>
+                        LIVE
+                      </Typography>
+                    </Box>
+                  )}
                 </Stack>
                 <Typography variant='caption' color='text.secondary' sx={{ fontSize: '0.75rem' }}>
                   Amount
@@ -326,7 +328,7 @@ const ActivityPage = () => {
 
                   return (
                     <Box
-                      key={idx}
+                      key={item.ticket_id}
                       sx={{
                         px: 3,
                         py: 2,

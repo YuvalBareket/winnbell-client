@@ -47,9 +47,10 @@ const getCroppedFile = async (imageSrc: string, croppedAreaPixels: Area): Promis
     croppedAreaPixels.height,
   );
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
-      resolve(new File([blob!], 'logo.png', { type: 'image/png' }));
+      if (!blob) { reject(new Error('Canvas export failed')); return; }
+      resolve(new File([blob], 'logo.png', { type: 'image/png' }));
     }, 'image/png');
   });
 };

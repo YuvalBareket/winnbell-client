@@ -37,6 +37,23 @@ const SubscriptionSuccessPage = () => {
     if (isSuccess) dispatch(setBusinessActive());
   }, [isSuccess, dispatch]);
 
+  if (!sessionId) {
+    return (
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
+        <Paper elevation={0} sx={{ p: 5, borderRadius: 4, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 420, width: '100%' }}>
+          <Stack spacing={3} alignItems='center'>
+            <ErrorOutline sx={{ fontSize: 72, color: 'warning.main' }} />
+            <Typography variant='h5' fontWeight={900}>Invalid session</Typography>
+            <Typography variant='body1' color='text.secondary'>No payment session found. Please try subscribing again.</Typography>
+            <Button variant='contained' onClick={() => navigate('/partner/subscription')} sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700 }}>
+              Go to Subscription
+            </Button>
+          </Stack>
+        </Paper>
+      </Box>
+    );
+  }
+
   if (verifying) {
     return (
       <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

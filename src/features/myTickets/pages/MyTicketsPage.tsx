@@ -1,4 +1,4 @@
-import { Box, Container, Paper, Stack, Typography, useMediaQuery, useTheme, Autocomplete, TextField } from '@mui/material';
+import { Box, Container, Paper, Stack, Typography, useMediaQuery, useTheme, Autocomplete, TextField, Button } from '@mui/material';
 import { ConfirmationNumber } from '@mui/icons-material';
 import { ActiveTicketsList } from '../components/ActiveTicketsList';
 import { DrawSwiper } from '../../draw/components/DrawSwiper';
@@ -35,14 +35,23 @@ const MyTicketsPage = () => {
   const hasLocations = (businessData?.locations?.length ?? 0) > 0;
   const locations = businessData?.locations ?? [];
 
-  if (showPreparation) {
+  const [showingHistory, setShowingHistory] = useState(false);
+
+  if (showPreparation && !showingHistory) {
     return (
-      <DrawPreparationView
-        subscription={subscription}
-        hasDescription={hasDescription}
-        hasLocations={hasLocations}
-        isDesktop={isDesktop}
-      />
+      <Box>
+        <DrawPreparationView
+          subscription={subscription}
+          hasDescription={hasDescription}
+          hasLocations={hasLocations}
+          isDesktop={isDesktop}
+        />
+        <Box sx={{ display: 'flex', justifyContent: 'center', pb: 4, mt: -2 }}>
+          <Button variant='text' size='small' onClick={() => setShowingHistory(true)} sx={{ color: 'text.secondary', fontWeight: 600 }}>
+            View past entries
+          </Button>
+        </Box>
+      </Box>
     );
   }
 

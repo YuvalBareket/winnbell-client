@@ -169,6 +169,11 @@ const didAutoActivate = useRef(false);
         setSuccessDialogOpen(true);
         setCode('');
       },
+      onError: (err: any) => {
+        const msg = err?.response?.data?.message || 'Invalid or already used entry code.';
+        setErrorMessage(msg);
+        setErrorOpen(true);
+      },
     });
   };
 

@@ -7,7 +7,7 @@ export const useInviteManager = () => {
     mutationFn: (locationId: number) => createInviteLink(locationId),
     onSuccess: (data) => {
       // 1. Copy to clipboard immediately when the API returns the link
-      navigator.clipboard.writeText(data.inviteLink);
+      navigator.clipboard.writeText(data.inviteLink).catch(() => {});
     },
     onError: (error: unknown) => {
       console.error('Failed to generate link:', error);

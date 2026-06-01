@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Autocomplete, CircularProgress, TextField } from '@mui/material';
-import { useAddressAutocomplete } from '../hooks/useAutoCompleteAddewss';
+import { useAddressAutocomplete } from '../hooks/useAddressAutocomplete';
 
 type AddressOption = {
   label: string;

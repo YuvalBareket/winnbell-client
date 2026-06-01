@@ -121,8 +121,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       if (message === 'A receipt image is required to submit an entry.') {
         setRequiresImage(true);
         setErrorMessage('Please attach a photo of your receipt to continue.');
+        riskLevel.refetch();
       } else {
         setErrorMessage(message);
+        riskLevel.refetch();
       }
       onError?.(message);
     },
@@ -131,13 +133,13 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // Notify parent when a location is selected/cleared
   useEffect(() => {
     onLocationSelect?.(!!selectedLocation);
-  }, [selectedLocation]);
+  }, [selectedLocation, onLocationSelect]);
 
   // Notify parent when blocked state changes (throttled or daily limit)
   useEffect(() => {
     const blocked = riskLevel.isThrottled || riskLevel.isDailyLimitReached || riskLevel.isDrawCapped;
     onBlockedChange?.(blocked);
-  }, [riskLevel.isThrottled, riskLevel.isDailyLimitReached, riskLevel.isDrawCapped]);
+  }, [riskLevel.isThrottled, riskLevel.isDailyLimitReached, riskLevel.isDrawCapped, onBlockedChange]);
 
   // ──────────────────────────────────────────────────
   // Fetch nearby locations on mount

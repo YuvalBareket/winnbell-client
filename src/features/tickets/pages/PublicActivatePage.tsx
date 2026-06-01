@@ -17,6 +17,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsAuthenticated } from '../../../store/selectors/authSelectors';
+import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
 import { 
   GRADIENT_HERO, 
   ALPHA_WHITE_15, 
@@ -30,7 +31,8 @@ const PublicActivatePage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  
+  const { isLoaded } = useSyncStatus();
+
   // Local loading state to prevent the "Login UI Flash" while Redux initializes
   const [isChecking, setIsChecking] = useState(true);
 
@@ -42,19 +44,15 @@ const PublicActivatePage = () => {
       localStorage.setItem(PENDING_CODE_KEY, code);
     }
 
-    // 2. Give Redux a small window to settle its auth state
-    const timer = setTimeout(() => {
-      if (code && isAuthenticated) {
-        // If they are logged in, send them straight to activation
-        navigate('/scan', { replace: true });
-      } else {
-        // If not logged in after the check, show the login/register prompt
-        setIsChecking(false);
-      }
-    }, 600); // 600ms is usually enough for Redux/LocalStorage to sync
+    // 2. Wait for Redux/Supabase sync to settle before checking auth state
+    if (!isLoaded) return;
 
-    return () => clearTimeout(timer);
-  }, [code, isAuthenticated, navigate]);
+    if (code && isAuthenticated) {
+      navigate('/scan', { replace: true });
+    } else {
+      setIsChecking(false);
+    }
+  }, [code, isAuthenticated, isLoaded, navigate]);
 
   // ─── 1. Loading State (Prevents Jumping) ──────────────────────────────────
   if (isChecking && code) {
