@@ -81,11 +81,8 @@ const FreeTicketPage: React.FC = () => {
         }}
       >
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 2 }}>
-          <IconButton onClick={() => navigate(-1)} sx={{ color: 'text.primary', width: 44, height: 44 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant='h6' sx={{ flex: 1, textAlign: 'center', fontWeight: 700, pr: 5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2, pt: 2 }}>
+          <Typography variant='h5' sx={{ textAlign: 'center', fontWeight: 800 }}>
             Weekly Free Entry
           </Typography>
         </Box>
@@ -99,7 +96,7 @@ const FreeTicketPage: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
             px: 3,
-            pt: 3,
+            pt: 1,
             textAlign: 'center',
           }}
         >
