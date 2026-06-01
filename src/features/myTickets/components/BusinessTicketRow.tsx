@@ -5,7 +5,7 @@ import type { BusinessTicket } from '../types/myTicket.types';
 
 const rowStyle = {
   p: 2,
-  borderRadius: 3,
+  borderRadius: 2,
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
@@ -16,7 +16,7 @@ const rowStyle = {
 const iconBoxStyle = {
   width: 48,
   height: 48,
-  borderRadius: 3,
+  borderRadius: 2,
   bgcolor: 'action.hover',
   display: 'flex',
   alignItems: 'center',

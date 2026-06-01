@@ -16,7 +16,7 @@ import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { fetchActivity, type DateRange, type ActivityItem } from '../api/activity.api';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, MOBILE_CONTENT_HEIGHT_NO_HEADER,
+  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, MOBILE_CONTENT_HEIGHT_NO_HEADER,
 } from '../../../shared/colors';
 import { formatCurrency, formatRelativeTime } from '../../../shared/utils/date';
 import KpiCard from '../../stats/components/KpiCard';
@@ -108,7 +108,7 @@ const ActivityPage = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' }, pb: { xs: 12, md: 6 }, zoom: { xs: 0.9, md: 1 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' }, pb: { xs: 12, md: 6 }, zoom: { xs: 0.9, md: 1 } }}>
       <AppHeader onMenuOpen={() => setMenuOpen(true)} />
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
@@ -139,7 +139,7 @@ const ActivityPage = () => {
               onClick={() => navigate('/subscribe')}
               sx={{
                 p: 2,
-                borderRadius: 3,
+                borderRadius: 2,
 
                 bgcolor: 'white',
                 display: 'flex',
@@ -175,7 +175,7 @@ const ActivityPage = () => {
           )}
 
           {/* Filters */}
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: 'white' }}>
+          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: 'white' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
               {/* Location dropdown - only show if NOT a location manager */}
               {!isLocationManager && locations.length > 0 && (
@@ -238,8 +238,8 @@ const ActivityPage = () => {
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             {isLoading || isRefreshing ? (
               <>
-                <Skeleton variant='rounded' height={100} sx={{ flex: 1, borderRadius: 3 }} />
-                <Skeleton variant='rounded' height={100} sx={{ flex: 1, borderRadius: 3 }} />
+                <Skeleton variant='rounded' height={100} sx={{ flex: 1, borderRadius: 2 }} />
+                <Skeleton variant='rounded' height={100} sx={{ flex: 1, borderRadius: 2 }} />
               </>
             ) : (
               <>
@@ -259,11 +259,11 @@ const ActivityPage = () => {
             )}
           </Stack>
 
-          {isError && <Alert severity='error' sx={{ borderRadius: 3 }}>Failed to load activity. Please try again.</Alert>}
+          {isError && <Alert severity='error' sx={{ borderRadius: 2 }}>Failed to load activity. Please try again.</Alert>}
 
           {/* Activity feed */}
           {isError ? null : isLoading || isRefreshing ? (
-            <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', bgcolor: 'white' }}>
+            <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', bgcolor: 'white' }}>
               <Box sx={{ px: 3, py: 1.5, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider' }}>
                 <Typography variant='subtitle2' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.75rem' }}>
                   Recent Activity
@@ -278,7 +278,7 @@ const ActivityPage = () => {
               </Stack>
             </Paper>
           ) : displayItems.length === 0 ? (
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 2, border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <FeedOutlined sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
               <Typography variant='body1' fontWeight={600} color='text.primary'>
                 No receipt activity yet
@@ -288,7 +288,7 @@ const ActivityPage = () => {
               </Typography>
             </Paper>
           ) : (
-            <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', bgcolor: 'white' }}>
+            <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', bgcolor: 'white' }}>
               {/* Section header with live indicator */}
               <Box sx={{ px: 3, py: 1.5, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Stack direction='row' alignItems='center' spacing={1}>

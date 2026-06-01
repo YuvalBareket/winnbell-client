@@ -6,7 +6,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
+  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
 } from '../../../shared/colors';
 import type { SubscriptionDetails } from '../../subscription/hooks/useSubscription';
 
@@ -46,7 +46,7 @@ const DrawPreparationView = ({
   const progress = (completedCount / taskItems.length) * 100;
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: isDesktop ? 'auto' : 'calc(100dvh - 138px)', pb: 6 }}>
+    <Box sx={{ minHeight: isDesktop ? 'auto' : 'calc(100dvh - 138px)', pb: 6 }}>
       {/* Hero */}
       <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
         <Container maxWidth='lg'>
@@ -68,7 +68,7 @@ const DrawPreparationView = ({
         <Box sx={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap: 3, alignItems: 'flex-start' }}>
 
           {/* Left: Draw info card */}
-          <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+          <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
             <Box sx={{ background: GRADIENT_HERO, p: 3, color: 'white' }}>
               <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>Registered Campaign</Typography>
               <Typography variant='h6' fontWeight={800} sx={{ mt: 0.5 }}>
@@ -107,7 +107,7 @@ const DrawPreparationView = ({
           </Paper>
 
           {/* Right: Preparation checklist */}
-          <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 3 }}>
+          <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant='h6' fontWeight={800}>Preparation Checklist</Typography>
               <Chip label={`${completedCount}/${taskItems.length}`} size='small' color={completedCount === taskItems.length ? 'success' : 'default'} sx={{ fontWeight: 700 }} />
@@ -115,7 +115,7 @@ const DrawPreparationView = ({
             <LinearProgress
               variant='determinate'
               value={progress}
-              sx={{ mb: 3, height: 6, borderRadius: 3, bgcolor: 'action.hover', '& .MuiLinearProgress-bar': { borderRadius: 3 } }}
+              sx={{ mb: 3, height: 6, borderRadius: 2, bgcolor: 'action.hover', '& .MuiLinearProgress-bar': { borderRadius: 2 } }}
             />
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {checklist.map((item, i) => (

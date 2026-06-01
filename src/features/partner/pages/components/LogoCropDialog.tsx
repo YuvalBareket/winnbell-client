@@ -71,10 +71,10 @@ const LogoCropDialog: React.FC<LogoCropDialogProps> = ({ open, imageSrc, onClose
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
+    <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
       <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>Crop Logo</DialogTitle>
       <DialogContent sx={{ pb: 1 }}>
-        <Box sx={{ position: 'relative', width: '100%', height: 300, borderRadius: 3, overflow: 'hidden', bgcolor: '#111' }}>
+        <Box sx={{ position: 'relative', width: '100%', height: 300, borderRadius: 2, overflow: 'hidden', bgcolor: '#111' }}>
           <Cropper
             image={imageSrc}
             crop={crop}

@@ -61,7 +61,7 @@ const CanvasAnnotationEditor = ({
         <Box
           onClick={() => fileInputRef.current?.click()}
           sx={{
-            border: '2px dashed', borderColor: 'divider', borderRadius: 3,
+            border: '2px dashed', borderColor: 'divider', borderRadius: 2,
             minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
             textAlign: 'center', cursor: 'pointer', mb: 3,
             transition: 'all 0.18s',
@@ -130,7 +130,7 @@ const CanvasAnnotationEditor = ({
       <input ref={fileInputRef} type='file' accept='image/*' hidden onChange={handleFileChange} />
 
       <Button fullWidth variant='contained' size='large' onClick={handleSaveClick} disabled={isSaving}
-        sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', mb: 1.5, boxShadow: '0 4px 14px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.4)' } }}>
+        sx={{ py: 1.875, borderRadius: 2, fontWeight: 800, fontSize: '1rem', textTransform: 'none', mb: 1.5, boxShadow: '0 4px 14px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.4)' } }}>
         {isSaving ? <CircularProgress size={22} color='inherit' /> : 'Save & Continue →'}
       </Button>
     </>

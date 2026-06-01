@@ -237,7 +237,7 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                   const active = counts?.active ?? (selectedDrawId === ALL ? Number(loc.activated_tickets) : 0);
                   const quarantined = counts?.quarantined ?? (selectedDrawId === ALL ? Number(loc.quarantined_tickets) : 0);
                   return (
-                    <Box key={loc.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 1.5, py: 1, borderRadius: 1.5, border: '1px solid', borderColor: 'divider', bgcolor: loc.is_active ? 'transparent' : (theme) => alpha(theme.palette.action.disabled, 0.04) }}>
+                    <Box key={loc.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 1.5, py: 1, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: loc.is_active ? 'transparent' : (theme) => alpha(theme.palette.action.disabled, 0.04) }}>
                       <Box>
                         <Typography variant='body2' fontWeight={600}>{loc.name}</Typography>
                         {loc.address && <Typography variant='caption' color='text.secondary'>{loc.address}</Typography>}

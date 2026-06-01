@@ -87,7 +87,7 @@ const AppSidebar = () => {
         sx={{
           mx: 2, mb: 0.5, px: 1.5, py: 0.75, '@media (max-height: 700px)': { py: 0.8, mb: 0.6 },
           bgcolor: ALPHA_PRIMARY_04,
-          borderRadius: 3,
+          borderRadius: 2,
           border: `1px solid ${ALPHA_PRIMARY_06}`,
           display: 'flex', alignItems: 'center', gap: 1.5,
           transition: 'all 0.2s ease',

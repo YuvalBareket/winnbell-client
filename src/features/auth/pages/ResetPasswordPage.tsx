@@ -71,7 +71,7 @@ const ResetPasswordPage = () => {
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: BG_PAGE, p: 2 }}>
       <Container maxWidth='xs'>
-        <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+        <Paper elevation={0} sx={{ p: 4, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
           {success ? (
             <Box sx={{ textAlign: 'center', py: 2 }}>
               <CheckCircle color='success' sx={{ fontSize: 48, mb: 2 }} />
@@ -87,7 +87,7 @@ const ResetPasswordPage = () => {
                 Enter your new password below.
               </Typography>
 
-              {error && <Alert severity='error' sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
+              {error && <Alert severity='error' sx={{ mb: 2, borderRadius: 2 }}>{error}</Alert>}
 
               <TextField
                 fullWidth
@@ -126,7 +126,7 @@ const ResetPasswordPage = () => {
                 size='large'
                 onClick={handleSubmit}
                 disabled={loading}
-                sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}
+                sx={{ borderRadius: 2, fontWeight: 700, py: 1.5 }}
               >
                 {loading ? <CircularProgress size={22} color='inherit' /> : 'Update Password'}
               </Button>

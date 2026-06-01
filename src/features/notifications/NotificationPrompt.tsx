@@ -46,7 +46,7 @@ const NotificationPrompt = () => {
         left: 12,
         right: 12,
         zIndex: 1300,
-        borderRadius: 3,
+        borderRadius: 2,
         p: 2,
         display: 'flex',
         alignItems: 'center',

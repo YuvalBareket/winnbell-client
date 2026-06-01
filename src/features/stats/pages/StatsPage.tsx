@@ -15,7 +15,7 @@ import { selectIsBusiness, selectIsLocationManager } from '../../../store/select
 import { useBusinessStats } from '../hooks/useBusinessStats';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
+  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 import { formatMonth, formatCurrency, formatDateShort } from '../../../shared/utils/date';
 import KpiCard from '../components/KpiCard';
@@ -44,7 +44,7 @@ const StatsPage = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
 
       {/* Hero */}
       <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
@@ -68,7 +68,7 @@ const StatsPage = () => {
 
           {/* Filters */}
           {(isBusiness && locations.length > 1) || draws.length > 0 ? (
-            <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+            <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 {isBusiness && locations.length > 1 && (
                   <Autocomplete
@@ -98,15 +98,15 @@ const StatsPage = () => {
             </Paper>
           ) : null}
 
-          {isError && <Alert severity='error' sx={{ borderRadius: 3 }}>Failed to load statistics. Please try again.</Alert>}
+          {isError && <Alert severity='error' sx={{ borderRadius: 2 }}>Failed to load statistics. Please try again.</Alert>}
 
           {/* KPI cards */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             {isLoading ? (
               <>
-                <Skeleton variant='rounded' height={88} sx={{ flex: 1, borderRadius: 3 }} />
-                <Skeleton variant='rounded' height={88} sx={{ flex: 1, borderRadius: 3 }} />
-                <Skeleton variant='rounded' height={88} sx={{ flex: 1, borderRadius: 3 }} />
+                <Skeleton variant='rounded' height={88} sx={{ flex: 1, borderRadius: 2 }} />
+                <Skeleton variant='rounded' height={88} sx={{ flex: 1, borderRadius: 2 }} />
+                <Skeleton variant='rounded' height={88} sx={{ flex: 1, borderRadius: 2 }} />
               </>
             ) : (
               <>
@@ -118,7 +118,7 @@ const StatsPage = () => {
           </Stack>
 
           {/* Customer Growth */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction='row' justifyContent='space-between' alignItems='center' mb={0.5}>
               <Stack direction='row' alignItems='center' spacing={1}>
                 <PeopleAltOutlined sx={{ fontSize: 20, color: PRIMARY_MAIN }} />
@@ -150,7 +150,7 @@ const StatsPage = () => {
           </Paper>
 
           {/* Monthly distribution - bar chart */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction='row' justifyContent='space-between' alignItems='center' mb={2}>
               <Typography variant='subtitle1' fontWeight={700}>Monthly Distribution</Typography>
               <Chip label='Last 12 months' size='small' sx={{ fontWeight: 700 }} />
@@ -174,7 +174,7 @@ const StatsPage = () => {
           </Paper>
 
           {/* 30-day trend - line chart */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction='row' justifyContent='space-between' alignItems='center' mb={2}>
               <Typography variant='subtitle1' fontWeight={700}>30-Day Trend</Typography>
               <Chip label='Last 30 days' size='small' sx={{ fontWeight: 700 }} />
@@ -199,7 +199,7 @@ const StatsPage = () => {
 
           {/* Branch breakdown bar chart */}
           {(isBusiness || isManager) && (
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
               <Typography variant='subtitle1' fontWeight={700} mb={2}>
                 {isBusiness ? 'Entries by Branch' : 'Entry Breakdown'}
               </Typography>

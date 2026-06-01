@@ -37,7 +37,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
     <Paper
       elevation={0}
       sx={{
-        borderRadius: 3,
+        borderRadius: 2,
         overflow: 'hidden',
         boxShadow: SHADOW_CARD,
         transition: 'box-shadow 0.2s ease-in-out',

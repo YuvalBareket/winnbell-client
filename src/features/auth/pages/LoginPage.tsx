@@ -63,7 +63,7 @@ const BrandPanel = () => (
         { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
       ].map((item, i) => (
         <Stack key={i} direction='row' alignItems='center' spacing={1.5}>
-          <Box sx={{ width: 34, height: 34, borderRadius: 1.5, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Box sx={{ width: 34, height: 34, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {item.icon}
           </Box>
           <Typography variant='body2' fontWeight={600} sx={{ opacity: 0.9 }}>{item.text}</Typography>
@@ -166,7 +166,7 @@ const LoginPage = () => {
       {/* Header */}
       <Box sx={{ mb: { xs: 2, md: 3 }, textAlign: isDesktop ? 'left' : 'center' }}>
         {!isDesktop && (
-          <Paper elevation={4} sx={{ width: 56, height: 56, bgcolor: 'primary.main', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, transform: 'rotate(3deg)', mx: 'auto' }}>
+          <Paper elevation={4} sx={{ width: 56, height: 56, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, transform: 'rotate(3deg)', mx: 'auto' }}>
             <ConfirmationNumber sx={{ color: 'white', fontSize: 28 }} />
           </Paper>
         )}
@@ -182,26 +182,26 @@ const LoginPage = () => {
       </Box>
 
       {sessionError && (
-        <Alert severity='warning' sx={{ mb: 3, borderRadius: 3 }}>
+        <Alert severity='warning' sx={{ mb: 3, borderRadius: 2 }}>
           Your previous session didn't complete. Please sign in again.
         </Alert>
       )}
 
       {accountDeleted && (
-        <Alert severity='info' sx={{ mb: 3, borderRadius: 3 }}>
+        <Alert severity='info' sx={{ mb: 3, borderRadius: 2 }}>
           Your account has been deleted. If this was a mistake, please contact support.
         </Alert>
       )}
 
-      {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
+      {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
 
       {resetState === 'sent' && (
-        <Alert severity='success' onClose={() => setResetState('idle')} sx={{ mb: 3, borderRadius: 3 }}>
+        <Alert severity='success' onClose={() => setResetState('idle')} sx={{ mb: 3, borderRadius: 2 }}>
           Reset link sent. Check your inbox and follow the link to set a new password.
         </Alert>
       )}
       {resetState === 'error' && (
-        <Alert severity='error' onClose={() => setResetState('idle')} sx={{ mb: 3, borderRadius: 3 }}>
+        <Alert severity='error' onClose={() => setResetState('idle')} sx={{ mb: 3, borderRadius: 2 }}>
           Could not send reset email. Check the address and try again.
         </Alert>
       )}
@@ -212,7 +212,7 @@ const LoginPage = () => {
           <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
             InputProps={{
               startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              sx: { borderRadius: 3, bgcolor: 'background.paper' },
+              sx: { borderRadius: 2.5, bgcolor: 'background.paper' },
             }}
           />
         </Box>
@@ -247,7 +247,7 @@ const LoginPage = () => {
                   </IconButton>
                 </InputAdornment>
               ),
-              sx: { borderRadius: 3, bgcolor: 'background.paper' },
+              sx: { borderRadius: 2.5, bgcolor: 'background.paper' },
             }}
           />
         </Box>
@@ -264,7 +264,7 @@ const LoginPage = () => {
             disabled={googleLoading}
             sx={{
               py: 1.5,
-              borderRadius: 3,
+              borderRadius: 2,
               textTransform: 'none',
               bgcolor: 'background.paper',
               color: 'text.primary',
@@ -306,7 +306,7 @@ const LoginPage = () => {
 
         <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted}
           endIcon={!loading && <Login />}
-          sx={{ py: 1.5, borderRadius: 3, fontSize: '1rem', fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
+          sx={{ py: 1.5, borderRadius: 2, fontSize: '1rem', fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
           {loading ? <CircularProgress size={24} color='inherit' /> : 'Sign In'}
         </Button>
       </Stack>

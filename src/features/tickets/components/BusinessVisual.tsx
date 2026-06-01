@@ -28,7 +28,7 @@ const BusinessVisual: React.FC<BusinessVisualProps> = ({ generatedCode, primaryC
   >
     {generatedCode ? (
       <Stack alignItems='center' spacing={3}>
-        <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 3, boxShadow: 1 }}>
+        <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 2, boxShadow: 1 }}>
           <QRCode
             value={`${window.location.origin}/activate?code=${generatedCode}`}
             size={180}

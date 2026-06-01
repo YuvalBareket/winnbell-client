@@ -5,7 +5,7 @@ import { EmojiEvents, EmojiEventsOutlined } from '@mui/icons-material';
 import EmptyState from '../../../shared/components/EmptyState';
 import { useGetDrawHistory } from '../hooks/useGetDraws';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, TEXT_HEADING,
+  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, TEXT_HEADING,
   TEXT_SECONDARY, BORDER_LIGHT, MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 import DrawHistoryCard from '../components/DrawHistoryCard';
@@ -18,7 +18,7 @@ const DrawHistoryPage = () => {
   const closedCampaigns = history?.filter(d => d.status?.toLowerCase() === 'closed') ?? [];
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 }, zoom: { xs: 0.9, md: 1 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 }, zoom: { xs: 0.9, md: 1 } }}>
       {/* Hero Header */}
       <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 6, px: 3, color: 'white' }}>
         <Container maxWidth='lg'>
@@ -56,7 +56,7 @@ const DrawHistoryPage = () => {
             elevation={0}
             sx={{
               p: 3,
-              borderRadius: 3,
+              borderRadius: 2,
               border: '1px solid',
               borderColor: 'error.light',
               bgcolor: 'error.50',
@@ -76,7 +76,7 @@ const DrawHistoryPage = () => {
               <Skeleton
                 variant='rounded'
                 height={280}
-                sx={{ borderRadius: 3, mb: 3 }}
+                sx={{ borderRadius: 2, mb: 3 }}
               />
             </Box>
             <Box>
@@ -86,7 +86,7 @@ const DrawHistoryPage = () => {
                   key={i}
                   variant='rounded'
                   height={200}
-                  sx={{ borderRadius: 3, mb: 2.5 }}
+                  sx={{ borderRadius: 2, mb: 2.5 }}
                 />
               ))}
             </Box>
@@ -99,7 +99,7 @@ const DrawHistoryPage = () => {
             elevation={0}
             sx={{
               p: 0,
-              borderRadius: 3,
+              borderRadius: 2,
               border: '1px solid',
               borderColor: 'divider',
             }}

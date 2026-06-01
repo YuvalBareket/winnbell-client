@@ -92,7 +92,7 @@ const BrandPanel = ({ isBusinessOwner, isLocationManager }: { isBusinessOwner: b
       <Stack spacing={2.5}>
         {bullets.map((item, i) => (
           <Stack key={i} direction='row' alignItems='center' spacing={1.5}>
-            <Box sx={{ width: 34, height: 34, borderRadius: 1.5, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Box sx={{ width: 34, height: 34, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {item.icon}
             </Box>
             <Typography variant='body2' fontWeight={600} sx={{ opacity: 0.9 }}>{item.text}</Typography>
@@ -268,10 +268,10 @@ const RegisterPage = () => {
       )}
 
       {location.state?.message && (
-        <Alert severity='warning' sx={{ mb: 2, borderRadius: 3 }}>{location.state.message}</Alert>
+        <Alert severity='warning' sx={{ mb: 2, borderRadius: 2 }}>{location.state.message}</Alert>
       )}
 
-      {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
+      {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
 
       <Stack spacing={2.5}>
         <Box>
@@ -279,7 +279,7 @@ const RegisterPage = () => {
           <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
             InputProps={{
               startAdornment: (<InputAdornment position='start'><Person sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              sx: { borderRadius: 3, bgcolor: 'background.paper' },
+              sx: { borderRadius: 2, bgcolor: 'background.paper' },
             }}
           />
         </Box>
@@ -289,7 +289,7 @@ const RegisterPage = () => {
           <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
             InputProps={{
               startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              sx: { borderRadius: 3, bgcolor: 'background.paper' },
+              sx: { borderRadius: 2, bgcolor: 'background.paper' },
             }}
           />
         </Box>
@@ -307,7 +307,7 @@ const RegisterPage = () => {
                   </IconButton>
                 </InputAdornment>
               ),
-              sx: { borderRadius: 3, bgcolor: 'background.paper' },
+              sx: { borderRadius: 2, bgcolor: 'background.paper' },
             }}
           />
         </Box>
@@ -324,7 +324,7 @@ const RegisterPage = () => {
             disabled={googleLoading}
             sx={{
               py: 1.5,
-              borderRadius: 3,
+              borderRadius: 2,
               textTransform: 'none',
               bgcolor: 'background.paper',
               color: 'text.primary',
@@ -382,7 +382,7 @@ const RegisterPage = () => {
 
         <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted || !ageVerified} disableElevation
           sx={{
-            py: 1.5, borderRadius: 3, fontSize: '1rem', fontWeight: 700,
+            py: 1.5, borderRadius: 2, fontSize: '1rem', fontWeight: 700,
             bgcolor: isLocationManager ? ROLE_MANAGER_BG : 'primary.main',
             boxShadow: SHADOW_PRIMARY_SOFT,
             '&:hover': { bgcolor: isLocationManager ? ROLE_MANAGER_HOVER : 'primary.dark' },

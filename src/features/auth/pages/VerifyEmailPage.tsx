@@ -55,7 +55,7 @@ const BrandPanel = () => (
         { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
       ].map((item, i) => (
         <Stack key={i} direction='row' alignItems='center' spacing={1.5}>
-          <Box sx={{ width: 34, height: 34, borderRadius: 1.5, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Box sx={{ width: 34, height: 34, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {item.icon}
           </Box>
           <Typography variant='body2' fontWeight={600} sx={{ opacity: 0.9 }}>{item.text}</Typography>
@@ -155,7 +155,7 @@ const VerifyEmailPage = () => {
       {/* Header */}
       <Box sx={{ mb: { xs: 6, md: 5 }, textAlign: isDesktop ? 'left' : 'center' }}>
         {!isDesktop && (
-          <Paper elevation={4} sx={{ width: 80, height: 80, bgcolor: 'primary.main', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, mx: 'auto' }}>
+          <Paper elevation={4} sx={{ width: 80, height: 80, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, mx: 'auto' }}>
             <MarkEmailRead sx={{ color: 'white', fontSize: 40 }} />
           </Paper>
         )}
@@ -165,7 +165,7 @@ const VerifyEmailPage = () => {
         </Typography>
       </Box>
 
-      {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
+      {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
 
       <Stack spacing={3}>
         <TextField
@@ -189,7 +189,7 @@ const VerifyEmailPage = () => {
           endIcon={!loading && <ArrowForward />}
           sx={{
             py: 2,
-            borderRadius: 3,
+            borderRadius: 2,
             fontWeight: 700,
             boxShadow: SHADOW_PRIMARY_SOFT,
           }}

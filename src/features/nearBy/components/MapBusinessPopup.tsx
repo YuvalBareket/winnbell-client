@@ -114,7 +114,7 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
                 variant='rounded'
                 sx={{
                   width: 80, height: 80,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   bgcolor: sectorInfo.bgColor,
                   color: sectorInfo.color,
                   border: `2px solid ${sectorInfo.color}40`,
@@ -266,14 +266,14 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
             <Box
               sx={{
                 p: 2,
-                borderRadius: 3,
+                borderRadius: 2,
                 bgcolor: `${PRIMARY_MAIN}07`,
                 border: `1.5px solid ${PRIMARY_MAIN}22`,
                 mb: 2.5,
               }}
             >
               <Stack direction='row' spacing={1} alignItems='center' mb={1.25}>
-                <Box sx={{ width: 28, height: 28, borderRadius: 1.5, bgcolor: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Box sx={{ width: 28, height: 28, borderRadius: 2, bgcolor: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <AttachMoney sx={{ fontSize: 17, color: 'white' }} />
                 </Box>
                 <Typography variant='body2' fontWeight={800} color='text.primary'>
@@ -324,7 +324,7 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
               onClick={handleSubmitReceipt}
               sx={{
                 py: 1.6,
-                borderRadius: 3,
+                borderRadius: 2,
                 fontWeight: 800,
                 fontSize: '0.95rem',
                 bgcolor: PRIMARY_MAIN,
@@ -344,7 +344,7 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
               onClick={handleDirections}
               sx={{
                 py: 1.4,
-                borderRadius: 3,
+                borderRadius: 2,
                 fontWeight: 700,
                 fontSize: '0.9rem',
                 borderColor: 'divider',

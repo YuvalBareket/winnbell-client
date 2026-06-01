@@ -37,7 +37,6 @@ import {
   ALPHA_WHITE_20,
   ALPHA_WHITE_30,
   ALPHA_WHITE_10,
-  BG_PAGE,
   BORDER_LIGHT,
   PRIMARY_MAIN,
 } from '../../../shared/colors';
@@ -146,7 +145,6 @@ const BusinessProfilePage = () => {
       <Box
         sx={{
           flex: 1,
-          bgcolor: BG_PAGE,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: { xs: 'flex-start', md: 'center' },
@@ -235,7 +233,7 @@ const BusinessProfilePage = () => {
                               elevation={0}
                               sx={{
                                 p: 2,
-                                borderRadius: 3,
+                                borderRadius: 2,
                                 border: '2px solid',
                                 borderColor: PRIMARY_MAIN,
                                 bgcolor: 'rgba(25,93,230,0.04)',
@@ -298,7 +296,7 @@ const BusinessProfilePage = () => {
                                       onClick={() => setValue('businessSector', key, { shouldValidate: true })}
                                       sx={{
                                         p: 2,
-                                        borderRadius: 3,
+                                        borderRadius: 2,
                                         border: '2px solid',
                                         borderColor: BORDER_LIGHT,
                                         bgcolor: 'white',
@@ -356,7 +354,7 @@ const BusinessProfilePage = () => {
                   variant='contained'
                   endIcon={<ArrowForward />}
                   onClick={goNext}
-                  sx={{ py: 1.75, borderRadius: 3, fontWeight: 800, fontSize: '1rem' }}
+                  sx={{ py: 1.75, borderRadius: 2, fontWeight: 800, fontSize: '1rem' }}
                 >
                   Continue to Locations
                 </Button>
@@ -382,7 +380,7 @@ const BusinessProfilePage = () => {
                       elevation={0}
                       sx={{
                         p: 2.5,
-                        borderRadius: 3,
+                        borderRadius: 2,
                         border: '1px solid',
                         borderColor: BORDER_LIGHT,
                         bgcolor: 'white',
@@ -391,7 +389,7 @@ const BusinessProfilePage = () => {
                     >
                       <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
                         <Stack direction='row' alignItems='center' spacing={1}>
-                          <Box sx={{ width: 28, height: 28, borderRadius: 1.5, bgcolor: 'rgba(25,93,230,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Box sx={{ width: 28, height: 28, borderRadius: 2, bgcolor: 'rgba(25,93,230,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <LocationOn sx={{ fontSize: 16, color: 'primary.main' }} />
                           </Box>
                           <Typography variant='body2' fontWeight={700} color='text.secondary'>
@@ -471,7 +469,7 @@ const BusinessProfilePage = () => {
                     variant='outlined'
                     startIcon={<ArrowBack />}
                     onClick={() => setStep(0)}
-                    sx={{ borderRadius: 3, fontWeight: 700, flex: 1 }}
+                    sx={{ borderRadius: 2, fontWeight: 700, flex: 1 }}
                   >
                     Back
                   </Button>
@@ -481,7 +479,7 @@ const BusinessProfilePage = () => {
                     type='submit'
                     disabled={isPending}
                     endIcon={isPending ? undefined : <CheckCircle />}
-                    sx={{ borderRadius: 3, fontWeight: 800, flex: 2, py: 1.75 }}
+                    sx={{ borderRadius: 2, fontWeight: 800, flex: 2, py: 1.75 }}
                   >
                     {isPending ? <CircularProgress size={22} color='inherit' /> : 'Complete Setup'}
                   </Button>

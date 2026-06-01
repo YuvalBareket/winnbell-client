@@ -43,7 +43,7 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, onViewEntr
           {claimedCode && (
             <Box sx={{
               bgcolor: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: 3, px: 4, py: 2.5, mb: 5, display: 'inline-block',
+              borderRadius: 2, px: 4, py: 2.5, mb: 5, display: 'inline-block',
             }}>
               <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 2, display: 'block', mb: 0.5 }}>
                 Entry Code
@@ -59,7 +59,7 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, onViewEntr
               size="large"
               startIcon={<ConfirmationNumberIcon />}
               onClick={onViewEntries}
-              sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, borderRadius: 3, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+              sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, borderRadius: 2, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
             >
               View My Entries
             </Button>

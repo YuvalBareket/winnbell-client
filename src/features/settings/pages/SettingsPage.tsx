@@ -15,7 +15,7 @@ import type { AxiosError } from 'axios';
 import { api } from '../../../shared/api/client';
 import { supabase } from '../../../shared/lib/supabase';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
+  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
   BORDER_LIGHT, SHADOW_CARD, SHADOW_CARD_HOVER, PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
   TEXT_SECONDARY, TEXT_HEADING, ALPHA_PRIMARY_06,
 } from '../../../shared/colors';
@@ -91,7 +91,7 @@ const SettingsPage = () => {
   const isSocialLoginError = serverMessage === 'Password cannot be changed for social login accounts';
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8, zoom: { xs: 0.9, md: 1 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8, zoom: { xs: 0.9, md: 1 } }}>
       {/* Hero Section */}
       <Box
         sx={{
@@ -164,7 +164,7 @@ const SettingsPage = () => {
               <Paper
                 elevation={0}
                 sx={{
-                  borderRadius: 3,
+                  borderRadius: 2,
                   border: `1px solid ${BORDER_LIGHT}`,
                   boxShadow: SHADOW_CARD,
                   p: 3,
@@ -197,7 +197,7 @@ const SettingsPage = () => {
               <Paper
                 elevation={0}
                 sx={{
-                  borderRadius: 3,
+                  borderRadius: 2,
                   border: `1px solid ${BORDER_LIGHT}`,
                   boxShadow: SHADOW_CARD,
                   overflow: 'hidden',
@@ -223,7 +223,7 @@ const SettingsPage = () => {
                     sx={{
                       width: 40,
                       height: 40,
-                      borderRadius: 1.5,
+                      borderRadius: 2,
                       bgcolor: PRIMARY_MAIN,
                       display: 'flex',
                       alignItems: 'center',
@@ -497,7 +497,7 @@ const SettingsPage = () => {
               <Paper
                 elevation={0}
                 sx={{
-                  borderRadius: 3,
+                  borderRadius: 2,
                   border: '1px solid',
                   borderColor: 'rgba(211, 47, 47, 0.3)',
                   boxShadow: SHADOW_CARD,
@@ -526,7 +526,7 @@ const SettingsPage = () => {
                     sx={{
                       width: 40,
                       height: 40,
-                      borderRadius: 1.5,
+                      borderRadius: 2,
                       bgcolor: 'rgba(211, 47, 47, 0.1)',
                       display: 'flex',
                       alignItems: 'center',
@@ -589,7 +589,7 @@ const SettingsPage = () => {
         onClose={() => setDeleteDialogOpen(false)}
         PaperProps={{
           sx: {
-            borderRadius: 3,
+            borderRadius: 2,
             boxShadow: SHADOW_CARD,
           },
         }}

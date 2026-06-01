@@ -77,7 +77,7 @@ const PublicActivatePage = () => {
   if (!code) {
     return (
       <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
-        <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider', p: 4, textAlign: 'center' }}>
+        <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 4, textAlign: 'center' }}>
           <ErrorOutline sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
           <Typography variant='h6' fontWeight={800} mb={1}>Invalid Link</Typography>
           <Typography variant='body2' color='text.secondary'>
@@ -98,7 +98,7 @@ const PublicActivatePage = () => {
   // ─── 3. Unauthenticated View (User is NOT logged in) ───────────────────────
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
-      <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 4, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+      <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
 
         <Box sx={{ background: GRADIENT_HERO, p: 3.5, textAlign: 'center', color: 'white' }}>
           <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, border: `2px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
@@ -133,7 +133,7 @@ const PublicActivatePage = () => {
               fullWidth
               startIcon={<PersonAdd />}
               onClick={() => navigate('/register/user')}
-              sx={{ borderRadius: 3, fontWeight: 800, py: 1.5 }}
+              sx={{ borderRadius: 2, fontWeight: 800, py: 1.5 }}
             >
               Create Free Account
             </Button>
@@ -143,7 +143,7 @@ const PublicActivatePage = () => {
               fullWidth
               startIcon={<Login />}
               onClick={() => navigate('/login')}
-              sx={{ borderRadius: 3, fontWeight: 700, py: 1.5 }}
+              sx={{ borderRadius: 2, fontWeight: 700, py: 1.5 }}
             >
               Sign In
             </Button>

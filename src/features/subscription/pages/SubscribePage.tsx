@@ -214,7 +214,7 @@ const SubscribePage = () => {
         }}
       >
         <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: 520, md: 560 } }}>
-          <Paper elevation={0} sx={{ borderRadius: { xs: 4, md: 5 }, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+          <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
 
             {/* Step indicator */}
             <Box sx={{ px: { xs: 3, md: 4 }, pt: { xs: 3, md: 4 }, pb: 0 }}>

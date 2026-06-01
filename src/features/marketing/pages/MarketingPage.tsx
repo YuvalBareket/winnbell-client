@@ -11,7 +11,7 @@ import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager, selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
+   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 import {
   POSTER_W, POSTER_H,
@@ -142,7 +142,7 @@ const MarketingPage = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8 }}>
+    <Box sx={{minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8 }}>
       {/* Hero */}
       <Box sx={{
         background: GRADIENT_HERO, pt: 3, pb: isDesktop ? 9 : 6, px: 3,
@@ -174,7 +174,7 @@ const MarketingPage = () => {
           <Box sx={{ flex: 1, minWidth: 0 }}>
 
             {/* Thumbnail grid - 2×2, fixed pixel thumbnails with JS-computed scale */}
-            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5, mb: 3 }}>
+            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5, mb: 3,width:{xs:'calc(100dvw - 35px)'} }}>
               <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
                 Choose a template
               </Typography>
@@ -240,7 +240,7 @@ const MarketingPage = () => {
             </Paper>
 
             {/* Full preview - boxShadow on outer wrapper, NOT on posterRef */}
-            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5 }}>
+            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5 ,width:{xs:'calc(100dvw - 35px)'}}}>
               <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
                 Preview - {selected.label}
               </Typography>

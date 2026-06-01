@@ -133,7 +133,7 @@ const CampaignCard = ({
   const displayThreshold = editingThreshold ? previewThreshold : business.min_transaction_amount;
 
   return (
-    <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+    <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
       {/* ── Plan row ──────────────────────────────────── */}
       <Stack direction='row' alignItems='center' justifyContent='space-between' flexWrap='wrap' gap={1.5} mb={2}>
         <Stack direction='row' alignItems='center' gap={2}>
@@ -218,7 +218,7 @@ const CampaignCard = ({
               <Stack direction='row' alignItems='center' gap={1.5}>
                 <Box
                   sx={{
-                    width: 36, height: 36, borderRadius: 1.5,
+                    width: 36, height: 36, borderRadius: 2,
                     bgcolor: ALPHA_PRIMARY_10,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
@@ -238,7 +238,7 @@ const CampaignCard = ({
                           : 'No minimum'}
                       </Typography>
                       {business.pending_min_transaction_amount != null && (
-                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.75, px: 1, py: 0.25, borderRadius: 1.5, bgcolor: 'rgba(237,108,2,0.08)', border: '1px solid rgba(237,108,2,0.2)' }}>
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.75, px: 1, py: 0.25, borderRadius: 2, bgcolor: 'rgba(237,108,2,0.08)', border: '1px solid rgba(237,108,2,0.2)' }}>
                           <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'warning.main', flexShrink: 0 }} />
                           <Typography variant='caption' sx={{ color: 'warning.dark', fontWeight: 700, lineHeight: 1 }}>
                             Changes to {formatCurrency(business.pending_min_transaction_amount)} next campaign
@@ -306,7 +306,7 @@ const CampaignCard = ({
                     {displayThreshold != null && displayThreshold > 0 && (
                       <Box
                         sx={{
-                          px: 2, py: 1.25, borderRadius: 1.5,
+                          px: 2, py: 1.25, borderRadius: 2,
                           bgcolor: 'rgba(2,146,183,0.05)',
                           border: '1px dashed',
                           borderColor: 'rgba(2,146,183,0.2)',
@@ -371,7 +371,7 @@ const CampaignCard = ({
               <Stack direction='row' alignItems='center' gap={1.5}>
                 <Box
                   sx={{
-                    width: 36, height: 36, borderRadius: 1.5,
+                    width: 36, height: 36, borderRadius: 2,
                     bgcolor: ALPHA_PRIMARY_10,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
@@ -437,7 +437,7 @@ const CampaignCard = ({
       </Stack>
 
       {/* ── Receipt preview dialog ────────────────────── */}
-      <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+      <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
         <DialogContent sx={{ p: 0, position: 'relative' }}>
           <IconButton
             onClick={() => setPreviewOpen(false)}
@@ -447,7 +447,7 @@ const CampaignCard = ({
           </IconButton>
           {business.receipt_example_image_url && (
             <Box component='img' src={business.receipt_example_image_url} alt='Receipt example'
-              sx={{ display: 'block', width: '100%', maxHeight: '85vh', objectFit: 'contain', borderRadius: 3 }} />
+              sx={{ display: 'block', width: '100%', maxHeight: '85vh', objectFit: 'contain', borderRadius: 2 }} />
           )}
         </DialogContent>
       </Dialog>

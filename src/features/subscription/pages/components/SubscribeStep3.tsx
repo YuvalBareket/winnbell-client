@@ -62,7 +62,7 @@ const SubscribeStep3 = ({
         <Box
           onClick={() => !foundingLoading && !loading && setFoundingMode(m => !m)}
           sx={{
-            mb: 4, p: 3.5, borderRadius: 3, cursor: 'pointer',
+            mb: 4, p: 3.5, borderRadius: 2, cursor: 'pointer',
             position: 'relative', overflow: 'hidden',
             border: foundingMode ? '2px solid #f59e0b' : '1.5px solid rgba(245,158,11,0.4)',
             background: foundingMode
@@ -246,7 +246,7 @@ const SubscribeStep3 = ({
               </Stack>
               {foundingSaving > 0 && (
                 <Stack direction='row' justifyContent='space-between' alignItems='center'
-                  sx={{ bgcolor: 'rgba(22,163,74,0.08)', borderRadius: 1.5, px: 1.5, py: 1, border: '1px solid rgba(22,163,74,0.2)' }}>
+                  sx={{ bgcolor: 'rgba(22,163,74,0.08)', borderRadius: 2, px: 1.5, py: 1, border: '1px solid rgba(22,163,74,0.2)' }}>
                   <Typography variant='caption' fontWeight={700} color='#15803d'>You save</Typography>
                   <Typography variant='caption' fontWeight={900} color='#15803d'>
                     ${foundingSaving.toLocaleString()} vs regular plan
@@ -264,7 +264,7 @@ const SubscribeStep3 = ({
             onClick={onFoundingSubscribe}
             disabled={foundingLoading || loading}
             sx={{
-              py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
+              py: 1.875, borderRadius: 2, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
               bgcolor: '#f59e0b', '&:hover': { bgcolor: '#d97706' },
               boxShadow: '0 4px 14px rgba(245,158,11,0.4)',
               '&:hover .MuiButton-root': { boxShadow: '0 6px 20px rgba(245,158,11,0.5)' },
@@ -364,7 +364,7 @@ const SubscribeStep3 = ({
             startIcon={loading ? undefined : <CreditCard />}
             onClick={onSubscribe}
             disabled={loading || foundingLoading}
-            sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(2,146,183,0.35)', '&:hover': { boxShadow: '0 6px 20px rgba(2,146,183,0.45)' } }}>
+            sx={{ py: 1.875, borderRadius: 2, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(2,146,183,0.35)', '&:hover': { boxShadow: '0 6px 20px rgba(2,146,183,0.45)' } }}>
             {loading ? <CircularProgress size={24} color='inherit' /> : 'Start Campaign'}
           </Button>
 

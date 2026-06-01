@@ -43,7 +43,7 @@ const SubscribeStep2 = ({
           </Box>
 
           <Button fullWidth variant='contained' size='large' onClick={onContinue}
-            sx={{ py: 1.875, borderRadius: 3, fontWeight: 800, fontSize: '1rem', textTransform: 'none', mb: 1.5, boxShadow: '0 4px 14px rgba(2,146,183,0.3)' }}>
+            sx={{ py: 1.875, borderRadius: 2, fontWeight: 800, fontSize: '1rem', textTransform: 'none', mb: 1.5, boxShadow: '0 4px 14px rgba(2,146,183,0.3)' }}>
             Looks good, continue →
           </Button>
 

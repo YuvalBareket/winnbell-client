@@ -195,7 +195,7 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
       ) : (
         <Stack spacing={0.5}>
           {data.rows.map((b) => (
-            <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+            <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
               <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
               {canEdit && (
                 <IconButton size='small' color='error' onClick={() => setConfirmRemove({ id: b.id, name: b.name })} disabled={removeBiz.isPending}>

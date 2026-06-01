@@ -15,7 +15,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
           <Box
             sx={{
               bgcolor: 'background.paper',
-              borderRadius: 3,
+              borderRadius: 2,
               border: '1px solid',
               borderColor: 'divider',
               p: { xs: 3, md: 4 },
@@ -56,7 +56,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
           <Box
             sx={{
               bgcolor: 'background.paper',
-              borderRadius: 3,
+              borderRadius: 2,
               border: '2px solid',
               borderColor: PRIMARY_MAIN,
               p: { xs: 3, md: 4 },

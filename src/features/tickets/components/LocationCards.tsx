@@ -29,7 +29,7 @@ export const LocationCard: React.FC<LocationCardProps> = ({ location, primaryCol
     }}
   >
     <Box sx={{
-      width: 38, height: 38, borderRadius: 1.5, flexShrink: 0,
+      width: 38, height: 38, borderRadius: 2, flexShrink: 0,
       bgcolor: `${primaryColor || PRIMARY_MAIN}12`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
@@ -72,7 +72,7 @@ export const NearbyLocationCard: React.FC<NearbyLocationCardProps> = ({ location
     }}
   >
     <Box sx={{
-      width: 38, height: 38, borderRadius: 1.5, flexShrink: 0,
+      width: 38, height: 38, borderRadius: 2, flexShrink: 0,
       bgcolor: `${primaryColor || PRIMARY_MAIN}12`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>

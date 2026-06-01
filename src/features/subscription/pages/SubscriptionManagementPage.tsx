@@ -9,7 +9,7 @@ import {
   Lock, LockOpen, WorkspacePremium, Edit, Add as AddIcon, Remove as RemoveIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { PRIMARY_MAIN, BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
+import { PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import { useSubscription, useUpdateSubscriptionPlan } from '../hooks/useSubscription';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
@@ -118,7 +118,7 @@ export default function SubscriptionManagementPage() {
   const canCancel = sub.status !== 'Cancelled' && !sub.cancel_at_period_end;
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 10, md: 6 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 10, md: 6 } }}>
       {/* Hero Header */}
       <Box
         sx={{
@@ -157,7 +157,7 @@ export default function SubscriptionManagementPage() {
           <Alert
             severity={cancelResult.refundType === 'none' ? 'info' : 'success'}
             icon={<Cancel />}
-            sx={{ mb: 3, borderRadius: 3 }}
+            sx={{ mb: 3, borderRadius: 2 }}
             onClose={() => setCancelResult(null)}
           >
             {cancelResult.refundType !== 'none' ? (
@@ -169,7 +169,7 @@ export default function SubscriptionManagementPage() {
         )}
 
         {cancelError && (
-          <Alert severity='error' sx={{ mb: 3, borderRadius: 3 }} onClose={() => setCancelError('')}>
+          <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }} onClose={() => setCancelError('')}>
             {cancelError}
           </Alert>
         )}
@@ -187,7 +187,7 @@ export default function SubscriptionManagementPage() {
             {/* ── Left column: Plan + Actions ── */}
             <Stack spacing={3}>
               {/* Plan card */}
-              <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+              <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
                 {/* Card header band */}
                 <Box
                   sx={{
@@ -292,7 +292,7 @@ export default function SubscriptionManagementPage() {
                     size='large'
                     startIcon={<Cancel />}
                     onClick={() => setConfirmOpen(true)}
-                    sx={{ borderRadius: 3, fontWeight: 700, py: 1.75 }}
+                    sx={{ borderRadius: 2, fontWeight: 700, py: 1.75 }}
                   >
                     Cancel my subscription
                   </Button>
@@ -307,7 +307,7 @@ export default function SubscriptionManagementPage() {
                     startIcon={resuming ? undefined : <CheckCircle />}
                     onClick={() => doResume()}
                     disabled={resuming}
-                    sx={{ borderRadius: 3, fontWeight: 700, py: 1.75 }}
+                    sx={{ borderRadius: 2, fontWeight: 700, py: 1.75 }}
                   >
                     {resuming ? <CircularProgress size={22} color='inherit' /> : 'Resume Campaign'}
                   </Button>
@@ -320,7 +320,7 @@ export default function SubscriptionManagementPage() {
                     color='primary'
                     size='large'
                     onClick={() => navigate('/subscribe')}
-                    sx={{ borderRadius: 3, fontWeight: 700, py: 1.75 }}
+                    sx={{ borderRadius: 2, fontWeight: 700, py: 1.75 }}
                   >
                     Start a New Plan
                   </Button>
@@ -330,7 +330,7 @@ export default function SubscriptionManagementPage() {
 
             {/* ── Right column: Draw entry ── */}
             {sub.draw_id ? (
-              <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+              <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
                 {/* Card header band */}
                 <Box
                   sx={{
@@ -394,7 +394,7 @@ export default function SubscriptionManagementPage() {
               <Paper
                 elevation={0}
                 sx={{
-                  p: 4, borderRadius: 3, border: '1px dashed', borderColor: 'divider',
+                  p: 4, borderRadius: 2, border: '1px dashed', borderColor: 'divider',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   minHeight: 280, textAlign: 'center',
                 }}
@@ -414,7 +414,7 @@ export default function SubscriptionManagementPage() {
       </Container>
 
       {/* Edit Plan dialog */}
-      <Dialog open={editPlanOpen} onClose={() => setEditPlanOpen(false)} fullWidth maxWidth='xs' PaperProps={{ sx: { borderRadius: 4, p: 1 } }}>
+      <Dialog open={editPlanOpen} onClose={() => setEditPlanOpen(false)} fullWidth maxWidth='xs' PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
         <DialogTitle sx={{ fontWeight: 800 }}>Change Plan</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>
@@ -495,7 +495,7 @@ export default function SubscriptionManagementPage() {
       </Dialog>
 
       {/* Confirm dialog */}
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 1 } }}>
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
         <DialogTitle sx={{ fontWeight: 800 }}>Are you sure you want to cancel?</DialogTitle>
         <DialogContent>
           <Stack spacing={1.5}>

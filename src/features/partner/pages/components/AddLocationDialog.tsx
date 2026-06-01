@@ -68,7 +68,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}>
+    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth PaperProps={{ sx: { borderRadius: 2, overflow: 'hidden' } }}>
       <Box sx={{ background: GRADIENT_HERO, px: 3, pt: 2.5, pb: 3, color: 'white' }}>
         <Stack direction='row' alignItems='center' justifyContent='space-between'>
           <Stack direction='row' alignItems='center' spacing={1.5}>
@@ -157,7 +157,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
           <Button
             variant='outlined'
             onClick={onClose}
-            sx={{ flex: 1, borderRadius: 3, fontWeight: 700, py: 1.5, textTransform: 'none' }}
+            sx={{ flex: 1, borderRadius: 2, fontWeight: 700, py: 1.5, textTransform: 'none' }}
           >
             Cancel
           </Button>
@@ -166,7 +166,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
             form='add-location-form'
             variant='contained'
             disabled={isLoading}
-            sx={{ flex: 1, borderRadius: 3, fontWeight: 800, py: 1.5, textTransform: 'none' }}
+            sx={{ flex: 1, borderRadius: 2, fontWeight: 800, py: 1.5, textTransform: 'none' }}
           >
             {isLoading ? <CircularProgress size={20} color='inherit' /> : 'Add Location'}
           </Button>

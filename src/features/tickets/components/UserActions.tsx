@@ -66,7 +66,7 @@ const UserActions: React.FC<UserActionsProps> = ({
             </InputAdornment>
           ),
           sx: {
-            borderRadius: 3,
+            borderRadius: 2,
             bgcolor: 'action.hover',
             fontSize: '1.25rem',
             fontFamily: 'monospace',
@@ -93,7 +93,7 @@ const UserActions: React.FC<UserActionsProps> = ({
       sx={{
         background: GRADIENT_PRIMARY,
         height: 52,
-        borderRadius: 3,
+        borderRadius: 2,
         fontSize: '1rem',
         fontWeight: 800,
         boxShadow: SHADOW_PRIMARY_SOFT,
@@ -118,7 +118,7 @@ const UserActions: React.FC<UserActionsProps> = ({
           startIcon={<QrCodeScanner />}
           onClick={() => setScannerOpen(true)}
           disabled={redeemMutation.isPending}
-          sx={{ height: 48, borderRadius: 3, fontWeight: 700 }}
+          sx={{ height: 48, borderRadius: 2, fontWeight: 700 }}
         >
           Scan QR Code
         </Button>
@@ -135,7 +135,7 @@ const UserActions: React.FC<UserActionsProps> = ({
       sx={{
         p: 1.5,
         px: 2,
-        borderRadius: 3,
+        borderRadius: 2,
         bgcolor: `${primaryColor}0A`,
         border: `1px solid ${primaryColor}`,
         cursor: 'pointer',
@@ -147,7 +147,7 @@ const UserActions: React.FC<UserActionsProps> = ({
         '&:active': { transform: 'scale(0.97)' },
       }}
     >
-      <Box sx={{ bgcolor: primaryColor, borderRadius: 1.5, p: 0.75, display: 'flex', color: 'white' }}>
+      <Box sx={{ bgcolor: primaryColor, borderRadius: 2, p: 0.75, display: 'flex', color: 'white' }}>
         <CardGiftcard fontSize='small' />
       </Box>
       <Stack flex={1} spacing={0.25}>

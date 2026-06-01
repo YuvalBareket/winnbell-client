@@ -46,7 +46,6 @@ import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
 import type { BusinessLocation } from '../types/business.types';
 import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 import {
-  BG_PAGE,
   ALPHA_WHITE_10,
   ALPHA_WHITE_15,
   GRADIENT_HERO,
@@ -154,7 +153,7 @@ const BusinessHubPage = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' } }}>
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' } }}>
         {/* Hero skeleton */}
         <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3 }}>
           <Container maxWidth='md'>
@@ -169,9 +168,9 @@ const BusinessHubPage = () => {
         </Box>
         <Container maxWidth='md' sx={{ mt: -5 }}>
           <Stack spacing={3}>
-            <Skeleton variant='rounded' height={72} sx={{ borderRadius: 3 }} />
-            <Skeleton variant='rounded' height={140} sx={{ borderRadius: 3 }} />
-            <Skeleton variant='rounded' height={140} sx={{ borderRadius: 3 }} />
+            <Skeleton variant='rounded' height={72} sx={{ borderRadius: 2 }} />
+            <Skeleton variant='rounded' height={140} sx={{ borderRadius: 2 }} />
+            <Skeleton variant='rounded' height={140} sx={{ borderRadius: 2 }} />
           </Stack>
         </Container>
       </Box>
@@ -188,7 +187,7 @@ const BusinessHubPage = () => {
   }
 
   return (
-    <Box sx={{ bgcolor: BG_PAGE, minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
       <AppHeader onMenuOpen={() => setMenuOpen(true)} />
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
@@ -217,7 +216,7 @@ const BusinessHubPage = () => {
               sx={{
                 display: 'flex',
                 p: 2.5,
-                borderRadius: 3,
+                borderRadius: 2,
                 border: '1px solid #00000021',
                 backgroundColor:'white',
                 alignItems: 'center',
@@ -255,7 +254,7 @@ const BusinessHubPage = () => {
           {/* Profile Preview button */}
           <Paper
             elevation={0}
-            sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
+            sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
           >
             <Box>
               <Typography variant='body2' fontWeight={700}>Public Profile Preview</Typography>
@@ -305,7 +304,7 @@ const BusinessHubPage = () => {
             {activeLocations.length === 0 ? (
               <Paper
                 elevation={0}
-                sx={{ p: 4, borderRadius: 3, textAlign: 'center', border: '1px dashed', borderColor: 'divider' }}
+                sx={{ p: 4, borderRadius: 2, textAlign: 'center', border: '1px dashed', borderColor: 'divider' }}
               >
                 <AddBusiness sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
                 <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>No locations yet</Typography>

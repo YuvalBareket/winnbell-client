@@ -285,7 +285,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
 
       {/* ── Draw cap reached ─────────────────────────── */}
       {riskLevel.isDrawCapped && (
-        <Box sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 1.5 }}>
+        <Box sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 1.5 }}>
           <Box sx={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #195DE2 0%, #7FA6FF 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <EmojiEvents sx={{ fontSize: 28, color: 'white' }} />
           </Box>
@@ -302,7 +302,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
 
       {/* ── Daily receipt limit (5/day for all users) ── */}
       {!riskLevel.isDrawCapped && riskLevel.isDailyLimitReached && !riskLevel.isThrottled && (
-        <Box sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 1.5 }}>
+        <Box sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 1.5 }}>
           <Box sx={{ width: 48, height: 48, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <AccessTime sx={{ fontSize: 26, color: 'text.secondary' }} />
           </Box>
@@ -322,7 +322,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         <Box
           sx={{
             p: 3,
-            borderRadius: 3,
+            borderRadius: 2,
             border: '1px solid',
             borderColor: 'divider',
             bgcolor: 'background.paper',
@@ -412,7 +412,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           </Typography>
           {selectedLocation?.receipt_example_image_url && (
             <Box component="img" src={selectedLocation.receipt_example_image_url} alt="Receipt example"
-              sx={{ display: 'block', width: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: 1.5 }} />
+              sx={{ display: 'block', width: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: 2 }} />
           )}
         </DialogContent>
       </Dialog>

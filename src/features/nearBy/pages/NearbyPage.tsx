@@ -158,7 +158,7 @@ const NearbyPage = () => {
         <Box sx={{ position: 'absolute', top: 7, left: 20, right: 20, zIndex: 10, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Paper
             elevation={3}
-            sx={{ flex: 1, p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 3, height: 48 }}
+            sx={{ flex: 1, p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 2, height: 48 }}
           >
             <IconButton sx={{ p: '10px' }}>
               <Search sx={{ color: 'text.secondary' }} />

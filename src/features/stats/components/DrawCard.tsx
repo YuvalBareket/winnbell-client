@@ -10,7 +10,7 @@ const DrawCard = ({ draw, selected, onClick }: { draw: DrawDataPoint; selected: 
       elevation={0}
       onClick={onClick}
       sx={{
-        p: 2.5, borderRadius: 3, cursor: 'pointer',
+        p: 2.5, borderRadius: 2, cursor: 'pointer',
         border: '2px solid', borderColor: selected ? PRIMARY_MAIN : 'divider',
         bgcolor: selected ? `${PRIMARY_MAIN}08` : 'background.paper',
         transition: 'all 0.15s ease',

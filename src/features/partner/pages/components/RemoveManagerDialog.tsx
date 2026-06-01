@@ -22,7 +22,7 @@ const RemoveManagerDialog: React.FC<RemoveManagerDialogProps> = ({
   onConfirm,
   isLoading,
 }) => (
-  <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+  <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
     <DialogTitle sx={{ fontWeight: 700 }}>Remove Branch Manager?</DialogTitle>
     <DialogContent>
       <Typography variant='body2' color='text.secondary'>

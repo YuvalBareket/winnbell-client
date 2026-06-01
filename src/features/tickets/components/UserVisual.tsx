@@ -121,7 +121,7 @@ const UserVisual: React.FC<UserVisualProps> = ({ primaryColor, compact }) => {
           width: 48,
           height: 48,
           bgcolor: primaryColor,
-          borderRadius: 3,
+          borderRadius: 2,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

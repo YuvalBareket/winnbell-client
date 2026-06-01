@@ -58,7 +58,7 @@ const BusinessActions: React.FC<BusinessActionsProps> = ({
       }
       sx={{
         height: 64,
-        borderRadius: 4,
+        borderRadius: 2,
         fontSize: '1.2rem',
         fontWeight: 800,
         bgcolor: primaryColor,
@@ -99,7 +99,7 @@ const BusinessActions: React.FC<BusinessActionsProps> = ({
                 onClick={() => setSelectedLocationId(loc.id)}
                 sx={{
                   p: 1.5,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   border: '2px solid',
                   borderColor: isSelected ? primaryColor : 'divider',
                   bgcolor: isSelected ? `${primaryColor}08` : 'white',

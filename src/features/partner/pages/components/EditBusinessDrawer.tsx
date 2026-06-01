@@ -124,7 +124,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                         onClick={() => setValue('businessSector', key, { shouldValidate: true })}
                         sx={{
                           p: 1.5,
-                          borderRadius: 3,
+                          borderRadius: 2,
                           border: '2px solid',
                           borderColor: active ? PRIMARY_MAIN : BORDER_LIGHT,
                           bgcolor: active ? 'rgba(25,93,230,0.04)' : 'white',
@@ -181,7 +181,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
               variant='outlined'
               onClick={onClose}
               disabled={isPending}
-              sx={{ borderRadius: 3, fontWeight: 700, py: 1.5, textTransform: 'none' }}
+              sx={{ borderRadius: 2, fontWeight: 700, py: 1.5, textTransform: 'none' }}
             >
               Cancel
             </Button>
@@ -191,7 +191,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
               variant='contained'
               disabled={isPending}
               startIcon={isPending ? <CircularProgress size={16} color='inherit' /> : null}
-              sx={{ borderRadius: 3, fontWeight: 800, py: 1.5, textTransform: 'none' }}
+              sx={{ borderRadius: 2, fontWeight: 800, py: 1.5, textTransform: 'none' }}
             >
               {isPending ? 'Saving…' : 'Save Changes'}
             </Button>

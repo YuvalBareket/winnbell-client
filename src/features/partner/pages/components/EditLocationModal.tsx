@@ -78,7 +78,7 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
       onClose={onClose}
       maxWidth='sm'
       fullWidth
-      PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
+      PaperProps={{ sx: { borderRadius: 2, overflow: 'hidden' } }}
     >
       {/* Gradient header */}
       <Box sx={{ background: GRADIENT_HERO, px: 3, pt: 2.5, pb: 3, color: 'white' }}>
@@ -134,7 +134,7 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
             variant='outlined'
             onClick={onClose}
             disabled={isPending}
-            sx={{ flex: 1, borderRadius: 3, textTransform: 'none', fontWeight: 700, py: 1.5 }}
+            sx={{ flex: 1, borderRadius: 2, textTransform: 'none', fontWeight: 700, py: 1.5 }}
           >
             Cancel
           </Button>
@@ -143,7 +143,7 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
             variant='contained'
             disabled={isPending}
             startIcon={isPending ? <CircularProgress size={16} color='inherit' /> : null}
-            sx={{ flex: 1, borderRadius: 3, textTransform: 'none', fontWeight: 800, py: 1.5 }}
+            sx={{ flex: 1, borderRadius: 2, textTransform: 'none', fontWeight: 800, py: 1.5 }}
           >
             {isPending ? 'Saving…' : 'Save'}
           </Button>

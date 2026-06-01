@@ -329,7 +329,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 const iconBoxStyle = {
   width: 48,
   height: 48,
-  borderRadius: 3,
+  borderRadius: 2,
   bgcolor: 'action.hover',
   display: 'flex',
   alignItems: 'center',
@@ -404,7 +404,7 @@ const TicketSkeleton = () => (
         variant='rectangular'
         width={48}
         height={48}
-        sx={{ borderRadius: 3 }}
+        sx={{ borderRadius: 2 }}
       />
       <Box>
         <Skeleton width={120} height={20} />

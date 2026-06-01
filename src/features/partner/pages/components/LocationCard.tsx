@@ -29,7 +29,7 @@ const LocationCard = ({
   return (
     <Paper
       elevation={0}
-      sx={{ p: 2.5, borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}
+      sx={{ p: 2.5, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}
     >
       <Stack direction='row' justifyContent='space-between' alignItems='flex-start'>
         <Box flex={1} minWidth={0}>

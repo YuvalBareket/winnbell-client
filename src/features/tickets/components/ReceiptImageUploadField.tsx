@@ -63,7 +63,7 @@ const ReceiptImageUploadField: React.FC<Props> = ({
           </>
         ) : receiptImageUrl ? (
           <>
-            <Box sx={{ width: 40, height: 40, borderRadius: 1.5, overflow: 'hidden', flexShrink: 0, border: '2px solid #16a34a' }}>
+            <Box sx={{ width: 40, height: 40, borderRadius: 2, overflow: 'hidden', flexShrink: 0, border: '2px solid #16a34a' }}>
               <Box component="img" src={receiptImageUrl} alt="receipt" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </Box>
             <Box flex={1} minWidth={0}>
@@ -81,7 +81,7 @@ const ReceiptImageUploadField: React.FC<Props> = ({
         ) : (
           <>
             <Box sx={{
-              width: 40, height: 40, borderRadius: 1.5, flexShrink: 0,
+              width: 40, height: 40, borderRadius: 2, flexShrink: 0,
               bgcolor: `${primaryColor || PRIMARY_MAIN}15`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>

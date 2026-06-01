@@ -21,7 +21,7 @@ const SelectedLocationPill: React.FC<Props> = ({ primaryColor, location, onChang
     >
       <Box
         sx={{
-          width: 36, height: 36, borderRadius: 1.5, flexShrink: 0,
+          width: 36, height: 36, borderRadius: 2, flexShrink: 0,
           bgcolor: primaryColor || PRIMARY_MAIN,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
@@ -42,7 +42,7 @@ const SelectedLocationPill: React.FC<Props> = ({ primaryColor, location, onChang
         sx={{
           color: primaryColor || PRIMARY_MAIN, fontWeight: 700,
           fontSize: '0.75rem', minWidth: 'auto', px: 1.5,
-          borderRadius: 1.5,
+          borderRadius: 2,
           '&:hover': { bgcolor: `${primaryColor || PRIMARY_MAIN}15` },
         }}
       >

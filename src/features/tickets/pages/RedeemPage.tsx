@@ -34,7 +34,6 @@ import {
   GRADIENT_HERO,
   ALPHA_WHITE_15,
   ALPHA_WHITE_30,
-  BG_PAGE,
 } from '../../../shared/colors';
 import BusinessVisual from '../components/BusinessVisual';
 import UserVisual from '../components/UserVisual';
@@ -197,7 +196,7 @@ const didAutoActivate = useRef(false);
     }
 
     return (
-      <Box sx={{ bgcolor: BG_PAGE, minHeight: '100dvh', pb: 6, zoom: { xs: 0.9, md: 1 } }}>
+      <Box sx={{ minHeight: '100dvh', pb: 6, zoom: { xs: 0.9, md: 1 } }}>
         {/* Hero */}
         <Box
           sx={{
@@ -249,7 +248,7 @@ const didAutoActivate = useRef(false);
               <Paper
               elevation={0}
               sx={{
-                borderRadius: 3, overflow: 'hidden',
+                borderRadius: 2, overflow: 'hidden',
                 display: 'flex', flexDirection: 'column',
                 minHeight: 360,
               }}
@@ -275,7 +274,7 @@ const didAutoActivate = useRef(false);
                   minHeight: 360,
                 }}
               >
-                <Box sx={{ bgcolor: `${PRIMARY_MAIN}12`, borderRadius: 3, p: 2, display: 'flex' }}>
+                <Box sx={{ bgcolor: `${PRIMARY_MAIN}12`, borderRadius: 2, p: 2, display: 'flex' }}>
                   <CardGiftcard sx={{ fontSize: 56, color: PRIMARY_MAIN }} />
                 </Box>
                 <Box>
@@ -316,7 +315,7 @@ const didAutoActivate = useRef(false);
             {/* Right panel: actions */}
             <Paper
               elevation={0}
-              sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden', p: 4 }}
+              sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden', p: 4 }}
             >
               <Box sx={{ mb: 3 }}>
                 <Typography variant='h6' fontWeight={800} sx={{ mb: 0.5 }}>
@@ -441,7 +440,7 @@ const didAutoActivate = useRef(false);
                   elevation={0}
                   onClick={() => navigate('/freeTicket')}
                   sx={{
-                    p: 1.5, px: 2, borderRadius: 3,
+                    p: 1.5, px: 2, borderRadius: 2,
                     bgcolor: `${primaryColor || PRIMARY_MAIN}0A`,
                     border: `1px solid ${primaryColor || PRIMARY_MAIN}`,
                     cursor: 'pointer',
@@ -451,7 +450,7 @@ const didAutoActivate = useRef(false);
                     '&:active': { transform: 'scale(0.97)' },
                   }}
                 >
-                  <Box sx={{ bgcolor: primaryColor || PRIMARY_MAIN, borderRadius: 1.5, p: 0.75, display: 'flex', color: 'white' }}>
+                  <Box sx={{ bgcolor: primaryColor || PRIMARY_MAIN, borderRadius: 2, p: 0.75, display: 'flex', color: 'white' }}>
                     <CardGiftcard fontSize='small' />
                   </Box>
                   <Box sx={{ flex: 1 }}>

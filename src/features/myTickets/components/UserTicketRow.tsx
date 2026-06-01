@@ -141,7 +141,7 @@ export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
 // --- Shared Helper Styles & Components ---
 const rowStyle = {
   p: 2,
-  borderRadius: 3,
+  borderRadius: 2,
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
@@ -152,7 +152,7 @@ const rowStyle = {
 const iconBoxStyle = {
   width: 48,
   height: 48,
-  borderRadius: 3,
+  borderRadius: 2,
   bgcolor: 'action.hover',
   display: 'flex',
   alignItems: 'center',
@@ -212,7 +212,7 @@ const TicketSkeleton = () => (
         variant='rectangular'
         width={48}
         height={48}
-        sx={{ borderRadius: 3 }}
+        sx={{ borderRadius: 2 }}
       />
       <Box>
         <Skeleton width={120} />

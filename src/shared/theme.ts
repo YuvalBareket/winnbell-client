@@ -44,7 +44,7 @@ export const theme = createTheme({
     caption: { lineHeight: 1.5, letterSpacing: '0.02em' },
   },
   shape: {
-    borderRadius: 14,
+    borderRadius: 8,
   },
   components: {
     MuiCssBaseline: {
@@ -66,7 +66,7 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 10,
           boxShadow: 'none',
           padding: '10px 22px',
           transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
@@ -74,7 +74,7 @@ export const theme = createTheme({
         sizeLarge: {
           padding: '12px 28px',
           fontSize: '0.95rem',
-          borderRadius: 14,
+          borderRadius: 12,
         },
         containedPrimary: {
           '&:hover': {
@@ -101,7 +101,7 @@ export const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 10,
           boxShadow: SHADOW_CARD,
           border: `1px solid ${BORDER_SUBTLE}`,
           '&:hover': {
