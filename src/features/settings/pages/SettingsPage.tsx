@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import AppHeader from '../../../shared/components/AppHeader';
+import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
   Box, Container, Typography, Stack, Paper, TextField,
   Button, Alert, InputAdornment, IconButton, useMediaQuery, useTheme,
@@ -29,6 +31,7 @@ const SettingsPage = () => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const dispatch = useAppDispatch();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -92,18 +95,21 @@ const SettingsPage = () => {
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8, zoom: { xs: 0.9, md: 1 } }}>
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+
       {/* Hero Section */}
       <Box
         sx={{
           background: GRADIENT_HERO,
-          pt: 3,
+          pt: { xs: 0, md: 3 },
           pb: isDesktop ? 9 : 6,
           px: 3,
           color: 'white',
           borderRadius: '0 0 32px 32px',
         }}
       >
-        <Container maxWidth='lg'>
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
+        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 } }}>
           <Stack direction='row' alignItems='center' spacing={2}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}

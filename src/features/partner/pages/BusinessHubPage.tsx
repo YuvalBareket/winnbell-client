@@ -188,11 +188,11 @@ const BusinessHubPage = () => {
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
-      <AppHeader onMenuOpen={() => setMenuOpen(true)} />
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <BusinessHeroSection
         business={business}
+        header={<AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />}
         onLogoClick={() => fileInputRef.current?.click()}
         isUploading={isUploadingLogo}
         logoFileInputRef={fileInputRef}

@@ -108,13 +108,13 @@ const ActivityPage = () => {
   };
 
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' }, pb: { xs: 12, md: 6 }, zoom: { xs: 0.9, md: 1 } }}>
-      <AppHeader onMenuOpen={() => setMenuOpen(true)} />
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Hero */}
-      <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 10, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
-        <Container maxWidth='lg'>
+      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 10, color: 'white', borderRadius: '0 0 32px 32px' }}>
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
+        <Container maxWidth='lg' sx={{ px: 3, pt: 1, zoom: { xs: 0.9, md: 1 } }}>
           <Stack direction='row' alignItems='center' spacing={2}>
             <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ReceiptLongOutlined sx={{ color: 'white', fontSize: 28 }} />
@@ -129,7 +129,7 @@ const ActivityPage = () => {
         </Container>
       </Box>
 
-      <Container maxWidth='lg' sx={{ mt: -6 }}>
+      <Container maxWidth='lg' sx={{ mt: -6, zoom: { xs: 0.9, md: 1 } }}>
         <Stack spacing={3}>
 
           {/* Not-live banner - business admin only, until subscribed */}

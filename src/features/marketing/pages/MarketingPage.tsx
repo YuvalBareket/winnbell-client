@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react';
+import AppHeader from '../../../shared/components/AppHeader';
+import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
   Box, Container, Typography, Stack, Paper, Button,
   useMediaQuery, useTheme, Snackbar, Alert, Tooltip,
@@ -50,6 +52,7 @@ const MarketingPage = () => {
   const currentUser = useAppSelector(selectCurrentUser);
   const { data: businessData } = useBusinessData(isBusiness);
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [selectedId, setSelectedId] = useState('classic');
   const [headline, setHeadline] = useState(HEADLINES[0]);
   const [copied, setCopied] = useState(false);
@@ -143,12 +146,15 @@ const MarketingPage = () => {
 
   return (
     <Box sx={{minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8 }}>
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+
       {/* Hero */}
       <Box sx={{
-        background: GRADIENT_HERO, pt: 3, pb: isDesktop ? 9 : 6, px: 3,
+        background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: isDesktop ? 9 : 6, px: 3,
         color: 'white', borderRadius: '0 0 32px 32px',
       }}>
-        <Container maxWidth='lg'>
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
+        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 } }}>
           <Stack direction='row' alignItems='center' spacing={2}>
             <Box sx={{
               width: 52, height: 52, borderRadius: 2,

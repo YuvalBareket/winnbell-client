@@ -8,9 +8,10 @@ import { useNotifications } from '../../features/notifications/useNotifications'
 
 interface Props {
   onMenuOpen: () => void;
+  onGradient?: boolean;
 }
 
-const AppHeader = ({ onMenuOpen }: Props) => {
+const AppHeader = ({ onMenuOpen, onGradient = false }: Props) => {
   const user = useAppSelector(selectCurrentUser);
   const initials = getUserInitials(user?.fullName);
   const { subscribe, unsubscribe, isPending, isSupported, isSubscribed, permission } = useNotifications();
@@ -45,12 +46,12 @@ const AppHeader = ({ onMenuOpen }: Props) => {
                 onClick={() => isSubscribed ? unsubscribe() : subscribe()}
                 disabled={isPending || permission === 'denied'}
                 sx={{
-                  color: isSubscribed ? 'primary.main' : 'text.secondary',
-                  bgcolor: isSubscribed ? 'primary.main' + '18' : 'rgba(0,0,0,0.04)',
+                  color: onGradient ? 'white' : (isSubscribed ? 'primary.main' : 'text.secondary'),
+                  bgcolor: onGradient ? (isSubscribed ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.15)') : (isSubscribed ? 'primary.main' + '18' : 'rgba(0,0,0,0.04)'),
                   borderRadius: '10px',
                   width: { xs: 40, md: 36 },
                   height: { xs: 40, md: 36 },
-                  '&:hover': { bgcolor: isSubscribed ? 'primary.main' + '28' : 'rgba(0,0,0,0.08)' },
+                  '&:hover': { bgcolor: onGradient ? 'rgba(255,255,255,0.28)' : (isSubscribed ? 'primary.main' + '28' : 'rgba(0,0,0,0.08)') },
                   '&:active': { transform: 'scale(0.93)', transition: 'transform 150ms ease-out' },
                 }}
               >

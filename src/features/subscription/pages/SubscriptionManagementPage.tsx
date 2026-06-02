@@ -4,6 +4,8 @@ import {
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Alert,
   IconButton, Container,
 } from '@mui/material';
+import AppHeader from '../../../shared/components/AppHeader';
+import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
   ReceiptLong, CheckCircle, Cancel, EmojiEvents, ArrowBackIosNew,
   Lock, LockOpen, WorkspacePremium, Edit, Add as AddIcon, Remove as RemoveIcon,
@@ -37,6 +39,7 @@ const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
 
 export default function SubscriptionManagementPage() {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelError, setCancelError] = useState('');
   const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'prorated' | 'none'; refundAmount: number } | null>(null);
@@ -119,18 +122,21 @@ export default function SubscriptionManagementPage() {
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 10, md: 6 } }}>
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+
       {/* Hero Header */}
       <Box
         sx={{
           background: GRADIENT_HERO,
-          pt: 3,
+          pt: { xs: 0, md: 3 },
           pb: 6,
           px: 3,
           color: 'white',
           borderRadius: '0 0 32px 32px',
         }}
       >
-        <Container maxWidth='lg'>
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
+        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 } }}>
           <Stack direction='row' alignItems='center' spacing={2}>
             <IconButton
               onClick={() => navigate(-1)}

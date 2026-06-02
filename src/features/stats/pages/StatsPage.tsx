@@ -2,6 +2,8 @@ import { useState } from 'react';
 import {
   Box, Container, Typography, Paper, Stack, Skeleton, Alert, Chip, Autocomplete, TextField,
 } from '@mui/material';
+import AppHeader from '../../../shared/components/AppHeader';
+import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
   ReceiptLongOutlined, AttachMoneyOutlined, TrendingUpOutlined,
   BarChart as BarChartIcon, PeopleAltOutlined,
@@ -25,6 +27,7 @@ import KpiCard from '../components/KpiCard';
 const StatsPage = () => {
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
   const [selectedDraw, setSelectedDraw] = useState<number | ''>('');
@@ -46,9 +49,12 @@ const StatsPage = () => {
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
 
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+
       {/* Hero */}
-      <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
-        <Container maxWidth='lg'>
+      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
+        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 } }}>
           <Stack direction='row' alignItems='center' spacing={2}>
             <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <BarChartIcon sx={{ color: 'white', fontSize: 28 }} />

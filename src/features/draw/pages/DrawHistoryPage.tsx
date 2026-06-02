@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import {
   Box, Container, Typography, Paper, Stack, Skeleton,
 } from '@mui/material';
+import AppHeader from '../../../shared/components/AppHeader';
+import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { EmojiEvents, EmojiEventsOutlined } from '@mui/icons-material';
 import EmptyState from '../../../shared/components/EmptyState';
 import { useGetDrawHistory } from '../hooks/useGetDraws';
@@ -11,6 +14,7 @@ import {
 import DrawHistoryCard from '../components/DrawHistoryCard';
 
 const DrawHistoryPage = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
   const { data: history, isLoading, isError } = useGetDrawHistory();
 
   // Separate active and closed campaigns
@@ -19,9 +23,12 @@ const DrawHistoryPage = () => {
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 }, zoom: { xs: 0.9, md: 1 } }}>
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+
       {/* Hero Header */}
-      <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 6, px: 3, color: 'white' }}>
-        <Container maxWidth='lg'>
+      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 6, px: 3, color: 'white' }}>
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
+        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 } }}>
           <Stack direction='row' alignItems='center' spacing={2}>
             <Box
               sx={{

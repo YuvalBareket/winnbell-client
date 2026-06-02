@@ -33,6 +33,12 @@ const MainLayout = () => {
   const mobileMainPath = isBusinessOrManager ? '/activity' : '/scan';
   const isNearby = location.pathname === '/nearby';
   const isActivity = location.pathname === '/activity';
+  const isStats = location.pathname === '/stats';
+  const isMarketing = location.pathname === '/marketing';
+  const isSettings = location.pathname === '/settings';
+  const isDrawsHistory = location.pathname === '/draws/history';
+  const isSubscribe = location.pathname === '/subscribe';
+  const isSubscriptionManage = location.pathname.startsWith('/subscription/');
   const topPadding = { xs: 0, md: 0 };
   const scanActive = location.pathname === mobileMainPath;
 
@@ -51,7 +57,9 @@ const MainLayout = () => {
       <AppSidebar />
 
       {/* Mobile header - hidden on desktop, hidden on pages with their own hero */}
-      {!isNearby && !isActivity && <AppHeader onMenuOpen={() => setMenuOpen(true)} />}
+      {!isNearby && !isActivity && !isStats && !isMarketing && !isSettings && !isDrawsHistory && !isSubscribe && !isSubscriptionManage && (
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} />
+      )}
 
       {/* Mobile drawer */}
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />

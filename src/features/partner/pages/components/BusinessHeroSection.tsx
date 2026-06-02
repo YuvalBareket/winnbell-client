@@ -27,6 +27,7 @@ interface BusinessHeroSectionProps {
   logoFileInputRef: React.RefObject<HTMLInputElement | null>;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onEditClick?: () => void;
+  header?: React.ReactNode;
 }
 
 const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
@@ -36,6 +37,7 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
   logoFileInputRef,
   onFileChange,
   onEditClick,
+  header,
 }) => {
   const sectorUI = BUSINESS_SECTORS[business.sector] || BUSINESS_SECTORS.Retail;
 
@@ -43,15 +45,14 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
     <Box
       sx={{
         background: GRADIENT_HERO,
-        pt: 3,
         pb: 9,
-        px: 3,
         color: 'white',
         borderRadius: '0 0 32px 32px',
       }}
     >
-      <Container maxWidth='md'>
-        <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ pt: { xs: '40px', md: 0 } }}>
+      {header}
+      <Container maxWidth='md' sx={{ px: 3, pt: 1 }}>
+        <Stack direction='row' alignItems='center' justifyContent='space-between'>
           <Stack direction='row' alignItems='center' spacing={2}>
             <Box
               onClick={onLogoClick}

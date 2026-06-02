@@ -208,7 +208,6 @@ const SubscribePage = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          bgcolor: 'background.default',
           p: { xs: 3, sm: 4, md: '4vh 4vw' },
           overflowY: 'auto',
         }}
