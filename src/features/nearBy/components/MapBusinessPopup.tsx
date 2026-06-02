@@ -111,10 +111,9 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
             <Stack direction='row' spacing={2} alignItems='flex-start'>
               <Avatar
                 src={location.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${location.logo_url}` : undefined}
-                variant='rounded'
                 sx={{
                   width: 80, height: 80,
-                  borderRadius: 2,
+                  borderRadius: '50%',
                   bgcolor: sectorInfo.bgColor,
                   color: sectorInfo.color,
                   border: `2px solid ${sectorInfo.color}40`,

@@ -329,7 +329,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 const iconBoxStyle = {
   width: 48,
   height: 48,
-  borderRadius: 2,
+  borderRadius: '50%',
   bgcolor: 'action.hover',
   display: 'flex',
   alignItems: 'center',

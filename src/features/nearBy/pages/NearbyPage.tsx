@@ -369,7 +369,7 @@ const NearbyPage = () => {
                         height: 42,
                         bgcolor: sectorInfo.bgColor,
                         color: sectorInfo.color,
-                        borderRadius: 2,
+                        borderRadius: '50%',
                         fontWeight: 700,
                         '& svg': { fontSize: 20 },
                       }}
