@@ -94,7 +94,7 @@ const SubscriptionSuccessPage = () => {
   const isFoundingMember = sub?.is_founding ?? false;
 
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
       <Paper elevation={0} sx={{ p: 5, borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 440, width: '100%' }}>
         <Stack spacing={3} alignItems='center'>
           <CheckCircle sx={{ fontSize: 72, color: 'success.main' }} />

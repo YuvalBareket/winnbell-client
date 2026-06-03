@@ -2,8 +2,9 @@ import { useState } from 'react';
 import {
   Box, Typography, Paper, Stack, Chip, Button, Divider, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Alert,
-  IconButton, Container,
+  IconButton, Container, Skeleton,
 } from '@mui/material';
+import { motion, AnimatePresence } from 'framer-motion';
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
@@ -12,7 +13,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
-import { useSubscription, useUpdateSubscriptionPlan } from '../hooks/useSubscription';
+import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices } from '../hooks/useSubscription';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
 import { TIER_KEYS } from './components/subscribeTiers';
@@ -48,6 +49,7 @@ export default function SubscriptionManagementPage() {
   const [updateError, setUpdateError] = useState('');
 
   const { data: sub, isLoading, isError } = useSubscription();
+  const { data: invoices, isLoading: invoicesLoading } = useSubscriptionInvoices();
 
   const { mutate: doCancel, isPending: cancelling } = useCancelSubscription({
     onSuccess: (data) => {
@@ -413,6 +415,123 @@ export default function SubscriptionManagementPage() {
               </Paper>
             )}
           </Box>
+
+          {/* ── Payment History ── */}
+          <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+            <Box
+              sx={{
+                px: 3, py: 3,
+                background: 'linear-gradient(135deg, rgba(25,93,230,0.08) 0%, rgba(127,166,255,0.1) 100%)',
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <Stack direction='row' alignItems='center' spacing={1.5}>
+                <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ReceiptLong sx={{ color: 'white', fontSize: 20 }} />
+                </Box>
+                <Typography variant='h6' fontWeight={800}>Payment History</Typography>
+              </Stack>
+            </Box>
+
+            <Box sx={{ px: 3, py: 2 }}>
+              {invoicesLoading ? (
+                <Stack spacing={2} py={1}>
+                  {[0, 1, 2].map(i => (
+                    <Skeleton key={i} variant='rounded' height={64} sx={{ borderRadius: 2 }} />
+                  ))}
+                </Stack>
+              ) : (
+                <AnimatePresence>
+                  {!invoices || invoices.length === 0 ? (
+                    <motion.div
+                      key='empty'
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Box sx={{ py: 4, textAlign: 'center' }}>
+                        <Typography variant='body2' color='text.disabled'>No payments yet</Typography>
+                      </Box>
+                    </motion.div>
+                  ) : (
+                    invoices.map((invoice, index) => {
+                      const isPaid = invoice.status === 'paid';
+                      const dateLabel = new Date(invoice.date * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                      const amount = isPaid ? invoice.amount_paid : invoice.amount_due;
+
+                      return (
+                        <motion.div
+                          key={invoice.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2, delay: index * 0.04 }}
+                        >
+                          {index > 0 && <Divider sx={{ my: 0 }} />}
+                          <Box sx={{ py: 2 }}>
+                            <Stack direction='row' alignItems='flex-start' justifyContent='space-between' spacing={2}>
+                              <Box flex={1} minWidth={0}>
+                                <Stack direction='row' alignItems='center' spacing={1.5} mb={0.75}>
+                                  <Typography variant='body2' color='text.secondary' fontWeight={600} sx={{ minWidth: 72 }}>
+                                    {dateLabel}
+                                  </Typography>
+                                  <Typography variant='body2' fontWeight={800}>
+                                    ${amount.toFixed(2)}
+                                  </Typography>
+                                  <Chip
+                                    label={isPaid ? 'Paid' : invoice.status === 'open' ? 'Open' : invoice.status === 'void' ? 'Void' : 'Failed'}
+                                    size='small'
+                                    sx={{
+                                      fontWeight: 700,
+                                      fontSize: '0.7rem',
+                                      height: 20,
+                                      bgcolor: isPaid ? 'rgba(46,125,50,0.1)' : 'rgba(211,47,47,0.1)',
+                                      color: isPaid ? 'success.dark' : 'error.main',
+                                    }}
+                                  />
+                                </Stack>
+                                {invoice.description.length > 0 && (() => {
+                                  const isProration = invoice.description.every(l =>
+                                    (l.description ?? '').toLowerCase().includes('unused time') ||
+                                    (l.description ?? '').toLowerCase().includes('remaining time')
+                                  );
+                                  if (isProration) {
+                                    return (
+                                      <Typography variant='caption' color='text.secondary' sx={{ display: 'block', lineHeight: 1.5 }}>
+                                        Mid-cycle plan change — difference charged for the rest of the billing period
+                                      </Typography>
+                                    );
+                                  }
+                                  return (
+                                    <Stack spacing={0.25} pl={0.25}>
+                                      {invoice.description.map((line, li) => {
+                                        const qty = line.quantity ?? 1;
+                                        const label = qty > 1
+                                          ? `${qty} location${qty > 1 ? 's' : ''} × $${(line.amount / qty).toFixed(2)}/location`
+                                          : (line.description ?? '');
+                                        return (
+                                          <Typography key={li} variant='caption' color='text.secondary' sx={{ display: 'block', lineHeight: 1.5 }}>
+                                            {label}{line.amount !== 0 && <> — <strong>${Math.abs(line.amount).toFixed(2)}</strong></>}
+                                          </Typography>
+                                        );
+                                      })}
+                                    </Stack>
+                                  );
+                                })()}
+                              </Box>
+
+                            </Stack>
+                          </Box>
+                        </motion.div>
+                      );
+                    })
+                  )}
+                </AnimatePresence>
+              )}
+            </Box>
+          </Paper>
 
         </Stack>
 

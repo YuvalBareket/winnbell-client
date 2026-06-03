@@ -1,5 +1,5 @@
 import { api } from '../../../shared/api/client';
-import type { SubscriptionDetails, FoundingAvailability } from '../types/subscription.types';
+import type { SubscriptionDetails, FoundingAvailability, SubscriptionInvoice } from '../types/subscription.types';
 
 export const fetchSubscription = (): Promise<SubscriptionDetails | null> =>
   api.get('/business/subscription').then(r => r.data);
@@ -18,3 +18,6 @@ export const fetchFoundingAvailability = (): Promise<FoundingAvailability> =>
 
 export const updateSubscriptionPlan = (entries_per_location: number) =>
   api.put('/business/subscription/plan', { entries_per_location });
+
+export const fetchSubscriptionInvoices = (): Promise<SubscriptionInvoice[]> =>
+  api.get('/business/subscription/invoices').then(r => r.data);

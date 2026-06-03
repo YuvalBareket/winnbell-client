@@ -18,6 +18,25 @@ export interface SubscriptionDetails {
   active_location_count: number;
 }
 
+export interface InvoiceLineItem {
+  description: string | null;
+  quantity: number | null;
+  amount: number;
+  period_start: number | undefined;
+  period_end: number | undefined;
+}
+
+export interface SubscriptionInvoice {
+  id: string;
+  date: number;
+  amount_paid: number;
+  amount_due: number;
+  status: string | null;
+  description: InvoiceLineItem[];
+  invoice_pdf: string | null;
+  hosted_invoice_url: string | null;
+}
+
 export interface FoundingAvailability {
   taken: number;
   remaining: number;

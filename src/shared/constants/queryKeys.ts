@@ -37,7 +37,8 @@ export const queryKeys = {
 
   // ─── Subscription ─────────────────────────────────────────────────────────
   subscription: {
-    all: ['subscription'] as const,
+    all:      ['subscription']             as const,
+    invoices: ['subscription', 'invoices'] as const,
   },
 
   // ─── Tickets ──────────────────────────────────────────────────────────────
