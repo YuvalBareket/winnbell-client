@@ -98,6 +98,12 @@ const PublicActivatePage = () => {
   // ─── 3. Unauthenticated View (User is NOT logged in) ───────────────────────
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
+      <Box
+        component="img"
+        src="/winnbell_app_name.png"
+        alt="Winnbell"
+        sx={{ height: 36, mb: 3, objectFit: 'contain' }}
+      />
       <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
 
         <Box sx={{ background: GRADIENT_HERO, p: 3.5, textAlign: 'center', color: 'white' }}>
@@ -120,6 +126,10 @@ const PublicActivatePage = () => {
             </Typography>
           </Box>
 
+          <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 2.5, textAlign: 'center', lineHeight: 1.5 }}>
+            Winnbell is a local campaign where every purchase earns you entries and one lucky winner takes the prize.
+          </Typography>
+
           <Typography variant='body2' color='text.secondary' sx={{ mb: 3, lineHeight: 1.6 }}>
             {isPromo
               ? "Create a free account or sign in. We'll enter you into the current campaign automatically."
@@ -127,16 +137,21 @@ const PublicActivatePage = () => {
           </Typography>
 
           <Stack spacing={1.5}>
-            <Button
-              variant='contained'
-              size='large'
-              fullWidth
-              startIcon={<PersonAdd />}
-              onClick={() => navigate('/register/user')}
-              sx={{ fontWeight: 800, py: 1.5 }}
-            >
-              Create Free Account
-            </Button>
+            <Box>
+              <Button
+                variant='contained'
+                size='large'
+                fullWidth
+                startIcon={<PersonAdd />}
+                onClick={() => navigate('/register/user')}
+                sx={{ fontWeight: 800, py: 1.5 }}
+              >
+                Create Free Account
+              </Button>
+              <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 1, textAlign: 'center' }}>
+                100% free. No credit card needed.
+              </Typography>
+            </Box>
             <Button
               variant='outlined'
               size='large'

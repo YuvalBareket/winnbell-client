@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import {
   Box,
   Button,
+  CircularProgress,
   Container,
   Typography,
   Paper,
@@ -69,6 +70,7 @@ const RedeemPage = () => {
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
   const [receiptLocationSelected, setReceiptLocationSelected] = useState(false);
   const [receiptFormBlocked, setReceiptFormBlocked] = useState(false);
+  const [isAutoActivating, setIsAutoActivating] = useState(() => !!localStorage.getItem('pendingTicketCode'));
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const primaryColor = PRIMARY_MAIN;
 
@@ -108,11 +110,12 @@ const didAutoActivate = useRef(false);
     // 2. Business users should not auto-redeem codes
     if (isBusiness) {
       localStorage.removeItem('pendingTicketCode');
+      setIsAutoActivating(false);
       return;
     }
 
     const pending = localStorage.getItem('pendingTicketCode');
-    if (!pending) return;
+    if (!pending) { setIsAutoActivating(false); return; }
 
     // 3. Mark as attempted immediately
     didAutoActivate.current = true;
@@ -122,10 +125,12 @@ const didAutoActivate = useRef(false);
     if (pending.startsWith('PROMO')) {
       promoMutation.mutate(pending, {
         onSuccess: () => {
+          setIsAutoActivating(false);
           setActivatedCode(pending);
           setSuccessDialogOpen(true);
         },
         onError: (err: any) => {
+          setIsAutoActivating(false);
           setErrorMessage(err?.response?.data?.message || 'Promotional entry failed.');
           setErrorOpen(true);
         },
@@ -133,10 +138,12 @@ const didAutoActivate = useRef(false);
     } else {
       redeemMutation.mutate(pending, {
         onSuccess: () => {
+          setIsAutoActivating(false);
           setActivatedCode(pending);
           setSuccessDialogOpen(true);
         },
         onError: (err: any) => {
+          setIsAutoActivating(false);
           setErrorMessage(err?.response?.data?.message || 'Activation failed.');
           setErrorOpen(true);
         },
@@ -383,6 +390,17 @@ const didAutoActivate = useRef(false);
 
   if (isBusiness && (drawIsUpcoming || hasNoActiveDraw)) {
     return <DrawPreparationView subscription={subscription ?? undefined} hasDescription={hasDescription} hasLocations={hasLocations} isDesktop={false} />;
+  }
+
+  if (isAutoActivating) {
+    return (
+      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        <CircularProgress size={40} sx={{ color: PRIMARY_MAIN }} />
+        <Typography variant='body2' color='text.secondary' fontWeight={600}>
+          Activating your entry...
+        </Typography>
+      </Box>
+    );
   }
 
   return (

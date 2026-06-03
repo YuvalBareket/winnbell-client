@@ -198,69 +198,69 @@ const MarketingPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5, mb: 3,width:{xs:'calc(100dvw - 35px)'} }}>
-              <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
-                Choose a template
-              </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: { xs: 0.75, md: 1 }, justifyItems: 'center' }}>
-                {TEMPLATES.map((t) => {
-                  const Thumb = t.Component;
-                  const isActive = t.id === selectedId;
-                  return (
-                    <Box
-                      key={t.id}
-                      onClick={() => setSelectedId(t.id)}
-                      sx={{
-                        cursor: 'pointer',
-                        width: thumbW,
-                        height: thumbH,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        border: '2px solid',
-                        borderColor: isActive ? PRIMARY_MAIN : 'divider',
-                        boxShadow: isActive ? `0 0 0 3px ${PRIMARY_MAIN}30` : 'none',
-                        transition: 'all 0.15s',
-                        '&:hover': { borderColor: isActive ? PRIMARY_MAIN : 'rgba(0,0,0,0.3)' },
-                      }}
-                    >
-                      {/* Scale the full 320×452 poster down to the thumb cell using a unitless decimal */}
+              <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5, mb: 3, width: { xs: 'calc(100dvw - 35px)', md: '100%' } }}>
+                <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
+                  Choose a template
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: { xs: 0.75, md: 1 }, justifyItems: 'center' }}>
+                  {TEMPLATES.map((t) => {
+                    const Thumb = t.Component;
+                    const isActive = t.id === selectedId;
+                    return (
                       <Box
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: POSTER_W,
-                          height: POSTER_H,
-                          transformOrigin: 'top left',
-                          transform: `scale(${thumbScale})`,
-                          pointerEvents: 'none',
+                        key={t.id}
+                        onClick={() => setSelectedId(t.id)}
+                        sx={{
+                          cursor: 'pointer',
+                          width: thumbW,
+                          height: thumbH,
+                          position: 'relative',
+                          overflow: 'hidden',
+                          border: '2px solid',
+                          borderColor: isActive ? PRIMARY_MAIN : 'divider',
+                          boxShadow: isActive ? `0 0 0 3px ${PRIMARY_MAIN}30` : 'none',
+                          transition: 'all 0.15s',
+                          '&:hover': { borderColor: isActive ? PRIMARY_MAIN : 'rgba(0,0,0,0.3)' },
                         }}
                       >
-                        <Thumb businessName={businessName} scanUrl={scanUrl} headline={headline} />
-                      </Box>
-
-                      {/* Active checkmark */}
-                      {isActive && (
-                        <Box sx={{
-                          position: 'absolute', top: 4, right: 4,
-                          width: 18, height: 18, borderRadius: '50%',
-                          bgcolor: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          zIndex: 1,
-                        }}>
-                          <CheckCircleOutline sx={{ fontSize: 12, color: 'white' }} />
+                        {/* Scale the full 320×452 poster down to the thumb cell using a unitless decimal */}
+                        <Box
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: POSTER_W,
+                            height: POSTER_H,
+                            transformOrigin: 'top left',
+                            transform: `scale(${thumbScale})`,
+                            pointerEvents: 'none',
+                          }}
+                        >
+                          <Thumb businessName={businessName} scanUrl={scanUrl} headline={headline} />
                         </Box>
-                      )}
 
-                      {/* Label */}
-                      <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, bgcolor: 'rgba(0,0,0,0.55)', py: 0.5, zIndex: 1 }}>
-                        <Typography sx={{ fontSize: '0.58rem', color: 'white', fontWeight: 700, textAlign: 'center' }}>
-                          {t.label}
-                        </Typography>
+                        {/* Active checkmark */}
+                        {isActive && (
+                          <Box sx={{
+                            position: 'absolute', top: 4, right: 4,
+                            width: 18, height: 18, borderRadius: '50%',
+                            bgcolor: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            zIndex: 1,
+                          }}>
+                            <CheckCircleOutline sx={{ fontSize: 12, color: 'white' }} />
+                          </Box>
+                        )}
+
+                        {/* Label */}
+                        <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, bgcolor: 'rgba(0,0,0,0.55)', py: 0.5, zIndex: 1 }}>
+                          <Typography sx={{ fontSize: '0.58rem', color: 'white', fontWeight: 700, textAlign: 'center' }}>
+                            {t.label}
+                          </Typography>
+                        </Box>
                       </Box>
-                    </Box>
-                  );
-                })}
-              </Box>
+                    );
+                  })}
+                </Box>
               </Paper>
             </motion.div>
 
@@ -270,24 +270,24 @@ const MarketingPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5 ,width:{xs:'calc(100dvw - 35px)'}}}>
-              <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
-                Preview - {selected.label}
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
-                {/* Outer wrapper carries the shadow so html2canvas only captures the poster */}
-                <Box sx={{
-                  flexShrink: 0,
-                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                  transformOrigin: 'top center',
-                  transform: { xs: 'scale(0.92)', sm: 'none' },
-                  mb: { xs: `-${Math.round(POSTER_H * 0.08)}px`, sm: 0 },
-                }}>
-                  <Box ref={posterRef} style={{ width: POSTER_W, height: POSTER_H, overflow: 'hidden' }}>
-                    <SelectedPoster businessName={businessName} scanUrl={scanUrl} headline={headline} />
+              <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5, width: { xs: 'calc(100dvw - 35px)', md: '100%' } }}>
+                <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
+                  Preview - {selected.label}
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+                  {/* Outer wrapper carries the shadow so html2canvas only captures the poster */}
+                  <Box sx={{
+                    flexShrink: 0,
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                    transformOrigin: 'top center',
+                    transform: { xs: 'scale(0.92)', sm: 'none' },
+                    mb: { xs: `-${Math.round(POSTER_H * 0.08)}px`, sm: 0 },
+                  }}>
+                    <Box ref={posterRef} style={{ width: POSTER_W, height: POSTER_H, overflow: 'hidden' }}>
+                      <SelectedPoster businessName={businessName} scanUrl={scanUrl} headline={headline} />
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
               </Paper>
             </motion.div>
           </Box>
@@ -298,10 +298,7 @@ const MarketingPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Paper elevation={0} sx={{
-              width: { xs: '100%', md: '45%' }, flexShrink: 0,
-              borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 3,
-                        }}>
+            <Paper elevation={0} sx={{ width: { xs: '100%', md: 360 }, flexShrink: 0, borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 3 }}>
             <Stack spacing={3}>
               <Box>
                 <Typography variant='h6' fontWeight={800} gutterBottom>Download Poster</Typography>
@@ -403,8 +400,6 @@ const MarketingPage = () => {
                   </Button>
                 </Tooltip>
               </Box>
-
-
 
               {/* Tips */}
               <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
