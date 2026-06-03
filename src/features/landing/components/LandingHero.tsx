@@ -1,5 +1,6 @@
 import { Box, Typography, Button, Stack, Container } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
+import { motion } from 'framer-motion';
 import { PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15 } from '../../../shared/colors';
 
 interface LandingHeroProps {
@@ -24,101 +25,141 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
       <Box sx={{ position: 'absolute', bottom: '-10%', left: '-5%', width: 300, height: 300, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.04)', filter: 'blur(50px)', pointerEvents: 'none' }} />
 
       <Container maxWidth='md' sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-        <Box
-          sx={{
-            display: 'inline-block',
-            borderRadius: 99, px: { xs: 1.25, md: 1.5 }, py: { xs: 0.4, md: 0.5 },
-            fontSize: { xs: '0.6rem', md: '0.65rem' }, fontWeight: 700,
-            letterSpacing: '0.15em', textTransform: 'uppercase',
-            bgcolor: ALPHA_WHITE_15,
-            color: 'white',
-            mb: { xs: 2, md: 3 },
-          }}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
         >
-          Win real prizes
-        </Box>
-
-        <Typography
-          variant='h1'
-          sx={{
-            fontWeight: 900,
-            fontSize: { xs: '2.1rem', sm: '3.5rem', md: '4.5rem' },
-            lineHeight: 1.1,
-            letterSpacing: '-0.03em',
-            color: 'white',
-            mb: { xs: 2, md: 3 },
-          }}
-        >
-          Shop local. Win monthly prizes.
-        </Typography>
-
-        <Typography
-          sx={{
-            color: 'rgba(255,255,255,0.75)',
-            fontSize: { xs: '0.9rem', md: '1.15rem' },
-            lineHeight: 1.6,
-            mb: { xs: 3, md: 5 },
-            maxWidth: 480,
-            mx: 'auto',
-            fontWeight: 400,
-          }}
-        >
-          Support local businesses, earn campaign entries, and compete for real cash prizes
-          every month. Free to join. No purchase necessary.
-        </Typography>
-
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center' sx={{ mb: { xs: 2.5, md: 4 } }}>
-          <Button
-            variant='contained'
-            size='large'
-            onClick={() => onNavigate('/register')}
+          <Box
             sx={{
-              bgcolor: 'white',
-              color: PRIMARY_MAIN,
-              fontWeight: 700,
-              fontSize: { xs: '0.95rem', md: '1rem' },
-              px: { xs: 2.5, sm: 4 },
-              py: { xs: 1.4, md: 1.6 },
-              width: { xs: '100%', sm: 'auto' },
-              boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-              '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' },
+              display: 'inline-block',
+              borderRadius: 99, px: { xs: 1.25, md: 1.5 }, py: { xs: 0.4, md: 0.5 },
+              fontSize: { xs: '0.6rem', md: '0.65rem' }, fontWeight: 700,
+              letterSpacing: '0.15em', textTransform: 'uppercase',
+              bgcolor: ALPHA_WHITE_15,
+              color: 'white',
+              mb: { xs: 2, md: 3 },
             }}
           >
-            Start collecting entries
-          </Button>
+            Win real prizes
+          </Box>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <Typography
+            variant='h1'
+            sx={{
+              fontWeight: 900,
+              fontSize: { xs: '2.1rem', sm: '3.5rem', md: '4.5rem' },
+              lineHeight: 1.1,
+              letterSpacing: '-0.03em',
+              color: 'white',
+              mb: { xs: 2, md: 3 },
+            }}
+          >
+            Shop local. Win monthly prizes.
+          </Typography>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Typography
+            sx={{
+              color: 'rgba(255,255,255,0.75)',
+              fontSize: { xs: '0.9rem', md: '1.15rem' },
+              lineHeight: 1.6,
+              mb: { xs: 3, md: 5 },
+              maxWidth: 480,
+              mx: 'auto',
+              fontWeight: 400,
+            }}
+          >
+            Support local businesses, earn campaign entries, and compete for real cash prizes
+            every month. Free to join. No purchase necessary.
+          </Typography>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center' sx={{ mb: { xs: 2.5, md: 4 } }}>
+            <Button
+              variant='contained'
+              size='large'
+              onClick={() => onNavigate('/register')}
+              sx={{
+                bgcolor: 'white',
+                color: PRIMARY_MAIN,
+                fontWeight: 700,
+                fontSize: { xs: '0.95rem', md: '1rem' },
+                px: { xs: 2.5, sm: 4 },
+                py: { xs: 1.4, md: 1.6 },
+                width: { xs: '100%', sm: 'auto' },
+                boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' },
+              }}
+            >
+              Start collecting entries
+            </Button>
+            <Button
+              variant='text'
+              endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
+              onClick={() => onNavigate('/login')}
+              sx={{
+                color: 'white',
+                fontWeight: 600,
+                fontSize: { xs: '0.9rem', md: '0.95rem' },
+                opacity: 0.85,
+                width: { xs: '100%', sm: 'auto' },
+                '&:hover': { bgcolor: 'transparent', opacity: 1 },
+              }}
+            >
+              Sign in
+            </Button>
+          </Stack>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.55 }}
+        >
           <Button
             variant='text'
-            endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
-            onClick={() => onNavigate('/login')}
+            endIcon={<ArrowForward sx={{ fontSize: '0.9rem !important', color: 'white', opacity: 0.75 }} />}
+            onClick={() => onNavigate('/for-business')}
             sx={{
+              textTransform: 'none',
+              fontWeight: 700,
+              fontSize: { xs: '0.88rem', md: '0.95rem' },
               color: 'white',
-              fontWeight: 600,
-              fontSize: { xs: '0.9rem', md: '0.95rem' },
-              opacity: 0.85,
               width: { xs: '100%', sm: 'auto' },
-              '&:hover': { bgcolor: 'transparent', opacity: 1 },
+              mt: { xs: 1, sm: 0 },
+              '&:hover': { bgcolor: 'transparent' },
+              background: 'linear-gradient(90deg, rgba(255,255,255,0.45) 20%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.45) 80%)',
+              backgroundSize: '250% auto',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              animation: 'shimmer 2.8s linear infinite',
+              '@keyframes shimmer': {
+                '0%': { backgroundPosition: '200% center' },
+                '100%': { backgroundPosition: '-100% center' },
+              },
             }}
           >
-            Sign in
+            Are you a business owner?
           </Button>
-        </Stack>
-
-        <Button
-          variant='text'
-          endIcon={<ArrowForward sx={{ fontSize: '0.9rem !important' }} />}
-          onClick={() => onNavigate('/for-business')}
-          sx={{
-            color: 'rgba(255,255,255,0.8)',
-            fontWeight: 500,
-            fontSize: { xs: '0.8rem', md: '0.85rem' },
-            opacity: 0.9,
-            mt: { xs: 1, sm: 0 },
-            '&:hover': { bgcolor: 'transparent', opacity: 1, color: 'white' },
-            textTransform: 'none',
-          }}
-        >
-          Are you a business owner?
-        </Button>
+        </motion.div>
       </Container>
     </Box>
   );

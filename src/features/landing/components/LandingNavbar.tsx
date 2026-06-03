@@ -24,7 +24,23 @@ const LandingNavbar = ({ onNavigate, variant = 'consumer' }: LandingNavbarProps)
         <Button
           variant='text'
           onClick={() => onNavigate(variant === 'business' ? '/' : '/for-business')}
-          sx={{ color: TEXT_HEADING, fontWeight: 600, fontSize: '0.9rem', display: { xs: 'none', sm: 'inline-flex' } }}
+          sx={{
+            fontWeight: 700,
+            fontSize: '1rem',
+            display: { xs: 'none', sm: 'inline-flex' },
+            color: TEXT_HEADING,
+            background: 'linear-gradient(90deg, #1a2e3b 40%, #1a2e3b 43%, #7a9aaa 50%, #1a2e3b 57%, #1a2e3b 60%)',
+            backgroundSize: '600% auto',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            animation: 'shimmer 8s linear infinite',
+            '&:hover': { bgcolor: 'transparent' },
+            '@keyframes shimmer': {
+              '0%': { backgroundPosition: '200% center' },
+              '100%': { backgroundPosition: '-100% center' },
+            },
+          }}
         >
           {variant === 'business' ? 'For Users' : 'For Businesses'}
         </Button>

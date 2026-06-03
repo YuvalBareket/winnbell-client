@@ -1,4 +1,5 @@
 import { Box, Typography, Button, Container } from '@mui/material';
+import { motion } from 'framer-motion';
 import { Map, Receipt, BarChart } from '@mui/icons-material';
 import { PRIMARY_MAIN, TEXT_SECONDARY, TEXT_HEADING } from '../../../shared/colors';
 
@@ -22,12 +23,26 @@ const ForBusinesses = ({ onNavigate }: ForBusinessesProps) => {
       <Container maxWidth='lg'>
         {/* Header */}
         <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 10 } }}>
-          <Typography variant='h2' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '1.8rem', md: '3rem' }, letterSpacing: '-0.03em', lineHeight: 1.15, mb: { xs: 2, md: 2.5 } }}>
-            The cheapest marketing tool you'll ever use
-          </Typography>
-          <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '0.95rem', md: '1.1rem' }, lineHeight: 1.6, maxWidth: 560, mx: 'auto' }}>
-            One flat monthly subscription. Your business appears on the Winnbell map, and every customer who submits a receipt from your store is proof they chose you over the competition.
-          </Typography>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, delay: 0.05 }}
+          >
+            <Typography variant='h2' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '1.8rem', md: '3rem' }, letterSpacing: '-0.03em', lineHeight: 1.15, mb: { xs: 2, md: 2.5 } }}>
+              The cheapest marketing tool you'll ever use
+            </Typography>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, delay: 0.1 }}
+          >
+            <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '0.95rem', md: '1.1rem' }, lineHeight: 1.6, maxWidth: 560, mx: 'auto' }}>
+              One flat monthly subscription. Your business appears on the Winnbell map, and every customer who submits a receipt from your store is proof they chose you over the competition.
+            </Typography>
+          </motion.div>
         </Box>
 
         {/* Three Value Props */}
@@ -37,27 +52,34 @@ const ForBusinesses = ({ onNavigate }: ForBusinessesProps) => {
             { icon: <Receipt sx={{ fontSize: 32, color: PRIMARY_MAIN }} />, title: 'Proof, not promises', desc: 'A receipt submitted from your store means one thing: a customer chose you. Every entry is location-tagged and sitting in your dashboard.' },
             { icon: <BarChart sx={{ fontSize: 32, color: PRIMARY_MAIN }} />, title: 'See what\'s working', desc: 'Entries per location. Unique visitors. Campaign comparisons. The cheapest customer acquisition channel you\'ve ever measured.' },
           ].map((item, i) => (
-            <Box
+            <motion.div
               key={i}
-              sx={{
-                bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-                p: { xs: 2, md: 3 },
-                textAlign: 'center',
-                transition: 'all 0.3s ease',
-                '&:hover': { boxShadow: '0 8px 24px rgba(25,93,230,0.1)' },
-              }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              <Box sx={{ mb: { xs: 1.5, md: 2 } }}>{item.icon}</Box>
-              <Typography sx={{ fontWeight: 800, color: TEXT_HEADING, mb: { xs: 0.75, md: 1 }, fontSize: { xs: '1rem', md: '1.1rem' } }}>
-                {item.title}
-              </Typography>
-              <Typography variant='body2' sx={{ color: TEXT_SECONDARY, lineHeight: 1.6, fontSize: { xs: '0.875rem', md: 'inherit' } }}>
-                {item.desc}
-              </Typography>
-            </Box>
+              <Box
+                sx={{
+                  bgcolor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  p: { xs: 2, md: 3 },
+                  textAlign: 'center',
+                  transition: 'all 0.3s ease',
+                  '&:hover': { boxShadow: '0 8px 24px rgba(25,93,230,0.1)' },
+                }}
+              >
+                <Box sx={{ mb: { xs: 1.5, md: 2 } }}>{item.icon}</Box>
+                <Typography sx={{ fontWeight: 800, color: TEXT_HEADING, mb: { xs: 0.75, md: 1 }, fontSize: { xs: '1rem', md: '1.1rem' } }}>
+                  {item.title}
+                </Typography>
+                <Typography variant='body2' sx={{ color: TEXT_SECONDARY, lineHeight: 1.6, fontSize: { xs: '0.875rem', md: 'inherit' } }}>
+                  {item.desc}
+                </Typography>
+              </Box>
+            </motion.div>
           ))}
         </Box>
 
@@ -65,27 +87,41 @@ const ForBusinesses = ({ onNavigate }: ForBusinessesProps) => {
 
         {/* Primary CTA */}
         <Box sx={{ textAlign: 'center' }}>
-          <Button
-            variant='contained'
-            size='large'
-            onClick={() => onNavigate('/register/Business')}
-            sx={{
-              fontWeight: 800,
-              fontSize: { xs: '0.95rem', md: '1.05rem' },
-              px: { xs: 2.5, md: 5 },
-              py: { xs: 1.4, md: 1.8 },
-              width: { xs: '100%', md: 'auto' },
-              boxShadow: '0 8px 24px rgba(25,93,230,0.3)',
-              mb: { xs: 1.5, md: 2 },
-              minWidth: { xs: 'auto', md: 200 },
-              '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' },
-            }}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, delay: 0.2 }}
           >
-            Become a partner
-          </Button>
-          <Typography sx={{ display: 'block', color: TEXT_SECONDARY, fontSize: { xs: '0.85rem', md: '0.9rem' }, fontWeight: 500 }}>
-            Simple monthly subscription. Cancel anytime.
-          </Typography>
+            <Button
+              variant='contained'
+              size='large'
+              onClick={() => onNavigate('/register/Business')}
+              sx={{
+                fontWeight: 800,
+                fontSize: { xs: '0.95rem', md: '1.05rem' },
+                px: { xs: 2.5, md: 5 },
+                py: { xs: 1.4, md: 1.8 },
+                width: { xs: '100%', md: 'auto' },
+                boxShadow: '0 8px 24px rgba(25,93,230,0.3)',
+                mb: { xs: 1.5, md: 2 },
+                minWidth: { xs: 'auto', md: 200 },
+                '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' },
+              }}
+            >
+              Become a partner
+            </Button>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          >
+            <Typography sx={{ display: 'block', color: TEXT_SECONDARY, fontSize: { xs: '0.85rem', md: '0.9rem' }, fontWeight: 500 }}>
+              Simple monthly subscription. Cancel anytime.
+            </Typography>
+          </motion.div>
         </Box>
       </Container>
     </Box>
