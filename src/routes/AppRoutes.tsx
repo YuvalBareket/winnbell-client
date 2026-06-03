@@ -12,6 +12,7 @@ import {
 } from '../store/selectors/authSelectors';
 import { useSupabaseSync } from '../shared/hooks/useSupabaseSync';
 import { SyncStatusContext } from '../shared/context/SyncStatusContext';
+import { PageHeaderProvider } from '../shared/context/PageHeaderContext';
 
 import MainLayout from '../shared/components/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
@@ -80,6 +81,7 @@ const AppRoutes = () => {
 
 
   return (
+    <PageHeaderProvider>
     <SyncStatusContext.Provider value={{ syncError, retry, isLoaded, isSignedIn }}>
     <Routes>
       {/* --- Public Routes --- */}
@@ -145,6 +147,7 @@ const AppRoutes = () => {
       <Route path='*' element={<Navigate to='/' replace />} />
     </Routes>
     </SyncStatusContext.Provider>
+    </PageHeaderProvider>
   );
 };
 

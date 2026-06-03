@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Box, Container, Typography, Paper, Stack, Skeleton, Alert, Chip, Autocomplete, TextField,
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
@@ -56,15 +57,27 @@ const StatsPage = () => {
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
         <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
           <Stack direction='row' alignItems='center' spacing={2}>
-            <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BarChartIcon sx={{ color: 'white', fontSize: 28 }} />
-            </Box>
-            <Box>
-              <Typography variant='h5' fontWeight={800}>Statistics</Typography>
-              <Typography variant='body2' sx={{ opacity: 0.75 }}>
-                {isBusiness ? 'Business performance overview' : 'Branch performance overview'}
-              </Typography>
-            </Box>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BarChartIcon sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <Box>
+                <Typography variant='h5' fontWeight={800}>Statistics</Typography>
+                <Typography variant='body2' sx={{ opacity: 0.75 }}>
+                  {isBusiness ? 'Business performance overview' : 'Branch performance overview'}
+                </Typography>
+              </Box>
+            </motion.div>
           </Stack>
         </Container>
       </Box>
@@ -74,7 +87,12 @@ const StatsPage = () => {
 
           {/* Filters */}
           {(isBusiness && locations.length > 1) || draws.length > 0 ? (
-            <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 {isBusiness && locations.length > 1 && (
                   <Autocomplete
@@ -102,12 +120,18 @@ const StatsPage = () => {
                 )}
               </Stack>
             </Paper>
+            </motion.div>
           ) : null}
 
           {isError && <Alert severity='error' sx={{ borderRadius: 2 }}>Failed to load statistics. Please try again.</Alert>}
 
           {/* KPI cards */}
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             {isLoading ? (
               <>
                 <Skeleton variant='rounded' height={88} sx={{ flex: 1, borderRadius: 2 }} />
@@ -121,10 +145,16 @@ const StatsPage = () => {
                 <KpiCard icon={<TrendingUpOutlined sx={{ color: 'white', fontSize: 22 }} />} label='Avg. Transaction' value={formatCurrency(stats?.summary.avg_transaction ?? 0)} color='#f59e0b' />
               </>
             )}
-          </Stack>
+            </Stack>
+          </motion.div>
 
           {/* Customer Growth */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction='row' justifyContent='space-between' alignItems='center' mb={0.5}>
               <Stack direction='row' alignItems='center' spacing={1}>
                 <PeopleAltOutlined sx={{ fontSize: 20, color: PRIMARY_MAIN }} />
@@ -153,10 +183,16 @@ const StatsPage = () => {
                 </ComposedChart>
               </ResponsiveContainer>
             )}
-          </Paper>
+            </Paper>
+          </motion.div>
 
           {/* Monthly distribution - bar chart */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction='row' justifyContent='space-between' alignItems='center' mb={2}>
               <Typography variant='subtitle1' fontWeight={700}>Monthly Distribution</Typography>
               <Chip label='Last 12 months' size='small' sx={{ fontWeight: 700 }} />
@@ -177,10 +213,16 @@ const StatsPage = () => {
                 </BarChart>
               </ResponsiveContainer>
             )}
-          </Paper>
+            </Paper>
+          </motion.div>
 
           {/* 30-day trend - line chart */}
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction='row' justifyContent='space-between' alignItems='center' mb={2}>
               <Typography variant='subtitle1' fontWeight={700}>30-Day Trend</Typography>
               <Chip label='Last 30 days' size='small' sx={{ fontWeight: 700 }} />
@@ -201,11 +243,17 @@ const StatsPage = () => {
                 </LineChart>
               </ResponsiveContainer>
             )}
-          </Paper>
+            </Paper>
+          </motion.div>
 
           {/* Branch breakdown bar chart */}
           {(isBusiness || isManager) && (
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
               <Typography variant='subtitle1' fontWeight={700} mb={2}>
                 {isBusiness ? 'Entries by Branch' : 'Entry Breakdown'}
               </Typography>
@@ -225,7 +273,8 @@ const StatsPage = () => {
                   </BarChart>
                 </ResponsiveContainer>
               )}
-            </Paper>
+              </Paper>
+            </motion.div>
           )}
 
 

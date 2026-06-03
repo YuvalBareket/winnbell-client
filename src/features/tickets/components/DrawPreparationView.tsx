@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import {
   Box, Container, Typography, Paper, Chip, Divider, LinearProgress,
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import {
   EmojiEvents, CheckCircle, RadioButtonUnchecked, CalendarMonth, OpenInNew,
 } from '@mui/icons-material';
@@ -9,6 +11,9 @@ import {
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
 } from '../../../shared/colors';
 import type { SubscriptionDetails } from '../../subscription/hooks/useSubscription';
+import AppHeader from '../../../shared/components/AppHeader';
+import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import { usePageHeader } from '../../../shared/context/PageHeaderContext';
 
 interface DrawPreparationViewProps {
   subscription: SubscriptionDetails | undefined;
@@ -24,6 +29,9 @@ const DrawPreparationView = ({
   isDesktop,
 }: DrawPreparationViewProps) => {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { claimHeader, releaseHeader } = usePageHeader();
+  useEffect(() => { claimHeader(); return () => releaseHeader(); }, [claimHeader, releaseHeader]);
 
   const drawDate = subscription?.draw_date ? new Date(subscription.draw_date) : null;
   const daysUntil = drawDate
@@ -47,19 +55,33 @@ const DrawPreparationView = ({
 
   return (
     <Box sx={{ minHeight: isDesktop ? 'auto' : 'calc(100dvh - 138px)', pb: 6 }}>
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
       {/* Hero */}
       <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 9, color: 'white', borderRadius: '0 0 32px 32px' }}>
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
         <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <EmojiEvents sx={{ color: 'white', fontSize: 26 }} />
-            </Box>
-            <Box>
-              <Typography variant='h5' fontWeight={800}>Preparing for Your Campaign</Typography>
-              <Typography variant='body2' sx={{ opacity: 0.75, mt: 0.25 }}>
-                You're registered - your business goes live when the campaign opens
-              </Typography>
-            </Box>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <EmojiEvents sx={{ color: 'white', fontSize: 26 }} />
+              </Box>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <Box>
+                <Typography variant='h5' fontWeight={800}>Preparing for Your Campaign</Typography>
+                <Typography variant='body2' sx={{ opacity: 0.75, mt: 0.25 }}>
+                  You're registered - your business goes live when the campaign opens
+                </Typography>
+              </Box>
+            </motion.div>
           </Box>
         </Container>
       </Box>
@@ -68,7 +90,12 @@ const DrawPreparationView = ({
         <Box sx={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap: 3, alignItems: 'flex-start' }}>
 
           {/* Left: Draw info card */}
-          <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
             <Box sx={{ background: GRADIENT_HERO, p: 3, color: 'white' }}>
               <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>Registered Campaign</Typography>
               <Typography variant='h6' fontWeight={800} sx={{ mt: 0.5 }}>
@@ -104,10 +131,16 @@ const DrawPreparationView = ({
                 </Typography>
               </Box>
             </Box>
-          </Paper>
+            </Paper>
+          </motion.div>
 
           {/* Right: Preparation checklist */}
-          <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 3 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant='h6' fontWeight={800}>Preparation Checklist</Typography>
               <Chip label={`${completedCount}/${taskItems.length}`} size='small' color={completedCount === taskItems.length ? 'success' : 'default'} sx={{ fontWeight: 700 }} />
@@ -150,7 +183,8 @@ const DrawPreparationView = ({
             <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7 }}>
               <strong>Entry generation opens when the campaign starts.</strong> In the meantime, make sure your profile is complete so customers can find you on the map and know what you offer.
             </Typography>
-          </Paper>
+            </Paper>
+          </motion.div>
         </Box>
       </Container>
     </Box>

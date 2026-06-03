@@ -7,6 +7,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AppMenuDrawer from './AppMenuDrawer';
 import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
+import { usePageHeader } from '../context/PageHeaderContext';
 import { useAppSelector } from '../../store/hook';
 import { selectIsBusiness, selectIsAdmin, selectIsLocationManager } from '../../store/selectors/authSelectors';
 import {
@@ -39,6 +40,7 @@ const MainLayout = () => {
   const isDrawsHistory = location.pathname === '/draws/history';
   const isSubscribe = location.pathname === '/subscribe';
   const isSubscriptionManage = location.pathname.startsWith('/subscription/');
+  const { hasOwnHeader } = usePageHeader();
   const topPadding = { xs: 0, md: 0 };
   const scanActive = location.pathname === mobileMainPath;
 
@@ -57,7 +59,7 @@ const MainLayout = () => {
       <AppSidebar />
 
       {/* Mobile header - hidden on desktop, hidden on pages with their own hero */}
-      {!isNearby && !isActivity && !isStats && !isMarketing && !isSettings && !isDrawsHistory && !isSubscribe && !isSubscriptionManage && (
+      {!hasOwnHeader && !isNearby && !isActivity && !isStats && !isMarketing && !isSettings && !isDrawsHistory && !isSubscribe && !isSubscriptionManage && (
         <AppHeader onMenuOpen={() => setMenuOpen(true)} />
       )}
 

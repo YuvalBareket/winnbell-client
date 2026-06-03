@@ -139,22 +139,34 @@ export default function SubscriptionManagementPage() {
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
         <Container maxWidth='lg' sx={{ px: 3, pt: { xs: 1, md: 0 } }}>
           <Stack direction='row' alignItems='center' spacing={2}>
-            <IconButton
-              onClick={() => navigate(-1)}
-              size='small'
-              sx={{ color: 'white', '&:hover': { bgcolor: ALPHA_WHITE_15 }, borderRadius: 2, width: 44, height: 44 }}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
             >
-              <ArrowBackIosNew fontSize='small' />
-            </IconButton>
-            <Box>
-              <Typography variant='caption' fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, opacity: 0.9 }}>
-                Manage Account
-              </Typography>
-              <Typography variant='h5' fontWeight={800}>Campaign Management</Typography>
-            </Box>
+              <IconButton
+                onClick={() => navigate(-1)}
+                size='small'
+                sx={{ color: 'white', '&:hover': { bgcolor: ALPHA_WHITE_15 }, borderRadius: 2, width: 44, height: 44 }}
+              >
+                <ArrowBackIosNew fontSize='small' />
+              </IconButton>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <Box>
+                <Typography variant='caption' fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, opacity: 0.9 }}>
+                  Manage Account
+                </Typography>
+                <Typography variant='h5' fontWeight={800}>Campaign Management</Typography>
+              </Box>
+            </motion.div>
           </Stack>
         </Container>
-        
+
       </Box>
 
       <Container maxWidth='lg' sx={{ mt: -3 }}>
@@ -194,103 +206,114 @@ export default function SubscriptionManagementPage() {
             {/* ── Left column: Plan + Actions ── */}
             <Stack spacing={3}>
               {/* Plan card */}
-              <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
-                {/* Card header band */}
-                <Box
-                  sx={{
-                    px: 3, py: 3,
-                    background: 'linear-gradient(135deg, rgba(25,93,230,0.08) 0%, rgba(127,166,255,0.1) 100%)',
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
-                  }}
-                >
-                  <Stack direction='row' alignItems='center' spacing={2} mb={2}>
-                    <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: sub.is_founding ? 'rgba(245,158,11,0.15)' : 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {sub.is_founding
-                        ? <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
-                        : <ReceiptLong sx={{ color: 'white', fontSize: 24 }} />}
-                    </Box>
-                    <Box flex={1}>
-                      <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        {sub.is_founding ? 'Founding Partner' : 'Current Plan'}
-                      </Typography>
-                      <Typography variant='h6' fontWeight={800} lineHeight={1.2}>
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+                  {/* Card header band */}
+                  <Box
+                    sx={{
+                      px: 3, py: 3,
+                      background: 'linear-gradient(135deg, rgba(25,93,230,0.08) 0%, rgba(127,166,255,0.1) 100%)',
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Stack direction='row' alignItems='center' spacing={2} mb={2}>
+                      <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: sub.is_founding ? 'rgba(245,158,11,0.15)' : 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         {sub.is_founding
-                          ? 'Founding Partner'
-                          : `Partner ${sub.billing_interval === 'yearly' ? 'Yearly' : 'Monthly'} Plan`}
-                      </Typography>
-                      {sub.fee_at_entry != null && (
-                        <Typography variant='body2' fontWeight={700} sx={{ color: PRIMARY_MAIN, mt: 0.5 }}>
+                          ? <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
+                          : <ReceiptLong sx={{ color: 'white', fontSize: 24 }} />}
+                      </Box>
+                      <Box flex={1}>
+                        <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          {sub.is_founding ? 'Founding Partner' : 'Current Plan'}
+                        </Typography>
+                        <Typography variant='h6' fontWeight={800} lineHeight={1.2}>
                           {sub.is_founding
-                            ? `$${Number(sub.fee_at_entry * 12).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / year`
-                            : sub.billing_interval === 'yearly'
-                              ? `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month · billed yearly`
-                              : `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month`}
+                            ? 'Founding Partner'
+                            : `Partner ${sub.billing_interval === 'yearly' ? 'Yearly' : 'Monthly'} Plan`}
                         </Typography>
-                      )}
-                      {(sub.active_location_count != null || sub.entries_per_location != null) && (
-                        <Typography variant='caption' color='text.secondary' sx={{ mt: 0.25 }}>
-                          {[
-                            sub.active_location_count != null && `${sub.active_location_count} location${sub.active_location_count !== 1 ? 's' : ''}`,
-                            sub.entries_per_location != null && `${sub.entries_per_location} entries per location`,
-                          ].filter(Boolean).join(' · ')}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Stack>
-                  <Chip
+                        {sub.fee_at_entry != null && (
+                          <Typography variant='body2' fontWeight={700} sx={{ color: PRIMARY_MAIN, mt: 0.5 }}>
+                            {sub.is_founding
+                              ? `$${Number(sub.fee_at_entry * 12).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / year`
+                              : sub.billing_interval === 'yearly'
+                                ? `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month · billed yearly`
+                                : `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month`}
+                          </Typography>
+                        )}
+                        {(sub.active_location_count != null || sub.entries_per_location != null) && (
+                          <Typography variant='caption' color='text.secondary' sx={{ mt: 0.25 }}>
+                            {[
+                              sub.active_location_count != null && `${sub.active_location_count} location${sub.active_location_count !== 1 ? 's' : ''}`,
+                              sub.entries_per_location != null && `${sub.entries_per_location} entries per location`,
+                            ].filter(Boolean).join(' · ')}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Stack>
+                    <Chip
                     label={sub.cancel_at_period_end ? 'Cancels Soon' : sub.status}
                     size='small'
                     sx={{
                       fontWeight: 700,
                       bgcolor: sub.cancel_at_period_end ? 'rgba(237,108,2,0.1)' : statusColors.bg,
                       color: sub.cancel_at_period_end ? '#ed6c02' : statusColors.color,
-                    }}
-                  />
-                </Box>
-
-                {/* Plan details */}
-                <Box sx={{ px: 3, py: 3 }}>
-                  <Stack spacing={2}>
-                    {periodEndLabel && (
-                      <Box>
-                        <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
-                          {sub.is_founding ? 'Membership expires' : sub.cancel_at_period_end ? 'Cancels on' : 'Renews on'}
-                        </Typography>
-                        <Typography variant='h6' fontWeight={800} color='text.primary'>{periodEndLabel}</Typography>
-                        <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
-                          {sub.is_founding
-                            ? 'One-time payment. All 12 monthly campaigns included, no renewal.'
-                            : sub.cancel_at_period_end
-                              ? 'Your access continues until this date - no further charges'
-                              : 'Your next payment will be charged on this date'}
-                        </Typography>
-                      </Box>
-                    )}
-                  </Stack>
-
-                  {sub.cancel_at_period_end && (
-                    <Alert severity='warning' sx={{ mt: 2.5, borderRadius: 2 }}>
-                      Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. It just will not renew after that.
-                    </Alert>
-                  )}
-                  <Box pt={2}>
-                    <Button
-                      size='small'
-                      variant='outlined'
-                      startIcon={<Edit />}
-                      onClick={() => { setNewTier(sub.entries_per_location ?? 750); setEditPlanOpen(true); setUpdateError(''); }}
-                      disabled={sub.is_founding || sub.status === 'Cancelled'}
-                      sx={{ fontWeight: 700, textTransform: 'none' }}
-                    >
-                      Edit Plan
-                    </Button>
+                      }}
+                    />
                   </Box>
-                </Box>
-              </Paper>
+
+                  {/* Plan details */}
+                  <Box sx={{ px: 3, py: 3 }}>
+                    <Stack spacing={2}>
+                      {periodEndLabel && (
+                        <Box>
+                          <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
+                            {sub.is_founding ? 'Membership expires' : sub.cancel_at_period_end ? 'Cancels on' : 'Renews on'}
+                          </Typography>
+                          <Typography variant='h6' fontWeight={800} color='text.primary'>{periodEndLabel}</Typography>
+                          <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
+                            {sub.is_founding
+                              ? 'One-time payment. All 12 monthly campaigns included, no renewal.'
+                              : sub.cancel_at_period_end
+                                ? 'Your access continues until this date - no further charges'
+                                : 'Your next payment will be charged on this date'}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Stack>
+
+                    {sub.cancel_at_period_end && (
+                      <Alert severity='warning' sx={{ mt: 2.5, borderRadius: 2 }}>
+                        Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. It just will not renew after that.
+                      </Alert>
+                    )}
+                    <Box pt={2}>
+                      <Button
+                        size='small'
+                        variant='outlined'
+                        startIcon={<Edit />}
+                        onClick={() => { setNewTier(sub.entries_per_location ?? 750); setEditPlanOpen(true); setUpdateError(''); }}
+                        disabled={sub.is_founding || sub.status === 'Cancelled'}
+                        sx={{ fontWeight: 700, textTransform: 'none' }}
+                      >
+                        Edit Plan
+                      </Button>
+                    </Box>
+                  </Box>
+                </Paper>
+              </motion.div>
 
               {/* Action buttons */}
-              <Stack spacing={2}>
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <Stack spacing={2}>
                 {canCancel && (
                   <Button
                     fullWidth
@@ -332,91 +355,109 @@ export default function SubscriptionManagementPage() {
                     Start a New Plan
                   </Button>
                 )}
-              </Stack>
+                </Stack>
+              </motion.div>
             </Stack>
 
             {/* ── Right column: Draw entry ── */}
             {sub.draw_id ? (
-              <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
-                {/* Card header band */}
-                <Box
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+                  {/* Card header band */}
+                  <Box
+                    sx={{
+                      px: 3, py: 3,
+                      background: `linear-gradient(135deg, ${PRIMARY_MAIN}08 0%, ${PRIMARY_MAIN}12 100%)`,
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                      <Stack direction='row' alignItems='center' spacing={2} mb={2}>
+                        <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: `${PRIMARY_MAIN}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <EmojiEvents sx={{ color: PRIMARY_MAIN, fontSize: 24 }} />
+                        </Box>
+                        <Box flex={1}>
+                          <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            Next Campaign
+                          </Typography>
+                          <Typography variant='h6' fontWeight={800} lineHeight={1.2}>{sub.draw_name}</Typography>
+                        </Box>
+                      </Stack>
+                      <Chip
+                        icon={isDrawLocked ? <Lock sx={{ fontSize: '14px !important' }} /> : <LockOpen sx={{ fontSize: '14px !important' }} />}
+                        label={isDrawLocked ? 'Your spot is locked in' : 'Can still cancel entry'}
+                        size='small'
+                        sx={{
+                          fontWeight: 700,
+                          bgcolor: 'rgba(46,125,50,0.08)',
+                          color: 'success.main',
+                        }}
+                      />
+                    </Box>
+
+                    {/* Draw details */}
+                    <Box sx={{ px: 3, py: 3 }}>
+                      <Stack spacing={2} mb={2.5}>
+                        <Box>
+                          <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
+                            Campaign date
+                          </Typography>
+                          <Typography variant='body2' fontWeight={700}>{drawDateLabel}</Typography>
+                        </Box>
+                        <Divider sx={{ my: 0 }} />
+                        <Box>
+                          <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.75 }}>
+                            Current prize pool
+                          </Typography>
+                          <Typography variant='h5' fontWeight={900} color='primary.main' sx={{ fontSize: { xs: '1.75rem', md: '2rem' } }}>
+                            ${Number(sub?.prize_amount ?? 0).toFixed(2)}
+                          </Typography>
+                        </Box>
+                      </Stack>
+
+                      {isDrawLocked && (
+                        <Alert severity='success' icon={<Lock />} sx={{ borderRadius: 2 }}>
+                          Your entry is confirmed. You are in this campaign.
+                        </Alert>
+                      )}
+                    </Box>
+                </Paper>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <Paper
+                  elevation={0}
                   sx={{
-                    px: 3, py: 3,
-                    background: `linear-gradient(135deg, ${PRIMARY_MAIN}08 0%, ${PRIMARY_MAIN}12 100%)`,
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
+                    p: 4, borderRadius: 2, border: '1px dashed', borderColor: 'divider',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    minHeight: 280, textAlign: 'center',
                   }}
                 >
-                  <Stack direction='row' alignItems='center' spacing={2} mb={2}>
-                    <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: `${PRIMARY_MAIN}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <EmojiEvents sx={{ color: PRIMARY_MAIN, fontSize: 24 }} />
-                    </Box>
-                    <Box flex={1}>
-                      <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        Next Campaign
-                      </Typography>
-                      <Typography variant='h6' fontWeight={800} lineHeight={1.2}>{sub.draw_name}</Typography>
-                    </Box>
-                  </Stack>
-                  <Chip
-                    icon={isDrawLocked ? <Lock sx={{ fontSize: '14px !important' }} /> : <LockOpen sx={{ fontSize: '14px !important' }} />}
-                    label={isDrawLocked ? 'Your spot is locked in' : 'Can still cancel entry'}
-                    size='small'
-                    sx={{
-                      fontWeight: 700,
-                      bgcolor: 'rgba(46,125,50,0.08)',
-                      color: 'success.main',
-                    }}
-                  />
-                </Box>
-
-                {/* Draw details */}
-                <Box sx={{ px: 3, py: 3 }}>
-                  <Stack spacing={2} mb={2.5}>
-                    <Box>
-                      <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
-                        Campaign date
-                      </Typography>
-                      <Typography variant='body2' fontWeight={700}>{drawDateLabel}</Typography>
-                    </Box>
-                    <Divider sx={{ my: 0 }} />
-                    <Box>
-                      <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.75 }}>
-                        Current prize pool
-                      </Typography>
-                      <Typography variant='h5' fontWeight={900} color='primary.main' sx={{ fontSize: { xs: '1.75rem', md: '2rem' } }}>
-                        ${Number(sub?.prize_amount ?? 0).toFixed(2)}
-                      </Typography>
-                    </Box>
-                  </Stack>
-
-                  {isDrawLocked && (
-                    <Alert severity='success' icon={<Lock />} sx={{ borderRadius: 2 }}>
-                      Your entry is confirmed. You are in this campaign.
-                    </Alert>
-                  )}
-                </Box>
-              </Paper>
-            ) : (
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 4, borderRadius: 2, border: '1px dashed', borderColor: 'divider',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  minHeight: 280, textAlign: 'center',
-                }}
-              >
                 <EmojiEvents sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
                 <Typography variant='body1' fontWeight={700} color='text.secondary'>No upcoming campaign</Typography>
                 <Typography variant='body2' color='text.disabled' sx={{ mt: 1 }}>
                   You are not enrolled in any upcoming campaign yet.
                 </Typography>
-              </Paper>
+                </Paper>
+              </motion.div>
             )}
           </Box>
 
           {/* ── Payment History ── */}
-          <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
             <Box
               sx={{
                 px: 3, py: 3,
@@ -542,7 +583,8 @@ export default function SubscriptionManagementPage() {
                 </AnimatePresence>
               )}
             </Box>
-          </Paper>
+            </Paper>
+          </motion.div>
 
         </Stack>
 

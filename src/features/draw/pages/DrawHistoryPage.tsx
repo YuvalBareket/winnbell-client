@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Box, Container, Typography, Paper, Stack, Skeleton,
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { EmojiEvents, EmojiEventsOutlined } from '@mui/icons-material';
@@ -30,28 +31,40 @@ const DrawHistoryPage = () => {
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
         <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
           <Stack direction='row' alignItems='center' spacing={2}>
-            <Box
-              sx={{
-                width: 52,
-                height: 52,
-                borderRadius: 2,
-                bgcolor: ALPHA_WHITE_15,
-                border: `1px solid ${ALPHA_WHITE_30}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
             >
-              <EmojiEvents sx={{ color: 'white', fontSize: 28 }} />
-            </Box>
-            <Box>
-              <Typography variant='h5' fontWeight={800}>
-                Campaigns Hub
-              </Typography>
-              <Typography variant='body2' sx={{ opacity: 0.75 }}>
-                Track active campaigns and winner history
-              </Typography>
-            </Box>
+              <Box
+                sx={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 2,
+                  bgcolor: ALPHA_WHITE_15,
+                  border: `1px solid ${ALPHA_WHITE_30}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <EmojiEvents sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <Box>
+                <Typography variant='h5' fontWeight={800}>
+                  Campaigns Hub
+                </Typography>
+                <Typography variant='body2' sx={{ opacity: 0.75 }}>
+                  Track active campaigns and winner history
+                </Typography>
+              </Box>
+            </motion.div>
           </Stack>
         </Container>
       </Box>
@@ -59,7 +72,12 @@ const DrawHistoryPage = () => {
       <Container maxWidth='lg' sx={{ mt: 4 }}>
         {/* Error state */}
         {isError && (
-          <Paper
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Paper
             elevation={0}
             sx={{
               p: 3,
@@ -73,12 +91,18 @@ const DrawHistoryPage = () => {
             <Typography color='error'>
               Failed to load campaign history. Please try again.
             </Typography>
-          </Paper>
+            </Paper>
+          </motion.div>
         )}
 
         {/* Loading state */}
         {isLoading && (
-          <Stack spacing={3}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Stack spacing={3}>
             <Box>
               <Skeleton
                 variant='rounded'
@@ -97,12 +121,18 @@ const DrawHistoryPage = () => {
                 />
               ))}
             </Box>
-          </Stack>
+            </Stack>
+          </motion.div>
         )}
 
         {/* Empty state */}
         {!isLoading && !isError && (!history || history.length === 0) && (
-          <Paper
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Paper
             elevation={0}
             sx={{
               p: 0,
@@ -116,12 +146,18 @@ const DrawHistoryPage = () => {
               title='No campaigns yet'
               description='Campaigns appear here once they have closed and a winner has been selected'
             />
-          </Paper>
+            </Paper>
+          </motion.div>
         )}
 
         {/* Active campaign section */}
         {!isLoading && history && history.length > 0 && activeCampaigns.length > 0 && (
-          <Box sx={{ mb: 5 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Box sx={{ mb: 5 }}>
             <Typography
               variant='subtitle1'
               fontWeight={800}
@@ -141,12 +177,18 @@ const DrawHistoryPage = () => {
                 <DrawHistoryCard key={draw.id} draw={draw} />
               ))}
             </Stack>
-          </Box>
+            </Box>
+          </motion.div>
         )}
 
         {/* Past campaigns section */}
         {!isLoading && history && closedCampaigns.length > 0 && (
-          <Box>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Box>
             <Box
               sx={{
                 display: 'flex',
@@ -192,7 +234,8 @@ const DrawHistoryPage = () => {
                 <DrawHistoryCard key={draw.id} draw={draw} />
               ))}
             </Stack>
-          </Box>
+            </Box>
+          </motion.div>
         )}
       </Container>
     </Box>

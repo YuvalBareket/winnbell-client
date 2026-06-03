@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
@@ -156,19 +157,31 @@ const MarketingPage = () => {
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
         <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
           <Stack direction='row' alignItems='center' spacing={2}>
-            <Box sx={{
-              width: 52, height: 52, borderRadius: 2,
-              bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <CropFree sx={{ color: 'white', fontSize: 28 }} />
-            </Box>
-            <Box>
-              <Typography variant='h5' fontWeight={800}>Marketing Posters</Typography>
-              <Typography variant='body2' sx={{ opacity: 0.75 }}>
-                Choose a design, preview it live, and download as PDF
-              </Typography>
-            </Box>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Box sx={{
+                width: 52, height: 52, borderRadius: 2,
+                bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <CropFree sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <Box>
+                <Typography variant='h5' fontWeight={800}>Marketing Posters</Typography>
+                <Typography variant='body2' sx={{ opacity: 0.75 }}>
+                  Choose a design, preview it live, and download as PDF
+                </Typography>
+              </Box>
+            </motion.div>
           </Stack>
         </Container>
       </Box>
@@ -180,7 +193,12 @@ const MarketingPage = () => {
           <Box sx={{ flex: 1, minWidth: 0 }}>
 
             {/* Thumbnail grid - 2×2, fixed pixel thumbnails with JS-computed scale */}
-            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5, mb: 3,width:{xs:'calc(100dvw - 35px)'} }}>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5, mb: 3,width:{xs:'calc(100dvw - 35px)'} }}>
               <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
                 Choose a template
               </Typography>
@@ -243,10 +261,16 @@ const MarketingPage = () => {
                   );
                 })}
               </Box>
-            </Paper>
+              </Paper>
+            </motion.div>
 
             {/* Full preview - boxShadow on outer wrapper, NOT on posterRef */}
-            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5 ,width:{xs:'calc(100dvw - 35px)'}}}>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2.5 ,width:{xs:'calc(100dvw - 35px)'}}}>
               <Typography variant='subtitle2' fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.72rem' }}>
                 Preview - {selected.label}
               </Typography>
@@ -264,14 +288,20 @@ const MarketingPage = () => {
                   </Box>
                 </Box>
               </Box>
-            </Paper>
+              </Paper>
+            </motion.div>
           </Box>
 
           {/* ── Right: controls ── */}
-          <Paper elevation={0} sx={{
-            width: { xs: '100%', md: '45%' }, flexShrink: 0,
-            borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 3,
-                      }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Paper elevation={0} sx={{
+              width: { xs: '100%', md: '45%' }, flexShrink: 0,
+              borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 3,
+                        }}>
             <Stack spacing={3}>
               <Box>
                 <Typography variant='h6' fontWeight={800} gutterBottom>Download Poster</Typography>
@@ -384,7 +414,8 @@ const MarketingPage = () => {
                 ))}
               </Box>
             </Stack>
-          </Paper>
+            </Paper>
+          </motion.div>
         </Stack>
       </Container>
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Box, Container, Typography, Paper, Stack, Skeleton, Alert, Chip, Button, ToggleButton, ToggleButtonGroup, Autocomplete, TextField,
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import {
   ReceiptLongOutlined, AttachMoneyOutlined,
   FeedOutlined,
@@ -116,15 +117,27 @@ const ActivityPage = () => {
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
         <Container maxWidth='lg' sx={{ px: 3, pt: 1, zoom: { xs: 0.9, md: 1 } }}>
           <Stack direction='row' alignItems='center' spacing={2}>
-            <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ReceiptLongOutlined sx={{ color: 'white', fontSize: 28 }} />
-            </Box>
-            <Box>
-              <Typography variant='h5' fontWeight={800}>Receipt Activity</Typography>
-              <Typography variant='body2' sx={{ opacity: 0.75 }}>
-                Showing activity for {getPeriodLabel(dateRange)}
-              </Typography>
-            </Box>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ReceiptLongOutlined sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <Box>
+                <Typography variant='h5' fontWeight={800}>Receipt Activity</Typography>
+                <Typography variant='body2' sx={{ opacity: 0.75 }}>
+                  Showing activity for {getPeriodLabel(dateRange)}
+                </Typography>
+              </Box>
+            </motion.div>
           </Stack>
         </Container>
       </Box>
@@ -134,7 +147,12 @@ const ActivityPage = () => {
 
           {/* Not-live banner - business admin only, until subscribed */}
           {!isLocationManager && !bizData?.is_subscribed && bizData && (
-            <Paper
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Paper
               elevation={0}
               onClick={() => navigate('/subscribe')}
               sx={{
@@ -172,10 +190,16 @@ const ActivityPage = () => {
                 Subscribe
               </Button>
             </Paper>
+            </motion.div>
           )}
 
           {/* Filters */}
-          <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: 'white' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: !isLocationManager && !bizData?.is_subscribed && bizData ? 0.2 : 0.1 }}
+          >
+            <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: 'white' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
               {/* Location dropdown - only show if NOT a location manager */}
               {!isLocationManager && locations.length > 0 && (
@@ -233,9 +257,15 @@ const ActivityPage = () => {
               </ToggleButtonGroup>
             </Stack>
           </Paper>
+          </motion.div>
 
           {/* KPI cards - 2 cards, larger */}
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             {isLoading || isRefreshing ? (
               <>
                 <Skeleton variant='rounded' height={100} sx={{ flex: 1, borderRadius: 2 }} />
@@ -257,7 +287,8 @@ const ActivityPage = () => {
                 />
               </>
             )}
-          </Stack>
+            </Stack>
+          </motion.div>
 
           {isError && <Alert severity='error' sx={{ borderRadius: 2 }}>Failed to load activity. Please try again.</Alert>}
 
