@@ -183,7 +183,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
     setAllTickets(prev => page === 1 ? tickets : [...prev, ...tickets]);
   }, [tickets]);
 
-  const hasMore = allTickets.length < totalCount;
+  const hasMore = allTickets.length > 0 && allTickets.length < totalCount;
 
   // Intersection observer sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
