@@ -48,8 +48,8 @@ const DrawPreparationView = ({
   return (
     <Box sx={{ minHeight: isDesktop ? 'auto' : 'calc(100dvh - 138px)', pb: 6 }}>
       {/* Hero */}
-      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
-        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 } }}>
+      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 9, color: 'white', borderRadius: '0 0 32px 32px' }}>
+        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <EmojiEvents sx={{ color: 'white', fontSize: 26 }} />

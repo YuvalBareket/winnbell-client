@@ -26,9 +26,9 @@ const DrawHistoryPage = () => {
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Hero Header */}
-      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 6, px: 3, color: 'white' }}>
+      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 6, color: 'white' }}>
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 } }}>
+        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
           <Stack direction='row' alignItems='center' spacing={2}>
             <Box
               sx={{

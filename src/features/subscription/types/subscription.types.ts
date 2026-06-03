@@ -32,6 +32,7 @@ export interface SubscriptionInvoice {
   amount_paid: number;
   amount_due: number;
   status: string | null;
+  invoice_description: string | null;
   description: InvoiceLineItem[];
   invoice_pdf: string | null;
   hosted_invoice_url: string | null;

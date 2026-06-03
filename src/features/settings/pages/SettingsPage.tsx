@@ -103,13 +103,12 @@ const SettingsPage = () => {
           background: GRADIENT_HERO,
           pt: { xs: 0, md: 3 },
           pb: isDesktop ? 9 : 6,
-          px: 3,
           color: 'white',
           borderRadius: '0 0 32px 32px',
         }}
       >
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 } }}>
+        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
           <Stack direction='row' alignItems='center' spacing={2}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}

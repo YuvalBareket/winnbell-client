@@ -9,7 +9,7 @@ import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
   ReceiptLong, CheckCircle, Cancel, EmojiEvents, ArrowBackIosNew,
-  Lock, LockOpen, WorkspacePremium, Edit, Add as AddIcon, Remove as RemoveIcon,
+  Lock, LockOpen, WorkspacePremium, Edit, Add as AddIcon, Remove as RemoveIcon, SwapHoriz,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
@@ -132,13 +132,12 @@ export default function SubscriptionManagementPage() {
           background: GRADIENT_HERO,
           pt: { xs: 0, md: 3 },
           pb: 6,
-          px: 3,
           color: 'white',
           borderRadius: '0 0 32px 32px',
         }}
       >
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 } }}>
+        <Container maxWidth='lg' sx={{ px: 3, pt: { xs: 1, md: 0 } }}>
           <Stack direction='row' alignItems='center' spacing={2}>
             <IconButton
               onClick={() => navigate(-1)}
@@ -275,7 +274,7 @@ export default function SubscriptionManagementPage() {
                       Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. It just will not renew after that.
                     </Alert>
                   )}
-                  <Box>
+                  <Box pt={2}>
                     <Button
                       size='small'
                       variant='outlined'
@@ -461,6 +460,16 @@ export default function SubscriptionManagementPage() {
                       const dateLabel = new Date(invoice.date * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
                       const amount = isPaid ? invoice.amount_paid : invoice.amount_due;
 
+                      const isProrationLine = (l: { description: string | null }) => {
+                        const d = (l.description ?? '').toLowerCase();
+                        return d.includes('unused time') || d.includes('remaining time');
+                      };
+                      const subLines = invoice.description.filter(l => !isProrationLine(l));
+                      const isChangeEntry = !!invoice.invoice_description || (invoice.description.length > 0 && subLines.length === 0);
+
+                      const changeReason = invoice.invoice_description
+                        ?? (isChangeEntry ? 'Plan or location updated' : null);
+
                       return (
                         <motion.div
                           key={invoice.id}
@@ -470,60 +479,62 @@ export default function SubscriptionManagementPage() {
                           transition={{ duration: 0.2, delay: index * 0.04 }}
                         >
                           {index > 0 && <Divider sx={{ my: 0 }} />}
-                          <Box sx={{ py: 2 }}>
-                            <Stack direction='row' alignItems='flex-start' justifyContent='space-between' spacing={2}>
+
+                          {isChangeEntry ? (
+                            /* ── Change log entry ── */
+                            <Stack direction='row' alignItems='center' spacing={1.5} sx={{ py: 1.5, pl: 0.5 }}>
+                              <Box sx={{ width: 28, height: 28, borderRadius: '50%', bgcolor: 'rgba(25,118,210,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <SwapHoriz sx={{ fontSize: 16, color: 'primary.main' }} />
+                              </Box>
                               <Box flex={1} minWidth={0}>
-                                <Stack direction='row' alignItems='center' spacing={1.5} mb={0.75}>
-                                  <Typography variant='body2' color='text.secondary' fontWeight={600} sx={{ minWidth: 72 }}>
-                                    {dateLabel}
-                                  </Typography>
-                                  <Typography variant='body2' fontWeight={800}>
-                                    ${amount.toFixed(2)}
-                                  </Typography>
-                                  <Chip
-                                    label={isPaid ? 'Paid' : invoice.status === 'open' ? 'Open' : invoice.status === 'void' ? 'Void' : 'Failed'}
-                                    size='small'
-                                    sx={{
-                                      fontWeight: 700,
-                                      fontSize: '0.7rem',
-                                      height: 20,
-                                      bgcolor: isPaid ? 'rgba(46,125,50,0.1)' : 'rgba(211,47,47,0.1)',
-                                      color: isPaid ? 'success.dark' : 'error.main',
-                                    }}
-                                  />
-                                </Stack>
-                                {invoice.description.length > 0 && (() => {
-                                  const isProration = invoice.description.every(l =>
-                                    (l.description ?? '').toLowerCase().includes('unused time') ||
-                                    (l.description ?? '').toLowerCase().includes('remaining time')
-                                  );
-                                  if (isProration) {
+                                <Typography variant='caption' fontWeight={700} color='text.primary' sx={{ display: 'block' }}>
+                                  {changeReason}
+                                </Typography>
+                                <Typography variant='caption' color='text.secondary'>
+                                  {dateLabel}
+                                </Typography>
+                              </Box>
+                            </Stack>
+                          ) : (
+                            /* ── Regular monthly payment ── */
+                            <Box sx={{ py: 2 }}>
+                              <Stack direction='row' alignItems='center' spacing={1.5} mb={0.75}>
+                                <Typography variant='body2' color='text.secondary' fontWeight={600}>
+                                  {dateLabel}
+                                </Typography>
+                                <Typography variant='body2' fontWeight={800}>
+                                  ${amount.toFixed(2)}
+                                </Typography>
+                                <Chip
+                                  label={isPaid ? 'Paid' : invoice.status === 'open' ? 'Open' : invoice.status === 'void' ? 'Void' : 'Failed'}
+                                  size='small'
+                                  sx={{
+                                    fontWeight: 700,
+                                    fontSize: '0.7rem',
+                                    height: 20,
+                                    bgcolor: isPaid ? 'rgba(46,125,50,0.1)' : 'rgba(211,47,47,0.1)',
+                                    color: isPaid ? 'success.dark' : 'error.main',
+                                  }}
+                                />
+                              </Stack>
+                              {subLines.length > 0 && (
+                                <Stack spacing={0.25} pl={0.25}>
+                                  {subLines.map((line, li) => {
+                                    const qty = line.quantity ?? 1;
+                                    const pricePerLoc = qty > 0 ? Math.abs(line.amount) / qty : Math.abs(line.amount);
+                                    const label = qty > 1
+                                      ? `${qty} locations × $${pricePerLoc.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}/location`
+                                      : `1 location — $${Math.abs(line.amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}/month`;
                                     return (
-                                      <Typography variant='caption' color='text.secondary' sx={{ display: 'block', lineHeight: 1.5 }}>
-                                        Mid-cycle plan change — difference charged for the rest of the billing period
+                                      <Typography key={li} variant='caption' color='text.secondary' sx={{ display: 'block', lineHeight: 1.5 }}>
+                                        {label}
                                       </Typography>
                                     );
-                                  }
-                                  return (
-                                    <Stack spacing={0.25} pl={0.25}>
-                                      {invoice.description.map((line, li) => {
-                                        const qty = line.quantity ?? 1;
-                                        const label = qty > 1
-                                          ? `${qty} location${qty > 1 ? 's' : ''} × $${(line.amount / qty).toFixed(2)}/location`
-                                          : (line.description ?? '');
-                                        return (
-                                          <Typography key={li} variant='caption' color='text.secondary' sx={{ display: 'block', lineHeight: 1.5 }}>
-                                            {label}{line.amount !== 0 && <> — <strong>${Math.abs(line.amount).toFixed(2)}</strong></>}
-                                          </Typography>
-                                        );
-                                      })}
-                                    </Stack>
-                                  );
-                                })()}
-                              </Box>
-
-                            </Stack>
-                          </Box>
+                                  })}
+                                </Stack>
+                              )}
+                            </Box>
+                          )}
                         </motion.div>
                       );
                     })
