@@ -146,10 +146,11 @@ const MyTicketsPage = () => {
       </Box>
 
       {isBusiness && !isManager && locations.length > 1 && (
-        <Box sx={{ px: 2, pt: 1.5 }}>
+        <Box sx={{ px: 2, pt: 1.5, position: 'relative',pr:2.5 }}>
           <Autocomplete
             size='small'
             fullWidth
+            disablePortal
             options={locations}
             getOptionLabel={(opt) => opt.name}
             value={locations.find(l => l.id === selectedLocationId) ?? null}
