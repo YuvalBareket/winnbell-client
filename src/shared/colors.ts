@@ -68,6 +68,7 @@ export const GRADIENT_SUCCESS     = `linear-gradient(160deg, #1f628e 0%, #0292b7
 export const GRADIENT_SIDEBAR     = `linear-gradient(195deg, #f8fafa 0%, #ffffff 100%)`;
 export const GRADIENT_HERO_WARM   = `linear-gradient(135deg, #0292b7 0%, #1f628e 60%, #0f3d5c 100%)`;
 export const GRADIENT_GOLD_CTA    = `linear-gradient(135deg, #c5a047 0%, #a0822f 100%)`;
+export const GRADIENT_LOADING     = `linear-gradient(135deg, ${PRIMARY_MAIN}99 0%, ${BG_DEFAULT} 98%)`;
 
 // ── Shadows ───────────────────────────────────
 export const SHADOW_PRIMARY_INTENSE = `0 4px 16px rgba(2,146,183,0.4)`;

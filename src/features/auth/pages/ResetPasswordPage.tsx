@@ -3,6 +3,7 @@ import {
   Box, Paper, Typography, TextField, Button, Alert, CircularProgress,
   InputAdornment, IconButton, Container,
 } from '@mui/material';
+import LoadingScreen from '../../../shared/components/LoadingScreen';
 import { Lock, Visibility, VisibilityOff, CheckCircle } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
@@ -61,11 +62,7 @@ const ResetPasswordPage = () => {
   };
 
   if (!ready) {
-    return (
-      <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center', bgcolor: BG_PAGE }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingScreen />;
   }
 
   return (

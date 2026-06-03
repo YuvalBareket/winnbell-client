@@ -1,8 +1,9 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { CircularProgress, Box, Typography, Button } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import { useAppSelector } from '../store/hook';
 import { selectIsAuthenticated } from '../store/selectors/authSelectors';
 import { useSyncStatus } from '../shared/context/SyncStatusContext';
+import LoadingScreen from '../shared/components/LoadingScreen';
 
 const ProtectedRoute = () => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -10,11 +11,7 @@ const ProtectedRoute = () => {
 
   // Supabase is still initializing
   if (!isLoaded) {
-    return (
-      <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingScreen />;
   }
 
   // Session exists but useSupabaseSync hasn't finished yet - wait, don't redirect
@@ -46,11 +43,7 @@ const ProtectedRoute = () => {
         </Box>
       );
     }
-    return (
-      <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingScreen />;
   }
 
   if (!isAuthenticated) {

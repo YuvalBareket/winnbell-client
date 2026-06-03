@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { Box, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
+import LoadingScreen from '../../../shared/components/LoadingScreen';
 
 // Supabase processes the OAuth callback automatically when the page loads
 // (reads the access_token fragment from the URL). useSupabaseSync in AppRoutes
@@ -28,11 +28,7 @@ const SSOCallbackPage = () => {
     return () => clearTimeout(timeout);
   }, [navigate]);
 
-  return (
-    <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}>
-      <CircularProgress />
-    </Box>
-  );
+  return <LoadingScreen />;
 };
 
 export default SSOCallbackPage;

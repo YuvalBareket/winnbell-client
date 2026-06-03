@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { CircularProgress, Box } from '@mui/material';
+
 import { useAppSelector } from '../store/hook';
 import {
   selectIsRegularUser,
@@ -17,6 +17,7 @@ import { PageHeaderProvider } from '../shared/context/PageHeaderContext';
 import MainLayout from '../shared/components/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
 import RegionGate from '../shared/components/RegionGate';
+import LoadingScreen from '../shared/components/LoadingScreen';
 import LandingPage from '../features/landing/LandingPage';
 import BusinessLandingPage from '../features/landing/BusinessLandingPage';
 
@@ -87,7 +88,7 @@ const AppRoutes = () => {
       {/* --- Public Routes --- */}
       <Route path='/' element={
         (!isLoaded || (isSignedIn && !isAuthenticated))
-          ? <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box>
+          ? <LoadingScreen />
           : isAuthenticated
             ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace />
             : <LandingPage />

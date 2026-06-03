@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
 import { api } from '../api/client';
+import LoadingScreen from './LoadingScreen';
 
 interface Props {
   children: React.ReactNode;
@@ -17,11 +17,7 @@ const RegionGate = ({ children }: Props) => {
   }, []);
 
   if (status === 'loading') {
-    return (
-      <Box sx={{ display: 'flex', height: '100dvh', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingScreen />;
   }
 
   if (status === 'blocked') {
