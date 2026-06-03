@@ -1,22 +1,21 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Autocomplete, CircularProgress, TextField } from '@mui/material';
 import { useAddressAutocomplete } from '../hooks/useAddressAutocomplete';
+import type { AddressOption } from '../hooks/useAddressAutocomplete';
 
-type AddressOption = {
+type ResolvedAddress = {
   label: string;
   lat: number;
   lon: number;
-  raw?: any;
 };
 
 type Props = {
-  onSelect?: (value: AddressOption | null) => void;
+  onSelect?: (value: ResolvedAddress | null) => void;
   label?: string;
   placeholder?: string;
   disabled?: boolean;
-
-  value?: AddressOption | null;
-  defaultValue?: AddressOption | null;
+  value?: ResolvedAddress | null;
+  defaultValue?: ResolvedAddress | null;
 };
 
 const AddressAutoComplete = ({
@@ -31,63 +30,70 @@ const AddressAutoComplete = ({
     setInputValue: setQuery,
     options,
     loading,
-    markSelected,
+    coordsLoading,
+    fetchCoords,
   } = useAddressAutocomplete();
 
   const isControlled = value !== undefined;
 
-  const initial = useMemo(() => {
-    if (isControlled) return value ?? null;
-    return defaultValue ?? null;
-  }, [isControlled, value, defaultValue]);
+  // Local option selection — separate from the resolved ResolvedAddress
+  const [selectedOption, setSelectedOption] = useState<AddressOption | null>(null);
+  const [input, setInput] = useState(
+    isControlled ? (value?.label || '') : (defaultValue?.label || '')
+  );
 
-  const [selected, setSelected] = useState<AddressOption | null>(initial);
-  const [input, setInput] = useState(initial?.label || '');
-
+  // Sync input text when controlled value changes externally (e.g. parent clears selection)
   useEffect(() => {
-    if (isControlled) {
-      setSelected(value ?? null);
-      setInput(value?.label || '');
-      return;
-    }
-
-    setSelected(defaultValue ?? null);
-    setInput(defaultValue?.label || '');
-  }, [isControlled, value, defaultValue]);
-
-  const current = isControlled ? (value ?? null) : selected;
+    if (!isControlled) return;
+    setSelectedOption(null);
+    setInput(value?.label || '');
+  }, [isControlled, value]);
 
   return (
     <Autocomplete<AddressOption, false, false, false>
       sx={{ minWidth: '200px' }}
       disabled={disabled}
-      value={current}
+      value={selectedOption}
       inputValue={input}
       options={options}
-      loading={loading}
+      loading={loading || coordsLoading}
       filterOptions={(x) => x}
       getOptionLabel={(o) => o?.label || ''}
-      isOptionEqualToValue={(a, b) => {
-        if (!a || !b) return false;
-        return a.label === b.label && a.lat === b.lat && a.lon === b.lon;
-      }}
+      isOptionEqualToValue={(a, b) => a?.placeId === b?.placeId}
       onOpen={() => {
         if (input.trim()) setQuery(input);
       }}
       onInputChange={(_, v, reason) => {
-        setInput(v);
-        if (reason === 'input') setQuery(v);
-        // If user clears the field, clear the selection too
+        if (reason === 'input') {
+          setInput(v);
+          setQuery(v);
+        }
         if (reason === 'clear') {
-          if (!isControlled) setSelected(null);
+          setInput('');
+          setSelectedOption(null);
           onSelect?.(null);
         }
+        // reason === 'reset' happens on selection — let onChange handle it
       }}
-      onChange={(_, v) => {
-        markSelected();
-        if (!isControlled) setSelected(v);
-        setInput(v?.label || '');
-        onSelect?.(v);
+      onChange={(_, option) => {
+        if (!option) {
+          setSelectedOption(null);
+          setInput('');
+          onSelect?.(null);
+          return;
+        }
+        setSelectedOption(option);
+        setInput(option.label);
+        fetchCoords(option.placeId)
+          .then((coords) => {
+            onSelect?.(coords);
+          })
+          .catch(() => {
+            // Coords fetch failed — clear selection so the user can retry
+            setSelectedOption(null);
+            setInput('');
+            onSelect?.(null);
+          });
       }}
       renderInput={(params) => (
         <TextField
@@ -95,14 +101,15 @@ const AddressAutoComplete = ({
           label={label}
           placeholder={placeholder}
           onBlur={() => {
-            // Reset input to the last confirmed selection — prevents saving free text
-            setInput(current?.label || '');
+            // Reset to last confirmed selection label
+            const confirmed = isControlled ? (value?.label || '') : (selectedOption?.label || '');
+            setInput(confirmed);
           }}
           InputProps={{
             ...params.InputProps,
             endAdornment: (
               <>
-                {loading ? <CircularProgress size={18} /> : null}
+                {(loading || coordsLoading) ? <CircularProgress size={18} /> : null}
                 {params.InputProps.endAdornment}
               </>
             ),

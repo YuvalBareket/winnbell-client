@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { autoCompleteAddress } from '../api/addressAutocomplete';
+import { autoCompleteAddress, getAddressCoords } from '../api/addressAutocomplete';
+import type { AddressCoords } from '../api/addressAutocomplete';
 
-type AddressOption = {
+export type AddressOption = {
   label: string;
-  lat: number;
-  lon: number;
+  placeId: string;
 };
 
 function debounce<T extends (...args: Parameters<T>) => void>(fn: T, ms: number) {
@@ -19,25 +19,22 @@ function debounce<T extends (...args: Parameters<T>) => void>(fn: T, ms: number)
 export const useAddressAutocomplete = () => {
   const [inputValue, setInputValue] = useState('');
   const [options, setOptions] = useState<AddressOption[]>([]);
+  const [coordsLoading, setCoordsLoading] = useState(false);
 
   const lastQueryRef = useRef('');
-  const skipNextRef = useRef(false);
 
-  const mutation = useMutation({
+  const searchMutation = useMutation({
     mutationFn: autoCompleteAddress,
     onSuccess: (data, text) => {
       if (text !== lastQueryRef.current) return;
-
-      const results = Array.isArray(data) ? data : [];
-
-      setOptions(results);
+      setOptions(Array.isArray(data) ? data : []);
     },
     onError: () => {
       setOptions([]);
     },
   });
 
-  const run = async (text: string) => {
+  const run = (text: string) => {
     const q = text.trim();
     lastQueryRef.current = q;
 
@@ -46,7 +43,7 @@ export const useAddressAutocomplete = () => {
       return;
     }
 
-    mutation.mutate(q);
+    searchMutation.mutate(q);
   };
 
   const debouncedRun = useMemo(() => debounce(run, 800), []);
@@ -60,11 +57,18 @@ export const useAddressAutocomplete = () => {
     setInputValue,
 
     options,
-    loading: mutation.isPending,
+    loading: searchMutation.isPending,
+    coordsLoading,
 
-    error: mutation.error,
-    markSelected: () => {
-      skipNextRef.current = true;
+    error: searchMutation.error,
+
+    fetchCoords: async (placeId: string): Promise<AddressCoords> => {
+      setCoordsLoading(true);
+      try {
+        return await getAddressCoords(placeId);
+      } finally {
+        setCoordsLoading(false);
+      }
     },
 
     clear: () => {
