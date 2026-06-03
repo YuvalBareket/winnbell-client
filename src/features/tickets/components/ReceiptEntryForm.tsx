@@ -16,7 +16,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { AccessTime, Close, EmojiEvents, ReceiptOutlined } from '@mui/icons-material';
+import { AccessTime, Close, EmojiEvents, ReceiptOutlined, EventBusy } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import { PRIMARY_MAIN } from '../../../shared/colors';
@@ -68,6 +68,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // State
   // ──────────────────────────────────────────────────
   const [selectedLocation, setSelectedLocation] = useState<ParticipatingLocation | null>(null);
+  const [selectedLocationCapReached, setSelectedLocationCapReached] = useState(false);
   const userChangedLocation = useRef(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [nearbyLocations, setNearbyLocations] = useState<NearbyLocation[]>([]);
@@ -183,6 +184,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     // If full location object was passed directly (e.g. from NearBy drawer), use it immediately
     if (preselectedLocation) {
       setSelectedLocation(toParticipating(preselectedLocation));
+      setSelectedLocationCapReached(!!preselectedLocation.cap_reached);
       return;
     }
     // Fallback: try to find by ID in nearby/search results
@@ -224,9 +226,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // Handlers
   // ──────────────────────────────────────────────────
   const handleLocationSelect = (location: ParticipatingLocation | NearbyLocation) => {
-    const participatingLocation =
-      'business_id' in location ? (location as ParticipatingLocation) : toParticipating(location as NearbyLocation);
+    const isNearby = !('business_id' in location);
+    const participatingLocation = isNearby ? toParticipating(location as NearbyLocation) : (location as ParticipatingLocation);
     setSelectedLocation(participatingLocation);
+    setSelectedLocationCapReached(!!location.cap_reached);
     setSearchTerm('');
     setErrorMessage('');
   };
@@ -234,6 +237,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const handleChangeLocation = () => {
     userChangedLocation.current = true;
     setSelectedLocation(null);
+    setSelectedLocationCapReached(false);
     setSearchTerm('');
     setErrorMessage('');
     receiptKeystrokeTimesRef.current = [];
@@ -388,6 +392,23 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         />
       )}
 
+      {/* ── Cap reached notice — replaces the entire form ── */}
+      {selectedLocation && selectedLocationCapReached && !successDialogOpen && (
+        <Box sx={{
+          p: 3, borderRadius: 2.5, textAlign: 'center',
+          bgcolor: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+        }}>
+          <EventBusy sx={{ fontSize: 32, color: 'rgba(245,158,11,0.8)' }} />
+          <Typography variant='subtitle2' fontWeight={800} color='text.primary'>
+            This location is full
+          </Typography>
+          <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
+            This location has reached its entry limit for the current campaign. This is not your fault - try visiting another participating location.
+          </Typography>
+        </Box>
+      )}
+
       {/* ── Receipt example dialog ──────────────────── */}
       <Dialog open={exampleOpen} onClose={() => setExampleOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle
@@ -418,7 +439,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       </Dialog>
 
       {/* ── Receipt fields ───────────────────────────── */}
-      <Collapse in={Boolean(selectedLocation) && !successDialogOpen}>
+      <Collapse in={Boolean(selectedLocation) && !successDialogOpen && !selectedLocationCapReached}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 
           {/* Step 2 label */}

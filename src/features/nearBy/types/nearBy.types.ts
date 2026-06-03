@@ -18,6 +18,7 @@ export interface NearbyLocation {
   website_url?: string | null;
   phone?: string | null;
   other_locations?: Array<{ id: number; name: string; address: string }>;
+  cap_reached?: boolean;
 }
 
 export interface ILocationCoords {
@@ -32,4 +33,5 @@ export interface INearbyParams {
   maxLng: number;
   sector?: string;
   limit?: number;
+  name?: string;
 }

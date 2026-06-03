@@ -55,6 +55,7 @@ export interface ParticipatingLocation {
   logo_url: string | null;
   min_transaction_amount: number | null;
   receipt_example_image_url: string | null;
+  cap_reached?: boolean;
 }
 
 export const searchParticipatingLocations = (q: string): Promise<ParticipatingLocation[]> =>

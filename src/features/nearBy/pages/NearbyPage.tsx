@@ -112,16 +112,13 @@ const NearbyPage = () => {
 
   // 2. Pull Location and Fetch Data
   const { userLocation } = useSelector((state: RootState) => state.auth);
-  const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyWithZoom(selectedSector);
+  const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyWithZoom(selectedSector, searchTerm);
 
   // 3. Find the specific location object for the popup
   const selectedLocation =
     locations.find((loc) => loc.location_id === selectedLocationId) || null;
 
-  // 4. Filter locations based on search term, sector, and radius
-  const filteredLocations = locations.filter((loc) =>
-    loc.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredLocations = locations;
 
   return (
     <Box
@@ -356,6 +353,7 @@ const NearbyPage = () => {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       cursor: 'pointer',
+                      opacity: partner.cap_reached ? 0.6 : 1,
                       transition: 'transform 160ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out',
                       '&:active': { transform: 'scale(0.97)' },
                       '&:hover': { bgcolor: 'rgba(0,0,0,0.01)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
@@ -388,19 +386,33 @@ const NearbyPage = () => {
                             ? `${haversineKm(userLocation.latitude, userLocation.longitude, partner.latitude, partner.longitude).toFixed(1)} km away`
                             : sectorInfo.label}
                         </Typography>
-                        <Chip
-                          icon={<CheckCircle sx={{ fontSize: '12px !important' }} />}
-                          label='Active'
-                          size='small'
-                          sx={{
-                            height: 20,
-                            fontSize: '0.65rem',
-                            fontWeight: 700,
-                            bgcolor: 'rgba(46, 125, 50, 0.1)',
-                            color: 'success.main',
-                            '& .MuiChip-icon': { color: 'success.main' },
-                          }}
-                        />
+                        {partner.cap_reached ? (
+                          <Chip
+                            label='Entries Full'
+                            size='small'
+                            sx={{
+                              height: 20,
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                              bgcolor: 'rgba(0,0,0,0.06)',
+                              color: 'text.disabled',
+                            }}
+                          />
+                        ) : (
+                          <Chip
+                            icon={<CheckCircle sx={{ fontSize: '12px !important' }} />}
+                            label='Active'
+                            size='small'
+                            sx={{
+                              height: 20,
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                              bgcolor: 'rgba(46, 125, 50, 0.1)',
+                              color: 'success.main',
+                              '& .MuiChip-icon': { color: 'success.main' },
+                            }}
+                          />
+                        )}
                       </Box>
                     </Box>
                   </Box>

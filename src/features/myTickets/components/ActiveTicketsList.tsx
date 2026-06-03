@@ -1,7 +1,7 @@
-import { Box, Typography, Stack, Chip, Skeleton, Avatar, LinearProgress, Button } from '@mui/material';
+import { Box, Typography, Stack, Chip, Skeleton, Avatar, LinearProgress, CircularProgress } from '@mui/material';
 import { Circle, Person, Storefront, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import EmptyState from '../../../shared/components/EmptyState';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -21,7 +21,7 @@ const itemVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.22, ease: [0.23, 1, 0.32, 1] as [number, number, number, number], delay: i * 0.05 },
+    transition: { duration: 0.22, ease: [0.23, 1, 0.32, 1] as [number, number, number, number], delay: (i % 50) * 0.05 },
   }),
 };
 
@@ -165,16 +165,49 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
   const isBusinessOwner = useAppSelector(selectIsBusiness);
   const isLocation = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessOwner || isLocation;
-  const [page, setPage] = useState(1);
-  useEffect(() => { setPage(1); }, [draw_id, locationId]);
-  const { data: tickets, isLoading, totalCount, cap, perLocationCap, activeLocationCount } = useMyTickets(draw_id ?? 0, locationId, page);
 
-  const ticketCount = tickets?.length ?? 0; // for user progress bar only
-  const displayCount = isBusiness ? totalCount : ticketCount; // what to show in the header
+  const [page, setPage] = useState(1);
+  const [allTickets, setAllTickets] = useState<(BusinessTicket | UserTicket)[]>([]);
+
+  // Reset on draw/location change
+  useEffect(() => {
+    setPage(1);
+    setAllTickets([]);
+  }, [draw_id, locationId]);
+
+  const { data: tickets, isLoading, isFetching, totalCount, cap, perLocationCap, activeLocationCount } = useMyTickets(draw_id ?? 0, locationId, page);
+
+  // Accumulate pages
+  useEffect(() => {
+    if (!tickets) return;
+    setAllTickets(prev => page === 1 ? tickets : [...prev, ...tickets]);
+  }, [tickets]);
+
+  const hasMore = allTickets.length < totalCount;
+
+  // Intersection observer sentinel
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const setupObserver = useCallback(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+    if (!sentinelRef.current || !hasMore || isFetching) return;
+    observerRef.current = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setPage(p => p + 1);
+    }, { threshold: 0.1, rootMargin: '300px' });
+    observerRef.current.observe(sentinelRef.current);
+  }, [hasMore, isFetching]);
+
+  useEffect(() => {
+    setupObserver();
+    return () => observerRef.current?.disconnect();
+  }, [setupObserver]);
+
+  const displayCount = totalCount;
   const CAP = 30;
-  const progress = Math.min((ticketCount / CAP) * 100, 100);
-  const isMaxed = ticketCount >= CAP;
-  const progressColor = isMaxed ? '#2e7d32' : ticketCount >= 20 ? '#ed6c02' : '#0292b7';
+  const progress = Math.min((totalCount / CAP) * 100, 100);
+  const isMaxed = totalCount >= CAP;
+  const progressColor = isMaxed ? '#2e7d32' : totalCount >= 20 ? '#ed6c02' : '#0292b7';
 
   if (!draw_id) return (
     <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
@@ -239,7 +272,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
           {!isBusiness && !isLoading && (
             <Typography variant='caption' sx={{ fontWeight: 700, color: progressColor, pb: 0.5, transition: 'color 0.3s' }}>
-              {isMaxed ? '🎉 Maxed out!' : `${CAP - ticketCount} slots left`}
+              {isMaxed ? '🎉 Maxed out!' : `${CAP - totalCount} slots left`}
             </Typography>
           )}
         </Box>
@@ -269,9 +302,9 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
               <Typography variant='caption' color='text.disabled' sx={{ mt: 0.75, display: 'block', fontWeight: 500 }}>
                 {isMaxed
                   ? 'You have the maximum entries for this campaign. Good luck!'
-                  : ticketCount === 0
+                  : totalCount === 0
                     ? 'Submit receipts, use promo codes, or claim your free weekly entry.'
-                    : `You have ${CAP - ticketCount} more entries available - don't leave them unclaimed!`}
+                    : `You have ${CAP - totalCount} more entries available - don't leave them unclaimed!`}
               </Typography>
             )}
           </Box>
@@ -280,10 +313,10 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
       {/* Ticket list */}
       <Stack spacing={1.5} px={2} pb={3}>
-        {isLoading ? (
+        {isLoading && page === 1 ? (
           [...Array(3)].map((_, index) => <TicketSkeleton key={index} />)
-        ) : tickets && tickets.length > 0 ? (
-          tickets.map((ticket: BusinessTicket | UserTicket, index: number) =>
+        ) : allTickets.length > 0 ? (
+          allTickets.map((ticket: BusinessTicket | UserTicket, index: number) =>
             isBusiness ? (
               <BusinessTicketRow key={ticket.id} ticket={ticket as BusinessTicket} index={index} />
             ) : (
@@ -312,15 +345,11 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
           />
         )}
       </Stack>
-      {isBusiness && totalCount > 50 && (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, pb: 2 }}>
-          <Button size='small' variant='outlined' disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-          <Typography variant='caption' color='text.secondary'>
-            {((page - 1) * 50) + 1}–{Math.min(page * 50, totalCount)} of {totalCount}
-          </Typography>
-          <Button size='small' variant='outlined' disabled={page * 50 >= totalCount} onClick={() => setPage(p => p + 1)}>Next</Button>
-        </Box>
-      )}
+
+      {/* Infinite scroll sentinel */}
+      <Box ref={sentinelRef} sx={{ pb: 2, display: 'flex', justifyContent: 'center' }}>
+        {isFetching && page > 1 && <CircularProgress size={24} />}
+      </Box>
     </>
   );
 };

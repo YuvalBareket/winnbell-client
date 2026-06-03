@@ -134,12 +134,20 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
                     size='small'
                     sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: `${sectorInfo.color}18`, color: sectorInfo.color, border: `1px solid ${sectorInfo.color}33` }}
                   />
-                  <Chip
-                    icon={<CheckCircle sx={{ fontSize: '11px !important', color: '#16a34a !important' }} />}
-                    label='Active Partner'
-                    size='small'
-                    sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#dcfce7', color: '#16a34a' }}
-                  />
+                  {location.cap_reached ? (
+                    <Chip
+                      label='Entries Full'
+                      size='small'
+                      sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#f3f4f6', color: '#6b7280' }}
+                    />
+                  ) : (
+                    <Chip
+                      icon={<CheckCircle sx={{ fontSize: '11px !important', color: '#16a34a !important' }} />}
+                      label='Active Partner'
+                      size='small'
+                      sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#dcfce7', color: '#16a34a' }}
+                    />
+                  )}
                   {userLocation && (
                     <Chip
                       icon={<LocationOn sx={{ fontSize: '11px !important', color: `${PRIMARY_MAIN} !important` }} />}
@@ -315,21 +323,27 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
               gap: 1.25,
             }}
           >
+            {location.cap_reached && (
+              <Typography variant='caption' color='text.disabled' textAlign='center' sx={{ mb: 0.25 }}>
+                This location has reached its entry limit for the current campaign.
+              </Typography>
+            )}
             <Button
               fullWidth
               variant='contained'
               size='large'
               startIcon={<ReceiptLong />}
-              onClick={handleSubmitReceipt}
+              onClick={location.cap_reached ? undefined : handleSubmitReceipt}
               sx={{
                 py: 1.6,
                 fontWeight: 800,
                 fontSize: '0.95rem',
-                bgcolor: PRIMARY_MAIN,
-                boxShadow: `0 6px 20px ${PRIMARY_MAIN}40`,
+                bgcolor: location.cap_reached ? '#e5e7eb' : PRIMARY_MAIN,
+                boxShadow: location.cap_reached ? 'none' : `0 6px 20px ${PRIMARY_MAIN}40`,
+                cursor: location.cap_reached ? 'not-allowed' : 'pointer',
                 transition: 'transform 160ms ease-out, box-shadow 160ms ease-out',
-                '&:hover': { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.92)' },
-                '&:active': { transform: 'scale(0.97)' },
+                '&:hover': location.cap_reached ? { bgcolor: '#e5e7eb' } : { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.92)' },
+                '&:active': location.cap_reached ? {} : { transform: 'scale(0.97)' },
               }}
             >
               Submit a Receipt

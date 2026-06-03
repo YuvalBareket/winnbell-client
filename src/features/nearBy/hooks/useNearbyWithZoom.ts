@@ -20,17 +20,20 @@ function padBounds(b: ViewportBounds, factor: number): ViewportBounds {
   };
 }
 
-export function useNearbyWithZoom(sector?: string | null) {
+export function useNearbyWithZoom(sector?: string | null, search?: string) {
   const [locations, setLocations] = useState<NearbyLocation[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [isError, setIsError] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const lastViewportRef = useRef<ViewportBounds | null>(null);
   const accumulatedRef = useRef<Map<number, NearbyLocation>>(new Map());
   const sectorRef = useRef(sector);
   sectorRef.current = sector;
+  const searchRef = useRef(search);
+  searchRef.current = search;
 
   const doFetch = useCallback(async (viewport: ViewportBounds) => {
     // Cancel any in-flight request for a stale viewport
@@ -45,9 +48,11 @@ export function useNearbyWithZoom(sector?: string | null) {
     const padded = padBounds(viewport, 0.5);
 
     try {
-      const params = sectorRef.current
-        ? { ...padded, sector: sectorRef.current }
-        : padded;
+      const params = {
+        ...padded,
+        ...(sectorRef.current ? { sector: sectorRef.current } : {}),
+        ...(searchRef.current ? { name: searchRef.current } : {}),
+      };
       const results = await getNearbyBusinesses(params);
 
       if (controller.signal.aborted) return;
@@ -77,6 +82,17 @@ export function useNearbyWithZoom(sector?: string | null) {
     setLocations([]);
     if (lastViewportRef.current) doFetch(lastViewportRef.current);
   }, [sector, doFetch]);
+
+  // When search changes, debounce 400ms then reset + refetch
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      accumulatedRef.current.clear();
+      setLocations([]);
+      if (lastViewportRef.current) doFetch(lastViewportRef.current);
+    }, 400);
+    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
+  }, [search, doFetch]);
 
   const onViewportChange = useCallback(
     (viewport: ViewportBounds) => {
