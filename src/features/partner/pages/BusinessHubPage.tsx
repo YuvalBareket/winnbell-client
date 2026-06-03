@@ -159,7 +159,7 @@ const BusinessHubPage = () => {
       <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' } }}>
         {/* Hero skeleton */}
         <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3 }}>
-          <Container maxWidth='md'>
+          <Container maxWidth='lg'>
             <Stack direction='row' alignItems='center' spacing={2}>
               <Skeleton variant='rounded' width={64} height={64} sx={{ borderRadius: 2, bgcolor: ALPHA_WHITE_15 }} />
               <Box flex={1}>
@@ -169,7 +169,7 @@ const BusinessHubPage = () => {
             </Stack>
           </Container>
         </Box>
-        <Container maxWidth='md' sx={{ mt: -5 }}>
+        <Container maxWidth='lg' sx={{ mt: -5 }}>
           <Stack spacing={3}>
             <Skeleton variant='rounded' height={72} sx={{ borderRadius: 2 }} />
             <Skeleton variant='rounded' height={140} sx={{ borderRadius: 2 }} />
@@ -182,7 +182,7 @@ const BusinessHubPage = () => {
 
   if (isError || !business) {
     return (
-      <Container maxWidth='md' sx={{ mt: 10, textAlign: 'center' }}>
+      <Container maxWidth='lg' sx={{ mt: 10, textAlign: 'center' }}>
         <Typography color='error' variant='h6' fontWeight={700}>Failed to load business profile.</Typography>
         <Typography color='text.secondary' sx={{ mt: 1 }}>Check your connection and try again.</Typography>
       </Container>
@@ -210,7 +210,7 @@ const BusinessHubPage = () => {
         onEditClick={!isManager ? () => setBusinessDrawerOpen(true) : undefined}
       />
 
-      <Container maxWidth='md' sx={{ mt: -5 }}>
+      <Container maxWidth='lg' sx={{ mt: -5 }}>
         <Stack spacing={3}>
           {/* Onboarding banner - shown when not yet subscribed, desktop only */}
           {!business.is_subscribed && (

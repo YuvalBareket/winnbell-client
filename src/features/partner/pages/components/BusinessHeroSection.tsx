@@ -51,7 +51,7 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
       }}
     >
       {header}
-      <Container maxWidth='md' sx={{ px: 3, pt: 1 }}>
+      <Container maxWidth='lg' sx={{ px: 3, pt: 1 }}>
         <Stack direction='row' alignItems='center' justifyContent='space-between'>
           <Stack direction='row' alignItems='center' spacing={2}>
             <Box
