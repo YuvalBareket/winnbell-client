@@ -42,7 +42,7 @@ export const businessNavItems: NavItem[] = [
 ];
 
 export const managerNavItems: NavItem[] = [
-  { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
+  { label: 'Nearby Partners', Icon: StorefrontOutlined, path: '/nearby' },
   { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
   { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },

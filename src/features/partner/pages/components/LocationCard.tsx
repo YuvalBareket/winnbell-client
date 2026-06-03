@@ -7,7 +7,7 @@ import type { BusinessLocation } from '../../types/business.types';
 interface LocationCardProps {
   loc: BusinessLocation;
   onEdit: (loc: BusinessLocation) => void;
-  onRemove: (loc: BusinessLocation) => void;
+  onRemove?: (loc: BusinessLocation) => void;
   onInvite: (locId: number) => void;
   onRemoveManager: (locId: number) => void;
   isInviting: boolean;
@@ -47,15 +47,17 @@ const LocationCard = ({
           <IconButton sx={{ width: 40, height: 40 }} onClick={() => onEdit(loc)} aria-label='Edit location'>
             <Edit fontSize='small' />
           </IconButton>
-          <IconButton
-            sx={{ width: 40, height: 40, color: isLastLocation ? 'text.disabled' : 'error.main' }}
-            onClick={() => onRemove(loc)}
-            disabled={isRemoving || isLastLocation}
-            title={isLastLocation ? 'You must keep at least one location' : 'Remove location'}
-            aria-label='Remove location'
-          >
-            <DeleteOutline fontSize='small' />
-          </IconButton>
+          {onRemove && (
+            <IconButton
+              sx={{ width: 40, height: 40, color: isLastLocation ? 'text.disabled' : 'error.main' }}
+              onClick={() => onRemove(loc)}
+              disabled={isRemoving || isLastLocation}
+              title={isLastLocation ? 'You must keep at least one location' : 'Remove location'}
+              aria-label='Remove location'
+            >
+              <DeleteOutline fontSize='small' />
+            </IconButton>
+          )}
         </Stack>
       </Stack>
 

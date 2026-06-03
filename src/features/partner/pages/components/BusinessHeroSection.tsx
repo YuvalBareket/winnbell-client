@@ -120,12 +120,14 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
               </Stack>
             </Box>
           </Stack>
-          <IconButton
-            onClick={onEditClick}
-            sx={{ color: 'white', border: `1px solid ${ALPHA_WHITE_30}`, borderRadius: 2 }}
-          >
-            <Edit />
-          </IconButton>
+          {onEditClick && (
+            <IconButton
+              onClick={onEditClick}
+              sx={{ color: 'white', border: `1px solid ${ALPHA_WHITE_30}`, borderRadius: 2 }}
+            >
+              <Edit />
+            </IconButton>
+          )}
         </Stack>
 
       </Container>

@@ -118,6 +118,14 @@ export const useSupabaseSync = (retryCount = 0) => {
           localStorage.removeItem('pendingInviteToken');
           await supabase.auth.signOut();
           navigate('/');
+        } else if (status === 400 && message) {
+          // Invite token invalid/expired/already-used — sign out and send back to register
+          dispatch(logout());
+          localStorage.removeItem('wasLoggedIn');
+          localStorage.removeItem('pendingRole');
+          localStorage.removeItem('pendingInviteToken');
+          await supabase.auth.signOut();
+          navigate(`/register?syncError=${encodeURIComponent(message)}`);
         } else {
           setSyncError(true);
         }

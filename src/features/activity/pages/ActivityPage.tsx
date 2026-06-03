@@ -370,8 +370,9 @@ const ActivityPage = () => {
                         gap: 2,
                         alignItems: 'center',
                         transition: 'bgcolor 0.2s ease',
+                        bgcolor: item.status === 'under_review' ? 'rgba(245,158,11,0.04)' : 'transparent',
                         '&:hover': {
-                          bgcolor: 'action.hover',
+                          bgcolor: item.status === 'under_review' ? 'rgba(245,158,11,0.08)' : 'action.hover',
                         },
                       }}
                     >
@@ -388,6 +389,13 @@ const ActivityPage = () => {
                             color={sourceBadge.color as any}
                             sx={{ fontWeight: 600, height: 24 }}
                           />
+                          {item.status === 'under_review' && (
+                            <Chip
+                              label='Under Review'
+                              size='small'
+                              sx={{ fontWeight: 600, height: 24, bgcolor: '#fffbeb', color: '#92400e', border: '1px solid rgba(245,158,11,0.3)', fontSize: '0.65rem' }}
+                            />
+                          )}
                           {item.receipt_identifier_masked && (
                             <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {item.receipt_identifier_masked}

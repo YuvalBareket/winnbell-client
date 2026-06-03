@@ -130,7 +130,7 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(searchParams.get('syncError') ?? '');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageVerified, setAgeVerified] = useState(false);
   const [regionBlocked, setRegionBlocked] = useState(false);

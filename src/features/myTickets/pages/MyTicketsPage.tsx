@@ -24,11 +24,11 @@ const MyTicketsPage = () => {
   const isManager = useAppSelector(selectIsLocationManager);
   const isBusinessUser = isBusiness || isManager;
 
-  const { data: subscription } = useSubscription(isBusiness);
-  const { data: businessData } = useBusinessData(isBusiness);
-  const drawIsUpcoming = isBusiness && subscription?.draw_status === 'Upcoming';
-  const hasNoActiveDraw = isBusiness && !!subscription && !subscription.draw_id;
-  const showPreparation = isBusiness && (drawIsUpcoming || hasNoActiveDraw);
+  const { data: subscription } = useSubscription(isBusiness || isManager);
+  const { data: businessData } = useBusinessData(isBusiness || isManager);
+  const drawIsUpcoming = isBusinessUser && subscription?.draw_status === 'Upcoming';
+  const hasNoActiveDraw = isBusinessUser && !!subscription && !subscription.draw_id;
+  const showPreparation = isBusinessUser && (drawIsUpcoming || hasNoActiveDraw);
 
   const hasDescription = !!(businessData?.description?.trim());
   const hasLocations = (businessData?.locations?.length ?? 0) > 0;
@@ -42,6 +42,7 @@ const MyTicketsPage = () => {
           hasDescription={hasDescription}
           hasLocations={hasLocations}
           isDesktop={isDesktop}
+          isManager={isManager}
         />
       </Box>
     );

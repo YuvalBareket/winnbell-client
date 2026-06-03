@@ -20,6 +20,7 @@ interface DrawPreparationViewProps {
   hasDescription: boolean;
   hasLocations: boolean;
   isDesktop: boolean;
+  isManager?: boolean;
 }
 
 const DrawPreparationView = ({
@@ -27,6 +28,7 @@ const DrawPreparationView = ({
   hasDescription,
   hasLocations,
   isDesktop,
+  isManager = false,
 }: DrawPreparationViewProps) => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -134,56 +136,78 @@ const DrawPreparationView = ({
             </Paper>
           </motion.div>
 
-          {/* Right: Preparation checklist */}
+          {/* Right: Preparation checklist (owners) or info (managers) */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant='h6' fontWeight={800}>Preparation Checklist</Typography>
-              <Chip label={`${completedCount}/${taskItems.length}`} size='small' color={completedCount === taskItems.length ? 'success' : 'default'} sx={{ fontWeight: 700 }} />
-            </Box>
-            <LinearProgress
-              variant='determinate'
-              value={progress}
-              sx={{ mb: 3, height: 6, borderRadius: 2, bgcolor: 'action.hover', '& .MuiLinearProgress-bar': { borderRadius: 2 } }}
-            />
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {checklist.map((item, i) => (
-                <Box
-                  key={i}
-                  onClick={() => !item.done && item.path && navigate(item.path)}
-                  sx={{
-                    display: 'flex', alignItems: 'center', gap: 1.5,
-                    p: 1.5, borderRadius: 2,
-                    bgcolor: item.done ? 'rgba(46,125,50,0.04)' : item.info ? 'rgba(25,93,230,0.03)' : 'rgba(0,0,0,0.02)',
-                    border: '1px solid',
-                    borderColor: item.done ? 'rgba(46,125,50,0.15)' : item.info ? 'rgba(25,93,230,0.12)' : 'divider',
-                    cursor: !item.done && item.path ? 'pointer' : 'default',
-                    '&:hover': !item.done && item.path ? { bgcolor: 'rgba(25,93,230,0.04)' } : {},
-                    transition: 'background 0.15s',
-                  }}
-                >
-                  {item.done
-                    ? <CheckCircle sx={{ fontSize: 20, color: 'success.main', flexShrink: 0 }} />
-                    : item.info
-                      ? <EmojiEvents sx={{ fontSize: 20, color: 'primary.main', flexShrink: 0, opacity: 0.6 }} />
-                      : <RadioButtonUnchecked sx={{ fontSize: 20, color: 'text.disabled', flexShrink: 0 }} />}
-                  <Typography variant='body2' fontWeight={600} color={item.done ? 'text.primary' : item.info ? 'primary.main' : 'text.secondary'} flex={1}>
-                    {item.label}
-                  </Typography>
-                  {!item.done && item.path && <OpenInNew sx={{ fontSize: 14, color: 'text.disabled' }} />}
+            {isManager ? (
+              <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 3 }}>
+                <Typography variant='h6' fontWeight={800} mb={2}>What happens next?</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {[
+                    { icon: <CheckCircle sx={{ fontSize: 20, color: 'success.main', flexShrink: 0 }} />, text: 'Business is registered for the upcoming campaign' },
+                    { icon: <EmojiEvents sx={{ fontSize: 20, color: 'primary.main', flexShrink: 0, opacity: 0.7 }} />, text: 'Entry generation opens when the campaign goes live' },
+                    { icon: <RadioButtonUnchecked sx={{ fontSize: 20, color: 'text.disabled', flexShrink: 0 }} />, text: 'Entries distributed to customers will appear here' },
+                  ].map((item, i) => (
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)', border: '1px solid', borderColor: 'divider' }}>
+                      {item.icon}
+                      <Typography variant='body2' fontWeight={600} color='text.secondary'>{item.text}</Typography>
+                    </Box>
+                  ))}
                 </Box>
-              ))}
-            </Box>
+                <Divider sx={{ my: 3 }} />
+                <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7 }}>
+                  Once the campaign opens, customers can submit receipts from your location to earn entries. Distributed entries will show up in this page.
+                </Typography>
+              </Paper>
+            ) : (
+              <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant='h6' fontWeight={800}>Preparation Checklist</Typography>
+                <Chip label={`${completedCount}/${taskItems.length}`} size='small' color={completedCount === taskItems.length ? 'success' : 'default'} sx={{ fontWeight: 700 }} />
+              </Box>
+              <LinearProgress
+                variant='determinate'
+                value={progress}
+                sx={{ mb: 3, height: 6, borderRadius: 2, bgcolor: 'action.hover', '& .MuiLinearProgress-bar': { borderRadius: 2 } }}
+              />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {checklist.map((item, i) => (
+                  <Box
+                    key={i}
+                    onClick={() => !item.done && item.path && navigate(item.path)}
+                    sx={{
+                      display: 'flex', alignItems: 'center', gap: 1.5,
+                      p: 1.5, borderRadius: 2,
+                      bgcolor: item.done ? 'rgba(46,125,50,0.04)' : item.info ? 'rgba(25,93,230,0.03)' : 'rgba(0,0,0,0.02)',
+                      border: '1px solid',
+                      borderColor: item.done ? 'rgba(46,125,50,0.15)' : item.info ? 'rgba(25,93,230,0.12)' : 'divider',
+                      cursor: !item.done && item.path ? 'pointer' : 'default',
+                      '&:hover': !item.done && item.path ? { bgcolor: 'rgba(25,93,230,0.04)' } : {},
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    {item.done
+                      ? <CheckCircle sx={{ fontSize: 20, color: 'success.main', flexShrink: 0 }} />
+                      : item.info
+                        ? <EmojiEvents sx={{ fontSize: 20, color: 'primary.main', flexShrink: 0, opacity: 0.6 }} />
+                        : <RadioButtonUnchecked sx={{ fontSize: 20, color: 'text.disabled', flexShrink: 0 }} />}
+                    <Typography variant='body2' fontWeight={600} color={item.done ? 'text.primary' : item.info ? 'primary.main' : 'text.secondary'} flex={1}>
+                      {item.label}
+                    </Typography>
+                    {!item.done && item.path && <OpenInNew sx={{ fontSize: 14, color: 'text.disabled' }} />}
+                  </Box>
+                ))}
+              </Box>
 
-            <Divider sx={{ my: 3 }} />
-            <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7 }}>
-              <strong>Entry generation opens when the campaign starts.</strong> In the meantime, make sure your profile is complete so customers can find you on the map and know what you offer.
-            </Typography>
-            </Paper>
+              <Divider sx={{ my: 3 }} />
+              <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7 }}>
+                <strong>Entry generation opens when the campaign starts.</strong> In the meantime, make sure your profile is complete so customers can find you on the map and know what you offer.
+              </Typography>
+              </Paper>
+            )}
           </motion.div>
         </Box>
       </Container>

@@ -197,7 +197,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
               sx={{ color: 'text.disabled', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.65rem' }}
             >
               {isBusiness
-                ? locationId ? 'Entries at this location' : 'All locations'
+                ? locationId ? 'Entries at this location' : isLocation ? 'Your location' : 'All locations'
                 : 'Your Entries'}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
@@ -230,7 +230,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
             {/* Cap breakdown - shown below the number */}
             {isBusiness && !isLoading && cap !== null && perLocationCap !== null && (
               <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
-                {locationId
+                {locationId || isLocation
                   ? `${perLocationCap.toLocaleString()} entries / location`
                   : `${perLocationCap.toLocaleString()} / location × ${activeLocationCount} locations`}
               </Typography>

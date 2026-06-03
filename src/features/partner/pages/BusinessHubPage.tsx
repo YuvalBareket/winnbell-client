@@ -24,6 +24,8 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef } from 'react';
+import { useAppSelector } from '../../../store/hook';
+import { selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { useBusinessData } from '../hooks/useBusinessData';
@@ -60,6 +62,7 @@ import {
 
 const BusinessHubPage = () => {
   const navigate = useNavigate();
+  const isManager = useAppSelector(selectIsLocationManager);
   const { data: business, isLoading, isError } = useBusinessData(true);
   const { data: subscription } = useSubscription();
   const { mutateAsync: generateInvite, isPending: isInviting } = useInviteManager();
@@ -204,7 +207,7 @@ const BusinessHubPage = () => {
           reader.readAsDataURL(file);
           e.target.value = '';
         }}
-        onEditClick={() => setBusinessDrawerOpen(true)}
+        onEditClick={!isManager ? () => setBusinessDrawerOpen(true) : undefined}
       />
 
       <Container maxWidth='md' sx={{ mt: -5 }}>
@@ -239,15 +242,17 @@ const BusinessHubPage = () => {
                   </Typography>
                 </Box>
               </Stack>
-              <Button
-                variant='contained'
-                size='small'
-                startIcon={<CreditCard sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
-                onClick={() => navigate('/subscribe')}
-                sx={{ fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
-              >
-                Start Campaign
-              </Button>
+              {!isManager && (
+                <Button
+                  variant='contained'
+                  size='small'
+                  startIcon={<CreditCard sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
+                  onClick={() => navigate('/subscribe')}
+                  sx={{ fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
+                >
+                  Start Campaign
+                </Button>
+              )}
             </Paper>
           )}
 
@@ -288,7 +293,7 @@ const BusinessHubPage = () => {
               >
                 Branch Management
               </Typography>
-              {activeLocations.length > 0 && (
+              {activeLocations.length > 0 && !isManager && (
                 <Button
                   size='small'
                   variant='outlined'
@@ -311,13 +316,15 @@ const BusinessHubPage = () => {
                 <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
                   Add your first branch to start issuing entries.
                 </Typography>
-                <Button
-                  variant='contained'
-                  onClick={() => setAddLocationOpen(true)}
-                  sx={{ mt: 3, fontWeight: 800, textTransform: 'none', px: 4 }}
-                >
-                  Add Location
-                </Button>
+                {!isManager && (
+                  <Button
+                    variant='contained'
+                    onClick={() => setAddLocationOpen(true)}
+                    sx={{ mt: 3, fontWeight: 800, textTransform: 'none', px: 4 }}
+                  >
+                    Add Location
+                  </Button>
+                )}
               </Paper>
             ) : (
               <Box sx={{ display: { xs: 'flex', md: 'grid' }, flexDirection: 'column', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
@@ -326,7 +333,7 @@ const BusinessHubPage = () => {
                     key={loc.id}
                     loc={loc}
                     onEdit={setEditingLocation}
-                    onRemove={setRemovingLocation}
+                    onRemove={!isManager ? setRemovingLocation : undefined}
                     onInvite={handleGenerateInvite}
                     onRemoveManager={setRemoveManagerLocationId}
                     isInviting={isInviting}
