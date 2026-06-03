@@ -17,6 +17,6 @@ export const useMyTickets = (draw_id: number, location_id?: number, page = 1) =>
     cap: query.data?.cap ?? null,
     perLocationCap: query.data?.perLocationCap ?? null,
     activeLocationCount: query.data?.activeLocationCount ?? 1,
-    effectiveCount: query.data?.effectiveCount ?? 0,
+    effectiveCount: query.data?.totalCount ?? 0,
   };
 };
