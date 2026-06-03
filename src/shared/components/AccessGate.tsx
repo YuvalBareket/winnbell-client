@@ -5,7 +5,7 @@ const STORAGE_KEY = 'wb_access_granted';
 const PASSWORD = import.meta.env.VITE_ACCESS_PASSWORD as string;
 
 export default function AccessGate({ children }: { children: React.ReactNode }) {
-  const [granted, setGranted] = useState(false);
+  const [granted, setGranted] = useState(true);
   const [showInput, setShowInput] = useState(false);
   const [input, setInput] = useState('');
   const [error, setError] = useState(false);
