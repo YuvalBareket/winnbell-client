@@ -199,7 +199,18 @@ We use personal information to operate the Platform, administer promotional camp
 - *Categories Used:* Identifiers; Account and Registration Information; (for business users) Business and Payment Information.
 - *Purpose:* Send service-related messages; send campaign updates; send marketing communications where permitted by law; communicate with participating businesses about account activity, billing, verification requests, and updates; send promotional communications where permitted.
 
-**6.8 Compliance, Eligibility, and Security**
+**6.8 SMS and Text Messaging**
+
+Winnbell may send SMS text messages to users who have provided their phone number and explicitly requested a verification code through the Platform. Specifically:
+
+- We send one-time passcodes (OTPs) via SMS solely for the purpose of verifying a user's phone number.
+- SMS messages are only sent when a user actively requests them by entering their phone number and clicking "Send Code" in the Platform.
+- We do not send unsolicited SMS messages or use phone numbers for marketing purposes.
+- Message and data rates may apply. Message frequency is limited to account verification purposes only.
+- To opt out of SMS messages, reply STOP to any message you receive. For help, reply HELP.
+- SMS delivery is facilitated by Twilio, Inc., our third-party messaging service provider. Phone numbers are shared with Twilio solely for the purpose of delivering verification codes and are not used for any other purpose.
+
+**6.9 Compliance, Eligibility, and Security**
 
 - *Categories Used:* Any categories reasonably necessary for compliance.
 - *Purpose:* Enforce geographic restrictions and eligibility requirements, including age verification, minimum age restrictions, and affiliation-based eligibility restrictions; comply with legal obligations; protect the Platform and its users; process billing, payments, and related administrative functions associated with participating business accounts.
@@ -365,8 +376,7 @@ However, certain Platform functions require sufficient information to verify eli
 
 You may submit requests using:
 
-- [add email here]
-- [add contact method here]
+- support@winnbell.com
 
 **Authorized Agents**
 
@@ -378,7 +388,7 @@ We may verify identity before processing requests. We may decline to fulfill a r
 
 **Appeals (If Applicable)**
 
-If we deny your request, you may appeal our decision by contacting us at *[APPEALS EMAIL]* and describing your request and the reason you believe it should be granted.
+If we deny your request, you may appeal our decision by contacting us at support@winnbell.com and describing your request and the reason you believe it should be granted.
 
 ---
 
@@ -440,5 +450,4 @@ Continued use of the Platform after changes become effective constitutes accepta
 
 For questions or requests:
 
-- [add email here]
-- [add contact method here]
+- support@winnbell.com
