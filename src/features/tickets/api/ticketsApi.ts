@@ -94,6 +94,7 @@ export interface RiskLevelResponse {
   drawEntryCount: number;
   dailyCount: number;
   dailyLimit: number;
+  isPhoneVerified: boolean;
 }
 
 export const getMyRiskLevel = (): Promise<RiskLevelResponse> =>

@@ -30,6 +30,8 @@ import { useActivatePromotional } from '../hooks/useActivatePromotional';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { useSubscription } from '../../subscription/hooks/useSubscription';
 import { useEntryMode } from '../hooks/useEntryMode';
+import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
+import PhoneVerificationGate from '../components/PhoneVerificationGate';
 import {
   PRIMARY_MAIN,
   GRADIENT_HERO,
@@ -80,6 +82,9 @@ const RedeemPage = () => {
 
   // Subscription and draw state
   const { data: subscription } = useSubscription(isBusinessAdmin);
+
+  // Phone verification status — fetched fresh from server on every page visit
+  const { isPhoneVerified, isPhoneVerifiedLoaded, refetch: refetchRiskLevel } = useMyRiskLevel();
 
   // Entry mode - lightweight single-field fetch for user side,
   // business users always stay in 'code' mode (they generate, not submit receipts).
@@ -194,6 +199,12 @@ const didAutoActivate = useRef(false);
     });
   };
 
+
+  // ─── Phone verification gate (users only) ───────────────────────────────────
+
+  if (!isBusiness && isPhoneVerifiedLoaded && !isPhoneVerified) {
+    return <PhoneVerificationGate onVerified={() => refetchRiskLevel()} />;
+  }
 
   // ─── Desktop layout ─────────────────────────────────────────────────────────
 

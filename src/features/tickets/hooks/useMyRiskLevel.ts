@@ -19,6 +19,8 @@ export const useMyRiskLevel = () => {
     dailyCount,
     dailyLimit,
     isDailyLimitReached: dailyCount >= dailyLimit,
+    isPhoneVerified: data?.isPhoneVerified ?? false,
+    isPhoneVerifiedLoaded: data !== undefined,
     refetch,
   };
 };
