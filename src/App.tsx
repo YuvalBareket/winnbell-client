@@ -5,7 +5,7 @@ import { PersistGate } from 'redux-persist/integration/react'; // Import Gate
 import { store, persistor } from './store/store'; // Import persistor
 import { theme } from './shared/theme';
 import AppRoutes from './routes/AppRoutes';
-import AccessGate from './shared/components/AccessGate';
+// import AccessGate from './shared/components/AccessGate';
 
 // Branded splash screen while Redux rehydrates
 const LoadingState = () => (
@@ -45,7 +45,7 @@ const LoadingState = () => (
 );
 function App() {
   return (
-    <AccessGate>
+    // <AccessGate>
       <Provider store={store}>
         <PersistGate loading={<LoadingState />} persistor={persistor}>
           <ThemeProvider theme={theme}>
@@ -56,7 +56,7 @@ function App() {
           </ThemeProvider>
         </PersistGate>
       </Provider>
-    </AccessGate>
+    // </AccessGate>
   );
 }
 
