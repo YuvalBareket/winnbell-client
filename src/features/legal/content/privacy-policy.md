@@ -209,6 +209,7 @@ Winnbell may send SMS text messages to users who have provided their phone numbe
 - Message and data rates may apply. Message frequency is limited to account verification purposes only.
 - To opt out of SMS messages, reply STOP to any message you receive. For help, reply HELP.
 - SMS delivery is facilitated by Twilio, Inc., our third-party messaging service provider. Phone numbers are shared with Twilio solely for the purpose of delivering verification codes and are not used for any other purpose.
+- Mobile phone numbers are not shared with third parties or affiliates for marketing or promotional purposes.
 
 **6.9 Compliance, Eligibility, and Security**
 

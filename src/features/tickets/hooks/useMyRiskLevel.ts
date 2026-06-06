@@ -2,10 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { getMyRiskLevel } from '../api/ticketsApi';
 
 export const useMyRiskLevel = () => {
-  const { data, refetch } = useQuery({
+  const { data, refetch, isPending } = useQuery({
     queryKey: ['myRiskLevel'],
     queryFn: getMyRiskLevel,
     staleTime: 0,
+    gcTime: 0,
   });
 
   const dailyCount = data?.dailyCount ?? 0;
@@ -20,7 +21,7 @@ export const useMyRiskLevel = () => {
     dailyLimit,
     isDailyLimitReached: dailyCount >= dailyLimit,
     isPhoneVerified: data?.isPhoneVerified ?? false,
-    isPhoneVerifiedLoaded: data !== undefined,
+    isPhoneVerifiedLoaded: !isPending,
     refetch,
   };
 };

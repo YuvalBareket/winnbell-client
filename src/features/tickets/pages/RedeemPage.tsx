@@ -202,7 +202,15 @@ const didAutoActivate = useRef(false);
 
   // ─── Phone verification gate (users only) ───────────────────────────────────
 
-  if (!isBusiness && isPhoneVerifiedLoaded && !isPhoneVerified) {
+  if (!isBusiness && !isPhoneVerifiedLoaded) {
+    return (
+      <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress size={40} sx={{ color: PRIMARY_MAIN }} />
+      </Box>
+    );
+  }
+
+  if (!isBusiness && !isPhoneVerified) {
     return <PhoneVerificationGate onVerified={() => refetchRiskLevel()} />;
   }
 

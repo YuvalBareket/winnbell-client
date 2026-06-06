@@ -17,6 +17,8 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useNavigate } from 'react-router-dom';
 import { useFreeTicket } from '../hooks/useFreeTicket';
+import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
+import PhoneVerificationGate from '../components/PhoneVerificationGate';
 import { AMBER_HOURGLASS, SHADOW_PRIMARY_MEDIUM, GRADIENT_HERO, ALPHA_WHITE_20, ALPHA_WHITE_10, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import FreeEntrySuccessDialog from '../components/FreeEntrySuccessDialog';
 
@@ -39,6 +41,7 @@ const FreeTicketPage: React.FC = () => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const { status, activateAsync, isActivating, isLoading } = useFreeTicket();
+  const { isPhoneVerified, isPhoneVerifiedLoaded, refetch: refetchRiskLevel } = useMyRiskLevel();
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [claimedCode, setClaimedCode] = useState('');
   const [claimError, setClaimError] = useState('');
@@ -54,12 +57,16 @@ const FreeTicketPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !isPhoneVerifiedLoaded) {
     return (
       <Box display='flex' justifyContent='center' alignItems='center' minHeight={{ xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }}>
         <CircularProgress color='primary' />
       </Box>
     );
+  }
+
+  if (!isPhoneVerified) {
+    return <PhoneVerificationGate onVerified={() => refetchRiskLevel()} />;
   }
 
   const canActivate = status?.canActivate;
