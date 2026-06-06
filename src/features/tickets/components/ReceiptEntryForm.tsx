@@ -215,7 +215,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
 
   const isFormValid =
     selectedLocation &&
-    receiptIdentifier.trim().length > 0 &&
+    receiptIdentifier.trim().length >= 5 &&
     transactionAmount.trim().length > 0 &&
     parseFloat(transactionAmount) > 0 &&
     purchaseDate !== '' &&
@@ -477,9 +477,12 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               setReceiptWasPasted(true);
               receiptKeystrokeTimesRef.current = [];
             }}
+            error={receiptIdentifier.trim().length > 0 && receiptIdentifier.trim().length < 5}
             helperText={
               <Box component="span">
-                Find this on your receipt - may say "Receipt #" or "Order #"
+                {receiptIdentifier.trim().length > 0 && receiptIdentifier.trim().length < 5
+                  ? 'Minimum 5 characters'
+                  : 'Find this on your receipt - may say "Receipt #" or "Order #"'}
                 {selectedLocation?.receipt_example_image_url && (
                   <>
                     {' · '}

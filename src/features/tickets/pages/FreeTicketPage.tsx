@@ -66,7 +66,13 @@ const FreeTicketPage: React.FC = () => {
   }
 
   if (!isPhoneVerified) {
-    return <PhoneVerificationGate onVerified={() => refetchRiskLevel()} />;
+    const pendingCode = localStorage.getItem('pendingTicketCode');
+    return (
+      <PhoneVerificationGate
+        onVerified={() => refetchRiskLevel()}
+        pendingCode={pendingCode}
+      />
+    );
   }
 
   const canActivate = status?.canActivate;

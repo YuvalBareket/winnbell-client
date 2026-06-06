@@ -109,10 +109,13 @@ const RedeemPage = () => {
 const didAutoActivate = useRef(false);
 
   useEffect(() => {
-    // 1. Wait until we are sure the user is logged in
-    if (!isAuthenticated || didAutoActivate.current) return;
+    // 1. Wait until we are sure the user is logged in and phone verification status is loaded
+    if (!isAuthenticated || !isPhoneVerifiedLoaded || didAutoActivate.current) return;
 
-    // 2. Business users should not auto-redeem codes
+    // 2. Don't activate until phone is verified — gate must be passed first
+    if (!isBusiness && !isPhoneVerified) return;
+
+    // 3. Business users should not auto-redeem codes
     if (isBusiness) {
       localStorage.removeItem('pendingTicketCode');
       setIsAutoActivating(false);
@@ -155,7 +158,7 @@ const didAutoActivate = useRef(false);
       });
     }
     // We removed 'redeemMutation.isIdle' from deps to keep it simple
-  }, [isAuthenticated, isBusiness]);
+  }, [isAuthenticated, isBusiness, isPhoneVerified, isPhoneVerifiedLoaded]);
   const handleScanSuccess = (scannedCode: string) => {
     setScannerOpen(false);
     redeemMutation.mutate(scannedCode, {
@@ -211,7 +214,13 @@ const didAutoActivate = useRef(false);
   }
 
   if (!isBusiness && !isPhoneVerified) {
-    return <PhoneVerificationGate onVerified={() => refetchRiskLevel()} />;
+    const pendingCode = localStorage.getItem('pendingTicketCode');
+    return (
+      <PhoneVerificationGate
+        onVerified={() => refetchRiskLevel()}
+        pendingCode={pendingCode}
+      />
+    );
   }
 
   // ─── Desktop layout ─────────────────────────────────────────────────────────

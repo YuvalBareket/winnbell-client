@@ -10,14 +10,17 @@ import {
   PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
   BORDER_LIGHT, BG_DEFAULT, TEXT_PRIMARY, TEXT_SECONDARY, SHADOW_ELEVATED,
 } from '../../../shared/colors';
+import { ConfirmationNumber } from '@mui/icons-material';
 
 interface Props {
   onVerified: () => void;
+  pendingCode?: string | null;
 }
 
 type Step = 'phone' | 'otp';
 
-const PhoneVerificationGate = ({ onVerified }: Props) => {
+const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
+  const isPromo = !!pendingCode?.startsWith('PROMO');
   const [step, setStep] = useState<Step>('phone');
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
@@ -269,11 +272,25 @@ const PhoneVerificationGate = ({ onVerified }: Props) => {
           {/* Title and subtitle */}
           <Box sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
             <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>
-              Verify Your Phone
+              {isPromo ? 'One Step to Claim Your Entry' : 'Verify Your Phone'}
             </Typography>
             <Typography variant='body1' sx={{ opacity: 0.9, lineHeight: 1.6, maxWidth: 320, mx: 'auto' }}>
-              To collect entries and join draws, we confirm you are a real person. You can still browse the map and explore businesses without verifying.
+              {isPromo
+                ? 'Verify your phone once and your promo entry activates automatically. You only need to do this once.'
+                : 'To collect entries and join draws, we confirm you are a real person. You can still browse the map and explore businesses without verifying.'}
             </Typography>
+            {isPromo && pendingCode && (
+              <Box sx={{
+                display: 'inline-flex', alignItems: 'center', gap: 1,
+                mt: 2.5, px: 2, py: 0.75, borderRadius: 2,
+                bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
+              }}>
+                <ConfirmationNumber sx={{ fontSize: 16, color: 'white' }} />
+                <Typography sx={{ fontFamily: 'monospace', fontWeight: 900, letterSpacing: 2, fontSize: '0.95rem' }}>
+                  {pendingCode}
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Box>
 
@@ -347,19 +364,38 @@ const PhoneVerificationGate = ({ onVerified }: Props) => {
               </Box>
 
               <Typography variant='h4' sx={{ fontWeight: 700, mb: 2 }}>
-                Verify Your Phone
+                {isPromo ? 'One Step to Claim Your Entry' : 'Verify Your Phone'}
               </Typography>
 
+              {isPromo && pendingCode && (
+                <Box sx={{
+                  display: 'inline-flex', alignItems: 'center', gap: 1,
+                  mb: 3, px: 2, py: 0.75, borderRadius: 2,
+                  bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
+                }}>
+                  <ConfirmationNumber sx={{ fontSize: 16, color: 'white' }} />
+                  <Typography sx={{ fontFamily: 'monospace', fontWeight: 900, letterSpacing: 2, fontSize: '0.95rem' }}>
+                    {pendingCode}
+                  </Typography>
+                </Box>
+              )}
+
               <Typography variant='body1' sx={{ opacity: 0.9, lineHeight: 1.8, mb: 4 }}>
-                To collect entries at participating businesses and join draws, we verify you are a real person. You can still browse the map and explore all businesses freely without verifying.
+                {isPromo
+                  ? 'Verify your phone once and your promo entry activates automatically. This is a one-time step to confirm you are a real person.'
+                  : 'To collect entries at participating businesses and join draws, we verify you are a real person. You can still browse the map and explore all businesses freely without verifying.'}
               </Typography>
 
               <Stack spacing={2}>
-                {[
+                {(isPromo ? [
+                  'Your promo entry activates automatically after verification',
+                  'One-time only, no recurring messages',
+                  'One account per real person',
+                ] : [
                   'Collect entries at participating businesses',
                   'Browse the map freely, no verification needed',
                   'One account per real person',
-                ].map((text) => (
+                ]).map((text) => (
                   <Box key={text} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Box sx={{
                       width: 22, height: 22, borderRadius: '50%',
