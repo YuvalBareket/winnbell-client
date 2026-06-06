@@ -186,13 +186,25 @@ Such communications are considered part of your use of the Platform and may be p
 
 Where permitted by applicable law, you consent to receive promotional, informational, and marketing communications from Winnbell relating to the Platform, campaigns, products, services, or related offerings by email, postal mail, SMS/text message, telephone call, or in-Platform notification. You may opt out of marketing communications at any time by following the unsubscribe instructions contained in the communication, adjusting your communication preferences if available through the Platform, or contacting Winnbell using the contact information provided in these Terms. Your opt-out will not apply to operational or transactional communications relating to your Account, participation, verification, prize administration, security, or changes to these Terms.
 
-**4.5 Timing and Effectiveness of Notices**
+**4.5 SMS Verification Messages**
+
+Winnbell sends SMS text messages solely for phone number verification. By entering your phone number and tapping "Send Code" in the Platform, you consent to receive a one-time passcode (OTP) via SMS. This is a single verification per account and is not a recurring messaging program.
+
+- Program: Winnbell phone verification
+- Message frequency: one message per verification request
+- Msg & data rates may apply
+- To opt out, reply **STOP** to any message you receive
+- For help, reply **HELP** or contact support@winnbell.com
+
+Mobile phone numbers collected for SMS verification are not shared with third parties or affiliates for marketing purposes.
+
+**4.6 Timing and Effectiveness of Notices**
 
 Communications from Winnbell will be deemed received and effective when sent to the contact information associated with your Account or when made available through the Platform, as applicable, subject to any mandatory legal requirements.
 
 It is your responsibility to regularly review communications and notifications provided through the Platform.
 
-**4.6 Support and Assistance**
+**4.7 Support and Assistance**
 
 Winnbell may, but is not obligated to, provide user support, assistance, or responses to inquiries related to the Platform or participation in any campaign.
 
