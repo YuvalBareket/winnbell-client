@@ -25,7 +25,5 @@ export interface UserTicket extends TicketBase {
 // What a Business sees
 export interface BusinessTicket extends TicketBase {
   location_name: string;
-  activated_by_user?: string;
-  activated_by_email?: string;
   is_quarantined?: boolean;
 }

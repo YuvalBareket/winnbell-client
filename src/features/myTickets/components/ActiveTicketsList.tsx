@@ -1,5 +1,5 @@
 import { Box, Typography, Stack, Chip, Skeleton, Avatar, LinearProgress, CircularProgress } from '@mui/material';
-import { Circle, Person, Storefront, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
+import { Circle, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useRef, useCallback, useEffect } from 'react';
 import EmptyState from '../../../shared/components/EmptyState';
@@ -126,19 +126,20 @@ const BusinessTicketRow = ({ ticket, index }: { ticket: BusinessTicket; index: n
     <TicketRowWrapper index={index}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
         <Box sx={iconBoxStyle}>
-          {ticket.status === 'Activated' ? (
-            <Person color='primary' />
-          ) : (
-            <Storefront color='disabled' />
-          )}
+          <ConfirmationNumberOutlined color={ticket.status === 'Activated' ? 'primary' : 'disabled'} />
         </Box>
         <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
           <Typography
-            variant='subtitle1'
-            noWrap
-            sx={{ fontWeight: 700, lineHeight: 1.2 }}
+            sx={{
+              fontFamily: '"Courier New", "Courier", monospace',
+              fontWeight: 700,
+              letterSpacing: '0.15em',
+              fontSize: '1.05rem',
+              color: 'primary.main',
+              lineHeight: 1.2,
+            }}
           >
-            {ticket.activated_by_user ?? 'Not Activated'}
+            {ticket.code}
           </Typography>
           <Typography
             variant='caption'
@@ -154,7 +155,7 @@ const BusinessTicketRow = ({ ticket, index }: { ticket: BusinessTicket; index: n
           </Typography>
         </Box>
       </Box>
-      <TicketStatusSection code={ticket.code} status={ticket.status} isUnderReview={ticket.is_quarantined} />
+      <TicketStatusSection status={ticket.status} isUnderReview={ticket.is_quarantined} />
     </TicketRowWrapper>
   );
 };
@@ -350,50 +351,33 @@ const iconBoxStyle = {
 };
 
 const TicketStatusSection = ({
-  code,
   status,
   isUnderReview,
 }: {
-  code: string;
   status: string;
   isUnderReview?: boolean;
 }) => (
   <Box sx={{ textAlign: 'right', flexShrink: 0, ml: 1.5 }}>
-    <Typography
+    <Chip
+      icon={<Circle sx={{ fontSize: '6px !important' }} />}
+      label={isUnderReview ? 'UNDER REVIEW' : status.toUpperCase()}
+      size='small'
       sx={{
-        fontFamily: '"Courier New", "Courier", monospace',
+        height: 24,
+        fontSize: '0.65rem',
         fontWeight: 700,
-        letterSpacing: '0.15em',
-        fontSize: '1.05rem',
-        color: 'primary.main',
-        lineHeight: 1,
-        mb: 1,
+        borderRadius: '12px',
+        bgcolor: isUnderReview ? '#fffbeb' : status === 'Activated' ? STATUS_ACTIVATED_BG : STATUS_PENDING_BG,
+        color: isUnderReview ? '#92400e' : status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
+        border: '1px solid',
+        borderColor: isUnderReview ? 'rgba(245,158,11,0.3)' : status === 'Activated'
+          ? 'rgba(46,125,50,0.2)'
+          : 'rgba(230,81,0,0.2)',
+        '& .MuiChip-icon': {
+          color: isUnderReview ? '#f59e0b' : status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
+        },
       }}
-    >
-      {code}
-    </Typography>
-    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-      <Chip
-        icon={<Circle sx={{ fontSize: '6px !important' }} />}
-        label={isUnderReview ? 'UNDER REVIEW' : status.toUpperCase()}
-        size='small'
-        sx={{
-          height: 24,
-          fontSize: '0.65rem',
-          fontWeight: 700,
-          borderRadius: '12px',
-          bgcolor: isUnderReview ? '#fffbeb' : status === 'Activated' ? STATUS_ACTIVATED_BG : STATUS_PENDING_BG,
-          color: isUnderReview ? '#92400e' : status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
-          border: '1px solid',
-          borderColor: isUnderReview ? 'rgba(245,158,11,0.3)' : status === 'Activated'
-            ? 'rgba(46,125,50,0.2)'
-            : 'rgba(230,81,0,0.2)',
-          '& .MuiChip-icon': {
-            color: isUnderReview ? '#f59e0b' : status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
-          },
-        }}
-      />
-    </Box>
+    />
   </Box>
 );
 
