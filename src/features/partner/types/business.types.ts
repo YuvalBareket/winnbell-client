@@ -24,6 +24,8 @@ export interface UpdateBusinessInput {
   businessSector: string;
   description: string;
   terms_text: string;
+  phone?: string;
+  website_url?: string;
 }
 
 export interface BusinessLocation {

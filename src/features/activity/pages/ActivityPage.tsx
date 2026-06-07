@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Box, Container, Typography, Paper, Stack, Skeleton, Alert, Chip, Button, ToggleButton, ToggleButtonGroup, Autocomplete, TextField,
 } from '@mui/material';
@@ -11,11 +11,11 @@ import {
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
-import { fetchActivity, type DateRange, type ActivityItem } from '../api/activity.api';
+import { fetchActivity, type DateRange } from '../api/activity.api';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 import {
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, MOBILE_CONTENT_HEIGHT_NO_HEADER,
@@ -31,8 +31,6 @@ const ActivityPage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
   const [dateRange, setDateRange] = useState<DateRange>('today');
-  const [cursor, setCursor] = useState<number | undefined>(undefined);
-  const [pages, setPages] = useState<ActivityItem[][]>([]);
 
   const { data: bizData } = useBusinessData(true);
   const locations = bizData?.locations ?? []; // includes soft-deleted for historical filtering
@@ -41,46 +39,42 @@ const ActivityPage = () => {
     ? (user?.location_id ?? undefined)
     : (selectedLocation !== '' ? (selectedLocation as number) : undefined);
 
-  const { data: activity, isLoading, isFetching, isError } = useQuery({
-    queryKey: [...queryKeys.business.activity, locationIdForQuery, dateRange, cursor],
-    queryFn: () => fetchActivity({ location_id: locationIdForQuery, date_range: dateRange, cursor }),
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isFetchingNextPage,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery({
+    queryKey: [...queryKeys.business.activity, locationIdForQuery, dateRange],
+    queryFn: ({ pageParam }) => fetchActivity({
+      location_id: locationIdForQuery,
+      date_range: dateRange,
+      cursor: pageParam,
+    }),
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     staleTime: 30_000,
-    placeholderData: keepPreviousData,
   });
-
-  // Accumulate pages: cursor undefined = fresh load, cursor set = append page
-  useEffect(() => {
-    if (!activity?.items) return;
-    if (cursor === undefined) {
-      setPages([activity.items]);
-    } else {
-      setPages(prev => [...prev, activity.items!]);
-    }
-  }, [activity]);
-
-  const resetFilters = () => {
-    setCursor(undefined);
-    setPages([]);
-  };
 
   const handleLocationChange = (locId: number | '') => {
     setSelectedLocation(locId);
-    resetFilters();
   };
 
   const handleDateRangeChange = (range: DateRange) => {
     setDateRange(range);
-    resetFilters();
   };
 
-  // Show skeletons on filter/location changes (cursor=undefined), but not during "load more"
-  const isRefreshing = isFetching && cursor === undefined;
+  // Show skeletons on filter/location changes, but not during "load more"
+  const isRefreshing = isFetching && !isFetchingNextPage;
 
-  const displayItems = pages.flat();
-  const nextCursor = activity?.next_cursor ?? null;
+  const displayItems = data?.pages.flatMap((p) => p.items) ?? [];
+  const activity = data?.pages[0];
 
   const handleLoadMore = () => {
-    if (nextCursor != null) setCursor(nextCursor);
+    if (hasNextPage) fetchNextPage();
   };
 
   const getSourceBadgeColor = (source: string) => {
@@ -421,10 +415,10 @@ const ActivityPage = () => {
               </Stack>
 
               {/* Load more button */}
-              {nextCursor !== null && (
+              {hasNextPage && (
                 <Box sx={{ borderTop: '1px solid', borderColor: 'divider', p: 2, textAlign: 'center' }}>
-                  <Button variant='outlined' onClick={handleLoadMore} fullWidth>
-                    Load more
+                  <Button variant='outlined' onClick={handleLoadMore} disabled={isFetchingNextPage} fullWidth>
+                    {isFetchingNextPage ? 'Loading...' : 'Load more'}
                   </Button>
                 </Box>
               )}

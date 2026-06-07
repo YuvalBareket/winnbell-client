@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -40,24 +40,59 @@ const SUB_COLOR: Record<string, { label: string; color: 'success' | 'warning' | 
   Incomplete: { label: 'Incomplete', color: 'default' },
 };
 
+const LIMIT = 25;
+
 const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [selectedBizId, setSelectedBizId] = useState<number | null>(null);
   const debouncedSearch = useDebounce(search, 400);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const { data, isLoading } = useAdminBusinesses({
-    page: page + 1,
-    limit: 25,
-    search: debouncedSearch,
-  });
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useAdminBusinesses({ limit: LIMIT, search: debouncedSearch });
 
-  const businesses = data?.rows ?? [];
-  const total = data?.total ?? 0;
+  // Reset to first page whenever search changes
+  useEffect(() => {
+    setPage(0);
+  }, [debouncedSearch]);
+
+  // Infinite scroll for mobile: observe sentinel element
+  useEffect(() => {
+    if (!isMobile) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isMobile, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // For desktop: fetch the target page if it hasn't been loaded yet
+  const handlePageChange = useCallback(
+    (_e: unknown, newPage: number) => {
+      setPage(newPage);
+      const pagesLoaded = data?.pages.length ?? 0;
+      if (newPage + 1 > pagesLoaded && hasNextPage) {
+        fetchNextPage();
+      }
+    },
+    [data?.pages.length, hasNextPage, fetchNextPage],
+  );
 
   const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    setPage(0);
   }, []);
 
   const subChip = (status: string | null) => {
@@ -65,6 +100,13 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
     const cfg = SUB_COLOR[status] ?? { label: status, color: 'default' as const };
     return <Chip label={cfg.label} color={cfg.color} size='small' />;
   };
+
+  // Desktop: show only the current page's rows
+  const desktopRows = data?.pages[page]?.rows ?? [];
+  const total = data?.pages[0]?.total ?? 0;
+
+  // Mobile: accumulate all fetched rows
+  const mobileRows = data?.pages.flatMap((p) => p.rows) ?? [];
 
   return (
     <>
@@ -87,7 +129,7 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
         <Stack spacing={2}>
           {isLoading
             ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} variant='rounded' height={90} />)
-            : businesses.map((biz) => {
+            : mobileRows.map((biz) => {
                 const sectorData = BUSINESS_SECTORS[biz.sector as keyof typeof BUSINESS_SECTORS];
                 return (
                   <Card key={biz.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', cursor: 'pointer' }} onClick={() => setSelectedBizId(biz.id)}>
@@ -134,6 +176,9 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
                   </Card>
                 );
               })}
+          {isFetchingNextPage &&
+            Array.from({ length: 3 }).map((_, i) => <Skeleton key={`more-${i}`} variant='rounded' height={90} />)}
+          <div ref={sentinelRef} />
         </Stack>
       ) : (
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
@@ -158,7 +203,7 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
                       ))}
                     </TableRow>
                   ))
-                : businesses.map((biz) => {
+                : desktopRows.map((biz) => {
                     const sectorData = BUSINESS_SECTORS[biz.sector as keyof typeof BUSINESS_SECTORS];
                     return (
                       <TableRow key={biz.id} hover sx={{ cursor: 'pointer' }} onClick={() => setSelectedBizId(biz.id)}>
@@ -187,7 +232,7 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
                       </TableRow>
                     );
                   })}
-              {!isLoading && businesses.length === 0 && (
+              {!isLoading && desktopRows.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} align='center' sx={{ py: 4, color: 'text.secondary' }}>
                     No businesses found.
@@ -200,9 +245,9 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
             component='div'
             count={total}
             page={page}
-            rowsPerPage={25}
-            rowsPerPageOptions={[25]}
-            onPageChange={(_e, newPage) => setPage(newPage)}
+            rowsPerPage={LIMIT}
+            rowsPerPageOptions={[LIMIT]}
+            onPageChange={handlePageChange}
           />
         </TableContainer>
       )}

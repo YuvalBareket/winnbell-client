@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -19,7 +19,6 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  TablePagination,
   Paper,
   Dialog,
   DialogTitle,
@@ -30,6 +29,7 @@ import {
   IconButton,
   Tooltip,
   Skeleton,
+  CircularProgress,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import BlockIcon from '@mui/icons-material/Block';
@@ -68,7 +68,6 @@ interface Props {
 }
 
 const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) => {
-  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [role, setRole] = useState('');
@@ -76,25 +75,46 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
   const [riskConfirmUser, setRiskConfirmUser] = useState<{ id: number; name: string; action: 'disqualify' | 'clear' } | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
-      setPage(1);
     }, 400);
     return () => clearTimeout(timer);
   }, [search]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [role, riskLevel]);
-
-  const { data, isLoading } = useAdminUsers({
-    page,
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useAdminUsers({
     limit: 50,
     search: debouncedSearch,
     role,
     riskLevel,
   });
+
+  const rows: AdminUser[] = data?.pages.flatMap((p) => p.rows) ?? [];
+
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage],
+  );
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(handleObserver, { threshold: 0.1 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [handleObserver]);
 
   const toggleUserActive = useToggleUserActive();
   const setUserRisk = useSetUserRisk();
@@ -126,8 +146,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
     setRiskConfirmUser(null);
   };
 
-  const flaggedCount = (data?.rows ?? []).filter((u: AdminUser) => u.risk_score >= 20).length;
-  const rows = data?.rows ?? [];
+  const flaggedCount = rows.filter((u: AdminUser) => u.risk_score >= 20).length;
   const isEmpty = !isLoading && rows.length === 0;
 
   return (
@@ -349,14 +368,10 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
           </Box>
         )}
 
-        <TablePagination
-          component='div'
-          count={data?.total ?? 0}
-          page={(data?.page ?? 1) - 1}
-          rowsPerPage={50}
-          rowsPerPageOptions={[50]}
-          onPageChange={(_, newPage) => setPage(newPage + 1)}
-        />
+        {/* Infinite scroll sentinel */}
+        <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+          {isFetchingNextPage && <CircularProgress size={24} />}
+        </Box>
       </Stack>
 
       <UserDetailDrawer userId={selectedUserId} onClose={() => setSelectedUserId(null)} />

@@ -9,9 +9,11 @@ import {
   Paper,
   CircularProgress,
   IconButton,
+  InputAdornment,
 } from '@mui/material';
-import { Close } from '@mui/icons-material';
+import { Close, LocalPhoneOutlined, LanguageOutlined } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
+import { AnimatePresence, motion } from 'framer-motion';
 import { BUSINESS_SECTORS } from '../../../admin/data';
 import { useUpdateBusiness } from '../../hooks/useUpdateBusiness';
 import type { UpdateBusinessInput } from '../../types/business.types';
@@ -27,6 +29,8 @@ interface BusinessSnapshot {
   sector: string;
   description: string;
   terms_text: string;
+  phone?: string | null;
+  website_url?: string | null;
 }
 
 interface Props {
@@ -45,6 +49,8 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
       businessSector: '',
       description: '',
       terms_text: '',
+      phone: '',
+      website_url: '',
     },
   });
 
@@ -54,6 +60,8 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
         businessSector: business.sector,
         description: business.description,
         terms_text: business.terms_text,
+        phone: business.phone ?? '',
+        website_url: business.website_url ?? '',
       });
     }
   }, [business, reset]);
@@ -97,7 +105,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
       <Box sx={{ px: 3, pt: 3, pb: 5, overflowY: 'auto' }}>
         <Stack spacing={2.5} component='form' onSubmit={handleSubmit(onSubmit)}>
 
-          {/* Sector chip picker */}
+          {/* Sector picker with shrink animation */}
           <Controller
             name='businessSector'
             control={control}
@@ -113,40 +121,109 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                 >
                   Industry
                 </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
-                  {editableSectors.map((key) => {
-                    const s = BUSINESS_SECTORS[key];
-                    const active = selectedSector === key;
-                    return (
+                <AnimatePresence mode='wait'>
+                  {selectedSector && BUSINESS_SECTORS[selectedSector] ? (
+                    <motion.div
+                      key='selected'
+                      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
+                    >
                       <Paper
-                        key={key}
                         elevation={0}
-                        onClick={() => setValue('businessSector', key, { shouldValidate: true })}
                         sx={{
-                          p: 1.5,
+                          p: 2,
                           borderRadius: 2,
                           border: '2px solid',
-                          borderColor: active ? PRIMARY_MAIN : BORDER_LIGHT,
-                          bgcolor: active ? 'rgba(25,93,230,0.04)' : 'white',
-                          cursor: 'pointer',
-                          textAlign: 'center',
-                          transition: 'all 0.15s ease',
-                          '&:hover': {
-                            borderColor: active ? PRIMARY_MAIN : 'action.active',
-                            bgcolor: active ? 'rgba(25,93,230,0.06)' : 'action.hover',
-                          },
+                          borderColor: PRIMARY_MAIN,
+                          bgcolor: 'rgba(25,93,230,0.04)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
                         }}
                       >
-                        <Box sx={{ fontSize: 24, color: active ? PRIMARY_MAIN : s.color, mb: 0.5 }}>
-                          {s.icon}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <motion.div
+                            initial={{ scale: 0.5, rotate: -15 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 18 }}
+                            style={{ fontSize: 26, color: PRIMARY_MAIN, lineHeight: 1 }}
+                          >
+                            {BUSINESS_SECTORS[selectedSector].icon}
+                          </motion.div>
+                          <Box>
+                            <Typography variant='body2' fontWeight={700} color='primary.main'>
+                              {BUSINESS_SECTORS[selectedSector].label}
+                            </Typography>
+                            <Typography variant='caption' color='text.secondary'>
+                              Selected industry
+                            </Typography>
+                          </Box>
                         </Box>
-                        <Typography variant='caption' fontWeight={active ? 800 : 600} color={active ? 'primary.main' : 'text.secondary'}>
-                          {s.label}
+                        <Typography
+                          variant='caption'
+                          fontWeight={600}
+                          color='primary.main'
+                          onClick={() => setValue('businessSector', '', { shouldValidate: false })}
+                          sx={{ cursor: 'pointer', textDecoration: 'underline', flexShrink: 0 }}
+                        >
+                          Change
                         </Typography>
                       </Paper>
-                    );
-                  })}
-                </Box>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key='grid'
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
+                    >
+                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
+                        {editableSectors.map((key, i) => {
+                          const s = BUSINESS_SECTORS[key];
+                          return (
+                            <motion.div
+                              key={key}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: i * 0.03, duration: 0.18, ease: 'easeOut' }}
+                              whileHover={{ scale: 1.04 }}
+                              whileTap={{ scale: 0.96 }}
+                            >
+                              <Paper
+                                elevation={0}
+                                onClick={() => setValue('businessSector', key, { shouldValidate: true })}
+                                sx={{
+                                  p: 1.5,
+                                  borderRadius: 2,
+                                  border: '2px solid',
+                                  borderColor: BORDER_LIGHT,
+                                  bgcolor: 'white',
+                                  cursor: 'pointer',
+                                  textAlign: 'center',
+                                  transition: 'all 0.15s ease',
+                                  '&:hover': {
+                                    borderColor: 'action.active',
+                                    bgcolor: 'action.hover',
+                                  },
+                                }}
+                              >
+                                <Box sx={{ fontSize: 24, color: s.color, mb: 0.5 }}>
+                                  {s.icon}
+                                </Box>
+                                <Typography variant='caption' fontWeight={600} color='text.secondary'>
+                                  {s.label}
+                                </Typography>
+                              </Paper>
+                            </motion.div>
+                          );
+                        })}
+                      </Box>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 {fieldState.error && (
                   <Typography variant='caption' color='error' sx={{ mt: 0.5, display: 'block' }}>
                     {fieldState.error.message}
@@ -175,6 +252,50 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
             )}
           />
 
+          {/* Phone */}
+          <Controller
+            name='phone'
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label='Phone number'
+                placeholder='(555) 123-4567'
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <LocalPhoneOutlined sx={{ color: 'text.disabled', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
+              />
+            )}
+          />
+
+          {/* Website */}
+          <Controller
+            name='website_url'
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label='Website'
+                placeholder='https://yourbusiness.com'
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <LanguageOutlined sx={{ color: 'text.disabled', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
+              />
+            )}
+          />
+
           <Stack direction='row' spacing={1.5} pt={1}>
             <Button
               fullWidth
@@ -193,7 +314,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
               startIcon={isPending ? <CircularProgress size={16} color='inherit' /> : null}
               sx={{ fontWeight: 800, py: 1.5, textTransform: 'none' }}
             >
-              {isPending ? 'Saving…' : 'Save Changes'}
+              {isPending ? 'Saving\u2026' : 'Save Changes'}
             </Button>
           </Stack>
         </Stack>

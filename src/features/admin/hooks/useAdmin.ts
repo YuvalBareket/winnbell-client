@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   fetchBusinesses,
   fetchActiveDraws,
@@ -34,19 +34,21 @@ import {
 import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
-export const useAdminBusinesses = (params: { page: number; limit: number; search: string }) => {
-  return useQuery({
-    queryKey: [queryKeys.admin.businesses, params],
-    queryFn: async () => {
+export const useAdminBusinesses = (params: { limit: number; search: string }) => {
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.admin.businesses, params.limit, params.search],
+    queryFn: async ({ pageParam }) => {
       const { data } = await fetchBusinesses({
-        page: params.page,
+        page: pageParam as number,
         limit: params.limit,
         search: params.search || undefined,
       });
       return data as BusinessStatsPage;
     },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     staleTime: 2 * 60_000,
-    placeholderData: (prev) => prev,
   });
 };
 
@@ -153,17 +155,16 @@ export const useAdminOverview = () => {
 };
 
 export const useAdminUsers = (params: {
-  page: number;
   limit: number;
   search: string;
   role: string;
   riskLevel: string;
 }) => {
-  return useQuery({
-    queryKey: [...queryKeys.admin.users, params],
-    queryFn: async () => {
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.admin.users, { search: params.search, role: params.role, riskLevel: params.riskLevel, limit: params.limit }],
+    queryFn: async ({ pageParam }) => {
       const { data } = await fetchAllUsers({
-        page: params.page,
+        page: pageParam as number,
         limit: params.limit,
         search: params.search || undefined,
         role: params.role || undefined,
@@ -171,8 +172,10 @@ export const useAdminUsers = (params: {
       });
       return data as AdminUsersPage;
     },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: AdminUsersPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     staleTime: 60_000,
-    placeholderData: (prev) => prev,
   });
 };
 
@@ -200,19 +203,25 @@ export const useUpdateUserRole = () => {
   });
 };
 
-export const useDrawBusinesses = (drawId: number | null, page = 1, search = '', sector = '') => {
-  return useQuery({
-    queryKey: ['admin', 'draw-businesses', drawId, page, search, sector],
-    queryFn: async () => {
-      const { data } = await fetchDrawBusinesses(drawId!, page, search, sector);
-      return data as {
-        rows: Array<{
-          id: number; name: string; sector: string; logo_url: string | null;
-          fee_at_entry: number; contribution_amount: number; joined_at: string;
-        }>;
-        total: number;
-      };
+type DrawBusinessRow = {
+  id: number; name: string; sector: string; logo_url: string | null;
+  fee_at_entry: number; contribution_amount: number; joined_at: string;
+};
+
+type DrawBusinessesPage = { rows: DrawBusinessRow[]; total: number };
+
+export const useDrawBusinesses = (drawId: number | null, search = '', sector = '') => {
+  return useInfiniteQuery({
+    queryKey: ['admin', 'draw-businesses', drawId, search, sector],
+    queryFn: async ({ pageParam = 1 }) => {
+      const { data } = await fetchDrawBusinesses(drawId!, pageParam as number, search, sector);
+      return data as DrawBusinessesPage;
     },
+    getNextPageParam: (lastPage, allPages) => {
+      const fetched = allPages.reduce((sum, p) => sum + p.rows.length, 0);
+      return fetched < lastPage.total ? allPages.length + 1 : undefined;
+    },
+    initialPageParam: 1,
     enabled: drawId !== null,
     staleTime: 60_000,
   });

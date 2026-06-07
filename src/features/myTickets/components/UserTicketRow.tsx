@@ -84,7 +84,7 @@ const BusinessTicketRow = ({ ticket }: { ticket: BusinessTicket }) => {
 
 // --- Main Component ---
 export const ActiveTicketsList = ({ draw_id }: { draw_id: number | null }) => {
-  const { data: tickets, isLoading } = useMyTickets(draw_id ?? 0);
+  const { tickets, isLoading } = useMyTickets(draw_id ?? 0);
   const isBusiness = useAppSelector(selectIsBusiness);
 
   if (!draw_id) return null;

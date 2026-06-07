@@ -1,7 +1,7 @@
 import { Box, Typography, Stack, Chip, Skeleton, Avatar, LinearProgress, CircularProgress } from '@mui/material';
 import { Circle, Person, Storefront, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import EmptyState from '../../../shared/components/EmptyState';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -166,24 +166,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
   const isLocation = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessOwner || isLocation;
 
-  const [page, setPage] = useState(1);
-  const [allTickets, setAllTickets] = useState<(BusinessTicket | UserTicket)[]>([]);
-
-  // Reset on draw/location change
-  useEffect(() => {
-    setPage(1);
-    setAllTickets([]);
-  }, [draw_id, locationId]);
-
-  const { data: tickets, isLoading, isFetching, totalCount, cap, perLocationCap, activeLocationCount } = useMyTickets(draw_id ?? 0, locationId, page);
-
-  // Accumulate pages
-  useEffect(() => {
-    if (!tickets) return;
-    setAllTickets(prev => page === 1 ? tickets : [...prev, ...tickets]);
-  }, [tickets]);
-
-  const hasMore = allTickets.length > 0 && allTickets.length < totalCount;
+  const { tickets: allTickets, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, totalCount, cap, perLocationCap, activeLocationCount } = useMyTickets(draw_id ?? 0, locationId);
 
   // Intersection observer sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -191,12 +174,12 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
   const setupObserver = useCallback(() => {
     if (observerRef.current) observerRef.current.disconnect();
-    if (!sentinelRef.current || !hasMore || isFetching) return;
+    if (!sentinelRef.current || !hasNextPage || isFetchingNextPage) return;
     observerRef.current = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) setPage(p => p + 1);
+      if (entry.isIntersecting) fetchNextPage();
     }, { threshold: 0.1, rootMargin: '300px' });
     observerRef.current.observe(sentinelRef.current);
-  }, [hasMore, isFetching]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useEffect(() => {
     setupObserver();
@@ -313,7 +296,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
       {/* Ticket list */}
       <Stack spacing={1.5} px={2} pb={3}>
-        {isLoading && page === 1 ? (
+        {isLoading ? (
           [...Array(3)].map((_, index) => <TicketSkeleton key={index} />)
         ) : allTickets.length > 0 ? (
           allTickets.map((ticket: BusinessTicket | UserTicket, index: number) =>
@@ -348,7 +331,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
       {/* Infinite scroll sentinel */}
       <Box ref={sentinelRef} sx={{ pb: 2, display: 'flex', justifyContent: 'center' }}>
-        {isFetching && page > 1 && <CircularProgress size={24} />}
+        {isFetchingNextPage && <CircularProgress size={24} />}
       </Box>
     </>
   );

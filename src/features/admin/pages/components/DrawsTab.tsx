@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -62,11 +62,16 @@ const STATUS_COLORS: Record<string, 'default' | 'warning' | 'primary' | 'success
 };
 
 const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({ drawId, drawStatus }) => {
-  const [page, setPage] = useState(1);
   const [filterSearch, setFilterSearch] = useState('');
   const [filterSearchDebounced, setFilterSearchDebounced] = useState('');
   const [filterSector, setFilterSector] = useState('');
-  const { data, isLoading } = useDrawBusinesses(drawId, page, filterSearchDebounced, filterSector);
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useDrawBusinesses(drawId, filterSearchDebounced, filterSector);
   const addBiz = useAddBusinessToDraw();
   const removeBiz = useRemoveBusinessFromDraw();
   const [adding, setAdding] = useState(false);
@@ -74,40 +79,57 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedBiz, setSelectedBiz] = useState<{ id: number; name: string } | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<{ id: number; name: string } | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  React.useEffect(() => {
-    setPage(1);
+  useEffect(() => {
     setFilterSearch('');
     setFilterSearchDebounced('');
     setFilterSector('');
   }, [drawId]);
 
-  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const filterDebounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const filterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleFilterSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterSearch(e.target.value);
     if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current);
     filterDebounceRef.current = setTimeout(() => {
       setFilterSearchDebounced(e.target.value);
-      setPage(1);
     }, 300);
   };
 
   const handleSectorChange = (e: React.ChangeEvent<{ value: unknown }>) => {
     setFilterSector(e.target.value as string);
-    setPage(1);
   };
+
   const handleInputChange = useCallback((_: React.SyntheticEvent, value: string) => {
     setSearch(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => setDebouncedSearch(value), 300);
   }, []);
 
-  const { data: bizPage } = useAdminBusinesses({ page: 1, limit: 20, search: debouncedSearch });
+  const { data: bizPage } = useAdminBusinesses({ limit: 20, search: debouncedSearch });
 
-  const enrolledIds = new Set((data?.rows ?? []).map((b) => b.id));
-  const availableBiz = (bizPage?.rows ?? []).filter((b: any) => !enrolledIds.has(b.id)).slice(0, 20);
+  const allRows = data?.pages.flatMap((p) => p.rows) ?? [];
+  const total = data?.pages[0]?.total ?? 0;
+  const enrolledIds = new Set(allRows.map((b) => b.id));
+  const bizRows = bizPage?.pages.flatMap((p) => p.rows) ?? [];
+  const availableBiz = bizRows.filter((b: any) => !enrolledIds.has(b.id)).slice(0, 20);
   const canEdit = drawStatus?.toUpperCase() !== 'CLOSED';
 
   const handleAdd = async () => {
@@ -131,7 +153,7 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
     <Box sx={{ px: 3, pb: 2, bgcolor: BG_PAGE }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
         <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-          Participating Businesses ({data?.total ?? 0})
+          Participating Businesses ({total})
         </Typography>
         {canEdit && (
           <Button size='small' startIcon={<AddIcon />} onClick={() => setAdding(!adding)} sx={{ fontSize: 12 }}>
@@ -188,13 +210,13 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
         </Box>
       )}
 
-      {!data?.rows?.length ? (
+      {!allRows.length ? (
         <Typography variant='body2' color='text.secondary'>
           {filterSearchDebounced || filterSector ? 'No businesses match your filters.' : 'No businesses enrolled.'}
         </Typography>
       ) : (
         <Stack spacing={0.5}>
-          {data.rows.map((b) => (
+          {allRows.map((b) => (
             <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
               <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
               {canEdit && (
@@ -207,14 +229,9 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
         </Stack>
       )}
 
-      {(data?.total ?? 0) > 25 && (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1, pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
-          <Button size='small' disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-          <Typography variant='caption' color='text.secondary'>
-            Page {page} of {Math.ceil((data?.total ?? 0) / 25)}
-          </Typography>
-          <Button size='small' disabled={page >= Math.ceil((data?.total ?? 0) / 25)} onClick={() => setPage(p => p + 1)}>Next</Button>
-        </Box>
+      <div ref={sentinelRef} />
+      {isFetchingNextPage && (
+        <Box sx={{ pt: 1 }}><Skeleton variant='rectangular' height={36} /></Box>
       )}
 
       <Dialog open={!!confirmRemove} onClose={() => setConfirmRemove(null)} maxWidth='xs' fullWidth>

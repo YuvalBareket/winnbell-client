@@ -48,8 +48,8 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
 
   const analyticsBusinessFilter = selectedBiz?.id ?? null;
   const isFiltered = !!(analyticsBusinessFilter || analyticsDrawFilter);
-  const { data: bizData, isLoading: bizLoading } = useAdminBusinesses({ page: 1, limit: 20, search: bizSearch });
-  const businesses = bizData?.rows ?? [];
+  const { data: bizData, isLoading: bizLoading } = useAdminBusinesses({ limit: 20, search: bizSearch });
+  const businesses = bizData?.pages[0]?.rows ?? [];
   // Always include currently selected business in options even if not in search results
   const bizOptions = selectedBiz && !businesses.find(b => b.id === selectedBiz.id)
     ? [selectedBiz, ...businesses]
