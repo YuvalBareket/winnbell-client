@@ -9,7 +9,6 @@ export const useRedeemTicket = () => {
     mutationFn: redeemTicket,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tickets.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tickets.riskLevel });
     },
   });
 };

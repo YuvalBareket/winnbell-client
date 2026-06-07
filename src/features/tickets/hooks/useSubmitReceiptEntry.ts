@@ -12,12 +12,11 @@ export const useSubmitReceiptEntry = (callbacks?: {
   return useMutation({
     mutationFn: (payload: ReceiptEntryPayload) => submitReceiptEntry(payload),
     onSuccess: (data) => {
+      // tickets.all (['tickets']) prefix-matches riskLevel, mine, freeStatus — one call covers all
       queryClient.invalidateQueries({ queryKey: queryKeys.tickets.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tickets.riskLevel });
       callbacks?.onSuccess?.(data);
     },
     onError: (err: any) => {
-      // Refetch risk level on error too - server may have changed state (e.g. requiresImage)
       queryClient.invalidateQueries({ queryKey: queryKeys.tickets.riskLevel });
       callbacks?.onError?.(err);
     },

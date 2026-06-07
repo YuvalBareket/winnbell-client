@@ -14,9 +14,8 @@ export const useFreeTicket = () => {
   const activateMutation = useMutation({
     mutationFn: activateFreeTicket,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tickets.freeStatus });
+      // tickets.all (['tickets']) prefix-matches riskLevel, mine, freeStatus — one call covers all
       queryClient.invalidateQueries({ queryKey: queryKeys.tickets.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tickets.riskLevel });
     },
   });
 

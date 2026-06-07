@@ -9,7 +9,6 @@ export const useActivatePromotional = () => {
     mutationFn: (code: string) => activatePromotionalEntry(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tickets.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tickets.riskLevel });
     },
   });
 };
