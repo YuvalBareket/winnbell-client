@@ -104,6 +104,7 @@ const AppRoutes = () => {
       <Route path='/terms' element={<TermsOfServicePage />} />
       <Route path='/privacy' element={<PrivacyPolicyPage />} />
       <Route path='/rules' element={<OfficialRulesPage />} />
+      <Route path='/rules/:drawId' element={<OfficialRulesPage />} />
       <Route path='/business-agreement' element={<BusinessAgreementPage />} />
 
       {/* --- Protected Routes --- */}

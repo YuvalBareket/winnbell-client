@@ -8,7 +8,7 @@ NO PURCHASE NECESSARY TO ENTER OR WIN. A PURCHASE WILL NOT INCREASE YOUR CHANCES
 
 **1\. Sponsor and Campaign Operator**
 
-This promotional campaign (the "**Campaign**") is sponsored and operated by Winnbell, Inc. ("**Winnbell**"), located at \<insert postal address of company\>.
+This promotional campaign (the "**Campaign**") is sponsored and operated by Winnbell, Inc. ("**Winnbell**"), located at 1336 Northeast 14th Avenue, Fort Lauderdale, FL 33304.
 
 Winnbell is the sole administrator of the Campaign and is responsible for:
 
@@ -443,7 +443,7 @@ Nothing in this Section limits any rights or obligations set out in Winnbell's T
 
 **23\. Privacy**
 
-Participation in the Campaign is subject to Winnbell's Privacy Policy, available at: [Privacy Policy URL]. Personal information collected in connection with the Campaign may be used by Winnbell to administer the Campaign, validate Entries, verify eligibility, contact participants and potential winners, fulfill prizes, and otherwise in accordance with Winnbell's Privacy Policy.
+Participation in the Campaign is subject to Winnbell's Privacy Policy, available at: https://winnbell.com/privacy-policy. Personal information collected in connection with the Campaign may be used by Winnbell to administer the Campaign, validate Entries, verify eligibility, contact participants and potential winners, fulfill prizes, and otherwise in accordance with Winnbell's Privacy Policy.
 
 ---
 
@@ -457,6 +457,6 @@ Any dispute, claim, or controversy arising out of or relating to the Campaign or
 
 **25\. Winner List; Rules Request; Contact**
 
-To request the name of the winner or a copy of these Official Rules, contact: [Contact Email], including the Campaign name in your request.
+To request the name of the winner or a copy of these Official Rules, contact: support@winnbell.com, including the Campaign name in your request.
 
 General inquiries regarding the Campaign may also be directed to the same contact.

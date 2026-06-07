@@ -42,7 +42,7 @@ Access to and use of the Platform is limited to individuals who meet the eligibi
 
 **2.1 Age and Legal Capacity**
 
-You must be at least eighteen (18) years of age, and possess the legal capacity to enter into a binding agreement in order to use the Platform and participate in any campaign. The Platform is not directed to individuals who do not meet these requirements. Winnbell does not knowingly collect personal information from children under thirteen (13). If Winnbell learns that it has collected personal information from a child under thirteen (13), Winnbell will delete that information within a commercially reasonable period. If you believe a child under thirteen (13) has provided personal information to Winnbell, please contact Winnbell at [SUPPORT EMAIL].
+You must be at least eighteen (18) years of age, and possess the legal capacity to enter into a binding agreement in order to use the Platform and participate in any campaign. The Platform is not directed to individuals who do not meet these requirements. Winnbell does not knowingly collect personal information from children under thirteen (13). If Winnbell learns that it has collected personal information from a child under thirteen (13), Winnbell will delete that information within a commercially reasonable period. If you believe a child under thirteen (13) has provided personal information to Winnbell, please contact Winnbell at support@winnbell.com.
 
 **2.2 Residency and Geographic Eligibility**
 

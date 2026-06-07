@@ -2,7 +2,7 @@
 
 **Last updated 05/03/2026**
 
-This Participating Business Agreement (the "**Agreement**") is effective and made as of \<date\> (the "**Effective Date**") and is entered into by and between WINNBELL, INC. (the "**Provider**"), a \[type of entity\] registered in \[jurisdiction\], and \[name of participating business\], a \[type of entity\] registered in \[jurisdiction\] (the "**Participating Business**") (each, a "**Party**," collectively, the "**Parties**").
+This Participating Business Agreement (the "**Agreement**") is effective and made as of \<date\> (the "**Effective Date**") and is entered into by and between WINNBELL, INC. (the "**Provider**"), a Delaware C Corporation registered in Delaware, and \[name of participating business\], a \[type of entity\] registered in \[jurisdiction\] (the "**Participating Business**") (each, a "**Party**," collectively, the "**Parties**").
 
 WHEREAS:
 
@@ -40,7 +40,7 @@ NOW THEREFORE IN CONSIDERATION of the mutual covenants, terms and conditions set
 
 (e) any written Campaign-specific instructions, operational requirements, or compliance notices issued by the Provider for a particular Campaign, to the extent they do not conflict with this Agreement.
 
-The Incorporated Documents are posted on the website located at \<URL\> and may be amended from time to time. In the event of a conflict between the terms of any Incorporated Document, as appended to this written agreement and the same Incorporated Document, as posted on the Website (the "**Internet Version**"), the terms of the Internet Version shall prevail.
+The Incorporated Documents are posted on the website located at https://winnbell.com and may be amended from time to time. In the event of a conflict between the terms of any Incorporated Document, as appended to this written agreement and the same Incorporated Document, as posted on the Website (the "**Internet Version**"), the terms of the Internet Version shall prevail.
 
 **2.2 Order of Precedence.** In the event of any conflict among the documents comprising this Agreement, the following order of precedence will apply:
 
@@ -520,9 +520,9 @@ The Incorporated Documents are posted on the website located at \<URL\> and may 
 
 **23\. DISPUTE RESOLUTION; GOVERNING LAW**
 
-**23.1 Governing Law.** This Agreement and any dispute arising out of or relating to this Agreement will be governed by the laws of the State of \[GOVERNING LAW STATE\], without regard to its conflict of laws rules.
+**23.1 Governing Law.** This Agreement and any dispute arising out of or relating to this Agreement will be governed by the laws of the State of Delaware, without regard to its conflict of laws rules.
 
-**23.2 Forum.** Subject to Section 23.2, each Party submits to the exclusive jurisdiction of the state and federal courts located in \[COUNTY, STATE\] for any legal action or proceeding arising out of or relating to this Agreement, and each Party waives any objection based on forum non convenience or improper venue.
+**23.2 Forum.** Subject to Section 23.2, each Party submits to the exclusive jurisdiction of the state and federal courts located in New Castle County, Delaware for any legal action or proceeding arising out of or relating to this Agreement, and each Party waives any objection based on forum non convenience or improper venue.
 
 **23.3 Arbitration Option.** At the Provider's election, any dispute, claim, or controversy arising out of or relating to this Agreement may be resolved by final and binding arbitration administered by the American Arbitration Association under its applicable commercial rules. The arbitration will be conducted by a single arbitrator in \[ARBITRATION SEAT\], or remotely if permitted by the rules or agreed by the Parties. The arbitrator will have exclusive authority to determine the interpretation, applicability, and enforceability of this arbitration provision.
 
@@ -546,19 +546,17 @@ The Incorporated Documents are posted on the website located at \<URL\> and may 
 
 If to the Provider:
 
-\[NOTICE CONTACT NAME\]
+Winnbell, Inc.
 
-\[NOTICE ADDRESS\]
+1336 Northeast 14th Avenue, Fort Lauderdale, FL 33304
 
-Email: \[NOTICE EMAIL\]
+Email: support@winnbell.com
 
 If to the Participating Business:
 
-\[NOTICE CONTACT NAME\]
+The contact details associated with the Participating Business's account on the Platform.
 
-\[NOTICE ADDRESS\]
-
-Email: \[NOTICE EMAIL\]
+Email: The email address associated with the Participating Business's account on the Platform.
 
 ---
 

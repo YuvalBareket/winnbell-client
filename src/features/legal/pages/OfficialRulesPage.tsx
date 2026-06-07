@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { api } from '../../../shared/api/client';
 import rulesContent from '../content/official-rules.md?raw';
@@ -21,7 +22,7 @@ const applyStaticSubstitutions = (text: string) => text
   .replace(/\[If Applicable\]/g, 'None')
   .replace(/\[Additional Campaign-Specific Terms\]/g, 'None');
 
-interface ActiveDraw {
+interface DrawInfo {
   id: number;
   name: string;
   prize_amount: string;
@@ -30,15 +31,20 @@ interface ActiveDraw {
 }
 
 const OfficialRulesPage = () => {
-  const [draw, setDraw] = useState<ActiveDraw | null>(null);
+  const { drawId } = useParams<{ drawId: string }>();
+  const [draw, setDraw] = useState<DrawInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get<ActiveDraw[]>('/draws/active')
-      .then(({ data }) => setDraw(data[0] ?? null))
+    const fetchDraw = drawId
+      ? api.get<DrawInfo>(`/draws/${drawId}`).then(({ data }) => data)
+      : api.get<DrawInfo[]>('/draws/active').then(({ data }) => data[0] ?? null);
+
+    fetchDraw
+      .then((d) => setDraw(d))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [drawId]);
 
   const content = (() => {
     let text = applyStaticSubstitutions(rulesContent);
@@ -49,7 +55,6 @@ const OfficialRulesPage = () => {
       const prizeAmount = parseFloat(draw.prize_amount).toLocaleString('en-US', {
         style: 'currency', currency: 'USD',
       });
-      // Campaign period: first of draw month to last of draw month
       const dt = new Date(draw.draw_date);
       const startDate = new Date(dt.getFullYear(), dt.getMonth(), 1)
         .toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -64,7 +69,6 @@ const OfficialRulesPage = () => {
         .replace(/\[Prize Description\]/g, `Cash prize of ${prizeAmount}`)
         .replace(/\[Prize Value\]/g, prizeAmount);
     } else {
-      // Not yet available
       text = text
         .replace(/\[Campaign Name\]/g, 'Current Campaign')
         .replace(/\[Start Date & Time\]/g, 'See Platform')
