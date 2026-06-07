@@ -25,6 +25,7 @@ import ReceiptImageUploadField from './ReceiptImageUploadField';
 import BusinessSelector from './BusinessSelector';
 import SelectedLocationPill from './SelectedLocationPill';
 import { getNearbyBusinesses } from '../../nearBy/api/nearBy.api';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 import { useSearchParticipatingLocations } from '../hooks/useAllParticipatingLocations';
 import { useSubmitReceiptEntry } from '../hooks/useSubmitReceiptEntry';
 import { fetchParticipatingLocationById } from '../api/ticketsApi';
@@ -71,7 +72,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [selectedLocationCapReached, setSelectedLocationCapReached] = useState(false);
   const userChangedLocation = useRef(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [nearbyLocations, setNearbyLocations] = useState<NearbyLocation[]>([]);
+  const [geoCoords, setGeoCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [receiptIdentifier, setReceiptIdentifier] = useState('');
   const [transactionAmount, setTransactionAmount] = useState('');
   const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
@@ -96,7 +97,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const receiptImageUpload = useUploadReceiptImage();
 
   const { data: preselectedLocationData, isFetching: isLocationFetching } = useQuery({
-    queryKey: ['participating-location', preselectedLocationId],
+    queryKey: [...queryKeys.participating.all, 'location', preselectedLocationId],
     queryFn: () => fetchParticipatingLocationById(preselectedLocationId!),
     enabled: !!preselectedLocationId && !preselectedLocation && !preselectedBusinessId,
     staleTime: 5 * 60_000,
@@ -114,7 +115,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       setReceiptWasPasted(false);
       setRequiresImage(false);
       setReceiptImageUrl(null);
-      riskLevel.refetch();
       onSuccess?.(data.ticketId);
     },
     onError: (err: any) => {
@@ -122,10 +122,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       if (message === 'A receipt image is required to submit an entry.') {
         setRequiresImage(true);
         setErrorMessage('Please attach a photo of your receipt to continue.');
-        riskLevel.refetch();
       } else {
         setErrorMessage(message);
-        riskLevel.refetch();
       }
       onError?.(message);
     },
@@ -143,35 +141,35 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   }, [riskLevel.isThrottled, riskLevel.isDailyLimitReached, riskLevel.isDrawCapped, onBlockedChange]);
 
   // ──────────────────────────────────────────────────
-  // Fetch nearby locations on mount
+  // Fetch nearby locations on mount (geolocation → React Query)
   // ──────────────────────────────────────────────────
   useEffect(() => {
     if (!('geolocation' in navigator)) return;
-
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          const radiusKm = 5;
-          const latDelta = radiusKm / 111;
-          const lngDelta = radiusKm / (111 * Math.cos(lat * (Math.PI / 180)));
-          const nearby = await getNearbyBusinesses({
-            minLat: lat - latDelta, maxLat: lat + latDelta,
-            minLng: lng - lngDelta, maxLng: lng + lngDelta,
-            limit: 2,
-          });
-          setNearbyLocations(nearby);
-        } catch {
-          // Silent failure
-        }
-      },
-      () => {
-        // Silent failure
-      },
+      (pos) => setGeoCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+      () => { /* silent failure */ },
       { timeout: 8000 },
     );
   }, []);
+
+  const { data: nearbyLocations = [] } = useQuery<NearbyLocation[]>({
+    queryKey: [...queryKeys.nearby.receipt, geoCoords?.latitude, geoCoords?.longitude],
+    queryFn: () => {
+      const lat = geoCoords!.latitude;
+      const lng = geoCoords!.longitude;
+      const radiusKm = 5;
+      const latDelta = radiusKm / 111;
+      const lngDelta = radiusKm / (111 * Math.cos(lat * (Math.PI / 180)));
+      return getNearbyBusinesses({
+        minLat: lat - latDelta, maxLat: lat + latDelta,
+        minLng: lng - lngDelta, maxLng: lng + lngDelta,
+        limit: 2,
+      });
+    },
+    enabled: !!geoCoords,
+    staleTime: 60_000,
+    gcTime: 2 * 60_000,
+  });
 
   // Auto-select location if preselected (skip if user manually cleared the selection)
   useEffect(() => {

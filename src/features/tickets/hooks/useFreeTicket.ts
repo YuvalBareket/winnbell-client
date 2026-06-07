@@ -16,6 +16,7 @@ export const useFreeTicket = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tickets.freeStatus });
       queryClient.invalidateQueries({ queryKey: queryKeys.tickets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tickets.riskLevel });
     },
   });
 

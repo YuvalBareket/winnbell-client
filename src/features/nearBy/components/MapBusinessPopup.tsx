@@ -180,7 +180,9 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
             {location.description && (
               <Box mb={2.5}>
                 <Stack direction='row' spacing={1} alignItems='flex-start'>
-                  <InfoOutlined sx={{ fontSize: 17, color: 'text.disabled', mt: 0.2, flexShrink: 0 }} />
+                  <Box sx={{ height: 23, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <InfoOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
+                  </Box>
                   <Typography variant='body2' color='text.secondary' lineHeight={1.65}>
                     {location.description}
                   </Typography>
@@ -191,7 +193,9 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
             {/* Address */}
             <Box mb={2.5}>
               <Stack direction='row' spacing={1} alignItems='flex-start'>
-                <LocationOn sx={{ fontSize: 17, color: 'text.disabled', mt: 0.2, flexShrink: 0 }} />
+                <Box sx={{ height: 21, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  <LocationOn sx={{ fontSize: 17, color: 'text.disabled' }} />
+                </Box>
                 <Box>
                   <Typography variant='body2' color='text.secondary' lineHeight={1.5}>
                     {location.address}
@@ -211,7 +215,9 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
             {location.phone && (
               <Box mb={2}>
                 <Stack direction='row' spacing={1} alignItems='center'>
-                  <LocalPhoneOutlined sx={{ fontSize: 17, color: 'text.disabled', flexShrink: 0 }} />
+                  <Box sx={{ height: 18, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <LocalPhoneOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
+                  </Box>
                   <Typography
                     component='a'
                     href={`tel:${location.phone}`}
@@ -228,7 +234,9 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
             {location.website_url && (
               <Box mb={2}>
                 <Stack direction='row' spacing={1} alignItems='center'>
-                  <LanguageOutlined sx={{ fontSize: 17, color: 'text.disabled', flexShrink: 0 }} />
+                  <Box sx={{ height: 18, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <LanguageOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
+                  </Box>
                   <Typography
                     component='a'
                     href={location.website_url}
@@ -247,7 +255,9 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
             {location.other_locations && location.other_locations.length > 0 && (
               <Box mb={2.5}>
                 <Stack direction='row' spacing={1} alignItems='flex-start'>
-                  <LocationOnOutlined sx={{ fontSize: 17, color: 'text.disabled', mt: 0.2, flexShrink: 0 }} />
+                  <Box sx={{ height: 18, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <LocationOnOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
+                  </Box>
                   <Box>
                     <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ display: 'block', mb: 0.5 }}>
                       Other locations

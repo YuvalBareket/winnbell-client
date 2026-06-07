@@ -75,6 +75,8 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
   const onBusinessClickRef = useRef(onBusinessClick);
   onBusinessClickRef.current = onBusinessClick;
   const [mapReady, setMapReady] = useState(false);
+  // Suppresses duplicate idle events during programmatic moves (panTo/setZoom)
+  const idleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize map
   useEffect(() => {
@@ -96,14 +98,19 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
       setMapReady(true);
 
       map.addListener('idle', () => {
-        const b = getViewportBounds(map);
-        if (b) onViewportChangeRef.current?.(b);
+        // Debounce rapid idle fires (e.g. setCenter + setZoom triggering two events)
+        if (idleDebounceRef.current) clearTimeout(idleDebounceRef.current);
+        idleDebounceRef.current = setTimeout(() => {
+          const b = getViewportBounds(map);
+          if (b) onViewportChangeRef.current?.(b);
+        }, 80);
       });
 
     });
 
     return () => {
       cancelled = true;
+      if (idleDebounceRef.current) clearTimeout(idleDebounceRef.current);
       markersByLocRef.current.forEach((m) => m.setMap(null));
       markersByLocRef.current.clear();
       userMarkerRef.current?.setMap(null);
@@ -169,7 +176,8 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
       });
     }
 
-    map.panTo(pos);
+    // Use setCenter + setZoom (no animation) to trigger only a single idle event
+    map.setCenter(pos);
     map.setZoom(14);
   }, [userLocation, mapReady]);
 

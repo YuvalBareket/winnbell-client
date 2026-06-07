@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAppDispatch } from '../../../store/hook';
 import { setBusinessActive } from '../../../store/slices/authSlice';
 import { api } from '../../../shared/api/client';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 import { MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import { fetchSubscription } from '../api/subscription.api';
 
@@ -17,7 +18,7 @@ const SubscriptionSuccessPage = () => {
   const sessionId = searchParams.get('session_id');
 
   const { isPending: verifying, isSuccess, isError } = useQuery({
-    queryKey: ['subscription', 'verify-session', sessionId],
+    queryKey: [...queryKeys.subscription.all, 'verify-session', sessionId],
     queryFn: () => api.post('/business/subscription/verify-session', { sessionId }).then(r => r.data),
     enabled: !!sessionId,
     retry: false,
@@ -26,7 +27,7 @@ const SubscriptionSuccessPage = () => {
 
   // Fetch subscription details after verification to get founding member info
   const { data: sub } = useQuery({
-    queryKey: ['subscription', 'details-post-success'],
+    queryKey: [...queryKeys.subscription.all, 'details-post-success'],
     queryFn: fetchSubscription,
     enabled: isSuccess,
     staleTime: Infinity,

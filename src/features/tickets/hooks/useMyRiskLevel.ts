@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { getMyRiskLevel } from '../api/ticketsApi';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useMyRiskLevel = () => {
   const { data, refetch, isPending } = useQuery({
-    queryKey: ['myRiskLevel'],
+    queryKey: queryKeys.tickets.riskLevel,
     queryFn: getMyRiskLevel,
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 30_000,
+    gcTime: 60_000,
   });
 
   const dailyCount = data?.dailyCount ?? 0;

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
+import { queryKeys } from '../constants/queryKeys';
 import LoadingScreen from './LoadingScreen';
 
 interface Props {
@@ -8,21 +9,15 @@ interface Props {
 }
 
 const RegionGate = ({ children }: Props) => {
-  const [status, setStatus] = useState<'loading' | 'allowed' | 'blocked'>('loading');
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.region.check,
+    queryFn: () => api.get<{ blocked: boolean }>('/auth/region-check').then(r => r.data),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
 
-  useEffect(() => {
-    api.get<{ blocked: boolean }>('/auth/region-check')
-      .then(({ data }) => setStatus(data.blocked ? 'blocked' : 'allowed'))
-      .catch(() => setStatus('allowed')); // fail open if endpoint unreachable
-  }, []);
-
-  if (status === 'loading') {
-    return <LoadingScreen />;
-  }
-
-  if (status === 'blocked') {
-    return <Navigate to='/region-blocked' replace />;
-  }
+  if (isLoading) return <LoadingScreen />;
+  if (data?.blocked) return <Navigate to='/region-blocked' replace />;
 
   return <>{children}</>;
 };

@@ -13,9 +13,12 @@ export const useSubmitReceiptEntry = (callbacks?: {
     mutationFn: (payload: ReceiptEntryPayload) => submitReceiptEntry(payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tickets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tickets.riskLevel });
       callbacks?.onSuccess?.(data);
     },
     onError: (err: any) => {
+      // Refetch risk level on error too - server may have changed state (e.g. requiresImage)
+      queryClient.invalidateQueries({ queryKey: queryKeys.tickets.riskLevel });
       callbacks?.onError?.(err);
     },
   });

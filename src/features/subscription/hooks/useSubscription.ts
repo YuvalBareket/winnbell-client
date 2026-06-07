@@ -27,7 +27,7 @@ export const useUpdateSubscriptionPlan = () => {
   return useMutation({
     mutationFn: (entries_per_location: number) => updateSubscriptionPlan(entries_per_location),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.subscription.all });
     },
   });
 };

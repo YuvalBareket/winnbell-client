@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../../shared/api/client';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 import type { EntryMode } from '../../partner/types/business.types';
 
 const fetchEntryMode = (): Promise<{ entry_mode: EntryMode }> =>
@@ -7,7 +8,7 @@ const fetchEntryMode = (): Promise<{ entry_mode: EntryMode }> =>
 
 export const useEntryMode = () => {
   return useQuery({
-    queryKey: ['business', 'mode'],
+    queryKey: queryKeys.business.mode,
     queryFn: fetchEntryMode,
     staleTime: 5 * 60_000,
   });

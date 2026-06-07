@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateLocation } from '../api/business.api';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 import type { UpdateLocationInput } from '../types/business.types';
 
 export const useUpdateLocation = () => {
@@ -9,7 +10,7 @@ export const useUpdateLocation = () => {
     mutationFn: ({ locationId, data }: { locationId: number; data: UpdateLocationInput }) =>
       updateLocation(locationId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['business', 'my-details'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.business.myDetails });
     },
   });
 };

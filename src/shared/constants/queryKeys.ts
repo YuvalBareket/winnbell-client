@@ -24,6 +24,8 @@ export const queryKeys = {
   business: {
     all:       ['business']                      as const,
     myDetails: ['business', 'my-details']        as const,
+    mode:      ['business', 'mode']              as const,
+    activity:  ['business', 'activity']          as const,
     stats: (locationId?: number | null, drawId?: number | null) =>
       ['business', 'stats', locationId ?? 'all', drawId ?? 'all'] as const,
   },
@@ -47,10 +49,23 @@ export const queryKeys = {
     mine:       (drawId?: number, locationId?: number) =>
       ['tickets', 'mine', drawId ?? 'all', locationId ?? 'all'] as const,
     freeStatus: ['tickets', 'free-status']                    as const,
+    riskLevel:  ['tickets', 'risk-level']                     as const,
   },
 
   // ─── Participating businesses (v2 entry) ──────────────────────────────────
   participating: {
-    all: ['participating'] as const,
+    all:    ['participating']                        as const,
+    search: ['participating', 'locations', 'search'] as const,
+  },
+
+  // ─── Nearby ─────────────────────────────────────────────────────────────
+  nearby: {
+    all:     ['nearby']            as const,
+    receipt: ['nearby', 'receipt'] as const,
+  },
+
+  // ─── Auth / region ──────────────────────────────────────────────────────
+  region: {
+    check: ['region-check'] as const,
   },
 } as const;

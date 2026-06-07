@@ -16,6 +16,7 @@ import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { fetchActivity, type DateRange, type ActivityItem } from '../api/activity.api';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 import {
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, MOBILE_CONTENT_HEIGHT_NO_HEADER,
 } from '../../../shared/colors';
@@ -41,8 +42,9 @@ const ActivityPage = () => {
     : (selectedLocation !== '' ? (selectedLocation as number) : undefined);
 
   const { data: activity, isLoading, isFetching, isError } = useQuery({
-    queryKey: ['business', 'activity', locationIdForQuery, dateRange, cursor],
+    queryKey: [...queryKeys.business.activity, locationIdForQuery, dateRange, cursor],
     queryFn: () => fetchActivity({ location_id: locationIdForQuery, date_range: dateRange, cursor }),
+    staleTime: 30_000,
     placeholderData: keepPreviousData,
   });
 

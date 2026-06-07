@@ -3,11 +3,12 @@ import { useSelector } from 'react-redux';
 import type { NearbyLocation } from '../types/nearBy.types';
 import type { RootState } from '../../../store/store';
 import { getNearbyBusinesses } from '../api/nearBy.api';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useNearbyBusinesses = () => {
   const { userLocation } = useSelector((state: RootState) => state.auth);
   return useQuery<NearbyLocation[]>({
-    queryKey: ['businesses', 'nearby', userLocation],
+    queryKey: [...queryKeys.nearby.all, userLocation?.latitude, userLocation?.longitude],
     queryFn: () => {
       const lat = userLocation!.latitude;
       const lng = userLocation!.longitude;
@@ -20,5 +21,6 @@ export const useNearbyBusinesses = () => {
       });
     },
     enabled: !!userLocation?.latitude && !!userLocation?.longitude,
+    staleTime: 60_000,
   });
 };
