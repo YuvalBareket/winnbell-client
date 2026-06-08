@@ -5,9 +5,9 @@ import iconGold  from '../assets/winnbell_icon_gold.svg';
 import iconGreen from '../assets/winnbell_icon_green.svg';
 import iconPink  from '../assets/winnbell_icon_pink.svg';
 
-// ── Poster dimensions (fixed, A4-ish ratio) ───────────────────────────────────
+// ── Poster dimensions (US Letter ratio 8.5:11 = 1:1.294) ─────────────────────
 export const POSTER_W = 320;
-export const POSTER_H = 452; // ~A4 ratio 1:1.414
+export const POSTER_H = 414; // US Letter ratio 1:1.294
 
 // Thumbnail scale - a unitless decimal fraction (NOT a CSS percentage)
 export const THUMB_SCALE = 0.27;

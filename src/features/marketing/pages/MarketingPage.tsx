@@ -7,7 +7,7 @@ import {
   useMediaQuery, useTheme, Snackbar, Alert, Tooltip,
   CircularProgress, Autocomplete, TextField,
 } from '@mui/material';
-import { CropFree, ContentCopy, FileDownload, CheckCircleOutline } from '@mui/icons-material';
+import { CropFree, ContentCopy, FileDownload, Print, CheckCircleOutline } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { useAppSelector } from '../../../store/hook';
@@ -93,6 +93,16 @@ const MarketingPage = () => {
     setDownloading(true);
     const swaps: Array<{ svg: SVGSVGElement; img: HTMLImageElement }> = [];
     const logoSwaps: Array<{ img: HTMLImageElement; originalSrc: string }> = [];
+
+    // Remove mobile CSS transform so html2canvas captures at full size
+    const scaleWrapper = posterRef.current.parentElement;
+    const savedTransform = scaleWrapper?.style.transform ?? '';
+    const savedMarginBottom = scaleWrapper?.style.marginBottom ?? '';
+    if (scaleWrapper) {
+      scaleWrapper.style.transform = 'none';
+      scaleWrapper.style.marginBottom = '0';
+    }
+
     try {
       // 1. Convert every SVG inside the poster to a PNG img
       const svgEls = Array.from(posterRef.current.querySelectorAll<SVGSVGElement>('svg'));
@@ -107,7 +117,6 @@ const MarketingPage = () => {
         svg.style.display = 'none';
         swaps.push({ svg, img });
       }
-
 
       // 2. Capture poster canvas - use explicit pixel dimensions to avoid shadow bleed
       const canvas = await html2canvas(posterRef.current, {
@@ -127,11 +136,11 @@ const MarketingPage = () => {
       });
       logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
 
-      // 4. Build PDF - use exact poster aspect ratio so nothing is cut
+      // 4. Build PDF - US Letter, image fills entire page
       const imgData = canvas.toDataURL('image/png', 1.0);
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
       const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = (POSTER_H / POSTER_W) * pageW; // exact ratio, no rounding surprises
+      const pageH = pdf.internal.pageSize.getHeight();
       pdf.addImage(imgData, 'PNG', 0, 0, pageW, pageH);
       pdf.save(`winnbell-${selected.id}-poster.pdf`);
       setSnackbar('Poster downloaded!');
@@ -141,6 +150,70 @@ const MarketingPage = () => {
       console.error(err);
       setSnackbar('Download failed. Please try again.');
     } finally {
+      // Restore mobile transform
+      if (scaleWrapper) {
+        scaleWrapper.style.transform = savedTransform;
+        scaleWrapper.style.marginBottom = savedMarginBottom;
+      }
+      setDownloading(false);
+    }
+  };
+
+  // ── Print: render poster to a new window and trigger browser print dialog ──
+  const handlePrint = async () => {
+    if (!posterRef.current) return;
+    setDownloading(true);
+    const swaps: Array<{ svg: SVGSVGElement; img: HTMLImageElement }> = [];
+
+    const scaleWrapper = posterRef.current.parentElement;
+    const savedTransform = scaleWrapper?.style.transform ?? '';
+    const savedMarginBottom = scaleWrapper?.style.marginBottom ?? '';
+    if (scaleWrapper) {
+      scaleWrapper.style.transform = 'none';
+      scaleWrapper.style.marginBottom = '0';
+    }
+
+    try {
+      const svgEls = Array.from(posterRef.current.querySelectorAll<SVGSVGElement>('svg'));
+      for (const svg of svgEls) {
+        const pngUrl = await svgToPngDataUrl(svg, 3);
+        const img = document.createElement('img');
+        img.src = pngUrl;
+        const w = svg.clientWidth || Number(svg.getAttribute('width') ?? 150);
+        const h = svg.clientHeight || Number(svg.getAttribute('height') ?? 150);
+        img.style.cssText = `width:${w}px;height:${h}px;display:block;`;
+        svg.parentNode!.insertBefore(img, svg);
+        svg.style.display = 'none';
+        swaps.push({ svg, img });
+      }
+
+      const canvas = await html2canvas(posterRef.current, {
+        scale: 3,
+        width: POSTER_W,
+        height: POSTER_H,
+        useCORS: true,
+        backgroundColor: null,
+        logging: false,
+        imageTimeout: 0,
+      });
+
+      swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
+
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      const printWin = window.open('', '_blank');
+      if (printWin) {
+        printWin.document.write(`<html><head><title>Winnbell Poster</title><style>@page{size:letter;margin:0}*{margin:0;padding:0}body{display:flex;justify-content:center;align-items:center}img{width:100vw;height:100vh;object-fit:fill}</style></head><body><img src="${imgData}" onload="window.print();window.close()"/></body></html>`);
+        printWin.document.close();
+      }
+    } catch (err) {
+      swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
+      console.error(err);
+      setSnackbar('Print failed. Please try again.');
+    } finally {
+      if (scaleWrapper) {
+        scaleWrapper.style.transform = savedTransform;
+        scaleWrapper.style.marginBottom = savedMarginBottom;
+      }
       setDownloading(false);
     }
   };
@@ -303,7 +376,7 @@ const MarketingPage = () => {
               <Box>
                 <Typography variant='h6' fontWeight={800} gutterBottom>Download Poster</Typography>
                 <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
-                  High-resolution A5 PDF, ready to print or share digitally.
+                  High-resolution US Letter PDF, ready to print or share digitally.
                 </Typography>
               </Box>
 
@@ -362,22 +435,35 @@ const MarketingPage = () => {
                 />
               )}
 
-              {/* Download */}
-              <Button
-                fullWidth variant='contained' size='large'
-                startIcon={downloading ? undefined : <FileDownload />}
-                onClick={handleDownload}
-                disabled={downloading || !effectiveLocationId}
-                sx={{
-                  py: 1.6, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
-                  boxShadow: '0 4px 14px rgba(25,93,230,0.3)',
-                  '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.4)' },
-                }}
-              >
-                {downloading
-                  ? <><CircularProgress size={20} color='inherit' sx={{ mr: 1 }} />Generating PDF...</>
-                  : 'Download PDF'}
-              </Button>
+              {/* Download + Print */}
+              <Stack direction='row' spacing={1.5}>
+                <Button
+                  fullWidth variant='contained' size='large'
+                  startIcon={downloading ? undefined : <FileDownload />}
+                  onClick={handleDownload}
+                  disabled={downloading || !effectiveLocationId}
+                  sx={{
+                    py: 1.6, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
+                    boxShadow: '0 4px 14px rgba(25,93,230,0.3)',
+                    '&:hover': { boxShadow: '0 6px 20px rgba(25,93,230,0.4)' },
+                  }}
+                >
+                  {downloading
+                    ? <><CircularProgress size={20} color='inherit' sx={{ mr: 1 }} />Generating...</>
+                    : 'Download'}
+                </Button>
+                <Button
+                  fullWidth variant='outlined' size='large'
+                  startIcon={<Print />}
+                  onClick={handlePrint}
+                  disabled={downloading || !effectiveLocationId}
+                  sx={{
+                    py: 1.6, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
+                  }}
+                >
+                  Print
+                </Button>
+              </Stack>
 
               {/* Copy */}
               <Box>
@@ -404,7 +490,7 @@ const MarketingPage = () => {
               {/* Tips */}
               <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
                 <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 1 }}>Print tips</Typography>
-                {['A5 paper works great for counter displays', 'Laminate for durability in high-traffic areas', 'Share the link on WhatsApp or email too'].map(tip => (
+                {['US Letter paper works great for counter displays', 'Laminate for durability in high-traffic areas', 'Share the link on WhatsApp or email too'].map(tip => (
                   <Typography key={tip} variant='caption' color='text.disabled' display='block' sx={{ mb: 0.5, lineHeight: 1.5 }}>· {tip}</Typography>
                 ))}
               </Box>
