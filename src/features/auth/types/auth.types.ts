@@ -16,6 +16,7 @@ export interface User {
 export interface AuthResponse {
   message: string;
   token: string;
+  refreshToken: string;
   user: User;
 }
 
@@ -24,6 +25,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -40,5 +42,6 @@ export interface LoginRequest {
 export interface LoginPayload {
   user: User;
   token: string;
+  refreshToken: string | null;
 }
 export type TCoords = { longitude: number; latitude: number };

@@ -5,6 +5,7 @@ import { PersistGate } from 'redux-persist/integration/react'; // Import Gate
 import { store, persistor } from './store/store'; // Import persistor
 import { theme } from './shared/theme';
 import AppRoutes from './routes/AppRoutes';
+import ErrorBoundary from './shared/components/ErrorBoundary';
 // import AccessGate from './shared/components/AccessGate';
 
 // Branded splash screen while Redux rehydrates
@@ -51,7 +52,9 @@ function App() {
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <BrowserRouter>
-              <AppRoutes />
+              <ErrorBoundary>
+                <AppRoutes />
+              </ErrorBoundary>
             </BrowserRouter>
           </ThemeProvider>
         </PersistGate>

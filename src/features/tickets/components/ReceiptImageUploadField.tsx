@@ -28,6 +28,7 @@ const ReceiptImageUploadField: React.FC<Props> = ({
         id="receipt-image-input"
         type="file"
         accept="image/*"
+        capture="environment"
         style={{ display: 'none' }}
         onChange={async (e) => {
           const file = e.target.files?.[0];
@@ -89,7 +90,7 @@ const ReceiptImageUploadField: React.FC<Props> = ({
             </Box>
             <Box>
               <Typography variant="body2" sx={{ fontWeight: 700 }}>Attach receipt photo</Typography>
-              <Typography variant="caption" color="text.secondary">Tap to take a photo or upload from gallery</Typography>
+              <Typography variant="caption" color="text.secondary">Tap to take a photo of your receipt</Typography>
             </Box>
           </>
         )}

@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Drawer, Box, Typography, Avatar, Button, Stack, Chip, IconButton, Divider,
-  useMediaQuery, useTheme,
+  useMediaQuery, useTheme, Skeleton,
 } from '@mui/material';
 import {
   Directions, Close, CheckCircle, LocationOn, InfoOutlined,
@@ -9,7 +9,9 @@ import {
   LocationOnOutlined,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import type { NearbyLocation } from '../types/nearBy.types';
+import { getLocationDetail } from '../api/nearBy.api';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 
@@ -24,15 +26,25 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
 }
 
 type Props = {
-  location: NearbyLocation | null;
+  locationId: number | null;
+  basicInfo: NearbyLocation | null;
   onClose: () => void;
   userLocation?: { latitude: number; longitude: number } | null;
 };
 
-const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) => {
+const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, userLocation }) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
+
+  const { data: detail, isLoading: detailLoading } = useQuery({
+    queryKey: ['participating', 'location', locationId],
+    queryFn: () => getLocationDetail(locationId!),
+    enabled: !!locationId,
+    staleTime: 5 * 60_000,
+  });
+
+  const location = detail || basicInfo;
 
   const sectorInfo = location
     ? BUSINESS_SECTORS[location.sector] || UNKNOWN_SECTOR
@@ -49,13 +61,13 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
   const handleSubmitReceipt = () => {
     if (!location) return;
     onClose();
-    navigate('/scan', { state: { preselectedBusinessId: location.id, preselectedLocation: location } });
+    navigate('/scan', { state: { preselectedBusinessId: location.id, preselectedLocation: detail || location } });
   };
 
   return (
     <Drawer
       anchor={isDesktop ? 'right' : 'bottom'}
-      open={!!location}
+      open={!!locationId}
       onClose={onClose}
       PaperProps={{
         sx: isDesktop
@@ -134,7 +146,7 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
                     size='small'
                     sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: `${sectorInfo.color}18`, color: sectorInfo.color, border: `1px solid ${sectorInfo.color}33` }}
                   />
-                  {location.cap_reached ? (
+                  {detail?.cap_reached ? (
                     <Chip
                       label='Entries Full'
                       size='small'
@@ -176,146 +188,177 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
               scrollbarWidth: 'none',
             }}
           >
-            {/* About / description */}
-            {location.description && (
-              <Box mb={2.5}>
-                <Stack direction='row' spacing={1} alignItems='flex-start'>
-                  <Box sx={{ height: 23, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                    <InfoOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
+            {detailLoading ? (
+              <Box>
+                {/* Description skeleton */}
+                <Stack direction='row' spacing={1} mb={2.5}>
+                  <Skeleton variant='circular' width={17} height={17} sx={{ flexShrink: 0, mt: 0.3 }} />
+                  <Box flex={1}>
+                    <Skeleton variant='text' width='100%' height={18} />
+                    <Skeleton variant='text' width='85%' height={18} />
+                    <Skeleton variant='text' width='60%' height={18} />
                   </Box>
-                  <Typography variant='body2' color='text.secondary' lineHeight={1.65}>
-                    {location.description}
-                  </Typography>
                 </Stack>
-              </Box>
-            )}
-
-            {/* Address */}
-            <Box mb={2.5}>
-              <Stack direction='row' spacing={1} alignItems='flex-start'>
-                <Box sx={{ height: 21, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                  <LocationOn sx={{ fontSize: 17, color: 'text.disabled' }} />
-                </Box>
-                <Box>
-                  <Typography variant='body2' color='text.secondary' lineHeight={1.5}>
-                    {location.address}
-                  </Typography>
-                  <Typography
-                    variant='caption'
-                    sx={{ color: PRIMARY_MAIN, fontWeight: 700, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                    onClick={handleDirections}
-                  >
-                    {'Get directions \u2192'}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Box>
-
-            {/* Phone */}
-            {location.phone && (
-              <Box mb={2}>
-                <Stack direction='row' spacing={1} alignItems='center'>
-                  <Box sx={{ height: 18, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                    <LocalPhoneOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
+                {/* Address skeleton */}
+                <Stack direction='row' spacing={1} mb={2.5}>
+                  <Skeleton variant='circular' width={17} height={17} sx={{ flexShrink: 0, mt: 0.3 }} />
+                  <Box flex={1}>
+                    <Skeleton variant='text' width='90%' height={18} />
+                    <Skeleton variant='text' width={100} height={16} />
                   </Box>
-                  <Typography
-                    component='a'
-                    href={`tel:${location.phone}`}
-                    variant='caption'
-                    sx={{ color: PRIMARY_MAIN, fontWeight: 700, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-                  >
-                    {location.phone}
-                  </Typography>
                 </Stack>
-              </Box>
-            )}
-
-            {/* Website */}
-            {location.website_url && (
-              <Box mb={2}>
-                <Stack direction='row' spacing={1} alignItems='center'>
-                  <Box sx={{ height: 18, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                    <LanguageOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
-                  </Box>
-                  <Typography
-                    component='a'
-                    href={location.website_url}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    variant='caption'
-                    sx={{ color: PRIMARY_MAIN, fontWeight: 700, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-                  >
-                    {location.website_url.replace(/^https?:\/\//, '')}
-                  </Typography>
+                {/* Phone skeleton */}
+                <Stack direction='row' spacing={1} mb={2}>
+                  <Skeleton variant='circular' width={17} height={17} sx={{ flexShrink: 0 }} />
+                  <Skeleton variant='text' width={120} height={16} />
                 </Stack>
+                <Divider sx={{ mb: 2.5 }} />
+                {/* How to earn skeleton */}
+                <Skeleton variant='rounded' width='100%' height={100} sx={{ borderRadius: 2 }} />
               </Box>
-            )}
-
-            {/* Other locations */}
-            {location.other_locations && location.other_locations.length > 0 && (
-              <Box mb={2.5}>
-                <Stack direction='row' spacing={1} alignItems='flex-start'>
-                  <Box sx={{ height: 18, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                    <LocationOnOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
-                  </Box>
-                  <Box>
-                    <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ display: 'block', mb: 0.5 }}>
-                      Other locations
-                    </Typography>
-                    {location.other_locations.map((loc) => (
-                      <Box key={loc.id} mb={0.5}>
-                        <Typography variant='caption' color='text.primary' fontWeight={600} sx={{ display: 'block', lineHeight: 1.4 }}>
-                          {loc.name}
-                        </Typography>
-                        <Typography variant='caption' color='text.disabled' sx={{ display: 'block', lineHeight: 1.4 }}>
-                          {loc.address}
-                        </Typography>
+            ) : (
+              <>
+                {/* About / description */}
+                {detail?.description && (
+                  <Box mb={2.5}>
+                    <Stack direction='row' spacing={1} alignItems='flex-start'>
+                      <Box sx={{ height: 23, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                        <InfoOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
                       </Box>
-                    ))}
+                      <Typography variant='body2' color='text.secondary' lineHeight={1.65}>
+                        {detail.description}
+                      </Typography>
+                    </Stack>
                   </Box>
-                </Stack>
-              </Box>
-            )}
+                )}
 
-            <Divider sx={{ mb: 2.5 }} />
-
-            {/* How to earn entries -- highlight box */}
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                bgcolor: `${PRIMARY_MAIN}07`,
-                border: `1.5px solid ${PRIMARY_MAIN}22`,
-                mb: 2.5,
-              }}
-            >
-              <Stack direction='row' spacing={1} alignItems='center' mb={1.25}>
-                <Box sx={{ width: 28, height: 28, borderRadius: 2, bgcolor: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <AttachMoney sx={{ fontSize: 17, color: 'white' }} />
+                {/* Address */}
+                <Box mb={2.5}>
+                  <Stack direction='row' spacing={1} alignItems='flex-start'>
+                    <Box sx={{ height: 21, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                      <LocationOn sx={{ fontSize: 17, color: 'text.disabled' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant='body2' color='text.secondary' lineHeight={1.5}>
+                        {location.address}
+                      </Typography>
+                      <Typography
+                        variant='caption'
+                        sx={{ color: PRIMARY_MAIN, fontWeight: 700, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                        onClick={handleDirections}
+                      >
+                        {'Get directions \u2192'}
+                      </Typography>
+                    </Box>
+                  </Stack>
                 </Box>
-                <Typography variant='body2' fontWeight={800} color='text.primary'>
-                  How to earn entries
-                </Typography>
-              </Stack>
 
-              {location.min_transaction_amount != null ? (
-                <Stack spacing={0.75}>
-                  <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
-                    {(() => { const amt = Number(location.min_transaction_amount); return (<>Every <strong style={{ color: '#111' }}>${Number.isInteger(amt) ? amt : amt.toFixed(2)}</strong> spent = <strong style={{ color: '#111' }}>1 entry</strong>.</>); })()}
-                  </Typography>
-                  {location.terms_text && (
-                    <Typography variant='caption' color='text.disabled' lineHeight={1.5}>
-                      {location.terms_text}
+                {/* Phone */}
+                {detail?.phone && (
+                  <Box mb={2}>
+                    <Stack direction='row' spacing={1} alignItems='center'>
+                      <Box sx={{ height: 18, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                        <LocalPhoneOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
+                      </Box>
+                      <Typography
+                        component='a'
+                        href={`tel:${detail.phone}`}
+                        variant='caption'
+                        sx={{ color: PRIMARY_MAIN, fontWeight: 700, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      >
+                        {detail.phone}
+                      </Typography>
+                    </Stack>
+                  </Box>
+                )}
+
+                {/* Website */}
+                {detail?.website_url && (
+                  <Box mb={2}>
+                    <Stack direction='row' spacing={1} alignItems='center'>
+                      <Box sx={{ height: 18, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                        <LanguageOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
+                      </Box>
+                      <Typography
+                        component='a'
+                        href={detail.website_url}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        variant='caption'
+                        sx={{ color: PRIMARY_MAIN, fontWeight: 700, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      >
+                        {detail.website_url.replace(/^https?:\/\//, '')}
+                      </Typography>
+                    </Stack>
+                  </Box>
+                )}
+
+                {/* Other locations */}
+                {detail?.other_locations && detail.other_locations.length > 0 && (
+                  <Box mb={2.5}>
+                    <Stack direction='row' spacing={1} alignItems='flex-start'>
+                      <Box sx={{ height: 18, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                        <LocationOnOutlined sx={{ fontSize: 17, color: 'text.disabled' }} />
+                      </Box>
+                      <Box>
+                        <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ display: 'block', mb: 0.5 }}>
+                          Other locations
+                        </Typography>
+                        {detail.other_locations.map((loc) => (
+                          <Box key={loc.id} mb={0.5}>
+                            <Typography variant='caption' color='text.primary' fontWeight={600} sx={{ display: 'block', lineHeight: 1.4 }}>
+                              {loc.name}
+                            </Typography>
+                            <Typography variant='caption' color='text.disabled' sx={{ display: 'block', lineHeight: 1.4 }}>
+                              {loc.address}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Stack>
+                  </Box>
+                )}
+
+                <Divider sx={{ mb: 2.5 }} />
+
+                {/* How to earn entries -- highlight box */}
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: `${PRIMARY_MAIN}07`,
+                    border: `1.5px solid ${PRIMARY_MAIN}22`,
+                    mb: 2.5,
+                  }}
+                >
+                  <Stack direction='row' spacing={1} alignItems='center' mb={1.25}>
+                    <Box sx={{ width: 28, height: 28, borderRadius: 2, bgcolor: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <AttachMoney sx={{ fontSize: 17, color: 'white' }} />
+                    </Box>
+                    <Typography variant='body2' fontWeight={800} color='text.primary'>
+                      How to earn entries
+                    </Typography>
+                  </Stack>
+
+                  {detail?.min_transaction_amount != null ? (
+                    <Stack spacing={0.75}>
+                      <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
+                        {(() => { const amt = Number(detail.min_transaction_amount); return (<>Every <strong style={{ color: '#111' }}>${Number.isInteger(amt) ? amt : amt.toFixed(2)}</strong> spent = <strong style={{ color: '#111' }}>1 entry</strong>.</>); })()}
+                      </Typography>
+                      {detail.terms_text && (
+                        <Typography variant='caption' color='text.disabled' lineHeight={1.5}>
+                          {detail.terms_text}
+                        </Typography>
+                      )}
+                    </Stack>
+                  ) : (
+                    <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
+                      {detail?.terms_text || 'Submit a receipt from this business to earn an entry in the campaign.'}
                     </Typography>
                   )}
-                </Stack>
-              ) : (
-                <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
-                  {location.terms_text || 'Submit a receipt from this business to earn an entry in the campaign.'}
-                </Typography>
-              )}
-            </Box>
-
+                </Box>
+              </>
+            )}
           </Box>
 
           {/* Sticky action buttons */}
@@ -333,7 +376,7 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
               gap: 1.25,
             }}
           >
-            {location.cap_reached && (
+            {detail?.cap_reached && (
               <Typography variant='caption' color='text.disabled' textAlign='center' sx={{ mb: 0.25 }}>
                 This location has reached its entry limit for the current campaign.
               </Typography>
@@ -343,17 +386,17 @@ const MapBusinessPopup: React.FC<Props> = ({ location, onClose, userLocation }) 
               variant='contained'
               size='large'
               startIcon={<ReceiptLong />}
-              onClick={location.cap_reached ? undefined : handleSubmitReceipt}
+              onClick={detail?.cap_reached ? undefined : handleSubmitReceipt}
               sx={{
                 py: 1.6,
                 fontWeight: 800,
                 fontSize: '0.95rem',
-                bgcolor: location.cap_reached ? '#e5e7eb' : PRIMARY_MAIN,
-                boxShadow: location.cap_reached ? 'none' : `0 6px 20px ${PRIMARY_MAIN}40`,
-                cursor: location.cap_reached ? 'not-allowed' : 'pointer',
+                bgcolor: detail?.cap_reached ? '#e5e7eb' : PRIMARY_MAIN,
+                boxShadow: detail?.cap_reached ? 'none' : `0 6px 20px ${PRIMARY_MAIN}40`,
+                cursor: detail?.cap_reached ? 'not-allowed' : 'pointer',
                 transition: 'transform 160ms ease-out, box-shadow 160ms ease-out',
-                '&:hover': location.cap_reached ? { bgcolor: '#e5e7eb' } : { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.92)' },
-                '&:active': location.cap_reached ? {} : { transform: 'scale(0.97)' },
+                '&:hover': detail?.cap_reached ? { bgcolor: '#e5e7eb' } : { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.92)' },
+                '&:active': detail?.cap_reached ? {} : { transform: 'scale(0.97)' },
               }}
             >
               Submit a Receipt

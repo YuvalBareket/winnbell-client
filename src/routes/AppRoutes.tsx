@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Box, Typography, Button } from '@mui/material';
+import ErrorBoundary from '../shared/components/ErrorBoundary';
 
 import { useAppSelector } from '../store/hook';
 import {
@@ -21,43 +23,37 @@ import LoadingScreen from '../shared/components/LoadingScreen';
 import LandingPage from '../features/landing/LandingPage';
 import BusinessLandingPage from '../features/landing/BusinessLandingPage';
 
-// Auth
-import LoginPage from '../features/auth/pages/LoginPage';
-import RegisterPage from '../features/auth/pages/RegisterPage';
-import VerifyEmailPage from '../features/auth/pages/VerifyEmailPage';
-import SSOCallbackPage from '../features/auth/pages/SSOCallbackPage';
-import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage';
-import RegionBlockedPage from '../features/auth/pages/RegionBlockedPage';
+const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'));
+const RegisterPage = lazy(() => import('../features/auth/pages/RegisterPage'));
+const VerifyEmailPage = lazy(() => import('../features/auth/pages/VerifyEmailPage'));
+const SSOCallbackPage = lazy(() => import('../features/auth/pages/SSOCallbackPage'));
+const ResetPasswordPage = lazy(() => import('../features/auth/pages/ResetPasswordPage'));
+const RegionBlockedPage = lazy(() => import('../features/auth/pages/RegionBlockedPage'));
 
-// Tickets
-import PublicActivatePage from '../features/tickets/pages/PublicActivatePage';
+const PublicActivatePage = lazy(() => import('../features/tickets/pages/PublicActivatePage'));
+const RedeemPage = lazy(() => import('../features/tickets/pages/RedeemPage'));
+const MyTicketsPage = lazy(() => import('../features/myTickets/pages/MyTicketsPage'));
+const FreeTicketPage = lazy(() => import('../features/tickets/pages/FreeTicketPage'));
 
-// Legal
-import TermsOfServicePage from '../features/legal/pages/TermsOfServicePage';
-import PrivacyPolicyPage from '../features/legal/pages/PrivacyPolicyPage';
-import OfficialRulesPage from '../features/legal/pages/OfficialRulesPage';
-import BusinessAgreementPage from '../features/legal/pages/BusinessAgreementPage';
+const TermsOfServicePage = lazy(() => import('../features/legal/pages/TermsOfServicePage'));
+const PrivacyPolicyPage = lazy(() => import('../features/legal/pages/PrivacyPolicyPage'));
+const OfficialRulesPage = lazy(() => import('../features/legal/pages/OfficialRulesPage'));
+const BusinessAgreementPage = lazy(() => import('../features/legal/pages/BusinessAgreementPage'));
 
-// Subscription
-import SubscribePage from '../features/subscription/pages/SubscribePage';
-import SubscriptionSuccessPage from '../features/subscription/pages/SubscriptionSuccessPage';
-import SubscriptionManagementPage from '../features/subscription/pages/SubscriptionManagementPage';
+const SubscribePage = lazy(() => import('../features/subscription/pages/SubscribePage'));
+const SubscriptionSuccessPage = lazy(() => import('../features/subscription/pages/SubscriptionSuccessPage'));
+const SubscriptionManagementPage = lazy(() => import('../features/subscription/pages/SubscriptionManagementPage'));
 
-// User Specific
-import NearbyPage from '../features/nearBy/pages/NearbyPage';
-import RedeemPage from '../features/tickets/pages/RedeemPage';
-import MyTicketsPage from '../features/myTickets/pages/MyTicketsPage';
-import FreeTicketPage from '../features/tickets/pages/FreeTicketPage';
+const NearbyPage = lazy(() => import('../features/nearBy/pages/NearbyPage'));
 
-// Business/Admin Specific
-import BusinessDashboard from '../features/admin/pages/BusinessDashboard';
-import BusinessProfilePage from '../features/partner/pages/BusinessProfilePage';
-import BusinessHubPage from '../features/partner/pages/BusinessHubPage';
-import StatsPage from '../features/stats/pages/StatsPage';
-import ActivityPage from '../features/activity/pages/ActivityPage';
-import DrawHistoryPage from '../features/draw/pages/DrawHistoryPage';
-import SettingsPage from '../features/settings/pages/SettingsPage';
-import MarketingPage from '../features/marketing/pages/MarketingPage';
+const BusinessDashboard = lazy(() => import('../features/admin/pages/BusinessDashboard'));
+const BusinessProfilePage = lazy(() => import('../features/partner/pages/BusinessProfilePage'));
+const BusinessHubPage = lazy(() => import('../features/partner/pages/BusinessHubPage'));
+const StatsPage = lazy(() => import('../features/stats/pages/StatsPage'));
+const ActivityPage = lazy(() => import('../features/activity/pages/ActivityPage'));
+const DrawHistoryPage = lazy(() => import('../features/draw/pages/DrawHistoryPage'));
+const SettingsPage = lazy(() => import('../features/settings/pages/SettingsPage'));
+const MarketingPage = lazy(() => import('../features/marketing/pages/MarketingPage'));
 
 const AppRoutes = () => {
   const navigate = useNavigate();
@@ -81,9 +77,25 @@ const AppRoutes = () => {
   }, [isAuthenticated, requiresBusinessSetup, navigate]);
 
 
+  const routeFallback = (
+    <Box sx={{ py: 8, textAlign: 'center' }}>
+      <Typography variant="h6" gutterBottom>
+        Something went wrong
+      </Typography>
+      <Typography variant="body2" color="text.secondary" gutterBottom>
+        Try refreshing the page or go back.
+      </Typography>
+      <Button component="a" href="/" variant="contained" sx={{ mt: 2 }}>
+        Go Home
+      </Button>
+    </Box>
+  );
+
   return (
     <PageHeaderProvider>
     <SyncStatusContext.Provider value={{ syncError, retry, isLoaded, isSignedIn }}>
+    <ErrorBoundary fallback={routeFallback}>
+    <Suspense fallback={<LoadingScreen />}>
     <Routes>
       {/* --- Public Routes --- */}
       <Route path='/' element={
@@ -148,6 +160,8 @@ const AppRoutes = () => {
       {/* Fallback */}
       <Route path='*' element={<Navigate to='/' replace />} />
     </Routes>
+    </Suspense>
+    </ErrorBoundary>
     </SyncStatusContext.Provider>
     </PageHeaderProvider>
   );

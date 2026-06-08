@@ -103,7 +103,7 @@ const BusinessSelector: React.FC<Props> = ({
             📍 Nearest to you
           </Typography>
           {nearbyLocations.map((loc) => (
-            <NearbyLocationCard key={loc.location_id} location={loc} primaryColor={primaryColor} onSelect={onLocationSelect} distanceKm={loc.distance_km} />
+            <NearbyLocationCard key={loc.location_id} location={loc} primaryColor={primaryColor} onSelect={onLocationSelect} />
           ))}
         </>
       ) : (

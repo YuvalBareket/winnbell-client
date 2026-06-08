@@ -6,7 +6,6 @@ export const useFoundingAvailability = () => {
   return useQuery({
     queryKey: [...queryKeys.subscription.all, 'founding-availability'],
     queryFn: fetchFoundingAvailability,
-    staleTime: 10_000,
-    refetchInterval: 30_000,
+    staleTime: 60_000,
   });
 };

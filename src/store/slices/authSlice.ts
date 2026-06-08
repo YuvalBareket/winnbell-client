@@ -10,6 +10,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
   token: null,
+  refreshToken: null,
   loading: false,
   error: null,
 };
@@ -22,12 +23,14 @@ export const authSlice = createSlice({
       state.isAuthenticated = true;
       state.user = action.payload.user;
       state.token = action.payload.token;
+      state.refreshToken = action.payload.refreshToken;
       state.error = null;
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
       state.token = null;
+      state.refreshToken = null;
       state.error = null;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {

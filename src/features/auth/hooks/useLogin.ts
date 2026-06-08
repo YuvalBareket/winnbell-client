@@ -18,6 +18,7 @@ export const useLogin = () => {
         login({
           user: data.user,
           token: data.token ?? '',
+          refreshToken: data.refreshToken ?? null,
         }),
       );
       navigate('/scan');

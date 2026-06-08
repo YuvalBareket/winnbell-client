@@ -34,13 +34,16 @@ export const useSupabaseSync = (retryCount = 0) => {
       setIsSignedIn(!!session);
 
       if (!session) {
-        // Clean up pending role/invite state — but NOT pendingEmail, which is
-        // actively used by VerifyEmailPage and must survive session events.
-        localStorage.removeItem('pendingRole');
-        localStorage.removeItem('pendingInviteToken');
-        if (isAuthenticatedRef.current) {
-          dispatch(logout());
-          localStorage.removeItem('wasLoggedIn');
+        // Only clean up on explicit sign-out. Silent session drops (tab inactive,
+        // Supabase token refresh failure) must NOT wipe pendingRole/pendingInviteToken
+        // as a user may be mid-registration with an OAuth redirect pending.
+        if (event === 'SIGNED_OUT') {
+          localStorage.removeItem('pendingRole');
+          localStorage.removeItem('pendingInviteToken');
+          if (isAuthenticatedRef.current) {
+            dispatch(logout());
+            localStorage.removeItem('wasLoggedIn');
+          }
         }
         syncing.current = false;
         return;
@@ -77,7 +80,7 @@ export const useSupabaseSync = (retryCount = 0) => {
         localStorage.removeItem('pendingInviteToken');
         localStorage.removeItem('pendingRole');
         localStorage.setItem('wasLoggedIn', '1');
-        dispatch(login({ user: data.user, token: data.token }));
+        dispatch(login({ user: data.user, token: data.token, refreshToken: data.refreshToken ?? null }));
 
         if (isFreshLogin) {
           const pendingLocationId = localStorage.getItem('pendingLocationId');

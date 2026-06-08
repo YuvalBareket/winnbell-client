@@ -486,23 +486,16 @@ const BusinessHubPage = () => {
 
       {/* Profile preview popup - shows business profile as users see it */}
       <MapBusinessPopup
-        location={previewOpen && activeLocations.length > 0 ? ({
+        locationId={previewOpen && activeLocations.length > 0 ? activeLocations[0].id : null}
+        basicInfo={previewOpen && activeLocations.length > 0 ? ({
           location_id: activeLocations[0].id,
           id: business.id,
           name: business.name,
           sector: business.sector as NearbyLocation['sector'],
-          description: business.description,
-          terms_text: business.terms_text,
           logo_url: business.logo_url,
-          receipt_example_image_url: business.receipt_example_image_url,
-          min_transaction_amount: business.min_transaction_amount,
-          website_url: business.website_url,
-          phone: business.phone,
           address: activeLocations[0].address,
-          latitude: 0,
-          longitude: 0,
-          distance_km: 0,
-          other_locations: activeLocations.slice(1).map(l => ({ id: l.id, name: l.name, address: l.address })),
+          latitude: activeLocations[0].latitude ?? 0,
+          longitude: activeLocations[0].longitude ?? 0,
         } satisfies NearbyLocation) : null}
         onClose={() => setPreviewOpen(false)}
       />

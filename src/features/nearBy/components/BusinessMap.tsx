@@ -27,22 +27,20 @@ function getSectorConfig(sector: string | null | undefined) {
   );
 }
 
-function makePinSvg(sector: string | null | undefined, capReached = false): string {
+function makePinSvg(sector: string | null | undefined): string {
   const { color, iconPath } = getSectorConfig(sector);
-  const pinColor = color;
-  const opacity = capReached ? '0.6' : '1';
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="46" viewBox="0 0 38 46" opacity="${opacity}">
-    <path d="M19 1C9.61 1 2 8.61 2 18c0 13.25 17 27 17 27S36 31.25 36 18C36 8.61 28.39 1 19 1z" fill="${pinColor}" stroke="white" stroke-width="1.5"/>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="46" viewBox="0 0 38 46">
+    <path d="M19 1C9.61 1 2 8.61 2 18c0 13.25 17 27 17 27S36 31.25 36 18C36 8.61 28.39 1 19 1z" fill="${color}" stroke="white" stroke-width="1.5"/>
     <circle cx="19" cy="18" r="11" fill="white" opacity="0.93"/>
-    <g transform="translate(11,10) scale(0.667)" fill="${pinColor}">
+    <g transform="translate(11,10) scale(0.667)" fill="${color}">
       <path d="${iconPath}"/>
     </g>
   </svg>`;
 }
 
-function makePinIcon(sector: string | null | undefined, capReached = false): google.maps.Icon {
+function makePinIcon(sector: string | null | undefined): google.maps.Icon {
   return {
-    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(makePinSvg(sector, capReached))}`,
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(makePinSvg(sector))}`,
     scaledSize: new google.maps.Size(26, 32),
     anchor: new google.maps.Point(13, 32),
   };
@@ -133,7 +131,7 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
         const marker = new google.maps.Marker({
           map,
           position: { lat: Number(loc.latitude), lng: Number(loc.longitude) },
-          icon: makePinIcon(loc.sector, loc.cap_reached),
+          icon: makePinIcon(loc.sector),
           title: loc.name,
           cursor: 'pointer',
         });

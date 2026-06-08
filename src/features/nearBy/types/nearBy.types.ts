@@ -1,23 +1,28 @@
 export type BusinessSector = string;
 
-// Matches exactly what GET /business/nearby returns
 export interface NearbyLocation {
   location_id: number;
   address: string;
   latitude: number;
   longitude: number;
-  id: number;            // business id
+  id: number;
   name: string;
   sector: BusinessSector;
+  logo_url: string | null;
+}
+
+export interface NearbyLocationDetail extends NearbyLocation {
   description: string;
   terms_text: string;
-  logo_url: string | null;
   receipt_example_image_url: string | null;
   min_transaction_amount: number | null;
-  distance_km: number;
+  pending_min_transaction_amount: number | null;
   website_url?: string | null;
   phone?: string | null;
   other_locations?: Array<{ id: number; name: string; address: string }>;
+  location_name?: string;
+  business_name?: string;
+  business_id?: number;
   cap_reached?: boolean;
 }
 

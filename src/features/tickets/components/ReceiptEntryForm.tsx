@@ -30,12 +30,12 @@ import { useSearchParticipatingLocations } from '../hooks/useAllParticipatingLoc
 import { useSubmitReceiptEntry } from '../hooks/useSubmitReceiptEntry';
 import { fetchParticipatingLocationById } from '../api/ticketsApi';
 import type { ParticipatingLocation } from '../hooks/useAllParticipatingLocations';
-import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
+import type { NearbyLocation, NearbyLocationDetail } from '../../nearBy/types/nearBy.types';
 
 interface ReceiptEntryFormProps {
   primaryColor: string;
   preselectedBusinessId?: number;
-  preselectedLocation?: NearbyLocation;
+  preselectedLocation?: NearbyLocation | NearbyLocationDetail;
   preselectedLocationId?: number;
   onSuccess?: (ticketId: number) => void;
   onError?: (message: string) => void;
@@ -51,8 +51,8 @@ const toParticipating = (n: NearbyLocation): ParticipatingLocation => ({
   business_name: n.name,
   sector: n.sector,
   logo_url: n.logo_url,
-  receipt_example_image_url: n.receipt_example_image_url,
-  min_transaction_amount: null,
+  receipt_example_image_url: 'receipt_example_image_url' in n ? (n as any).receipt_example_image_url : null,
+  min_transaction_amount: 'min_transaction_amount' in n ? (n as any).min_transaction_amount : null,
 });
 
 const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
@@ -153,7 +153,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   }, []);
 
   const { data: nearbyLocations = [] } = useQuery<NearbyLocation[]>({
-    queryKey: [...queryKeys.nearby.receipt, geoCoords?.latitude, geoCoords?.longitude],
+    queryKey: [...queryKeys.nearby.receipt,
+      geoCoords ? Math.round(geoCoords.latitude * 1000) / 1000 : null,
+      geoCoords ? Math.round(geoCoords.longitude * 1000) / 1000 : null,
+    ],
     queryFn: () => {
       const lat = geoCoords!.latitude;
       const lng = geoCoords!.longitude;
@@ -182,7 +185,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     // If full location object was passed directly (e.g. from NearBy drawer), use it immediately
     if (preselectedLocation) {
       setSelectedLocation(toParticipating(preselectedLocation));
-      setSelectedLocationCapReached(!!preselectedLocation.cap_reached);
+      setSelectedLocationCapReached(!!('cap_reached' in preselectedLocation && preselectedLocation.cap_reached));
       return;
     }
     // Fallback: try to find by ID in nearby/search results
@@ -227,7 +230,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     const isNearby = !('business_id' in location);
     const participatingLocation = isNearby ? toParticipating(location as NearbyLocation) : (location as ParticipatingLocation);
     setSelectedLocation(participatingLocation);
-    setSelectedLocationCapReached(!!location.cap_reached);
+    setSelectedLocationCapReached(!!('cap_reached' in location && location.cap_reached));
     setSearchTerm('');
     setErrorMessage('');
   };

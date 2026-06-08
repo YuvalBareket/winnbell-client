@@ -353,7 +353,7 @@ const NearbyPage = () => {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       cursor: 'pointer',
-                      opacity: partner.cap_reached ? 0.6 : 1,
+                      opacity: 1,
                       transition: 'transform 160ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out',
                       '&:active': { transform: 'scale(0.97)' },
                       '&:hover': { bgcolor: 'rgba(0,0,0,0.01)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
@@ -386,33 +386,19 @@ const NearbyPage = () => {
                             ? `${haversineKm(userLocation.latitude, userLocation.longitude, partner.latitude, partner.longitude).toFixed(1)} km away`
                             : sectorInfo.label}
                         </Typography>
-                        {partner.cap_reached ? (
-                          <Chip
-                            label='Entries Full'
-                            size='small'
-                            sx={{
-                              height: 20,
-                              fontSize: '0.65rem',
-                              fontWeight: 700,
-                              bgcolor: 'rgba(0,0,0,0.06)',
-                              color: 'text.disabled',
-                            }}
-                          />
-                        ) : (
-                          <Chip
-                            icon={<CheckCircle sx={{ fontSize: '12px !important' }} />}
-                            label='Active'
-                            size='small'
-                            sx={{
-                              height: 20,
-                              fontSize: '0.65rem',
-                              fontWeight: 700,
-                              bgcolor: 'rgba(46, 125, 50, 0.1)',
-                              color: 'success.main',
-                              '& .MuiChip-icon': { color: 'success.main' },
-                            }}
-                          />
-                        )}
+                        <Chip
+                          icon={<CheckCircle sx={{ fontSize: '12px !important' }} />}
+                          label='Partner'
+                          size='small'
+                          sx={{
+                            height: 20,
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            bgcolor: 'rgba(46, 125, 50, 0.1)',
+                            color: 'success.main',
+                            '& .MuiChip-icon': { color: 'success.main' },
+                          }}
+                        />
                       </Box>
                     </Box>
                   </Box>
@@ -440,7 +426,8 @@ const NearbyPage = () => {
 
       {/* POPUP DRAWER */}
       <MapBusinessPopup
-        location={selectedLocation}
+        locationId={selectedLocationId}
+        basicInfo={selectedLocation}
         onClose={() => setSelectedLocationId(null)}
         userLocation={userLocation}
       />

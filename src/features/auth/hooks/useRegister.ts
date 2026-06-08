@@ -17,6 +17,7 @@ export const useRegister = () => {
         login({
           user: data.user,
           token: data.token ?? '',
+          refreshToken: data.refreshToken ?? null,
         }),
       );
       if (data?.user?.role === 'Business') {

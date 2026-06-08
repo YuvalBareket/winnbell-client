@@ -17,6 +17,6 @@ export const getMyTickets = async (
 ): Promise<MyTicketsResponse> => {
   const params: Record<string, unknown> = { draw_id, page };
   if (location_id !== undefined) params.location_id = location_id;
-  const { data } = await api.get('/tickets/my-tickets/', { params });
+  const { data } = await api.get('/tickets/my-tickets', { params });
   return data;
 };
