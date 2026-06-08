@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { Box, Button, Dialog, Fade, Stack, Typography, Zoom } from '@mui/material';
 import { ConfirmationNumber, EmojiEvents, AddCircleOutline } from '@mui/icons-material';
 import { GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
+import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
 
 interface Props {
   open: boolean;
@@ -18,7 +20,10 @@ const EntrySuccessDialog: React.FC<Props> = ({
   primaryColor,
   onViewEntries,
   onSubmitAnother,
-}) => (
+}) => {
+  const { triggerInstallPrompt } = useInstallPromptTrigger();
+  useEffect(() => { if (open) triggerInstallPrompt(); }, [open, triggerInstallPrompt]);
+  return (
   <Dialog
     open={open}
     fullScreen
@@ -91,6 +96,7 @@ const EntrySuccessDialog: React.FC<Props> = ({
       </Fade>
     </Box>
   </Dialog>
-);
+  );
+};
 
 export default EntrySuccessDialog;

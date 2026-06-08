@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Snackbar,
   Alert,
@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import QRScannerModal from './QRScannerModal';
 import { GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
+import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
 
 interface RedeemFeedbackProps {
   scannerOpen: boolean;
@@ -46,7 +47,10 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
   setSuccessDialogOpen,
   navigate,
   primaryColor,
-}) => (
+}) => {
+  const { triggerInstallPrompt } = useInstallPromptTrigger();
+  useEffect(() => { if (successDialogOpen) triggerInstallPrompt(); }, [successDialogOpen, triggerInstallPrompt]);
+  return (
   <>
     <QRScannerModal open={scannerOpen} onScan={handleScanSuccess} onClose={() => setScannerOpen(false)} />
     <Snackbar open={successOpen} autoHideDuration={4000} onClose={() => setSuccessOpen(false)}>
@@ -112,6 +116,7 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
       </Box>
     </Dialog>
   </>
-);
+  );
+};
 
 export default RedeemFeedback;

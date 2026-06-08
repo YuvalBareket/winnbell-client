@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { Box, Button, Dialog, Fade, Stack, Typography, Zoom } from '@mui/material';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
+import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
 
 interface Props {
   open: boolean;
@@ -10,7 +12,10 @@ interface Props {
   onClose: () => void;
 }
 
-const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, onViewEntries, onClose }) => (
+const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, onViewEntries, onClose }) => {
+  const { triggerInstallPrompt } = useInstallPromptTrigger();
+  useEffect(() => { if (open) triggerInstallPrompt(); }, [open, triggerInstallPrompt]);
+  return (
   <Dialog
     open={open}
     fullScreen
@@ -75,6 +80,7 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, onViewEntr
       </Fade>
     </Box>
   </Dialog>
-);
+  );
+};
 
 export default FreeEntrySuccessDialog;

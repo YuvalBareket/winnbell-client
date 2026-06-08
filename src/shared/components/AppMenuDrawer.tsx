@@ -50,6 +50,9 @@ import {
 } from '../colors';
 import { getUserInitials, getRoleLabel } from '../utils/string';
 import HowItWorksModal from '../../features/help/components/HowItWorksModal';
+import GetAppOutlinedIcon from '@mui/icons-material/GetAppOutlined';
+import { useInstallPromptTrigger } from '../../features/install/InstallPromptContext';
+import { useInstallPrompt } from '../../features/install/useInstallPrompt';
 
 interface Props {
   open: boolean;
@@ -73,6 +76,9 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const businessLogoUrl = useAppSelector(selectBusinessLogoUrl);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
+  const { canInstall, installed } = useInstallPrompt();
+  const { openInstallDialog } = useInstallPromptTrigger();
+  const showInstallOption = (canInstall || /iPad|iPhone|iPod/.test(navigator.userAgent)) && !installed;
 
   const handleLogout = async () => {
     navigate('/');
@@ -291,6 +297,25 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
             Support
           </Typography>
           <List disablePadding>
+            {showInstallOption && (
+              <ListItemButton
+                onClick={() => { openInstallDialog(); onClose(); }}
+                sx={{
+                  borderRadius: 2.5, mb: 0.2, py: itemPy, px: 1.5,
+                  transition: 'all 0.15s ease',
+                  '&:hover': { bgcolor: ALPHA_PRIMARY_06, transform: 'translateX(3px)' },
+                  '&:hover .nav-icon': { color: PRIMARY_MAIN },
+                }}
+              >
+                <ListItemIcon className='nav-icon' sx={{ minWidth: 34, color: PRIMARY_MAIN, '& svg': { fontSize: { xs: 20, sm: 24 } } }}>
+                  <GetAppOutlinedIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary='Install App'
+                  primaryTypographyProps={{ fontWeight: 600, fontSize: { xs: '0.82rem', sm: '0.84rem' }, color: PRIMARY_MAIN }}
+                />
+              </ListItemButton>
+            )}
             <ListItemButton
               onClick={handleHowItWorks}
               sx={{

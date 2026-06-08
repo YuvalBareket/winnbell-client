@@ -7,6 +7,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AppMenuDrawer from './AppMenuDrawer';
 import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
+import { InstallPromptProvider } from '../../features/install/InstallPrompt';
 import { usePageHeader } from '../context/PageHeaderContext';
 import { useAppSelector } from '../../store/hook';
 import { selectIsBusiness, selectIsAdmin, selectIsLocationManager } from '../../store/selectors/authSelectors';
@@ -45,6 +46,7 @@ const MainLayout = () => {
   const scanActive = location.pathname === mobileMainPath;
 
   return (
+    <InstallPromptProvider>
     <Box
       sx={{
         width: '100%',
@@ -168,6 +170,7 @@ const MainLayout = () => {
         </Paper>
       )}
     </Box>
+    </InstallPromptProvider>
   );
 };
 
