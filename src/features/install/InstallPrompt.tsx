@@ -251,11 +251,7 @@ const InstallDialog = ({
           <Typography variant='h6' fontWeight={800} color='white' gutterBottom sx={{ mb: 1 }}>
             Get the App
           </Typography>
-          {/* DEBUG: remove after testing */}
-          <Typography variant='caption' sx={{ color: 'yellow' }}>
-            isIos={String(isIos)} | native={String(hasNativePrompt)} | manual={String(showManualSteps)}
-          </Typography>
-          <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+<Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
             {showManualSteps
               ? 'Three quick taps and you are all set.'
               : 'One tap and you are all set. Never miss a draw again.'}

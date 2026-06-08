@@ -29,11 +29,6 @@ const getIsInStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
   ('standalone' in navigator && (navigator as unknown as { standalone: boolean }).standalone);
 
-// DEBUG: remove after testing
-if (typeof window !== 'undefined') {
-  alert(`UA: ${navigator.userAgent}\nisIos: ${getIsIos()}\nisMobile: ${getIsMobile()}\nstandalone: ${window.matchMedia('(display-mode: standalone)').matches}`);
-}
-
 export const useInstallPrompt = () => {
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
   const [hasNativePrompt, setHasNativePrompt] = useState(false);
