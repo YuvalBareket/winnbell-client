@@ -15,6 +15,7 @@ import {
   CampaignOutlined,
   DashboardOutlined,
   PeopleOutlined,
+  NotificationsOutlined,
 } from '@mui/icons-material';
 
 export interface NavItem {
@@ -55,6 +56,7 @@ export const adminNavItems: NavItem[] = [
   { label: 'Users', Icon: PeopleOutlined, path: '/admin/users' },
   { label: 'Businesses', Icon: BusinessOutlined, path: '/admin/businesses' },
   { label: 'Analytics', Icon: BarChartOutlined, path: '/admin/analytics' },
+  { label: 'Notifications', Icon: NotificationsOutlined, path: '/admin/notifications' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/admin/settings' },
 ];
 

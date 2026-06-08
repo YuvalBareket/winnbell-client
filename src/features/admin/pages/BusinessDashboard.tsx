@@ -20,6 +20,7 @@ import BusinessesTab from './components/BusinessesTab';
 import DrawsTab from './components/DrawsTab';
 import AnalyticsTab from './components/AnalyticsTab';
 import SettingsTab from './components/SettingsTab';
+import NotificationsTab from './components/NotificationsTab';
 
 const BusinessDashboard: React.FC = () => {
   const theme = useTheme();
@@ -73,6 +74,9 @@ const BusinessDashboard: React.FC = () => {
     if (path === '/admin/settings') {
       return <SettingsTab />;
     }
+    if (path === '/admin/notifications') {
+      return <NotificationsTab />;
+    }
     // Default: /admin → Overview
     return (
       <OverviewTab
@@ -89,6 +93,7 @@ const BusinessDashboard: React.FC = () => {
     '/admin/businesses': 'Businesses',
     '/admin/analytics': 'Analytics',
     '/admin/settings': 'Settings',
+    '/admin/notifications': 'Notifications',
   };
 
   return (

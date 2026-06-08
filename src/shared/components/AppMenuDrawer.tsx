@@ -30,6 +30,7 @@ import {
   HelpOutlineOutlined,
   DashboardOutlined,
   PeopleOutlined,
+  NotificationsOutlined,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, Fragment } from 'react';
@@ -104,6 +105,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Users', icon: <PeopleOutlined />, path: '/admin/users' },
         { label: 'Businesses', icon: <BusinessOutlined />, path: '/admin/businesses' },
         { label: 'Analytics', icon: <BarChartOutlined />, path: '/admin/analytics' },
+        { label: 'Notifications', icon: <NotificationsOutlined />, path: '/admin/notifications' },
         { label: 'Settings', icon: <SettingsOutlined />, path: '/admin/settings' },
       ]
     : isBusiness

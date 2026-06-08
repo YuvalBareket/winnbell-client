@@ -122,3 +122,9 @@ export const fetchBusinessEntries = (businessId: number, drawId: number | null, 
   api.get(`/admin/businesses/${businessId}/entries`, {
     params: { drawId: drawId ?? undefined, page, limit: 50 },
   });
+
+export const sendNotification = (data: { title: string; body: string; url?: string; audience: 'all' | 'users' | 'businesses' }) =>
+  api.post('/admin/notifications/send', data);
+
+export const fetchNotificationHistory = () =>
+  api.get('/admin/notifications/history');

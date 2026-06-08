@@ -30,6 +30,8 @@ import {
   fetchBusinessDetail,
   fetchBusinessEntries,
   adminImageDecision,
+  sendNotification,
+  fetchNotificationHistory,
 } from '../api/adminApi';
 import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
@@ -425,5 +427,35 @@ export const useBusinessEntries = (businessId: number | null, drawId: number | n
     },
     enabled: businessId !== null,
     staleTime: 30_000,
+  });
+};
+
+export const useSendNotification = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { title: string; body: string; url?: string; audience: 'all' | 'users' | 'businesses' }) =>
+      sendNotification(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-history'] });
+    },
+  });
+};
+
+export const useNotificationHistory = () => {
+  return useQuery({
+    queryKey: ['admin', 'notification-history'],
+    queryFn: async () => {
+      const { data } = await fetchNotificationHistory();
+      return data as {
+        id: number;
+        title: string;
+        body: string;
+        url: string | null;
+        audience: 'all' | 'users' | 'businesses';
+        sent_count: number;
+        created_at: string;
+      }[];
+    },
+    staleTime: 60_000,
   });
 };
