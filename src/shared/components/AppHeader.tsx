@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AppBar, Toolbar, IconButton, Box, Avatar, Stack, Tooltip, CircularProgress } from '@mui/material';
 import { NotificationsNoneOutlined, NotificationsActiveOutlined } from '@mui/icons-material';
 import { useAppSelector } from '../../store/hook';
@@ -5,6 +6,7 @@ import { selectCurrentUser } from '../../store/selectors/authSelectors';
 import { GRADIENT_PRIMARY } from '../colors';
 import { getUserInitials } from '../utils/string';
 import { useNotifications } from '../../features/notifications/useNotifications';
+import NotificationPermissionDialog from '../../features/notifications/NotificationPermissionDialog';
 
 interface Props {
   onMenuOpen: () => void;
@@ -14,9 +16,11 @@ interface Props {
 const AppHeader = ({ onMenuOpen, onGradient = false }: Props) => {
   const user = useAppSelector(selectCurrentUser);
   const initials = getUserInitials(user?.fullName);
-  const { subscribe, unsubscribe, isPending, isSupported, isSubscribed, permission } = useNotifications();
+  const { subscribe, unsubscribe, isPending, isSupported, isSubscribed } = useNotifications();
+  const [notifDialogOpen, setNotifDialogOpen] = useState(false);
 
   return (
+    <>
     <AppBar
       position='static'
       elevation={0}
@@ -43,8 +47,8 @@ const AppHeader = ({ onMenuOpen, onGradient = false }: Props) => {
             <Tooltip title={isSubscribed ? 'Turn off notifications' : 'Enable notifications'}>
               <IconButton
                 size='small'
-                onClick={() => isSubscribed ? unsubscribe() : subscribe()}
-                disabled={isPending || permission === 'denied'}
+                onClick={() => isSubscribed ? unsubscribe() : setNotifDialogOpen(true)}
+                disabled={isPending}
                 sx={{
                   color: onGradient ? 'white' : (isSubscribed ? 'primary.main' : 'text.secondary'),
                   bgcolor: onGradient ? (isSubscribed ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.15)') : (isSubscribed ? 'primary.main' + '18' : 'rgba(0,0,0,0.04)'),
@@ -91,6 +95,13 @@ const AppHeader = ({ onMenuOpen, onGradient = false }: Props) => {
         </Box>
       </Toolbar>
     </AppBar>
+
+    <NotificationPermissionDialog
+      open={notifDialogOpen}
+      onClose={() => setNotifDialogOpen(false)}
+      onAllow={() => { subscribe(); setNotifDialogOpen(false); }}
+    />
+  </>
   );
 };
 
