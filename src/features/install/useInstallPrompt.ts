@@ -10,17 +10,13 @@ const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
 
 const getIsIos = () => {
   const ua = navigator.userAgent;
-  // Standard iOS devices
   if (/iPad|iPhone|iPod/.test(ua) && !(window as unknown as { MSStream?: unknown }).MSStream) return true;
-  // iPadOS 13+ reports as Mac but has touch - only match if NOT Android
   if (/Macintosh/.test(ua) && !/Android/i.test(ua) && 'ontouchend' in document) return true;
   return false;
 };
 
 const getIsMobile = () => {
-  // Broad mobile detection: touch support + small screen, or known mobile UA tokens
   if (/Android|iPhone|iPad|iPod|webOS|BlackBerry|Opera Mini|IEMobile/i.test(navigator.userAgent)) return true;
-  // Fallback: touch device with mobile-sized screen
   if ('ontouchstart' in window && window.innerWidth < 768) return true;
   return false;
 };
@@ -29,9 +25,17 @@ const getIsInStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
   ('standalone' in navigator && (navigator as unknown as { standalone: boolean }).standalone);
 
+// Capture beforeinstallprompt IMMEDIATELY at module load - before React mounts.
+// This prevents Chrome from showing its own banner and stores the event for later use.
+let earlyPromptEvent: BeforeInstallPromptEvent | null = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  earlyPromptEvent = e as BeforeInstallPromptEvent;
+});
+
 export const useInstallPrompt = () => {
-  const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
-  const [hasNativePrompt, setHasNativePrompt] = useState(false);
+  const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(earlyPromptEvent);
+  const [hasNativePrompt, setHasNativePrompt] = useState(!!earlyPromptEvent);
   const [dismissed, setDismissed] = useState(() => {
     const val = localStorage.getItem(DISMISSED_KEY);
     if (!val) return false;
@@ -44,7 +48,6 @@ export const useInstallPrompt = () => {
   const [isIos] = useState(getIsIos);
   const [isMobile] = useState(getIsMobile);
 
-  // canInstall = on mobile and not already installed as standalone
   const canInstall = isMobile && !installed;
 
   useEffect(() => {
@@ -53,6 +56,7 @@ export const useInstallPrompt = () => {
     const handler = (e: Event) => {
       e.preventDefault();
       deferredPrompt.current = e as BeforeInstallPromptEvent;
+      earlyPromptEvent = null; // no longer needed
       setHasNativePrompt(true);
     };
 
