@@ -173,15 +173,14 @@ const InstallDialog = ({
   hookState: HookState; dialogOpen: boolean; onClose: () => void;
 }) => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const { canInstall, isIos, isAndroid, hasNativePrompt, install, dismiss } = hookState;
+  const { canInstall, isIos, hasNativePrompt, install, dismiss } = hookState;
   const [installing, setInstalling] = useState(false);
 
   const open = dialogOpen && canInstall && isAuthenticated;
 
-  // Show manual steps when no native prompt is available
-  const showManualSteps = isIos || (isAndroid && !hasNativePrompt);
+  // Show manual steps when no native one-click prompt is available
+  const showManualSteps = !hasNativePrompt;
   const steps = isIos ? IOS_STEPS : ANDROID_STEPS;
-  const stepCount = isIos ? 'Three' : 'Three';
 
   const handleInstall = async () => {
     if (showManualSteps) return;
@@ -254,7 +253,7 @@ const InstallDialog = ({
           </Typography>
           <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
             {showManualSteps
-              ? `${stepCount} quick taps and you are all set.`
+              ? 'Three quick taps and you are all set.'
               : 'One tap and you are all set. Never miss a draw again.'}
           </Typography>
         </motion.div>
