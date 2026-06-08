@@ -13,8 +13,8 @@ self.addEventListener('push', (event: PushEvent) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: '/winnbell_icon.png',
-      badge: '/winnbell_icon.png',
+      icon: '/winnbell_icon_192.png',
+      badge: '/winnbell_icon_192.png',
       data: { url: data.url ?? '/' },
     }),
   );
