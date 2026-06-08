@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import {
   Dialog, Box, Typography, Button, IconButton, Stack,
 } from '@mui/material';
-import { Close, GetApp, Speed, NotificationsActive, WifiOff, IosShare, AddBoxOutlined } from '@mui/icons-material';
+import { Close, GetApp, Speed, NotificationsActive, WifiOff, IosShare, AddBoxOutlined, MoreVert } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInstallPrompt } from './useInstallPrompt';
 import { InstallPromptContext } from './InstallPromptContext';
@@ -20,6 +20,12 @@ const FEATURES = [
 
 const IOS_STEPS = [
   { text: 'Tap the Share button', icon: <IosShare sx={{ fontSize: 20 }} /> },
+  { text: 'Tap "Add to Home Screen"', icon: <AddBoxOutlined sx={{ fontSize: 20 }} /> },
+  { text: 'Tap "Add" to confirm', icon: null },
+];
+
+const ANDROID_STEPS = [
+  { text: 'Tap the menu button', icon: <MoreVert sx={{ fontSize: 20 }} /> },
   { text: 'Tap "Add to Home Screen"', icon: <AddBoxOutlined sx={{ fontSize: 20 }} /> },
   { text: 'Tap "Add" to confirm', icon: null },
 ];
@@ -64,9 +70,9 @@ const InstallBanner = ({
   hookState: HookState; dialogOpen: boolean; onOpenDialog: () => void;
 }) => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const { canInstall, installed, dismissed, triggered, isIos, dismiss } = hookState;
+  const { canInstall, dismissed, triggered, isIos, dismiss } = hookState;
 
-  const show = canInstall && !installed && !dismissed && isAuthenticated && triggered && !dialogOpen;
+  const show = canInstall && !dismissed && isAuthenticated && triggered && !dialogOpen;
   return (
     <AnimatePresence>
       {show && (
@@ -167,13 +173,18 @@ const InstallDialog = ({
   hookState: HookState; dialogOpen: boolean; onClose: () => void;
 }) => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const { canInstall, installed, isIos, install, dismiss } = hookState;
+  const { canInstall, isIos, isAndroid, hasNativePrompt, install, dismiss } = hookState;
   const [installing, setInstalling] = useState(false);
 
-  const open = dialogOpen && canInstall && !installed && isAuthenticated;
+  const open = dialogOpen && canInstall && isAuthenticated;
+
+  // Show manual steps when no native prompt is available
+  const showManualSteps = isIos || (isAndroid && !hasNativePrompt);
+  const steps = isIos ? IOS_STEPS : ANDROID_STEPS;
+  const stepCount = isIos ? 'Three' : 'Three';
 
   const handleInstall = async () => {
-    if (isIos) return;
+    if (showManualSteps) return;
     setInstalling(true);
     const accepted = await install();
     setInstalling(false);
@@ -242,8 +253,8 @@ const InstallDialog = ({
             Get the App
           </Typography>
           <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
-            {isIos
-              ? 'Three quick taps and you are all set.'
+            {showManualSteps
+              ? `${stepCount} quick taps and you are all set.`
               : 'One tap and you are all set. Never miss a draw again.'}
           </Typography>
         </motion.div>
@@ -251,9 +262,9 @@ const InstallDialog = ({
 
       {/* Content */}
       <Box sx={{ px: 3, py: 3.5 }}>
-        {isIos ? (
+        {showManualSteps ? (
           <Stack spacing={2.75}>
-            {IOS_STEPS.map((s, i) => (
+            {steps.map((s, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -12 }}
@@ -322,7 +333,7 @@ const InstallDialog = ({
 
       {/* Actions */}
       <Box sx={{ px: 3, pb: 3.5 }}>
-        {isIos ? (
+        {showManualSteps ? (
           <Button
             fullWidth
             variant='contained'

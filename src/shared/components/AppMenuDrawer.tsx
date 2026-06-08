@@ -75,8 +75,8 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const businessLogoUrl = useAppSelector(selectBusinessLogoUrl);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
-  const { canInstall, installed, isIos, openInstallDialog } = useInstallPromptTrigger();
-  const showInstallOption = (canInstall || isIos) && !installed;
+  const { canInstall, openInstallDialog } = useInstallPromptTrigger();
+  const showInstallOption = canInstall;
 
   const handleLogout = async () => {
     navigate('/');
