@@ -52,7 +52,6 @@ import { getUserInitials, getRoleLabel } from '../utils/string';
 import HowItWorksModal from '../../features/help/components/HowItWorksModal';
 import GetAppOutlinedIcon from '@mui/icons-material/GetAppOutlined';
 import { useInstallPromptTrigger } from '../../features/install/InstallPromptContext';
-import { useInstallPrompt } from '../../features/install/useInstallPrompt';
 
 interface Props {
   open: boolean;
@@ -76,9 +75,8 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const businessLogoUrl = useAppSelector(selectBusinessLogoUrl);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
-  const { canInstall, installed } = useInstallPrompt();
-  const { openInstallDialog } = useInstallPromptTrigger();
-  const showInstallOption = (canInstall || /iPad|iPhone|iPod/.test(navigator.userAgent)) && !installed;
+  const { canInstall, installed, isIos, openInstallDialog } = useInstallPromptTrigger();
+  const showInstallOption = (canInstall || isIos) && !installed;
 
   const handleLogout = async () => {
     navigate('/');
