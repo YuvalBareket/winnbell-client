@@ -49,7 +49,9 @@ const InstallPromptInner = ({
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const [installing, setInstalling] = useState(false);
 
-  if (!canInstall || installed || dismissed || !isAuthenticated || !triggered) return null;
+  const showBanner = canInstall && !installed && !dismissed && isAuthenticated && triggered;
+  const showDialog = dialogOpen && canInstall && !installed && isAuthenticated;
+  if (!showBanner && !showDialog) return null;
 
   const handleInstall = async () => {
     if (isIos) return; // iOS uses manual steps
@@ -68,7 +70,7 @@ const InstallPromptInner = ({
     <>
       {/* Bottom banner - compact mobile layout */}
       <AnimatePresence>
-        {!dialogOpen && (
+        {showBanner && !dialogOpen && (
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -161,7 +163,7 @@ const InstallPromptInner = ({
 
       {/* Full dialog */}
       <Dialog
-        open={dialogOpen}
+        open={showDialog}
         onClose={() => setDialogOpen(false)}
         PaperProps={{
           sx: {
