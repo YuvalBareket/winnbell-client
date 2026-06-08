@@ -8,16 +8,31 @@ interface BeforeInstallPromptEvent extends Event {
 const DISMISSED_KEY = 'install_prompt_dismissed';
 const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
 
-const getIsIos = () =>
-  /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
+const getIsIos = () => {
+  const ua = navigator.userAgent;
+  // Standard iOS devices
+  if (/iPad|iPhone|iPod/.test(ua) && !(window as unknown as { MSStream?: unknown }).MSStream) return true;
+  // iPadOS 13+ reports as Mac but has touch - only match if NOT Android
+  if (/Macintosh/.test(ua) && !/Android/i.test(ua) && 'ontouchend' in document) return true;
+  return false;
+};
 
-const getIsAndroid = () => /Android/i.test(navigator.userAgent);
-
-const getIsMobile = () => getIsIos() || getIsAndroid();
+const getIsMobile = () => {
+  // Broad mobile detection: touch support + small screen, or known mobile UA tokens
+  if (/Android|iPhone|iPad|iPod|webOS|BlackBerry|Opera Mini|IEMobile/i.test(navigator.userAgent)) return true;
+  // Fallback: touch device with mobile-sized screen
+  if ('ontouchstart' in window && window.innerWidth < 768) return true;
+  return false;
+};
 
 const getIsInStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
   ('standalone' in navigator && (navigator as unknown as { standalone: boolean }).standalone);
+
+// DEBUG: remove after testing
+if (typeof window !== 'undefined') {
+  alert(`UA: ${navigator.userAgent}\nisIos: ${getIsIos()}\nisMobile: ${getIsMobile()}\nstandalone: ${window.matchMedia('(display-mode: standalone)').matches}`);
+}
 
 export const useInstallPrompt = () => {
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
@@ -32,7 +47,6 @@ export const useInstallPrompt = () => {
   const [installed, setInstalled] = useState(getIsInStandalone);
   const [triggered, setTriggered] = useState(false);
   const [isIos] = useState(getIsIos);
-  const [isAndroid] = useState(getIsAndroid);
   const [isMobile] = useState(getIsMobile);
 
   // canInstall = on mobile and not already installed as standalone
@@ -83,5 +97,5 @@ export const useInstallPrompt = () => {
     setTriggered(true);
   }, []);
 
-  return { canInstall, installed, dismissed, triggered, isIos, isAndroid, isMobile, hasNativePrompt, install, dismiss, trigger };
+  return { canInstall, installed, dismissed, triggered, isIos, isMobile, hasNativePrompt, install, dismiss, trigger };
 };
