@@ -67,7 +67,7 @@ const RedeemPage = () => {
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
-  const [activatedCode, setActivatedCode] = useState<string | null>(null);
+  const [, setActivatedCode] = useState<string | null>(null);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<number | ''>('');
   const [receiptLocationSelected, setReceiptLocationSelected] = useState(false);
@@ -406,7 +406,7 @@ const didAutoActivate = useRef(false);
           errorMessage={errorMessage}
           successDialogOpen={successDialogOpen}
           setSuccessDialogOpen={setSuccessDialogOpen}
-          activatedCode={activatedCode}
+
           navigate={navigate}
           primaryColor={primaryColor}
         />
@@ -534,7 +534,6 @@ const didAutoActivate = useRef(false);
         errorMessage={errorMessage}
         successDialogOpen={successDialogOpen}
         setSuccessDialogOpen={setSuccessDialogOpen}
-        activatedCode={activatedCode}
         navigate={navigate}
         primaryColor={primaryColor}
       />

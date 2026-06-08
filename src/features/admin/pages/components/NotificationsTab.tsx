@@ -101,7 +101,7 @@ const NotificationsTab: React.FC = () => {
                     setConfirming(false);
                   }
                 }}
-                inputProps={{ maxLength: 100 }}
+                slotProps={{ htmlInput: { maxLength: 100 } }}
               />
               <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5, display: 'block' }}>
                 {title.length} / 100
@@ -125,7 +125,7 @@ const NotificationsTab: React.FC = () => {
                     setConfirming(false);
                   }
                 }}
-                inputProps={{ maxLength: 500 }}
+                slotProps={{ htmlInput: { maxLength: 500 } }}
               />
               <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5, display: 'block' }}>
                 {body.length} / 500

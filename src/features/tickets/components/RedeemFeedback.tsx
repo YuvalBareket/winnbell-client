@@ -29,7 +29,6 @@ interface RedeemFeedbackProps {
   errorMessage: string;
   successDialogOpen: boolean;
   setSuccessDialogOpen: (open: boolean) => void;
-  activatedCode: string | null;
   navigate: (path: string) => void;
   primaryColor: string;
 }

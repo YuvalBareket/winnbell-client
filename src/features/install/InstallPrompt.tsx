@@ -185,11 +185,18 @@ const InstallDialog = ({
   const handleInstall = async () => {
     if (showManualSteps) return;
     setInstalling(true);
-    const accepted = await install();
-    setInstalling(false);
-    if (accepted) onClose();
+    try {
+      const accepted = await install();
+      if (accepted) onClose();
+    } finally {
+      setInstalling(false);
+    }
   };
 
+  // "Got it" on manual steps - just close, no cooldown
+  const handleGotIt = () => onClose();
+
+  // "Maybe later" on native install - close + 5-day cooldown
   const handleDismiss = () => {
     onClose();
     dismiss();
@@ -337,7 +344,7 @@ const InstallDialog = ({
             fullWidth
             variant='contained'
             size='large'
-            onClick={handleDismiss}
+            onClick={handleGotIt}
             sx={{
               py: 1.75,
               fontWeight: 800,

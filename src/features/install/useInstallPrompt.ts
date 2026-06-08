@@ -28,10 +28,12 @@ const getIsInStandalone = () =>
 // Capture beforeinstallprompt IMMEDIATELY at module load - before React mounts.
 // This prevents Chrome from showing its own banner and stores the event for later use.
 let earlyPromptEvent: BeforeInstallPromptEvent | null = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  earlyPromptEvent = e as BeforeInstallPromptEvent;
-});
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    earlyPromptEvent = e as BeforeInstallPromptEvent;
+  });
+}
 
 export const useInstallPrompt = () => {
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(earlyPromptEvent);
@@ -75,16 +77,23 @@ export const useInstallPrompt = () => {
   }, [installed]);
 
   const install = useCallback(async () => {
-    if (!deferredPrompt.current) return false;
-    await deferredPrompt.current.prompt();
-    const { outcome } = await deferredPrompt.current.userChoice;
-    deferredPrompt.current = null;
-    setHasNativePrompt(false);
-    if (outcome === 'accepted') {
-      setInstalled(true);
-      return true;
+    const p = deferredPrompt.current;
+    if (!p) return false;
+    try {
+      await p.prompt();
+      const { outcome } = await p.userChoice;
+      deferredPrompt.current = null;
+      setHasNativePrompt(false);
+      if (outcome === 'accepted') {
+        setInstalled(true);
+        return true;
+      }
+      return false;
+    } catch {
+      deferredPrompt.current = null;
+      setHasNativePrompt(false);
+      return false;
     }
-    return false;
   }, []);
 
   const dismiss = useCallback(() => {
