@@ -30,7 +30,7 @@ const getDialogState = (installed: boolean): 'pre-prompt' | 'install-first' | 'd
 
   if (typeof window === 'undefined') return 'pre-prompt';
 
-  const perm = Notification.permission;
+  const perm = 'Notification' in window ? Notification.permission : 'default';
 
   if (perm === 'denied') return 'denied';
 
