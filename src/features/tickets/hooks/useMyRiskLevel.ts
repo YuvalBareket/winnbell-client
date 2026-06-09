@@ -3,11 +3,12 @@ import { getMyRiskLevel } from '../api/ticketsApi';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useMyRiskLevel = () => {
-  const { data, refetch, isPending } = useQuery({
+  const { data, refetch, isPending, isError } = useQuery({
     queryKey: queryKeys.tickets.riskLevel,
     queryFn: getMyRiskLevel,
     staleTime: 30_000,
     gcTime: 60_000,
+    retry: 2,
   });
 
   const dailyCount = data?.dailyCount ?? 0;
@@ -22,7 +23,8 @@ export const useMyRiskLevel = () => {
     dailyLimit,
     isDailyLimitReached: dailyCount >= dailyLimit,
     isPhoneVerified: data?.isPhoneVerified ?? false,
-    isPhoneVerifiedLoaded: !isPending,
+    isPhoneVerifiedLoaded: !isPending && !isError,
+    isError,
     refetch,
   };
 };

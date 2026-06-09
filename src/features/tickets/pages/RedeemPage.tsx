@@ -84,7 +84,7 @@ const RedeemPage = () => {
   const { data: subscription } = useSubscription(isBusinessAdmin);
 
   // Phone verification status — fetched fresh from server on every page visit
-  const { isPhoneVerified, isPhoneVerifiedLoaded, refetch: refetchRiskLevel } = useMyRiskLevel();
+  const { isPhoneVerified, isPhoneVerifiedLoaded, isError: riskLevelError, refetch: refetchRiskLevel } = useMyRiskLevel();
 
   // Entry mode - lightweight single-field fetch for user side,
   // business users always stay in 'code' mode (they generate, not submit receipts).
@@ -207,8 +207,17 @@ const didAutoActivate = useRef(false);
 
   if (!isBusiness && !isPhoneVerifiedLoaded) {
     return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress size={40} sx={{ color: PRIMARY_MAIN }} />
+      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        {riskLevelError ? (
+          <>
+            <Typography variant='body1' color='text.secondary'>Something went wrong. Please try again.</Typography>
+            <Button variant='contained' onClick={() => refetchRiskLevel()} sx={{ fontWeight: 700, textTransform: 'none' }}>
+              Retry
+            </Button>
+          </>
+        ) : (
+          <CircularProgress size={40} sx={{ color: PRIMARY_MAIN }} />
+        )}
       </Box>
     );
   }
