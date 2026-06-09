@@ -28,6 +28,11 @@ api.interceptors.request.use(
 );
 
 // 2. Response Interceptor (Dispatch to Redux)
+// Deduplicates concurrent refresh attempts: when multiple requests get 401
+// at the same time, only the first triggers a refresh call. The rest wait
+// for that single refresh to finish, then retry with the new token.
+let refreshPromise: Promise<string> | null = null;
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -37,21 +42,26 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const state = store.getState();
-      const { refreshToken, user } = state.auth;
+      const { refreshToken, user } = store.getState().auth;
 
       if (refreshToken && user) {
         try {
-          const base = (originalRequest.baseURL || import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
-          const { data } = await axios.post(`${base}/auth/refresh`, { refreshToken });
+          if (!refreshPromise) {
+            const base = (originalRequest.baseURL || import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+            refreshPromise = axios.post(`${base}/auth/refresh`, { refreshToken })
+              .then(({ data }) => {
+                store.dispatch(login({
+                  user,
+                  token: data.token,
+                  refreshToken: data.refreshToken,
+                }));
+                return data.token as string;
+              })
+              .finally(() => { refreshPromise = null; });
+          }
 
-          store.dispatch(login({
-            user,
-            token: data.token,
-            refreshToken: data.refreshToken,
-          }));
-
-          originalRequest.headers.Authorization = `Bearer ${data.token}`;
+          const newToken = await refreshPromise;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return api(originalRequest);
         } catch (refreshError: unknown) {
           const status = (refreshError as { response?: { status?: number } })?.response?.status;
