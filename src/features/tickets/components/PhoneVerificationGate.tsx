@@ -146,6 +146,10 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
             >
               {isLoadingStep1 ? <CircularProgress size={24} color='inherit' /> : 'Send Code'}
             </Button>
+
+            <Typography variant='caption' sx={{ color: TEXT_SECONDARY, textAlign: 'center', lineHeight: 1.5 }}>
+              By tapping Send Code, you agree to receive one SMS verification message. Msg & data rates may apply. Reply STOP to opt out.
+            </Typography>
           </Stack>
         </motion.div>
       ) : (
@@ -179,9 +183,11 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
               inputMode='numeric'
               autoFocus
               fullWidth
-              inputProps={{
-                maxLength: 6,
-                style: { letterSpacing: '0.3em', fontSize: '1.25rem' },
+              slotProps={{
+                htmlInput: {
+                  maxLength: 6,
+                  style: { letterSpacing: '0.3em', fontSize: '1.25rem' },
+                },
               }}
             />
 
