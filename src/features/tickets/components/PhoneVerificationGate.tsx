@@ -3,7 +3,7 @@ import {
   Box, Button, Typography, Paper, Stack, Alert, TextField, CircularProgress,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PhoneAndroid, ArrowForward, Check } from '@mui/icons-material';
+import { ArrowForward, Check } from '@mui/icons-material';
 import { useMutation } from '@tanstack/react-query';
 import { api } from '../../../shared/api/client';
 import {
@@ -265,16 +265,6 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
             bgcolor: ALPHA_WHITE_15, filter: 'blur(50px)',
           }} />
 
-          {/* Icon */}
-          <Box sx={{
-            width: 80, height: 80, borderRadius: 3,
-            bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            mx: 'auto', mb: 3, position: 'relative', zIndex: 1,
-          }}>
-            <PhoneAndroid sx={{ fontSize: 40, color: 'white' }} />
-          </Box>
-
           {/* Title and subtitle */}
           <Box sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
             <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>
@@ -359,16 +349,6 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
             }} />
 
             <Box sx={{ position: 'relative', zIndex: 1 }}>
-              {/* Icon */}
-              <Box sx={{
-                width: 72, height: 72, borderRadius: 3,
-                bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                mb: 3,
-              }}>
-                <PhoneAndroid sx={{ fontSize: 36, color: 'white' }} />
-              </Box>
-
               <Typography variant='h4' sx={{ fontWeight: 700, mb: 2 }}>
                 {isPromo ? 'One Step to Claim Your Entry' : 'Verify Your Phone'}
               </Typography>
