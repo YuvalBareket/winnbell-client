@@ -8,7 +8,12 @@ export const useMyRiskLevel = () => {
     queryFn: getMyRiskLevel,
     staleTime: 30_000,
     gcTime: 60_000,
-    retry: 2,
+    // Don't retry 401s — the axios interceptor handles token refresh silently.
+    // Only retry server errors (5xx) or network failures.
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401) return false;
+      return failureCount < 2;
+    },
   });
 
   const dailyCount = data?.dailyCount ?? 0;
