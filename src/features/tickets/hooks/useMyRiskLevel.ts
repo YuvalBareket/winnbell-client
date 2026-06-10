@@ -3,18 +3,18 @@ import { getMyRiskLevel } from '../api/ticketsApi';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useMyRiskLevel = () => {
-  const { data, refetch, isPending, isError } = useQuery({
+  const { data, refetch, error } = useQuery({
     queryKey: queryKeys.tickets.riskLevel,
     queryFn: getMyRiskLevel,
     staleTime: 30_000,
     gcTime: 60_000,
-    // Don't retry 401s — the axios interceptor handles token refresh silently.
-    // Only retry server errors (5xx) or network failures.
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 401) return false;
-      return failureCount < 2;
-    },
+    retry: 3,
+    retryDelay: 2000,
   });
+
+  // 401 = token refresh in progress, keep showing spinner, not error page
+  const is401 = (error as any)?.response?.status === 401;
+  const isRealError = !!error && !data && !is401;
 
   const dailyCount = data?.dailyCount ?? 0;
   const dailyLimit = data?.dailyLimit ?? 5;
@@ -28,8 +28,8 @@ export const useMyRiskLevel = () => {
     dailyLimit,
     isDailyLimitReached: dailyCount >= dailyLimit,
     isPhoneVerified: data?.isPhoneVerified ?? false,
-    isPhoneVerifiedLoaded: !isPending && !isError,
-    isError,
+    isPhoneVerifiedLoaded: !!data,
+    isError: isRealError,
     refetch,
   };
 };

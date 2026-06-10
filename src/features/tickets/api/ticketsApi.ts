@@ -98,7 +98,7 @@ export interface RiskLevelResponse {
 }
 
 export const getMyRiskLevel = (): Promise<RiskLevelResponse> =>
-  api.get('/tickets/my-risk-level').then(r => r.data);
+  api.get<RiskLevelResponse>('/tickets/my-risk-level').then(r => r.data);
 
 export const activatePromotionalEntry = (code: string): Promise<{ success: boolean; entryId: number; drawName: string }> =>
   api.post('/tickets/activate-promotional', { code }).then(r => r.data);
