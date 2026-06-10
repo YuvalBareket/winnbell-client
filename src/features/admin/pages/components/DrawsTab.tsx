@@ -43,6 +43,7 @@ import {
   useOpenDraw,
   useCloseDraw,
   usePickWinner,
+  useConfirmWinner,
   useReopenDraw,
   useDrawBusinesses,
   useDeleteDraw,
@@ -276,12 +277,14 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const [confirmClose, setConfirmClose] = useState<number | null>(null);
   const [confirmPick, setConfirmPick] = useState<{ id: number; entryCount: number } | null>(null);
   const [confirmReopen, setConfirmReopen] = useState<number | null>(null);
-  const [winnerResult, setWinnerResult] = useState<{
+  const [candidateReview, setCandidateReview] = useState<{
+    drawId: number;
     winnerName: string;
     ticketCode: string;
     businessName: string | null;
     locationName: string | null;
     prizePool: number;
+    rejectedCount: number;
   } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [expandedDrawId, setExpandedDrawId] = useState<number | null>(null);
@@ -289,6 +292,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const openDraw = useOpenDraw();
   const closeDraw = useCloseDraw();
   const pickWinner = usePickWinner();
+  const confirmWinnerMutation = useConfirmWinner();
   const reopenDraw = useReopenDraw();
   const deleteDraw = useDeleteDraw();
   const duplicateDraw = useDuplicateDraw();
@@ -328,19 +332,56 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
 
   const handlePickWinner = async () => {
     if (!confirmPick) return;
+    const drawId = confirmPick.id;
+    setConfirmPick(null);
     try {
-      const { data } = await pickWinner.mutateAsync(confirmPick.id);
-      setWinnerResult({
+      const { data } = await pickWinner.mutateAsync(drawId);
+      const currentDraw = draws?.find((d) => d.id === drawId);
+      setCandidateReview({
+        drawId,
         winnerName: data.winnerName,
         ticketCode: data.ticketCode,
         businessName: data.businessName ?? null,
         locationName: data.locationName ?? null,
         prizePool: data.prizePool,
+        rejectedCount: currentDraw?.rejected_count ?? 0,
       });
     } catch (e: any) {
       onSnackError(e?.response?.data?.message ?? 'Failed to pick winner');
     }
-    setConfirmPick(null);
+  };
+
+  const handlePickAnother = async () => {
+    if (!candidateReview) return;
+    const drawId = candidateReview.drawId;
+    const prevRejectedCount = candidateReview.rejectedCount;
+    try {
+      const { data } = await pickWinner.mutateAsync(drawId);
+      setCandidateReview({
+        drawId,
+        winnerName: data.winnerName,
+        ticketCode: data.ticketCode,
+        businessName: data.businessName ?? null,
+        locationName: data.locationName ?? null,
+        prizePool: data.prizePool,
+        rejectedCount: prevRejectedCount + 1,
+      });
+    } catch (e: any) {
+      setCandidateReview(null);
+      onSnackError(e?.response?.data?.message ?? 'Failed to pick another winner');
+    }
+  };
+
+  const handleVerifyWinner = async () => {
+    if (!candidateReview) return;
+    const drawId = candidateReview.drawId;
+    try {
+      await confirmWinnerMutation.mutateAsync(drawId);
+      setCandidateReview(null);
+      onSnackSuccess('Winner confirmed successfully');
+    } catch (e: any) {
+      onSnackError(e?.response?.data?.message ?? 'Failed to confirm winner');
+    }
   };
 
   const handleDeleteDraw = async () => {
@@ -381,14 +422,20 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       {draw.status?.toUpperCase() === 'OPEN' && (
         <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} onClick={(e) => { e.stopPropagation(); setConfirmClose(draw.id); }} fullWidth={!inline}>Close</Button>
       )}
-      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
+      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && !draw.winner_user_id && (
         <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setConfirmPick({ id: draw.id, entryCount: draw.entry_count ?? 0 }); }} fullWidth={!inline}>Pick Winner</Button>
       )}
-      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_user_id && (
+      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && draw.winner_user_id && (
+        <Button size='small' variant='outlined' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setConfirmPick({ id: draw.id, entryCount: draw.entry_count ?? 0 }); }} fullWidth={!inline}>Pick Another</Button>
+      )}
+      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && draw.winner_user_id && (
+        <Button size='small' variant='contained' color='success' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setCandidateReview({ drawId: draw.id, winnerName: '', ticketCode: '', businessName: null, locationName: null, prizePool: draw.prize_amount ?? 0, rejectedCount: draw.rejected_count ?? 0 }); }} fullWidth={!inline}>Verify Winner</Button>
+      )}
+      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && (
         <Button size='small' variant='outlined' color='info' startIcon={<LockOpenIcon />} onClick={(e) => { e.stopPropagation(); setConfirmReopen(draw.id); }} fullWidth={!inline}>Reopen</Button>
       )}
-      {draw.status?.toUpperCase() === 'CLOSED' && draw.winner_user_id && (
-        <Chip label='Winner Selected' size='small' color='success' />
+      {draw.status?.toUpperCase() === 'CLOSED' && draw.winner_confirmed && (
+        <Chip label='Winner Verified' size='small' color='success' />
       )}
       <Button size='small' variant='outlined' startIcon={<ContentCopyIcon />} onClick={(e) => { e.stopPropagation(); handleDuplicate(draw.id); }} fullWidth={!inline} disabled={duplicateDraw.isPending}>
         Duplicate
@@ -606,30 +653,49 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
         </DialogActions>
       </Dialog>
 
-      {/* Winner result */}
-      <Dialog open={!!winnerResult} onClose={() => setWinnerResult(null)} maxWidth='xs' fullWidth>
+      {/* Candidate review */}
+      <Dialog open={!!candidateReview} onClose={() => setCandidateReview(null)} maxWidth='xs' fullWidth>
         <DialogTitle sx={{ textAlign: 'center' }}>
           <EmojiEventsIcon sx={{ fontSize: 48, color: 'warning.main', display: 'block', mx: 'auto', mb: 1 }} />
-          Winner Selected
+          Review Candidate Winner
         </DialogTitle>
         <DialogContent>
-          <Stack spacing={1} textAlign='center'>
-            <Typography variant='h6' fontWeight={800}>{winnerResult?.winnerName}</Typography>
-            <Typography variant='body2' color='text.secondary'>
-              Winning entry: <strong>{winnerResult?.ticketCode}</strong>
-            </Typography>
-            {winnerResult?.businessName && (
+          <Stack spacing={1.5} textAlign='center'>
+            {candidateReview?.winnerName ? (
+              <>
+                <Typography variant='h6' fontWeight={800}>{candidateReview.winnerName}</Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Winning entry: <strong>{candidateReview.ticketCode}</strong>
+                </Typography>
+                {candidateReview.businessName && (
+                  <Typography variant='body2' color='text.secondary'>
+                    Business: <strong>{candidateReview.businessName}{candidateReview.locationName ? ` · ${candidateReview.locationName}` : ''}</strong>
+                  </Typography>
+                )}
+                <Typography variant='body2' color='text.secondary'>
+                  Prize pool: <strong>${Number(candidateReview.prizePool ?? 0).toLocaleString()}</strong>
+                </Typography>
+              </>
+            ) : (
               <Typography variant='body2' color='text.secondary'>
-                Business: <strong>{winnerResult.businessName}{winnerResult.locationName ? ` · ${winnerResult.locationName}` : ''}</strong>
+                A candidate winner has been selected. Verify to confirm or pick another.
               </Typography>
             )}
-            <Typography variant='body2' color='text.secondary'>
-              Prize pool: <strong>${Number(winnerResult?.prizePool ?? 0).toLocaleString()}</strong>
-            </Typography>
+            {(candidateReview?.rejectedCount ?? 0) > 0 && (
+              <Typography variant='caption' color='text.secondary'>
+                {candidateReview!.rejectedCount} candidate{candidateReview!.rejectedCount === 1 ? '' : 's'} previously rejected
+              </Typography>
+            )}
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button fullWidth variant='contained' onClick={() => setWinnerResult(null)}>Done</Button>
+        <DialogActions sx={{ flexDirection: 'column', gap: 1, px: 2, pb: 2 }}>
+          <Button fullWidth variant='contained' color='success' onClick={handleVerifyWinner} disabled={confirmWinnerMutation.isPending}>
+            {confirmWinnerMutation.isPending ? 'Confirming...' : 'Verify Winner'}
+          </Button>
+          <Button fullWidth variant='outlined' color='secondary' onClick={handlePickAnother} disabled={pickWinner.isPending || confirmWinnerMutation.isPending}>
+            {pickWinner.isPending ? 'Picking...' : 'Pick Another'}
+          </Button>
+          <Button fullWidth onClick={() => setCandidateReview(null)} disabled={confirmWinnerMutation.isPending}>Cancel</Button>
         </DialogActions>
       </Dialog>
 
