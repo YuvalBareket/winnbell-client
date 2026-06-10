@@ -34,10 +34,9 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, Fragment } from 'react';
-import { useAppDispatch, useAppSelector } from '../../store/hook';
-import { logout } from '../../store/slices/authSlice';
+import { useAppSelector } from '../../store/hook';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl } from '../../store/selectors/authSelectors';
-import { supabase } from '../lib/supabase';
+import { useLogout } from '../hooks/useLogout';
 import {
   ALPHA_WHITE_15,
   ALPHA_WHITE_20,
@@ -65,9 +64,9 @@ interface NavItem {
 }
 
 const AppMenuDrawer = ({ open, onClose }: Props) => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const handleLogout = useLogout();
   const user = useAppSelector(selectCurrentUser);
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
@@ -77,17 +76,6 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const { canInstall, openInstallDialog } = useInstallPromptTrigger();
   const showInstallOption = canInstall;
-
-  const handleLogout = async () => {
-    navigate('/');
-    dispatch(logout());
-    localStorage.removeItem('wasLoggedIn');
-    try {
-      await supabase.auth.signOut();
-    } catch {
-      // signOut failure doesn't affect local logout — Redux and localStorage are already cleared
-    }
-  };
 
   const handleNav = (path: string) => {
     navigate(path);

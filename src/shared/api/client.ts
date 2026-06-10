@@ -75,6 +75,7 @@ api.interceptors.response.use(
 
       const wasAuthenticated = store.getState().auth.isAuthenticated;
       store.dispatch(logout());
+      import('../../main').then(({ queryClient }) => queryClient.clear()).catch(() => {});
       // Only sign out of Supabase if the user had an active session.
       // Calling signOut() with no session fires SIGNED_OUT which clears
       // pendingEmail and breaks the registration/verification flow.

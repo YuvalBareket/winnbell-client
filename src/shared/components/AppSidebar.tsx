@@ -4,10 +4,9 @@ import {
 } from '@mui/material';
 import { Logout } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../store/hook';
-import { logout } from '../../store/slices/authSlice';
+import { useAppSelector } from '../../store/hook';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl } from '../../store/selectors/authSelectors';
-import { supabase } from '../lib/supabase';
+import { useLogout } from '../hooks/useLogout';
 import {
   userNavItems, managerNavItems, adminNavItems, legalNavItems, businessLegalNavItems, type NavItem,
 } from '../constants/navItems';
@@ -23,9 +22,9 @@ import {
 import { getUserInitials, getRoleLabel, getRoleColor } from '../utils/string';
 
 const AppSidebar = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const handleLogout = useLogout();
   const user = useAppSelector(selectCurrentUser);
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
@@ -48,17 +47,6 @@ const AppSidebar = () => {
   ];
 
   const mainNavItems = isAdmin ? adminNavItems : isBusiness ? businessNavItems : isManager ? managerNavItems : userNavItems;
-
-  const handleLogout = async () => {
-    navigate('/');
-    dispatch(logout());
-    localStorage.removeItem('wasLoggedIn');
-    try {
-      await supabase.auth.signOut();
-    } catch {
-      // signOut failure doesn't affect local logout — Redux and localStorage are already cleared
-    }
-  };
 
   return (
     <Box

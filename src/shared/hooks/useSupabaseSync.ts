@@ -43,6 +43,7 @@ export const useSupabaseSync = (retryCount = 0) => {
           if (isAuthenticatedRef.current) {
             dispatch(logout());
             localStorage.removeItem('wasLoggedIn');
+            import('../../main').then(({ queryClient }) => queryClient.clear()).catch(() => {});
           }
         }
         syncing.current = false;

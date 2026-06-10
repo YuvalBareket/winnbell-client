@@ -3,7 +3,7 @@ import App from './App';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // <--- Import this
 
 // 1. Create the Client
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime:          60_000,      // data is fresh for 1 min by default

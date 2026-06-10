@@ -10,8 +10,7 @@ import { motion } from 'framer-motion';
 import {
   SettingsOutlined, Visibility, VisibilityOff, LockOutlined,
 } from '@mui/icons-material';
-import { useAppDispatch } from '../../../store/hook';
-import { logout } from '../../../store/slices/authSlice';
+import { useLogout } from '../../../shared/hooks/useLogout';
 import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { api } from '../../../shared/api/client';
@@ -30,7 +29,7 @@ interface ChangePasswordPayload {
 const SettingsPage = () => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-  const dispatch = useAppDispatch();
+  const handleLogout = useLogout();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState('');
@@ -659,9 +658,7 @@ const SettingsPage = () => {
               setDeleteError('');
               try {
                 await api.delete('/auth/account');
-                dispatch(logout());
-                localStorage.removeItem('wasLoggedIn');
-                await supabase.auth.signOut();
+                await handleLogout();
               } catch (err: unknown) {
                 const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to delete account. Please try again.';
                 setDeleteError(msg);
