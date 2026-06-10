@@ -25,6 +25,9 @@ import {
   Select,
   MenuItem,
   InputAdornment,
+  FormControlLabel,
+  Checkbox,
+  Collapse,
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -39,6 +42,9 @@ import DeleteIcon from '@mui/icons-material/DeleteOutline';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import SearchIcon from '@mui/icons-material/Search';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   useOpenDraw,
   useCloseDraw,
@@ -51,6 +57,8 @@ import {
   useAddBusinessToDraw,
   useRemoveBusinessFromDraw,
   useAdminBusinesses,
+  useDrawCandidate,
+  useDrawRejectedWinners,
 } from '../../hooks/useAdmin';
 import { BG_PAGE } from '../../../../shared/colors';
 import { BUSINESS_SECTORS } from '../../data';
@@ -277,15 +285,10 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const [confirmClose, setConfirmClose] = useState<number | null>(null);
   const [confirmPick, setConfirmPick] = useState<{ id: number; entryCount: number } | null>(null);
   const [confirmReopen, setConfirmReopen] = useState<number | null>(null);
-  const [candidateReview, setCandidateReview] = useState<{
-    drawId: number;
-    winnerName: string;
-    ticketCode: string;
-    businessName: string | null;
-    locationName: string | null;
-    prizePool: number;
-    rejectedCount: number;
-  } | null>(null);
+  const [reviewDrawId, setReviewDrawId] = useState<number | null>(null);
+  const [reviewDismissed, setReviewDismissed] = useState(false);
+  const [penaltyChecked, setPenaltyChecked] = useState(false);
+  const [rejectedExpanded, setRejectedExpanded] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [expandedDrawId, setExpandedDrawId] = useState<number | null>(null);
 
@@ -296,6 +299,15 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const reopenDraw = useReopenDraw();
   const deleteDraw = useDeleteDraw();
   const duplicateDraw = useDuplicateDraw();
+
+  const { data: candidate, isLoading: candidateLoading } = useDrawCandidate(reviewDrawId);
+  const { data: rejectedWinners } = useDrawRejectedWinners(reviewDrawId);
+
+  useEffect(() => {
+    if (!draws || reviewDrawId || reviewDismissed) return;
+    const pending = draws.find((d: any) => d.winner_user_id && !d.winner_confirmed && d.status?.toUpperCase() === 'CLOSED');
+    if (pending) setReviewDrawId(pending.id);
+  }, [draws, reviewDrawId, reviewDismissed]);
 
   const handleOpenDraw = async () => {
     if (!confirmOpen) return;
@@ -335,49 +347,30 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
     const drawId = confirmPick.id;
     setConfirmPick(null);
     try {
-      const { data } = await pickWinner.mutateAsync(drawId);
-      const currentDraw = draws?.find((d) => d.id === drawId);
-      setCandidateReview({
-        drawId,
-        winnerName: data.winnerName,
-        ticketCode: data.ticketCode,
-        businessName: data.businessName ?? null,
-        locationName: data.locationName ?? null,
-        prizePool: data.prizePool,
-        rejectedCount: currentDraw?.rejected_count ?? 0,
-      });
+      await pickWinner.mutateAsync({ drawId });
+      setReviewDismissed(false);
+      setReviewDrawId(drawId);
     } catch (e: any) {
       onSnackError(e?.response?.data?.message ?? 'Failed to pick winner');
     }
   };
 
   const handlePickAnother = async () => {
-    if (!candidateReview) return;
-    const drawId = candidateReview.drawId;
-    const prevRejectedCount = candidateReview.rejectedCount;
+    if (!reviewDrawId) return;
     try {
-      const { data } = await pickWinner.mutateAsync(drawId);
-      setCandidateReview({
-        drawId,
-        winnerName: data.winnerName,
-        ticketCode: data.ticketCode,
-        businessName: data.businessName ?? null,
-        locationName: data.locationName ?? null,
-        prizePool: data.prizePool,
-        rejectedCount: prevRejectedCount + 1,
-      });
+      await pickWinner.mutateAsync({ drawId: reviewDrawId, applyPenalty: penaltyChecked });
+      setPenaltyChecked(false);
     } catch (e: any) {
-      setCandidateReview(null);
+      setReviewDrawId(null);
       onSnackError(e?.response?.data?.message ?? 'Failed to pick another winner');
     }
   };
 
   const handleVerifyWinner = async () => {
-    if (!candidateReview) return;
-    const drawId = candidateReview.drawId;
+    if (!reviewDrawId) return;
     try {
-      await confirmWinnerMutation.mutateAsync(drawId);
-      setCandidateReview(null);
+      await confirmWinnerMutation.mutateAsync(reviewDrawId);
+      setReviewDrawId(null);
       onSnackSuccess('Winner confirmed successfully');
     } catch (e: any) {
       onSnackError(e?.response?.data?.message ?? 'Failed to confirm winner');
@@ -426,10 +419,10 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
         <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setConfirmPick({ id: draw.id, entryCount: draw.entry_count ?? 0 }); }} fullWidth={!inline}>Pick Winner</Button>
       )}
       {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && draw.winner_user_id && (
-        <Button size='small' variant='outlined' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setConfirmPick({ id: draw.id, entryCount: draw.entry_count ?? 0 }); }} fullWidth={!inline}>Pick Another</Button>
+        <Button size='small' variant='outlined' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setReviewDismissed(false); setReviewDrawId(draw.id); }} fullWidth={!inline}>Pick Another</Button>
       )}
       {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && draw.winner_user_id && (
-        <Button size='small' variant='contained' color='success' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setCandidateReview({ drawId: draw.id, winnerName: '', ticketCode: '', businessName: null, locationName: null, prizePool: draw.prize_amount ?? 0, rejectedCount: draw.rejected_count ?? 0 }); }} fullWidth={!inline}>Verify Winner</Button>
+        <Button size='small' variant='contained' color='success' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setReviewDismissed(false); setReviewDrawId(draw.id); }} fullWidth={!inline}>Verify Winner</Button>
       )}
       {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && (
         <Button size='small' variant='outlined' color='info' startIcon={<LockOpenIcon />} onClick={(e) => { e.stopPropagation(); setConfirmReopen(draw.id); }} fullWidth={!inline}>Reopen</Button>
@@ -654,48 +647,254 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       </Dialog>
 
       {/* Candidate review */}
-      <Dialog open={!!candidateReview} onClose={() => setCandidateReview(null)} maxWidth='xs' fullWidth>
-        <DialogTitle sx={{ textAlign: 'center' }}>
-          <EmojiEventsIcon sx={{ fontSize: 48, color: 'warning.main', display: 'block', mx: 'auto', mb: 1 }} />
-          Review Candidate Winner
-        </DialogTitle>
-        <DialogContent>
-          <Stack spacing={1.5} textAlign='center'>
-            {candidateReview?.winnerName ? (
-              <>
-                <Typography variant='h6' fontWeight={800}>{candidateReview.winnerName}</Typography>
-                <Typography variant='body2' color='text.secondary'>
-                  Winning entry: <strong>{candidateReview.ticketCode}</strong>
-                </Typography>
-                {candidateReview.businessName && (
-                  <Typography variant='body2' color='text.secondary'>
-                    Business: <strong>{candidateReview.businessName}{candidateReview.locationName ? ` · ${candidateReview.locationName}` : ''}</strong>
-                  </Typography>
-                )}
-                <Typography variant='body2' color='text.secondary'>
-                  Prize pool: <strong>${Number(candidateReview.prizePool ?? 0).toLocaleString()}</strong>
-                </Typography>
-              </>
-            ) : (
-              <Typography variant='body2' color='text.secondary'>
-                A candidate winner has been selected. Verify to confirm or pick another.
-              </Typography>
-            )}
-            {(candidateReview?.rejectedCount ?? 0) > 0 && (
-              <Typography variant='caption' color='text.secondary'>
-                {candidateReview!.rejectedCount} candidate{candidateReview!.rejectedCount === 1 ? '' : 's'} previously rejected
-              </Typography>
-            )}
+      <Dialog
+        open={!!reviewDrawId}
+        onClose={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); }}
+        maxWidth='sm'
+        fullWidth
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Stack direction='row' alignItems='center' spacing={1}>
+            <EmojiEventsIcon sx={{ color: 'warning.main' }} />
+            <Typography variant='h6' fontWeight={700}>Review Candidate Winner</Typography>
           </Stack>
+        </DialogTitle>
+        <DialogContent dividers sx={{ px: 3, py: 2 }}>
+          <AnimatePresence mode='wait'>
+            {candidateLoading ? (
+              <motion.div
+                key='skeleton'
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Stack spacing={1.5}>
+                  <Skeleton variant='text' width='60%' height={32} />
+                  <Skeleton variant='text' width='40%' />
+                  <Skeleton variant='rectangular' height={64} sx={{ borderRadius: 2 }} />
+                  <Skeleton variant='text' width='50%' />
+                  <Skeleton variant='text' width='35%' />
+                </Stack>
+              </motion.div>
+            ) : candidate ? (
+              <motion.div
+                key='content'
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Stack spacing={2}>
+                  {/* Winner identity */}
+                  <Box>
+                    <Typography variant='h6' fontWeight={800}>{candidate.winnerName}</Typography>
+                    <Typography variant='body2' color='text.secondary'>{candidate.winnerEmail}</Typography>
+                  </Box>
+
+                  {/* Entry source chip */}
+                  <Stack direction='row' spacing={1} flexWrap='wrap'>
+                    <Chip
+                      label={candidate.entrySource ?? 'unknown'}
+                      size='small'
+                      color={
+                        candidate.entrySource === 'receipt' ? 'primary'
+                        : candidate.entrySource === 'free' ? 'default'
+                        : candidate.entrySource === 'promo' ? 'secondary'
+                        : 'info'
+                      }
+                    />
+                    {candidate.imageValidationStatus && (
+                      <Chip
+                        label={candidate.imageValidationStatus}
+                        size='small'
+                        color={
+                          candidate.imageValidationStatus === 'passed' ? 'success'
+                          : candidate.imageValidationStatus === 'pending' ? 'warning'
+                          : 'error'
+                        }
+                      />
+                    )}
+                    {/* Risk score badge */}
+                    <Chip
+                      label={`Risk: ${candidate.userRiskScore ?? 0}`}
+                      size='small'
+                      color={
+                        (candidate.userRiskScore ?? 0) >= 20 ? 'error'
+                        : (candidate.userRiskScore ?? 0) >= 10 ? 'warning'
+                        : 'success'
+                      }
+                      variant='outlined'
+                    />
+                  </Stack>
+
+                  {/* Receipt details */}
+                  {candidate.entrySource === 'receipt' && (
+                    <Box sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}>
+                      <Stack spacing={0.75}>
+                        {candidate.receiptIdentifier && (
+                          <Typography variant='body2'>
+                            <strong>Receipt ID:</strong> {candidate.receiptIdentifier}
+                          </Typography>
+                        )}
+                        {candidate.transactionAmount != null && (
+                          <Typography variant='body2'>
+                            <strong>Amount:</strong> {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.transactionAmount)}
+                          </Typography>
+                        )}
+                        {candidate.transactionDate && (
+                          <Typography variant='body2'>
+                            <strong>Date:</strong> {new Date(candidate.transactionDate).toLocaleDateString()}
+                          </Typography>
+                        )}
+                        {candidate.receiptImageUrl && (
+                          <Box>
+                            <Typography variant='caption' color='text.secondary' display='block' mb={0.5}>Receipt image</Typography>
+                            <Box
+                              component='a'
+                              href={candidate.receiptImageUrl}
+                              target='_blank'
+                              rel='noopener noreferrer'
+                              sx={{ display: 'inline-block', borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider', cursor: 'pointer' }}
+                            >
+                              <Box
+                                component='img'
+                                src={candidate.receiptImageUrl}
+                                alt='Receipt'
+                                sx={{ display: 'block', width: 80, height: 80, objectFit: 'cover' }}
+                              />
+                            </Box>
+                          </Box>
+                        )}
+                      </Stack>
+                    </Box>
+                  )}
+
+                  {/* Business and prize */}
+                  <Stack spacing={0.5}>
+                    {candidate.businessName && (
+                      <Typography variant='body2' color='text.secondary'>
+                        <strong>Business:</strong> {candidate.businessName}{candidate.locationName ? ` - ${candidate.locationName}` : ''}
+                      </Typography>
+                    )}
+                    {candidate.prizePool != null && (
+                      <Typography variant='body2' color='text.secondary'>
+                        <strong>Prize pool:</strong> {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.prizePool)}
+                      </Typography>
+                    )}
+                  </Stack>
+
+                  {/* Previously rejected */}
+                  {rejectedWinners && rejectedWinners.length > 0 && (
+                    <Box>
+                      <Button
+                        size='small'
+                        variant='text'
+                        color='inherit'
+                        startIcon={rejectedExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        onClick={() => setRejectedExpanded((v) => !v)}
+                        sx={{ px: 0, color: 'text.secondary', fontWeight: 600, fontSize: 12 }}
+                      >
+                        Previously Rejected ({rejectedWinners.length})
+                      </Button>
+                      <Collapse in={rejectedExpanded}>
+                        <Stack spacing={1} sx={{ mt: 1 }}>
+                          {rejectedWinners.map((rw) => (
+                            <Box
+                              key={rw.id}
+                              sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}
+                            >
+                              <Stack spacing={0.5}>
+                                <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                                  <Typography variant='body2' fontWeight={600}>{rw.userName}</Typography>
+                                  <Typography
+                                    variant='caption'
+                                    fontWeight={700}
+                                    sx={{ color: rw.riskPenalty > 0 ? 'error.main' : 'text.disabled' }}
+                                  >
+                                    {rw.riskPenalty > 0 ? `+${rw.riskPenalty}` : 'No penalty'}
+                                  </Typography>
+                                </Stack>
+                                <Typography variant='caption' color='text.secondary'>
+                                  {rw.ticketCode}{rw.entrySource ? ` - ${rw.entrySource}` : ''}
+                                </Typography>
+                                {rw.receiptIdentifier && (
+                                  <Typography variant='caption' color='text.secondary'>
+                                    Receipt: {rw.receiptIdentifier}
+                                    {rw.transactionAmount != null ? ` - ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(rw.transactionAmount)}` : ''}
+                                    {rw.transactionDate ? ` - ${new Date(rw.transactionDate).toLocaleDateString()}` : ''}
+                                  </Typography>
+                                )}
+                                <Typography variant='caption' color='text.disabled'>
+                                  Rejected {new Date(rw.rejectedAt).toLocaleString()}
+                                </Typography>
+                              </Stack>
+                            </Box>
+                          ))}
+                        </Stack>
+                      </Collapse>
+                    </Box>
+                  )}
+                </Stack>
+              </motion.div>
+            ) : (
+              <motion.div
+                key='empty'
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Typography variant='body2' color='text.secondary'>
+                  A candidate winner has been selected. Verify to confirm or reject to pick another.
+                </Typography>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </DialogContent>
-        <DialogActions sx={{ flexDirection: 'column', gap: 1, px: 2, pb: 2 }}>
-          <Button fullWidth variant='contained' color='success' onClick={handleVerifyWinner} disabled={confirmWinnerMutation.isPending}>
-            {confirmWinnerMutation.isPending ? 'Confirming...' : 'Verify Winner'}
+        <DialogActions sx={{ flexDirection: 'column', gap: 1, px: 3, pb: 2.5, pt: 2, alignItems: 'stretch' }}>
+          <Button
+            fullWidth
+            variant='contained'
+            color='success'
+            onClick={handleVerifyWinner}
+            disabled={confirmWinnerMutation.isPending || candidateLoading}
+          >
+            {confirmWinnerMutation.isPending ? 'Confirming...' : 'Confirm Winner'}
           </Button>
-          <Button fullWidth variant='outlined' color='secondary' onClick={handlePickAnother} disabled={pickWinner.isPending || confirmWinnerMutation.isPending}>
-            {pickWinner.isPending ? 'Picking...' : 'Pick Another'}
+          <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 1.5 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  size='small'
+                  checked={penaltyChecked}
+                  onChange={(e) => setPenaltyChecked(e.target.checked)}
+                  color='error'
+                />
+              }
+              label={
+                <Typography variant='body2'>Apply fraud penalty (+10 risk score)</Typography>
+              }
+              sx={{ m: 0 }}
+            />
+            <Button
+              fullWidth
+              variant='outlined'
+              color='error'
+              onClick={handlePickAnother}
+              disabled={pickWinner.isPending || confirmWinnerMutation.isPending || candidateLoading}
+              sx={{ mt: 1 }}
+            >
+              {pickWinner.isPending ? 'Picking...' : 'Reject and Pick Next'}
+            </Button>
+          </Box>
+          <Button
+            fullWidth
+            onClick={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); }}
+            disabled={confirmWinnerMutation.isPending}
+          >
+            Cancel
           </Button>
-          <Button fullWidth onClick={() => setCandidateReview(null)} disabled={confirmWinnerMutation.isPending}>Cancel</Button>
         </DialogActions>
       </Dialog>
 

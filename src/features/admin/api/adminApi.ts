@@ -20,8 +20,14 @@ export const openDraw = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/open`);
 export const closeDraw = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/close`);
-export const pickWinner = (drawId: number) =>
-  api.post(`/admin/draws/${drawId}/pick-winner`);
+export const pickWinner = (drawId: number, applyPenalty = false) =>
+  api.post(`/admin/draws/${drawId}/pick-winner`, { applyPenalty });
+export const fetchDrawCandidate = (drawId: number) =>
+  api.get(`/admin/draws/${drawId}/candidate`);
+export const fetchDrawRejectedWinners = (drawId: number) =>
+  api.get(`/admin/draws/${drawId}/rejected-winners`);
+export const fetchDrawAuditLog = (drawId: number) =>
+  api.get(`/admin/draws/${drawId}/audit-log`);
 export const confirmWinner = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/confirm-winner`);
 export const reopenDraw = (drawId: number) =>

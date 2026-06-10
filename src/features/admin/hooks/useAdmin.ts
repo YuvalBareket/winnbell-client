@@ -10,6 +10,9 @@ import {
   pickWinner,
   confirmWinner,
   reopenDraw,
+  fetchDrawCandidate,
+  fetchDrawRejectedWinners,
+  fetchDrawAuditLog,
   fetchAdminOverview,
   fetchAllUsers,
   updateUserRole,
@@ -126,10 +129,13 @@ export const useCloseDraw = () => {
 export const usePickWinner = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (drawId: number) => pickWinner(drawId),
-    onSuccess: () => {
+    mutationFn: ({ drawId, applyPenalty = false }: { drawId: number; applyPenalty?: boolean }) =>
+      pickWinner(drawId, applyPenalty),
+    onSuccess: (_, { drawId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'draw-candidate', drawId] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'draw-rejected', drawId] });
     },
   });
 };
@@ -138,9 +144,10 @@ export const useConfirmWinner = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (drawId: number) => confirmWinner(drawId),
-    onSuccess: () => {
+    onSuccess: (_, drawId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'draw-candidate', drawId] });
     },
   });
 };
@@ -469,5 +476,58 @@ export const useNotificationHistory = () => {
       }[];
     },
     staleTime: 60_000,
+  });
+};
+
+export const useDrawCandidate = (drawId: number | null) => {
+  return useQuery({
+    queryKey: ['admin', 'draw-candidate', drawId],
+    queryFn: async () => {
+      const { data } = await fetchDrawCandidate(drawId!);
+      return data;
+    },
+    enabled: drawId !== null,
+    staleTime: 10_000,
+  });
+};
+
+export const useDrawRejectedWinners = (drawId: number | null) => {
+  return useQuery({
+    queryKey: ['admin', 'draw-rejected', drawId],
+    queryFn: async () => {
+      const { data } = await fetchDrawRejectedWinners(drawId!);
+      return data as {
+        id: number;
+        rejectedAt: string;
+        riskPenalty: number;
+        ticketId: number;
+        ticketCode: string;
+        receiptIdentifier: string | null;
+        transactionAmount: number | null;
+        transactionDate: string | null;
+        receiptImageUrl: string | null;
+        entrySource: string | null;
+        userId: number;
+        userName: string;
+        userEmail: string;
+        userRiskScore: number;
+        businessName: string | null;
+        locationName: string | null;
+      }[];
+    },
+    enabled: drawId !== null,
+    staleTime: 10_000,
+  });
+};
+
+export const useDrawAuditLog = (drawId: number | null) => {
+  return useQuery({
+    queryKey: ['admin', 'draw-audit', drawId],
+    queryFn: async () => {
+      const { data } = await fetchDrawAuditLog(drawId!);
+      return data as { id: number; action: string; metadata: any; created_at: string }[];
+    },
+    enabled: drawId !== null,
+    staleTime: 10_000,
   });
 };
