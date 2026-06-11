@@ -149,6 +149,10 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
 
             <Typography variant='caption' sx={{ color: TEXT_SECONDARY, textAlign: 'center', lineHeight: 1.5 }}>
               By tapping Send Code, you agree to receive one SMS verification message. Msg & data rates may apply. Reply STOP to opt out.
+              {' '}
+              <a href='/privacy' target='_blank' rel='noopener noreferrer' style={{ color: PRIMARY_MAIN }}>Privacy Policy</a>
+              {' | '}
+              <a href='/terms' target='_blank' rel='noopener noreferrer' style={{ color: PRIMARY_MAIN }}>Terms of Service</a>
             </Typography>
           </Stack>
         </motion.div>
