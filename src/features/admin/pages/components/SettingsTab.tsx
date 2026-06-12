@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { WorkspacePremium } from '@mui/icons-material';
 import { usePlatformSettings, useSavePlatformSettings } from '../../hooks/useAdmin';
-import { COUNTRIES } from '../../../../shared/constants/countries';
+import { US_STATES } from '../../../../shared/constants/usStates';
 import { useFoundingAvailability } from '../../../subscription/hooks/useFoundingAvailability';
 
 const SettingsTab: React.FC = () => {
@@ -26,7 +26,7 @@ const SettingsTab: React.FC = () => {
   const saveMutation = useSavePlatformSettings();
 
   const [localAllowedStates, setLocalAllowedStates] = useState<string[]>([]);
-  const [countryInputValue, setCountryInputValue] = useState('');
+  const [stateInputValue, setStateInputValue] = useState('');
   const [settingsSaved, setSettingsSaved] = useState(false);
 
   // Founding partner state
@@ -64,43 +64,43 @@ const SettingsTab: React.FC = () => {
 
   return (
     <Stack spacing={3}>
-      {/* ── Allowed Countries ─────────────────────────────────────────────────── */}
+      {/* ── Allowed States ────────────────────────────────────────────────────── */}
       <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
         <CardContent>
           <Stack spacing={3}>
             <Box>
-              <Typography variant='h6' fontWeight={700} mb={0.5}>Allowed Countries</Typography>
+              <Typography variant='h6' fontWeight={700} mb={0.5}>Allowed States</Typography>
               <Typography variant='body2' color='text.secondary' mb={2}>
-                Restrict registration to specific countries. Remove all to allow worldwide sign-ups.
+                Restrict registration to specific US states. When any state is selected, sign-ups from outside the US are blocked too. Remove all to allow sign-ups from anywhere.
               </Typography>
 
               <Autocomplete
-                options={COUNTRIES}
+                options={US_STATES}
                 getOptionLabel={(o) => o.name}
                 value={null}
-                inputValue={countryInputValue}
-                onInputChange={(_e, val) => setCountryInputValue(val)}
+                inputValue={stateInputValue}
+                onInputChange={(_e, val) => setStateInputValue(val)}
                 onChange={(_e, selected) => {
                   if (selected && !localAllowedStates.includes(selected.code)) {
                     setLocalAllowedStates((prev) => [...prev, selected.code]);
                   }
-                  setCountryInputValue('');
+                  setStateInputValue('');
                 }}
                 renderInput={(params) => (
-                  <TextField {...params} size='small' placeholder='Search country…' sx={{ width: 300 }} />
+                  <TextField {...params} size='small' placeholder='Search state…' sx={{ width: 300 }} />
                 )}
               />
 
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1.5 }}>
                 {localAllowedStates.length === 0 ? (
-                  <Typography variant='caption' color='text.secondary'>Worldwide (no restriction)</Typography>
+                  <Typography variant='caption' color='text.secondary'>No restriction (open everywhere)</Typography>
                 ) : (
                   localAllowedStates.map((code) => {
-                    const country = COUNTRIES.find((c) => c.code === code);
+                    const state = US_STATES.find((s) => s.code === code);
                     return (
                       <Chip
                         key={code}
-                        label={country?.name ?? code}
+                        label={state?.name ?? code}
                         size='small'
                         onDelete={() => setLocalAllowedStates((prev) => prev.filter((x) => x !== code))}
                       />
