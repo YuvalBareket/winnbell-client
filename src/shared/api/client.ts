@@ -23,11 +23,12 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// 2. Response Interceptor — refresh token on 401, then let React Query retry
+// 2. Response Interceptor — refresh token on 401, then re-issue the original request.
 //
-// Axios 1.x cannot return a retried response from the error interceptor (known bug).
-// Instead, we only refresh the token here and reject. React Query retries the query
-// automatically and the request interceptor picks up the fresh token from Redux.
+// The retry must happen HERE (not via React Query): React Query only retries
+// queries, never mutations, so without this a receipt submission or code redeem
+// fired just after token expiry would fail once and force the user to tap again.
+// The _retry flag prevents loops; refreshPromise dedupes concurrent refreshes.
 let refreshPromise: Promise<void> | null = null;
 
 api.interceptors.response.use(
@@ -50,8 +51,10 @@ api.interceptors.response.use(
               .finally(() => { refreshPromise = null; });
           }
           await refreshPromise;
-          // Token refreshed in Redux — reject so React Query retries with the new token
-          return Promise.reject(error);
+          // Token refreshed in Redux — re-issue the original request; the request
+          // interceptor attaches the fresh token. Safe: the original attempt was
+          // rejected at the auth middleware, so nothing was processed server-side.
+          return api(error.config);
         } catch {
           // Refresh failed — fall through to logout
         }
