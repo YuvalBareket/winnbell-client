@@ -29,19 +29,36 @@ export function useNearbyWithZoom(sector?: string | null, search?: string) {
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const lastViewportRef = useRef<ViewportBounds | null>(null);
+  // Area covered by the last successful fetch. Only set when the response came
+  // back with FEWER rows than the server limit - that means we received every
+  // location in the box, so any viewport inside it is provably fully covered
+  // and skipping the network is safe (the endpoint is rate-limited to 20/min).
+  // A full page (30 rows) may be truncated, so we never skip after one.
+  const coveredAreaRef = useRef<ViewportBounds | null>(null);
   const accumulatedRef = useRef<Map<number, NearbyLocation>>(new Map());
   const sectorRef = useRef(sector);
   sectorRef.current = sector;
   const searchRef = useRef(search);
   searchRef.current = search;
 
-  const doFetch = useCallback(async (viewport: ViewportBounds) => {
+  const doFetch = useCallback(async (viewport: ViewportBounds, force = false) => {
+    lastViewportRef.current = viewport;
+
+    // Skip when the viewport is still inside an area we hold COMPLETE data for.
+    // Zooming out or panning beyond the covered box refetches naturally.
+    const covered = coveredAreaRef.current;
+    if (!force && covered) {
+      const contained =
+        viewport.minLat >= covered.minLat && viewport.maxLat <= covered.maxLat &&
+        viewport.minLng >= covered.minLng && viewport.maxLng <= covered.maxLng;
+      if (contained) return;
+    }
+
     // Cancel any in-flight request for a stale viewport
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
-    lastViewportRef.current = viewport;
     setIsFetching(true);
     setIsError(false);
 
@@ -56,6 +73,9 @@ export function useNearbyWithZoom(sector?: string | null, search?: string) {
       const results = await getNearbyBusinesses(params);
 
       if (controller.signal.aborted) return;
+      // < 30 rows = the server sent everything in this box (its page limit is 30).
+      // Exactly 30 may be truncated, so the area does not count as covered.
+      coveredAreaRef.current = results.length < 30 ? padded : null;
 
       // Evict markers that have scrolled out of the padded fetch area
       accumulatedRef.current.forEach((loc, id) => {
@@ -79,8 +99,9 @@ export function useNearbyWithZoom(sector?: string | null, search?: string) {
   // When sector changes, reset accumulated markers and re-fetch current viewport
   useEffect(() => {
     accumulatedRef.current.clear();
+    coveredAreaRef.current = null; // filters changed - covered area no longer valid
     setLocations([]);
-    if (lastViewportRef.current) doFetch(lastViewportRef.current);
+    if (lastViewportRef.current) doFetch(lastViewportRef.current, true);
   }, [sector, doFetch]);
 
   // When search changes, debounce 400ms then reset + refetch
@@ -88,8 +109,9 @@ export function useNearbyWithZoom(sector?: string | null, search?: string) {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {
       accumulatedRef.current.clear();
+      coveredAreaRef.current = null; // filters changed - covered area no longer valid
       setLocations([]);
-      if (lastViewportRef.current) doFetch(lastViewportRef.current);
+      if (lastViewportRef.current) doFetch(lastViewportRef.current, true);
     }, 400);
     return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
   }, [search, doFetch]);
