@@ -11,6 +11,7 @@ export const useLogout = () => {
     navigate('/');
     dispatch(logout());
     localStorage.removeItem('wasLoggedIn');
+    localStorage.removeItem('install_prompt_dismissed');
     const { queryClient } = await import('../../main');
     queryClient.clear();
     try {

@@ -40,6 +40,7 @@ export const useSupabaseSync = (retryCount = 0) => {
         if (event === 'SIGNED_OUT') {
           localStorage.removeItem('pendingRole');
           localStorage.removeItem('pendingInviteToken');
+          localStorage.removeItem('install_prompt_dismissed');
           if (isAuthenticatedRef.current) {
             dispatch(logout());
             localStorage.removeItem('wasLoggedIn');
