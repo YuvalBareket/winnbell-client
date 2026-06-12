@@ -60,7 +60,7 @@ export const useUploadBusinessLogo = () => {
       // Convert to WebP and resize before uploading
       const webpFile = await convertToWebP(file);
 
-      const { uploadUrl, key } = await getUploadUrl('image/webp');
+      const { uploadUrl, key } = await getUploadUrl('image/webp', webpFile.size);
 
       await fetch(uploadUrl, {
         method: 'PUT',

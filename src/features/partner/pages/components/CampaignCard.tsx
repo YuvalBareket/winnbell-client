@@ -108,7 +108,7 @@ const CampaignCard = ({
   const handleSaveReceipt = async (blob: Blob) => {
     setIsSavingReceipt(true);
     try {
-      const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg');
+      const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg', blob.size);
       await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
       updateCampaignSettings?.({
         min_transaction_amount: business.min_transaction_amount,

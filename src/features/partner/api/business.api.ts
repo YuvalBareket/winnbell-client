@@ -54,9 +54,9 @@ export const removeLocationManager = async (locationId: number): Promise<void> =
   await api.delete(`/business/locations/${locationId}/manager`);
 };
 
-export const getUploadUrl = async (contentType: string): Promise<{ uploadUrl: string; key: string; publicUrl: string | null }> => {
+export const getUploadUrl = async (contentType: string, size: number): Promise<{ uploadUrl: string; key: string; publicUrl: string | null }> => {
   const response = await api.get<{ uploadUrl: string; key: string; publicUrl: string | null }>('/business/upload-url', {
-    params: { contentType },
+    params: { contentType, size },
   });
   return response.data;
 };

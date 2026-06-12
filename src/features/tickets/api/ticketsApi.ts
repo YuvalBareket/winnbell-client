@@ -85,8 +85,8 @@ export interface ReceiptEntryResponse {
 export const submitReceiptEntry = (payload: ReceiptEntryPayload): Promise<ReceiptEntryResponse> =>
   api.post('/tickets/receipt-entry', payload).then(r => r.data);
 
-export const getReceiptUploadUrl = (): Promise<{ uploadUrl: string; publicUrl: string }> =>
-  api.get('/tickets/receipt-upload-url').then(r => r.data);
+export const getReceiptUploadUrl = (size: number): Promise<{ uploadUrl: string; publicUrl: string }> =>
+  api.get('/tickets/receipt-upload-url', { params: { size } }).then(r => r.data);
 
 export interface RiskLevelResponse {
   requiresImage: boolean;

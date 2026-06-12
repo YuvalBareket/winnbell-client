@@ -47,7 +47,8 @@ export const useUploadReceiptImage = () => {
 
     try {
       const webpFile = await convertToWebP(file);
-      const { uploadUrl, publicUrl } = await getReceiptUploadUrl();
+      // The exact size is signed into the upload URL server-side (hard cap enforcement)
+      const { uploadUrl, publicUrl } = await getReceiptUploadUrl(webpFile.size);
 
       await fetch(uploadUrl, {
         method: 'PUT',

@@ -85,7 +85,7 @@ const SubscribePage = () => {
   const handleSaveReceipt = async (blob: Blob) => {
     setIsSaving(true);
     try {
-      const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg');
+      const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg', blob.size);
       await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
       await updateCampaignSettingsApi({ min_transaction_amount: savedThreshold, receipt_example_image_url: publicUrl });
       setImgFile(null);
