@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TIER_MAP, TIER_KEYS, MAX_TIER } from './subscribeTiers';
 import { useFoundingAvailability } from '../../hooks/useFoundingAvailability';
+import { GRADIENT_PRIMARY } from '../../../../shared/colors';
 
 interface Props {
   selectedTier: number;
@@ -331,7 +332,7 @@ const SubscribeStep3 = ({
               <Stack direction='row' justifyContent='space-between' alignItems='center'>
                 <Typography variant='body2' fontWeight={700}>Total per month</Typography>
                 <Typography variant='h5' fontWeight={900}
-                  sx={{ background: 'linear-gradient(135deg, #0292b7 0%, #42bdba 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  sx={{ background: GRADIENT_PRIMARY, backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   ${totalMonthly.toFixed(0)}
                 </Typography>
               </Stack>

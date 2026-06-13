@@ -3,6 +3,7 @@ import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import type { NearbyLocation } from '../types/nearBy.types';
 import type { ViewportBounds } from '../hooks/useNearbyWithZoom';
 import { SECTOR_CONFIG, DEFAULT_SECTOR } from '../../../shared/sectorConfig';
+import { PRIMARY_MAIN } from '../../../shared/colors';
 
 setOptions({
   key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? '',
@@ -158,8 +159,8 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
       userMarkerRef.current.setPosition(pos);
     } else {
       const userSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">
-        <circle cx="11" cy="11" r="10" fill="#0292b7" opacity="0.25"/>
-        <circle cx="11" cy="11" r="6" fill="#0292b7" stroke="white" stroke-width="2.5"/>
+        <circle cx="11" cy="11" r="10" fill="${PRIMARY_MAIN}" opacity="0.25"/>
+        <circle cx="11" cy="11" r="6" fill="${PRIMARY_MAIN}" stroke="white" stroke-width="2.5"/>
       </svg>`;
       userMarkerRef.current = new google.maps.Marker({
         map,

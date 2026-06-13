@@ -6,7 +6,7 @@ import EmptyState from '../../../shared/components/EmptyState';
 import { useNavigate } from 'react-router-dom';
 import {
   STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
-  STATUS_PENDING_BG, STATUS_PENDING_TEXT,
+  STATUS_PENDING_BG, STATUS_PENDING_TEXT, PRIMARY_MAIN,
 } from '../../../shared/colors';
 import { formatTicketDate } from '../../../shared/utils/date';
 import { BUSINESS_SECTORS } from '../../admin/data';
@@ -191,7 +191,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
   const CAP = 30;
   const progress = Math.min((totalCount / CAP) * 100, 100);
   const isMaxed = totalCount >= CAP;
-  const progressColor = isMaxed ? '#2e7d32' : totalCount >= 20 ? '#ed6c02' : '#0292b7';
+  const progressColor = isMaxed ? STATUS_ACTIVATED_TEXT : totalCount >= 20 ? STATUS_PENDING_TEXT : PRIMARY_MAIN;
 
   if (!draw_id) return (
     <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>

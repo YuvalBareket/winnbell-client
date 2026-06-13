@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Box, Button } from '@mui/material';
 import html2canvas from 'html2canvas';
+import { PRIMARY_LIGHT, PRIMARY_MAIN, PRIMARY_DEEP } from '../../shared/colors';
 
 export default function LogoDesignPage() {
   const captureRef = useRef<HTMLDivElement>(null);
@@ -31,7 +32,7 @@ export default function LogoDesignPage() {
         sx={{
           width: 600,
           height: 600,
-          background: 'linear-gradient(135deg, #d0f0ef 0%, #42bdba 50%, #0292b7 100%)',
+          background: `linear-gradient(135deg, ${PRIMARY_LIGHT} 0%, ${PRIMARY_MAIN} 50%, ${PRIMARY_DEEP} 100%)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

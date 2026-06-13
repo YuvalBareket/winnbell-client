@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
+import { PRIMARY_MAIN } from '../colors';
 
 const STORAGE_KEY = 'wb_access_granted';
 const PASSWORD = import.meta.env.VITE_ACCESS_PASSWORD as string;
@@ -111,7 +112,7 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
             size="small"
             sx={{
               textTransform: 'none',
-              background: '#195DE6',
+              background: PRIMARY_MAIN,
               fontWeight: 600,
             }}
           >

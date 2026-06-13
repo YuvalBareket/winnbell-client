@@ -95,13 +95,13 @@ const AppRoutes = () => {
   return (
     <PageHeaderProvider>
     <SyncStatusContext.Provider value={{ syncError, retry, isLoaded, isSignedIn }}>
-    <ErrorBoundary fallback={routeFallback} resetKeys={[location.pathname]}>
+    <ErrorBoundary fallback={routeFallback} resetKeys={[location.pathname, isAuthenticated, isSignedIn]}>
     <Suspense fallback={<LoadingScreen />}>
     <Routes>
       {/* --- Public Routes --- */}
       <Route path='/' element={
         (!isLoaded || (isSignedIn && !isAuthenticated))
-          ? <LoadingScreen />
+                  ? <LoadingScreen />
           : isAuthenticated
             ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace />
             : <LandingPage />
