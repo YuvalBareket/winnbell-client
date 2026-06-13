@@ -1,30 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
-  Box, Container, Typography, Stack, Paper, TextField,
-  Button, Alert, InputAdornment, IconButton, useMediaQuery, useTheme,
+  Box, Container, Typography, Stack, Paper,
+  Button, Alert, useMediaQuery, useTheme,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import {
-  SettingsOutlined, Visibility, VisibilityOff, LockOutlined,
-} from '@mui/icons-material';
+import { SettingsOutlined } from '@mui/icons-material';
 import { useLogout } from '../../../shared/hooks/useLogout';
-import { useMutation } from '@tanstack/react-query';
-import type { AxiosError } from 'axios';
 import { api } from '../../../shared/api/client';
-import { supabase } from '../../../shared/lib/supabase';
 import {
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
-  BORDER_LIGHT, SHADOW_CARD, SHADOW_CARD_HOVER, PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
-  TEXT_SECONDARY, TEXT_HEADING, ALPHA_PRIMARY_06,
+  BORDER_LIGHT, SHADOW_CARD, SHADOW_CARD_HOVER, MOBILE_CONTENT_HEIGHT,
+  TEXT_SECONDARY, TEXT_HEADING,
 } from '../../../shared/colors';
-
-interface ChangePasswordPayload {
-  currentPassword: string;
-  newPassword: string;
-}
 
 const SettingsPage = () => {
   const theme = useTheme();
@@ -34,63 +24,6 @@ const SettingsPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
-  // Detect social login upfront from Supabase session to avoid wasted form submission
-  const [isSocialOnly, setIsSocialOnly] = useState(false);
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      const provider = data.session?.user?.app_metadata?.provider;
-      if (provider && provider !== 'email') setIsSocialOnly(true);
-    });
-  }, []);
-
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [validationError, setValidationError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-
-  const { mutate, isPending, error, isSuccess } = useMutation<
-    void,
-    AxiosError<{ message: string }>,
-    ChangePasswordPayload
-  >({
-    mutationFn: async (payload) => {
-      await api.post('/auth/change-password', payload);
-    },
-    onSuccess: () => {
-      setSuccessMessage('Password updated successfully');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setValidationError('');
-    },
-    onError: () => {
-      setSuccessMessage('');
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setValidationError('');
-    setSuccessMessage('');
-
-    if (newPassword.length < 8) {
-      setValidationError('New password must be at least 8 characters.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setValidationError('New password and confirmation do not match.');
-      return;
-    }
-
-    mutate({ currentPassword, newPassword });
-  };
-
-  const serverMessage = error?.response?.data?.message ?? '';
-  const isSocialLoginError = serverMessage === 'Password cannot be changed for social login accounts';
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8, zoom: { xs: 0.9, md: 1 } }}>
@@ -182,7 +115,7 @@ const SettingsPage = () => {
                       Account Settings
                     </Typography>
                     <Typography variant='caption' color={TEXT_SECONDARY}>
-                      Update your security and preferences
+                      Manage your account
                     </Typography>
                   </Box>
                 </Stack>
@@ -192,310 +125,11 @@ const SettingsPage = () => {
 
           {/* Right Column - Settings Cards */}
           <Stack spacing={3}>
-            {/* Password Section Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <Paper
-                elevation={0}
-                sx={{
-                  borderRadius: 2,
-                  border: `1px solid ${BORDER_LIGHT}`,
-                  boxShadow: SHADOW_CARD,
-                  overflow: 'hidden',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    boxShadow: SHADOW_CARD_HOVER,
-                  },
-                }}
-              >
-                {/* Section Header with Icon */}
-                <Box
-                  sx={{
-                    px: 3,
-                    py: 2.5,
-                    borderBottom: `1px solid ${BORDER_LIGHT}`,
-                    background: ALPHA_PRIMARY_06,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 2,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 2,
-                      bgcolor: PRIMARY_MAIN,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <LockOutlined sx={{ color: 'white', fontSize: 20 }} />
-                  </Box>
-                  <Box>
-                    <Typography variant='subtitle1' fontWeight={700} color={TEXT_HEADING}>
-                      Password
-                    </Typography>
-                    <Typography variant='caption' color={TEXT_SECONDARY}>
-                      Keep your account secure
-                    </Typography>
-                  </Box>
-                </Box>
-
-                {/* Section Content */}
-                <Box sx={{ px: 3, py: 3 }}>
-                  {isSocialOnly ? (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Alert
-                        severity='info'
-                        sx={{
-                          borderRadius: 2,
-                          border: 'none',
-                          bgcolor: 'rgba(25, 118, 210, 0.05)',
-                          color: TEXT_HEADING,
-                          '& .MuiAlert-icon': {
-                            color: PRIMARY_MAIN,
-                          },
-                        }}
-                      >
-                        Your account uses a social login provider. To change your password, manage it through that provider directly.
-                      </Alert>
-                    </motion.div>
-                  ) : (
-                    <Box component='form' onSubmit={handleSubmit}>
-                      <Stack spacing={2.5}>
-                        <TextField
-                          label='Current password'
-                          type={showCurrent ? 'text' : 'password'}
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
-                          required
-                          fullWidth
-                          size='small'
-                          variant='outlined'
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position='end'>
-                                <IconButton
-                                  size='small'
-                                  onClick={() => setShowCurrent((v) => !v)}
-                                  edge='end'
-                                >
-                                  {showCurrent ? (
-                                    <VisibilityOff fontSize='small' />
-                                  ) : (
-                                    <Visibility fontSize='small' />
-                                  )}
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          }}
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 2,
-                              transition: 'all 0.2s',
-                              '&:hover': {
-                                '& fieldset': {
-                                  borderColor: PRIMARY_MAIN,
-                                },
-                              },
-                            },
-                          }}
-                        />
-
-                        <TextField
-                          label='New password'
-                          type={showNew ? 'text' : 'password'}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          required
-                          fullWidth
-                          size='small'
-                          variant='outlined'
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position='end'>
-                                <IconButton
-                                  size='small'
-                                  onClick={() => setShowNew((v) => !v)}
-                                  edge='end'
-                                >
-                                  {showNew ? (
-                                    <VisibilityOff fontSize='small' />
-                                  ) : (
-                                    <Visibility fontSize='small' />
-                                  )}
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          }}
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 2,
-                              transition: 'all 0.2s',
-                              '&:hover': {
-                                '& fieldset': {
-                                  borderColor: PRIMARY_MAIN,
-                                },
-                              },
-                            },
-                          }}
-                        />
-                        <Typography variant='caption' color={TEXT_SECONDARY} sx={{ display: 'block', mt: 0.5 }}>
-                          Min. 8 characters
-                        </Typography>
-
-                        <TextField
-                          label='Confirm new password'
-                          type={showConfirm ? 'text' : 'password'}
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          required
-                          fullWidth
-                          size='small'
-                          variant='outlined'
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position='end'>
-                                <IconButton
-                                  size='small'
-                                  onClick={() => setShowConfirm((v) => !v)}
-                                  edge='end'
-                                >
-                                  {showConfirm ? (
-                                    <VisibilityOff fontSize='small' />
-                                  ) : (
-                                    <Visibility fontSize='small' />
-                                  )}
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          }}
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 2,
-                              transition: 'all 0.2s',
-                              '&:hover': {
-                                '& fieldset': {
-                                  borderColor: PRIMARY_MAIN,
-                                },
-                              },
-                            },
-                          }}
-                        />
-
-                        {validationError && (
-                          <Alert
-                            severity='error'
-                            sx={{
-                              borderRadius: 2,
-                              border: 'none',
-                              bgcolor: 'rgba(211, 47, 47, 0.05)',
-                              color: TEXT_HEADING,
-                              '& .MuiAlert-icon': {
-                                color: '#d32f2f',
-                              },
-                            }}
-                          >
-                            {validationError}
-                          </Alert>
-                        )}
-
-                        {isSuccess && successMessage && (
-                          <Alert
-                            severity='success'
-                            sx={{
-                              borderRadius: 2,
-                              border: 'none',
-                              bgcolor: 'rgba(46, 125, 50, 0.05)',
-                              color: TEXT_HEADING,
-                              '& .MuiAlert-icon': {
-                                color: '#2e7d32',
-                              },
-                            }}
-                          >
-                            {successMessage}
-                          </Alert>
-                        )}
-
-                        {error && !isSocialLoginError && (
-                          <Alert
-                            severity='error'
-                            sx={{
-                              borderRadius: 2,
-                              border: 'none',
-                              bgcolor: 'rgba(211, 47, 47, 0.05)',
-                              color: TEXT_HEADING,
-                              '& .MuiAlert-icon': {
-                                color: '#d32f2f',
-                              },
-                            }}
-                          >
-                            {serverMessage || 'An error occurred. Please try again.'}
-                          </Alert>
-                        )}
-
-                        {error && isSocialLoginError && (
-                          <Alert
-                            severity='info'
-                            sx={{
-                              borderRadius: 2,
-                              border: 'none',
-                              bgcolor: 'rgba(25, 118, 210, 0.05)',
-                              color: TEXT_HEADING,
-                              '& .MuiAlert-icon': {
-                                color: PRIMARY_MAIN,
-                              },
-                            }}
-                          >
-                            Password cannot be changed for social login accounts. Manage your password through your social provider.
-                          </Alert>
-                        )}
-
-                        <Button
-                          type='submit'
-                          variant='contained'
-                          disabled={isPending}
-                          sx={{
-                            bgcolor: PRIMARY_MAIN,
-                            fontWeight: 700,
-                            py: 1.2,
-                            textTransform: 'none',
-                            fontSize: '0.95rem',
-                            transition: 'all 0.3s',
-                            '&:hover': {
-                              bgcolor: PRIMARY_MAIN,
-                              filter: 'brightness(0.92)',
-                              boxShadow: `0 4px 12px rgba(2, 146, 183, 0.2)`,
-                            },
-                            '&:disabled': {
-                              bgcolor: PRIMARY_MAIN,
-                              opacity: 0.6,
-                            },
-                          }}
-                        >
-                          {isPending ? 'Updating...' : 'Update Password'}
-                        </Button>
-                      </Stack>
-                    </Box>
-                  )}
-                </Box>
-              </Paper>
-            </motion.div>
-
             {/* Danger Zone Card */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
             >
               <Paper
                 elevation={0}
