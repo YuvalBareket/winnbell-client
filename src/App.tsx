@@ -1,4 +1,4 @@
-import { ThemeProvider, CssBaseline, Box, LinearProgress } from '@mui/material';
+import { ThemeProvider, CssBaseline } from '@mui/material';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react'; // Import Gate
@@ -6,49 +6,14 @@ import { store, persistor } from './store/store'; // Import persistor
 import { theme } from './shared/theme';
 import AppRoutes from './routes/AppRoutes';
 import ErrorBoundary from './shared/components/ErrorBoundary';
+import LoadingScreen from './shared/components/LoadingScreen';
 // import AccessGate from './shared/components/AccessGate';
 
-// Branded splash screen while Redux rehydrates
-const LoadingState = () => (
-  <Box
-    sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100dvh',
-      alignItems: 'center',
-      justifyContent: 'center',
-      bgcolor: 'background.default',
-    }}
-  >
-    <Box
-      component="img"
-      src="/winnbell_logo.png"
-      alt="Winnbell"
-      sx={{
-        width: 80,
-        height: 'auto',
-        animation: 'winnbell-pulse 1.5s ease-in-out infinite',
-        '@keyframes winnbell-pulse': {
-          '0%': { transform: 'scale(1)' },
-          '50%': { transform: 'scale(1.05)' },
-          '100%': { transform: 'scale(1)' },
-        },
-      }}
-    />
-    <LinearProgress
-      sx={{
-        width: 120,
-        borderRadius: 4,
-        mt: 2,
-      }}
-    />
-  </Box>
-);
 function App() {
   return (
     // <AccessGate>
       <Provider store={store}>
-        <PersistGate loading={<LoadingState />} persistor={persistor}>
+        <PersistGate loading={<LoadingScreen />} persistor={persistor}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <BrowserRouter>
