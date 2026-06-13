@@ -35,7 +35,7 @@ const AppHeader = ({ onMenuOpen, onGradient = false }: Props) => {
         {/* Brand */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Stack direction='row' alignItems='center' spacing={-0.3}>
-            <Box component='img' src='/winnbell_app_name.png' alt='W' sx={{ height: 26, width: 'auto', objectFit: 'contain' }} />
+            <Box component='img' src={onGradient?'/winnbell_app_name_white.svg':'/winnbell_app_name.svg'} alt='W' sx={{ height: 38, width: 'auto', objectFit: 'contain' }} />
 
           </Stack>
         
