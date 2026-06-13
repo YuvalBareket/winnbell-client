@@ -65,6 +65,7 @@ const ForBusinesses = ({ onNavigate }: ForBusinessesProps) => {
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 2,
+                  height:'100%',
                   p: { xs: 2, md: 3 },
                   textAlign: 'center',
                   transition: 'all 0.3s ease',
