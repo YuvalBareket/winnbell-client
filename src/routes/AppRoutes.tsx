@@ -54,6 +54,7 @@ const ActivityPage = lazy(() => import('../features/activity/pages/ActivityPage'
 const DrawHistoryPage = lazy(() => import('../features/draw/pages/DrawHistoryPage'));
 const SettingsPage = lazy(() => import('../features/settings/pages/SettingsPage'));
 const MarketingPage = lazy(() => import('../features/marketing/pages/MarketingPage'));
+const LogoDesignPage = lazy(() => import('../features/logoDesign/LogoDesignPage'));
 
 const AppRoutes = () => {
   const navigate = useNavigate();
@@ -119,6 +120,7 @@ const AppRoutes = () => {
       <Route path='/rules' element={<OfficialRulesPage />} />
       <Route path='/rules/:drawId' element={<OfficialRulesPage />} />
       <Route path='/business-agreement' element={<BusinessAgreementPage />} />
+      <Route path='/logo-design' element={<LogoDesignPage />} />
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>
