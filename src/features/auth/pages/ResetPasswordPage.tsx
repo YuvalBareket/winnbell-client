@@ -7,10 +7,12 @@ import LoadingScreen from '../../../shared/components/LoadingScreen';
 import { Lock, Visibility, VisibilityOff, CheckCircle } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
+import { useRevokeOtherSessions } from '../hooks/useRevokeOtherSessions';
 import { BG_PAGE } from '../../../shared/colors';
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
+  const revokeOtherSessions = useRevokeOtherSessions();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [show, setShow] = useState(false);
@@ -51,14 +53,20 @@ const ResetPasswordPage = () => {
 
     setLoading(true);
     const { error: updateError } = await supabase.auth.updateUser({ password });
-    setLoading(false);
 
     if (updateError) {
+      setLoading(false);
       setError(updateError.message || 'Failed to update password.');
-    } else {
-      setSuccess(true);
-      setTimeout(() => navigate('/login', { replace: true }), 3000);
+      return;
     }
+
+    // Password changed. Log the user out of every other existing session so a device
+    // that was already signed in (e.g. with the old password) cannot stay in.
+    await revokeOtherSessions();
+
+    setLoading(false);
+    setSuccess(true);
+    setTimeout(() => navigate('/login', { replace: true }), 3000);
   };
 
   if (!ready) {

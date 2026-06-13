@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { api } from '../../../shared/api/client';
 import type {
   AuthResponse,
@@ -35,4 +36,18 @@ export const syncUserFn = async (
 export const getRegionConfig = async (): Promise<{ allowed_states: string[] }> => {
   const response = await api.get<{ allowed_states: string[] }>('/auth/region-config');
   return response.data;
+};
+
+// Revokes all internal app sessions for the user identified by the Supabase access
+// token. Uses a bare axios call (not the shared `api` instance) on purpose: `api`'s
+// request interceptor overwrites the Authorization header with the internal Redux
+// token, which would clobber the Supabase token this endpoint must verify. This
+// mirrors how client.ts calls /auth/refresh outside the interceptors.
+export const revokeAllSessionsFn = async (accessToken: string): Promise<void> => {
+  const baseURL = (import.meta.env.VITE_API_URL || 'http://localhost:3000/').replace(/\/$/, '');
+  await axios.post(
+    `${baseURL}/auth/revoke-sessions`,
+    {},
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
 };

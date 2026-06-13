@@ -4,6 +4,9 @@ import { Box, Typography, Button } from '@mui/material';
 interface Props {
   children: React.ReactNode;
   fallback?: React.ReactNode;
+  // When any value in this array changes, a current error is cleared. Pass the route
+  // pathname so a transient error (e.g. a forced logout mid-render) recovers on navigation.
+  resetKeys?: unknown[];
 }
 
 interface State {
@@ -22,6 +25,15 @@ class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error(error, info);
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if (!this.state.hasError) return;
+    const prev = prevProps.resetKeys;
+    const next = this.props.resetKeys;
+    if (next && (!prev || prev.length !== next.length || next.some((k, i) => k !== prev[i]))) {
+      this.setState({ hasError: false });
+    }
   }
 
   resetError() {

@@ -51,10 +51,17 @@ api.interceptors.response.use(
               .finally(() => { refreshPromise = null; });
           }
           await refreshPromise;
-          // Token refreshed in Redux — re-issue the original request; the request
-          // interceptor attaches the fresh token. Safe: the original attempt was
-          // rejected at the auth middleware, so nothing was processed server-side.
-          return api(error.config);
+          // Mutations (POST/PUT/PATCH/DELETE) are NOT retried by React Query, so re-issue
+          // them here with the fresh token (this is why this path exists). GET requests are
+          // left to React Query's own retry (retry: 3) — re-issuing a GET response from the
+          // axios 1.x error interceptor is the brittle pattern that broke query recovery
+          // (e.g. the risk-level screen), so for GETs we reject and let the query retry.
+          const method = (error.config.method ?? 'get').toLowerCase();
+          const isMutation = method !== 'get' && method !== 'head' && method !== 'options';
+          if (isMutation) {
+            return api(error.config);
+          }
+          return Promise.reject(error);
         } catch {
           // Refresh failed — fall through to logout
         }

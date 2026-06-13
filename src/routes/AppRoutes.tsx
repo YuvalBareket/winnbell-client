@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Typography, Button } from '@mui/material';
 import ErrorBoundary from '../shared/components/ErrorBoundary';
 
@@ -57,6 +57,7 @@ const MarketingPage = lazy(() => import('../features/marketing/pages/MarketingPa
 
 const AppRoutes = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const isUser = useAppSelector(selectIsRegularUser);
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
@@ -94,7 +95,7 @@ const AppRoutes = () => {
   return (
     <PageHeaderProvider>
     <SyncStatusContext.Provider value={{ syncError, retry, isLoaded, isSignedIn }}>
-    <ErrorBoundary fallback={routeFallback}>
+    <ErrorBoundary fallback={routeFallback} resetKeys={[location.pathname]}>
     <Suspense fallback={<LoadingScreen />}>
     <Routes>
       {/* --- Public Routes --- */}
