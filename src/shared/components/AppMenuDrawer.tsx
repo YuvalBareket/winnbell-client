@@ -4,13 +4,13 @@ import {
   Typography,
   Avatar,
   List,
-  ListItemButton,
   ListItemIcon,
   ListItemText,
   Stack,
   Divider,
   Chip,
 } from '@mui/material';
+import TapListItemButton from './TapListItemButton';
 import {
   Logout,
   ConfirmationNumberOutlined,
@@ -232,9 +232,9 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
           </Typography>
           <List disablePadding>
             {mainNavItems.map((item) => (
-              <ListItemButton
+              <TapListItemButton
                 key={item.path}
-                onClick={() => handleNav(item.path)}
+                onTap={() => handleNav(item.path)}
                 sx={{
                   borderRadius: 2.5,
                   mb: 0.2,
@@ -269,7 +269,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                     opacity: 0.4, transition: 'all 0.15s ease',
                   }}
                 />
-              </ListItemButton>
+              </TapListItemButton>
             ))}
           </List>
         </Box>
@@ -284,8 +284,8 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
           </Typography>
           <List disablePadding>
             {showInstallOption && (
-              <ListItemButton
-                onClick={() => { openInstallDialog(); onClose(); }}
+              <TapListItemButton
+                onTap={() => { openInstallDialog(); onClose(); }}
                 sx={{
                   borderRadius: 2.5, mb: 0.2, py: itemPy, px: 1.5,
                   transition: 'all 0.15s ease',
@@ -300,10 +300,10 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                   primary='Install App'
                   primaryTypographyProps={{ fontWeight: 600, fontSize: { xs: '0.82rem', sm: '0.84rem' }, color: PRIMARY_MAIN }}
                 />
-              </ListItemButton>
+              </TapListItemButton>
             )}
-            <ListItemButton
-              onClick={handleHowItWorks}
+            <TapListItemButton
+              onTap={handleHowItWorks}
               sx={{
                 borderRadius: 2.5, mb: 0.2, py: itemPy, px: 1.5,
                 transition: 'all 0.15s ease',
@@ -317,11 +317,11 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                 primary='How It Works'
                 primaryTypographyProps={{ fontWeight: 500, fontSize: { xs: '0.82rem', sm: '0.84rem' }, color: 'text.secondary' }}
               />
-            </ListItemButton>
+            </TapListItemButton>
             {legalItems.map((item) => (
-              <ListItemButton
+              <TapListItemButton
                 key={item.path}
-                onClick={() => handleNav(item.path)}
+                onTap={() => handleNav(item.path)}
                 sx={{
                   borderRadius: 2.5, mb: 0.2, py: itemPy, px: 1.5,
                   transition: 'all 0.15s ease',
@@ -335,7 +335,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                   primary={item.label}
                   primaryTypographyProps={{ fontWeight: 500, fontSize: { xs: '0.82rem', sm: '0.84rem' }, color: 'text.secondary' }}
                 />
-              </ListItemButton>
+              </TapListItemButton>
             ))}
           </List>
         </Box>
@@ -346,8 +346,8 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         {/* App version + logout */}
         <Box sx={{ px: 2, pb: { xs: 2, sm: 3.5 } }}>
           <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
-          <ListItemButton
-            onClick={handleLogout}
+          <TapListItemButton
+            onTap={handleLogout}
             sx={{
               borderRadius: 2.5,
               color: 'error.main',
@@ -364,7 +364,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
               primary='Log out'
               primaryTypographyProps={{ fontWeight: 700, fontSize: { xs: '0.82rem', sm: '0.88rem' } }}
             />
-          </ListItemButton>
+          </TapListItemButton>
           <Typography variant='caption' color={TEXT_TERTIARY} sx={{ px: 1.5, mt: 1, display: 'block', fontSize: '0.68rem' }}>
             Winnbell v1.0 · {new Date().getFullYear()}
           </Typography>

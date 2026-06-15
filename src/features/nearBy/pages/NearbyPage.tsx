@@ -245,7 +245,7 @@ const NearbyPage = () => {
           <Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: 'divider' }} />
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pt: { xs: 0, md: 2 }, pb: 1.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pt: { xs: 0, md: 2 }, pb: 1 }}>
           <Typography variant='h6' sx={{ fontWeight: 700 }}>Partners List</Typography>
           {isFetching && !isLoading && <CircularProgress size={14} thickness={5} />}
         </Box>

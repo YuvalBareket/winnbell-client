@@ -9,6 +9,7 @@ import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
 import { InstallPromptProvider } from '../../features/install/InstallPrompt';
 import { usePageHeader } from '../context/PageHeaderContext';
+import { useTap } from '../hooks/useTap';
 import { useAppSelector } from '../../store/hook';
 import { selectIsBusiness, selectIsAdmin, selectIsLocationManager } from '../../store/selectors/authSelectors';
 import {
@@ -44,6 +45,12 @@ const MainLayout = () => {
   const { hasOwnHeader } = usePageHeader();
   const topPadding = { xs: 0, md: 0 };
   const scanActive = location.pathname === mobileMainPath;
+
+  // Reliable bottom-nav taps: the native click is cancelled by tiny finger movement on
+  // mobile, so we navigate on pointer-up instead (see useTap).
+  const tapNearby = useTap(() => navigate('/nearby'));
+  const tapMain = useTap(() => navigate(mobileMainPath));
+  const tapTickets = useTap(() => navigate('/tickets'));
 
   return (
     <InstallPromptProvider>
@@ -115,7 +122,6 @@ const MainLayout = () => {
         >
           <BottomNavigation
             value={location.pathname}
-            onChange={(_, newValue) => navigate(newValue)}
             sx={{
               height: 60,
               bgcolor: 'transparent',
@@ -130,12 +136,14 @@ const MainLayout = () => {
             }}
           >
             <BottomNavigationAction
+              {...tapNearby}
               value='/nearby'
               showLabel={false}
               icon={<Storefront />}
             />
 
             <BottomNavigationAction
+              {...tapMain}
               value={mobileMainPath}
               showLabel={false}
               icon={
@@ -162,6 +170,7 @@ const MainLayout = () => {
             />
 
             <BottomNavigationAction
+              {...tapTickets}
               value='/tickets'
               showLabel={false}
               icon={<ConfirmationNumber />}
