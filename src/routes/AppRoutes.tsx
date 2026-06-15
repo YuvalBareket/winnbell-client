@@ -1,6 +1,6 @@
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense, type ReactNode } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import ErrorBoundary from '../shared/components/ErrorBoundary';
 
 import { useAppSelector } from '../store/hook';
@@ -55,6 +55,19 @@ const DrawHistoryPage = lazy(() => import('../features/draw/pages/DrawHistoryPag
 const SettingsPage = lazy(() => import('../features/settings/pages/SettingsPage'));
 const MarketingPage = lazy(() => import('../features/marketing/pages/MarketingPage'));
 
+// Light fallback for in-app route chunk loading — a gentle spinner, NOT the full-screen
+// branded LoadingScreen (which is reserved for boot + auth/entry pages below).
+const RouteFallback = () => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
+    <CircularProgress size={34} thickness={4} />
+  </Box>
+);
+
+// Wrap auth/entry pages so their chunk load shows the full branded LoadingScreen.
+const branded = (node: ReactNode) => (
+  <Suspense fallback={<LoadingScreen />}>{node}</Suspense>
+);
+
 const AppRoutes = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -96,7 +109,7 @@ const AppRoutes = () => {
     <PageHeaderProvider>
     <SyncStatusContext.Provider value={{ syncError, retry, isLoaded, isSignedIn }}>
     <ErrorBoundary fallback={routeFallback} resetKeys={[location.pathname, isAuthenticated, isSignedIn]}>
-    <Suspense fallback={<LoadingScreen />}>
+    <Suspense fallback={<RouteFallback />}>
     <Routes>
       {/* --- Public Routes --- */}
       <Route path='/' element={
@@ -108,11 +121,11 @@ const AppRoutes = () => {
       } />
       <Route path='/for-business' element={<BusinessLandingPage />} />
       <Route path='/region-blocked' element={<RegionBlockedPage />} />
-      <Route path='/login' element={<RegionGate><LoginPage /></RegionGate>} />
-      <Route path='/register/:role?' element={<RegionGate><RegisterPage /></RegionGate>} />
+      <Route path='/login' element={branded(<RegionGate><LoginPage /></RegionGate>)} />
+      <Route path='/register/:role?' element={branded(<RegionGate><RegisterPage /></RegionGate>)} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
-      <Route path='/sso-callback' element={<SSOCallbackPage />} />
-      <Route path='/reset-password' element={<ResetPasswordPage />} />
+      <Route path='/sso-callback' element={branded(<SSOCallbackPage />)} />
+      <Route path='/reset-password' element={branded(<ResetPasswordPage />)} />
       <Route path='/activate' element={<PublicActivatePage />} />
       <Route path='/terms' element={<TermsOfServicePage />} />
       <Route path='/privacy' element={<PrivacyPolicyPage />} />

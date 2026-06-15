@@ -15,51 +15,21 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Winnbell" />
 
-    <!-- ── Fonts ── -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Coiny&display=swap" rel="stylesheet">
+    <!-- ── iOS PWA launch images ── -->
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-2048-2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1170-2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
 
-    <!-- ── Instant boot splash: paints before JS loads, replaced when React mounts. -->
-    <!-- Keep visually in sync with LoadingScreen.tsx / GRADIENT_LOADING. -->
-    <style>
-      body { margin: 0; }
-      #wb-splash {
-        position: fixed; inset: 0; z-index: 9999; overflow: hidden;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        background: linear-gradient(150deg, #3a86de 0%, #1a68c2 52%, #134d8a 100%);
-      }
-      #wb-splash .wb-glow {
-        position: absolute; width: 380px; height: 380px; border-radius: 50%;
-        background: rgba(255,255,255,0.15); filter: blur(100px); pointer-events: none;
-      }
-      #wb-splash .wb-logo {
-        height: 52px; width: auto; position: relative;
-        animation: wb-fade 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) both;
-      }
-      #wb-splash .wb-dots { display: flex; gap: 10px; margin-top: 24px; position: relative; }
-      #wb-splash .wb-dots span {
-        width: 9px; height: 9px; border-radius: 50%; background: #fff;
-        animation: wb-bounce 0.7s ease-in-out infinite;
-      }
-      #wb-splash .wb-dots span:nth-child(2) { animation-delay: 0.18s; }
-      #wb-splash .wb-dots span:nth-child(3) { animation-delay: 0.36s; }
-      @keyframes wb-bounce {
-        0%, 100% { transform: translateY(0); opacity: 0.35; }
-        50% { transform: translateY(-10px); opacity: 1; }
-      }
-      @keyframes wb-fade {
-        from { opacity: 0; transform: scale(0.85) translateY(6px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
-      }
-    </style>
+    <!-- ── Fonts (async — must not block first paint) ── -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Coiny&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Coiny&display=swap"></noscript>
+
+    <style>body { margin: 0; }</style>
   </head>
+
   <body>
-    <div id="root">
-      <div id="wb-splash">
-        <div class="wb-glow"></div>
-        <img class="wb-logo" src="/winnbell_app_name_white.svg" alt="Winnbell" />
-        <div class="wb-dots"><span></span><span></span><span></span></div>
-      </div>
-    </div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -9,6 +9,14 @@ const ProtectedRoute = () => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const { isLoaded, isSignedIn, syncError, retry } = useSyncStatus();
 
+  // Already authenticated from the persisted session: render immediately. Waiting for
+  // Supabase to re-initialize on every refresh is what made logged-in reloads feel slow.
+  // The internal JWT authorizes API calls; if the session is actually stale, those calls
+  // get a 401 and the sync flow signs the user out.
+  if (isAuthenticated) {
+    return <Outlet />;
+  }
+
   // Supabase is still initializing
   if (!isLoaded) {
     return <LoadingScreen />;
