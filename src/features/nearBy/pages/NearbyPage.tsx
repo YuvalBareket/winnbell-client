@@ -255,6 +255,9 @@ const NearbyPage = () => {
           <Box sx={{
             display: 'flex', gap: 0.75, overflowX: 'auto', pb: 1,
             scrollbarWidth: 'none',
+            // Constrain the gesture to horizontal panning so a small vertical finger jitter
+            // while tapping a chip isn't treated as a scroll (which cancels the click).
+            touchAction: 'pan-x',
           }}>
             {[{ key: null, label: 'All', icon: null }, ...Object.entries(BUSINESS_SECTORS).filter(([k]) => k !== 'Free').map(([k, v]) => ({ key: k, label: v.label, icon: v.icon }))].map(({ key, label, icon }) => {
               const active = key === null ? !selectedSector : selectedSector === key;
@@ -296,6 +299,9 @@ const NearbyPage = () => {
             flex: 1,
             '&::-webkit-scrollbar': { display: 'none' },
             scrollbarWidth: 'none',
+            // Vertical-only scrolling so a horizontal finger jitter while tapping a card
+            // isn't treated as a scroll (which would cancel the tap).
+            touchAction: 'pan-y',
           }}
         >
           {/* Initial load spinner - only when no data yet */}
