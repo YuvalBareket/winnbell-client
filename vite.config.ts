@@ -38,9 +38,10 @@ export default defineConfig({
           },
         ],
       },
+      // Service worker runs in production builds only, not in `npm run dev` — keeps dev
+      // reloads fast and the console free of precache warnings.
       devOptions: {
-        enabled: true,
-        type: 'module',
+        enabled: false,
       },
     }),
   ],
