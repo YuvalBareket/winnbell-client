@@ -113,11 +113,9 @@ const AppRoutes = () => {
     <Routes>
       {/* --- Public Routes --- */}
       <Route path='/' element={
-        (!isLoaded || (isSignedIn && !isAuthenticated))
-                  ? <LoadingScreen />
-          : isAuthenticated
-            ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace />
-            : <LandingPage />
+        isAuthenticated
+          ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace />
+          : <LandingPage />
       } />
       <Route path='/for-business' element={<BusinessLandingPage />} />
       <Route path='/region-blocked' element={<RegionBlockedPage />} />
