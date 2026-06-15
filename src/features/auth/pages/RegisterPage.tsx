@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Button, Typography, TextField, IconButton, InputAdornment, Paper, Container,
+  Box, Button, Typography, TextField, IconButton, InputAdornment, Container,
   Stack, Alert, CircularProgress, Divider, Checkbox, FormControlLabel,
   useMediaQuery, useTheme, Snackbar,
 } from '@mui/material';
 import {
-  ArrowBackIosNew, Person, Mail, Lock, Visibility, VisibilityOff, Handshake,
+  ArrowBackIosNew, Person, Mail, Lock, Visibility, VisibilityOff,
   Storefront, Google, ConfirmationNumber, EmojiEvents, CardGiftcard, Warning,
 } from '@mui/icons-material';
 import { useNavigate, useParams, useSearchParams, useLocation, Navigate } from 'react-router-dom';
@@ -218,11 +218,11 @@ const RegisterPage = () => {
     }
   };
 
-  const roleIcon = isLocationManager
-    ? <Storefront sx={{ color: 'white', fontSize: 36 }} />
-    : isBusinessOwner
-    ? <Handshake sx={{ color: 'white', fontSize: 36 }} />
-    : <Person sx={{ color: 'white', fontSize: 36 }} />;
+  // const roleIcon = isLocationManager
+  //   ? <Storefront sx={{ color: 'white', fontSize: 36 }} />
+  //   : isBusinessOwner
+  //   ? <Handshake sx={{ color: 'white', fontSize: 36 }} />
+  //   : <Person sx={{ color: 'white', fontSize: 36 }} />;
 
   const roleTitle = isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Partner Program' : 'Join Winnbell';
   const roleSubtitle = isLocationManager
@@ -237,16 +237,7 @@ const RegisterPage = () => {
     <Stack sx={{ zoom: { xs: 0.85, md: 0.75 } }}>
       {/* Header */}
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: isDesktop ? 'flex-start' : 'center', mb: 2 }}>
-        {!isDesktop && (
-          <Paper elevation={0} sx={{
-            width: 72, height: 72,
-            bgcolor: isLocationManager ? ROLE_MANAGER_BG : isBusinessOwner ? 'primary.main' : 'secondary.main',
-            borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2,
-            border: '1px solid rgba(0,0,0,0.1)',
-          }}>
-            {roleIcon}
-          </Paper>
-        )}
+     
         <Stack direction='row' alignItems='center' gap={3} mb={1}>
           {isDesktop && (
             <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>

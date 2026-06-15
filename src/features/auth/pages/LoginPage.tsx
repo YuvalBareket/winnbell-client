@@ -172,7 +172,7 @@ const LoginPage = () => {
       <Box sx={{ mb: { xs: 2, md: 3 }, textAlign: isDesktop ? 'left' : 'center' }}>
         {!isDesktop && (
           <Paper elevation={4} sx={{ width: 56, height: 56, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, transform: 'rotate(3deg)', mx: 'auto' }}>
-            <ConfirmationNumber sx={{ color: 'white', fontSize: 28 }} />
+            <img style={{width:'34px'}} src='/winnbell_logo_white.png' />
           </Paper>
         )}
         <Stack direction='row' alignItems='center' gap={3} mb={1} justifyContent={isDesktop ? 'flex-start' : 'center'}>
