@@ -3,10 +3,10 @@ import {
   Stack,
   Button,
   Typography,
-  Paper,
   Box,
   CircularProgress,
 } from '@mui/material';
+import TapArea from '../../../shared/components/TapArea';
 import {
   AddCircleOutline,
   Storefront,
@@ -92,10 +92,9 @@ const BusinessActions: React.FC<BusinessActionsProps> = ({
           {locations.map((loc) => {
             const isSelected = selectedLocationId === loc.id;
             return (
-              <Paper
+              <TapArea
                 key={loc.id}
-                elevation={0}
-                onClick={() => setSelectedLocationId(loc.id)}
+                onTap={() => setSelectedLocationId(loc.id)}
                 sx={{
                   p: 1.5,
                   borderRadius: 2,
@@ -150,7 +149,7 @@ const BusinessActions: React.FC<BusinessActionsProps> = ({
                 {isSelected && (
                   <CheckCircle sx={{ fontSize: 20, color: primaryColor, flexShrink: 0 }} />
                 )}
-              </Paper>
+              </TapArea>
             );
           })}
         </Stack>

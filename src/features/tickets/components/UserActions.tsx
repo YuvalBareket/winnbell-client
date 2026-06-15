@@ -5,11 +5,11 @@ import {
   Typography,
   TextField,
   Button,
-  Paper,
   CircularProgress,
   InputAdornment,
   Divider,
 } from '@mui/material';
+import TapArea from '../../../shared/components/TapArea';
 import {
   Edit,
   QrCodeScanner,
@@ -127,9 +127,8 @@ const UserActions: React.FC<UserActionsProps> = ({
     <Divider sx={{ my: 1 }} />
 
     {/* Free Weekly Ticket Card */}
-    <Paper
-      elevation={0}
-      onClick={() => navigate('/freeTicket')}
+    <TapArea
+      onTap={() => navigate('/freeTicket')}
       sx={{
         p: 1.5,
         px: 2,
@@ -155,7 +154,7 @@ const UserActions: React.FC<UserActionsProps> = ({
         </Typography>
       </Stack>
       <ChevronRight sx={{ color: primaryColor, fontSize: 20 }} />
-    </Paper>
+    </TapArea>
   </Box>
 );
 

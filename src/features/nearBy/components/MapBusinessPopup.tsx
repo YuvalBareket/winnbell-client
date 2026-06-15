@@ -46,6 +46,11 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
 
   const location = detail || basicInfo;
 
+  // The detail endpoint returns business_name/location_name/business_id (not name/id like
+  // the list endpoint does), so normalize for display.
+  const displayName = detail?.business_name || detail?.location_name || basicInfo?.name || '';
+  const businessId = detail?.business_id ?? basicInfo?.id;
+
   const sectorInfo = location
     ? BUSINESS_SECTORS[location.sector] || UNKNOWN_SECTOR
     : UNKNOWN_SECTOR;
@@ -61,7 +66,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
   const handleSubmitReceipt = () => {
     if (!location) return;
     onClose();
-    navigate('/scan', { state: { preselectedBusinessId: location.id, preselectedLocation: detail || location } });
+    navigate('/scan', { state: { preselectedBusinessId: businessId, preselectedLocation: detail || location } });
   };
 
   return (
@@ -138,7 +143,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
 
               <Box flex={1} minWidth={0} pt={0.5}>
                 <Typography variant='h6' fontWeight={800} sx={{ lineHeight: 1.25, mb: 0.75 }}>
-                  {location.name}
+                  {displayName}
                 </Typography>
                 <Stack direction='row' spacing={0.75} flexWrap='wrap' useFlexGap>
                   <Chip

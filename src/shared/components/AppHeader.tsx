@@ -7,6 +7,7 @@ import { GRADIENT_PRIMARY } from '../colors';
 import { getUserInitials } from '../utils/string';
 import { useNotifications } from '../../features/notifications/useNotifications';
 import NotificationPermissionDialog from '../../features/notifications/NotificationPermissionDialog';
+import { useInstallPromptTrigger } from '../../features/install/InstallPromptContext';
 
 interface Props {
   onMenuOpen: () => void;
@@ -18,6 +19,7 @@ const AppHeader = ({ onMenuOpen, onGradient = false }: Props) => {
   const initials = getUserInitials(user?.fullName);
   const { subscribe, unsubscribe, isPending, isSupported, isSubscribed } = useNotifications();
   const [notifDialogOpen, setNotifDialogOpen] = useState(false);
+  const { openInstallDialog } = useInstallPromptTrigger();
 
   return (
     <>
@@ -43,11 +45,13 @@ const AppHeader = ({ onMenuOpen, onGradient = false }: Props) => {
 
         {/* Right actions */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          {isSupported && (
-            <Tooltip title={isSubscribed ? 'Turn off notifications' : 'Enable notifications'}>
+            <Tooltip title={!isSupported ? 'Install the app to enable notifications' : isSubscribed ? 'Turn off notifications' : 'Enable notifications'}>
               <IconButton
                 size='small'
-                onClick={() => isSubscribed ? unsubscribe() : setNotifDialogOpen(true)}
+                onClick={() => {
+                  if (!isSupported) { openInstallDialog(); return; }
+                  if (isSubscribed) { unsubscribe(); } else { setNotifDialogOpen(true); }
+                }}
                 disabled={isPending}
                 sx={{
                   color: onGradient ? 'white' : (isSubscribed ? 'primary.main' : 'text.secondary'),
@@ -66,7 +70,6 @@ const AppHeader = ({ onMenuOpen, onGradient = false }: Props) => {
                     : <NotificationsNoneOutlined sx={{ fontSize: 20 }} />}
               </IconButton>
             </Tooltip>
-          )}
 
           <IconButton
             onClick={onMenuOpen}

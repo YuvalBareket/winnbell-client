@@ -1,6 +1,7 @@
 import { Box, Typography, Chip } from '@mui/material';
 import { StorefrontOutlined } from '@mui/icons-material';
 import { PRIMARY_MAIN } from '../../../shared/colors';
+import TapArea from '../../../shared/components/TapArea';
 import type { ParticipatingLocation } from '../hooks/useAllParticipatingLocations';
 import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 
@@ -11,8 +12,8 @@ interface LocationCardProps {
 }
 
 export const LocationCard: React.FC<LocationCardProps> = ({ location, primaryColor, onSelect }) => (
-  <Box
-    onClick={() => onSelect(location)}
+  <TapArea
+    onTap={() => onSelect(location)}
     sx={{
       display: 'flex', alignItems: 'center', gap: 1.5,
       p: 1.75, mb: 1, borderRadius: 4,
@@ -43,7 +44,7 @@ export const LocationCard: React.FC<LocationCardProps> = ({ location, primaryCol
         {location.address}
       </Typography>
     </Box>
-  </Box>
+  </TapArea>
 );
 
 interface NearbyLocationCardProps {
@@ -54,8 +55,8 @@ interface NearbyLocationCardProps {
 }
 
 export const NearbyLocationCard: React.FC<NearbyLocationCardProps> = ({ location, primaryColor, onSelect, distanceKm }) => (
-  <Box
-    onClick={() => onSelect(location)}
+  <TapArea
+    onTap={() => onSelect(location)}
     sx={{
       display: 'flex', alignItems: 'center', gap: 1.5,
       p: 1.75, mb: 1, borderRadius: 4,
@@ -98,5 +99,5 @@ export const NearbyLocationCard: React.FC<NearbyLocationCardProps> = ({ location
         }}
       />
     )}
-  </Box>
+  </TapArea>
 );

@@ -1,14 +1,14 @@
-import { Paper, Box, Typography, Stack, Chip } from '@mui/material';
+import { Box, Typography, Stack, Chip } from '@mui/material';
 import { PRIMARY_MAIN } from '../../../shared/colors';
+import TapArea from '../../../shared/components/TapArea';
 import { formatCurrency, formatDateShort } from '../../../shared/utils/date'; // formatCurrency used for revenue
 import type { DrawDataPoint } from '../api/stats.api';
 
 const DrawCard = ({ draw, selected, onClick }: { draw: DrawDataPoint; selected: boolean; onClick: () => void }) => {
   const isPast = new Date(draw.draw_date) < new Date();
   return (
-    <Paper
-      elevation={0}
-      onClick={onClick}
+    <TapArea
+      onTap={onClick}
       sx={{
         p: 2.5, borderRadius: 2, cursor: 'pointer',
         border: '2px solid', borderColor: selected ? PRIMARY_MAIN : 'divider',
@@ -47,7 +47,7 @@ const DrawCard = ({ draw, selected, onClick }: { draw: DrawDataPoint; selected: 
           <Typography variant='subtitle2' fontWeight={800}>{formatCurrency(draw.revenue)}</Typography>
         </Box>
       </Stack>
-    </Paper>
+    </TapArea>
   );
 };
 

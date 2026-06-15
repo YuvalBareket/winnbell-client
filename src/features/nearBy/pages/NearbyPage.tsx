@@ -35,6 +35,7 @@ import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { getUserInitials } from '../../../shared/utils/string';
 import { GRADIENT_PRIMARY } from '../../../shared/colors';
 import TapButton from '../../../shared/components/TapButton';
+import TapArea from '../../../shared/components/TapArea';
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -350,7 +351,6 @@ const NearbyPage = () => {
                 <motion.div key={partner.location_id} custom={index} variants={listItemVariants} initial="hidden" animate="visible">
                   <Paper
                     elevation={0}
-                    onClick={() => setSelectedLocationId(partner.location_id)}
                     sx={{
                       p: 1.25,
                       borderRadius: 6,
@@ -359,14 +359,15 @@ const NearbyPage = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      cursor: 'pointer',
                       opacity: 1,
-                      transition: 'transform 160ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out',
-                      '&:active': { transform: 'scale(0.97)' },
+                      transition: 'background-color 150ms ease-out, box-shadow 150ms ease-out',
                       '&:hover': { bgcolor: 'rgba(0,0,0,0.01)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
                     }}
                   >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <TapArea
+                    onTap={() => setSelectedLocationId(partner.location_id)}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0, cursor: 'pointer', borderRadius: 4, transition: 'transform 160ms ease-out', '&:active': { transform: 'scale(0.97)' } }}
+                  >
                     <Avatar
                       src={partner.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${partner.logo_url}` : undefined}
                       sx={{
@@ -408,13 +409,12 @@ const NearbyPage = () => {
                         />
                       </Box>
                     </Box>
-                  </Box>
+                  </TapArea>
 
-                  <Button
+                  <TapButton
                     variant='text'
                     sx={{ minWidth: 'auto', display: 'flex', flexDirection: 'column', gap: 0.5, p: 1 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onTap={() => {
                       if (partner.latitude && partner.longitude) {
                         const url = `https://www.google.com/maps/dir/?api=1&destination=${partner.latitude},${partner.longitude}`;
                         window.open(url, '_blank');
@@ -423,7 +423,7 @@ const NearbyPage = () => {
                   >
                     <Directions color='primary' />
                     <Typography variant='caption' sx={{ fontWeight: 700, color: 'primary.main', lineHeight: 1 }}>Go</Typography>
-                  </Button>
+                  </TapButton>
                   </Paper>
                 </motion.div>
               );
