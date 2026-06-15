@@ -100,12 +100,17 @@ const LoginPage = () => {
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
 
+  // Reflect an async sign-in sync failure (from useSupabaseSync, delivered via context) back
+  // on the form: stop the spinner and show an error. This must react to external async state,
+  // so the setState here is intentional.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (syncError && loading) {
       setLoading(false);
       setError('Something went wrong signing you in. Please try again.');
     }
-  }, [syncError]);
+  }, [syncError, loading]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

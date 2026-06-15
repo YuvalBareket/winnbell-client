@@ -23,36 +23,38 @@ import LoadingScreen from '../shared/components/LoadingScreen';
 import LandingPage from '../features/landing/LandingPage';
 import BusinessLandingPage from '../features/landing/BusinessLandingPage';
 
-const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'));
-const RegisterPage = lazy(() => import('../features/auth/pages/RegisterPage'));
-const VerifyEmailPage = lazy(() => import('../features/auth/pages/VerifyEmailPage'));
-const SSOCallbackPage = lazy(() => import('../features/auth/pages/SSOCallbackPage'));
-const ResetPasswordPage = lazy(() => import('../features/auth/pages/ResetPasswordPage'));
-const RegionBlockedPage = lazy(() => import('../features/auth/pages/RegionBlockedPage'));
+// Eager: login/register + the light everyday pages. Keeping them in the main bundle makes
+// navigating to them instant (no chunk-load delay) — the only wait is then any page-level
+// loading (e.g. RegionGate's region check on login/register).
+import LoginPage from '../features/auth/pages/LoginPage';
+import RegisterPage from '../features/auth/pages/RegisterPage';
+import VerifyEmailPage from '../features/auth/pages/VerifyEmailPage';
+import SSOCallbackPage from '../features/auth/pages/SSOCallbackPage';
+import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage';
+import RegionBlockedPage from '../features/auth/pages/RegionBlockedPage';
+import PublicActivatePage from '../features/tickets/pages/PublicActivatePage';
+import MyTicketsPage from '../features/myTickets/pages/MyTicketsPage';
+import FreeTicketPage from '../features/tickets/pages/FreeTicketPage';
+import SubscribePage from '../features/subscription/pages/SubscribePage';
+import SubscriptionSuccessPage from '../features/subscription/pages/SubscriptionSuccessPage';
+import SubscriptionManagementPage from '../features/subscription/pages/SubscriptionManagementPage';
+import NearbyPage from '../features/nearBy/pages/NearbyPage';
+import ActivityPage from '../features/activity/pages/ActivityPage';
+import DrawHistoryPage from '../features/draw/pages/DrawHistoryPage';
+import SettingsPage from '../features/settings/pages/SettingsPage';
 
-const PublicActivatePage = lazy(() => import('../features/tickets/pages/PublicActivatePage'));
+// Kept lazy: these pull in heavy libraries that don't belong in the initial bundle —
+// RedeemPage (QR scanner / html5-qrcode), legal pages (react-markdown), Stats & Admin
+// dashboard (recharts), BusinessProfile (image crop), Marketing (PDF export).
 const RedeemPage = lazy(() => import('../features/tickets/pages/RedeemPage'));
-const MyTicketsPage = lazy(() => import('../features/myTickets/pages/MyTicketsPage'));
-const FreeTicketPage = lazy(() => import('../features/tickets/pages/FreeTicketPage'));
-
 const TermsOfServicePage = lazy(() => import('../features/legal/pages/TermsOfServicePage'));
 const PrivacyPolicyPage = lazy(() => import('../features/legal/pages/PrivacyPolicyPage'));
 const OfficialRulesPage = lazy(() => import('../features/legal/pages/OfficialRulesPage'));
 const BusinessAgreementPage = lazy(() => import('../features/legal/pages/BusinessAgreementPage'));
-
-const SubscribePage = lazy(() => import('../features/subscription/pages/SubscribePage'));
-const SubscriptionSuccessPage = lazy(() => import('../features/subscription/pages/SubscriptionSuccessPage'));
-const SubscriptionManagementPage = lazy(() => import('../features/subscription/pages/SubscriptionManagementPage'));
-
-const NearbyPage = lazy(() => import('../features/nearBy/pages/NearbyPage'));
-
 const BusinessDashboard = lazy(() => import('../features/admin/pages/BusinessDashboard'));
 const BusinessProfilePage = lazy(() => import('../features/partner/pages/BusinessProfilePage'));
 const BusinessHubPage = lazy(() => import('../features/partner/pages/BusinessHubPage'));
 const StatsPage = lazy(() => import('../features/stats/pages/StatsPage'));
-const ActivityPage = lazy(() => import('../features/activity/pages/ActivityPage'));
-const DrawHistoryPage = lazy(() => import('../features/draw/pages/DrawHistoryPage'));
-const SettingsPage = lazy(() => import('../features/settings/pages/SettingsPage'));
 const MarketingPage = lazy(() => import('../features/marketing/pages/MarketingPage'));
 
 // Light fallback for in-app route chunk loading — a gentle spinner, NOT the full-screen
@@ -119,8 +121,8 @@ const AppRoutes = () => {
       } />
       <Route path='/for-business' element={<BusinessLandingPage />} />
       <Route path='/region-blocked' element={<RegionBlockedPage />} />
-      <Route path='/login' element={branded(<RegionGate><LoginPage /></RegionGate>)} />
-      <Route path='/register/:role?' element={branded(<RegionGate><RegisterPage /></RegionGate>)} />
+      <Route path='/login' element={<RegionGate><LoginPage /></RegionGate>} />
+      <Route path='/register/:role?' element={<RegionGate><RegisterPage /></RegionGate>} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
       <Route path='/sso-callback' element={branded(<SSOCallbackPage />)} />
       <Route path='/reset-password' element={branded(<ResetPasswordPage />)} />

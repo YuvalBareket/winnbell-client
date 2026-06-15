@@ -6,14 +6,13 @@ import { store, persistor } from './store/store'; // Import persistor
 import { theme } from './shared/theme';
 import AppRoutes from './routes/AppRoutes';
 import ErrorBoundary from './shared/components/ErrorBoundary';
-import LoadingScreen from './shared/components/LoadingScreen';
 // import AccessGate from './shared/components/AccessGate';
 
 function App() {
   return (
     // <AccessGate>
       <Provider store={store}>
-        <PersistGate loading={<LoadingScreen />} persistor={persistor}>
+        <PersistGate loading={null} persistor={persistor}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <BrowserRouter>

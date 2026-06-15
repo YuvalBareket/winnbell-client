@@ -140,6 +140,7 @@ const RegisterPage = () => {
     if (searchParams.get('region_blocked') === '1') {
       setRegionBlocked(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL param once on mount
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
