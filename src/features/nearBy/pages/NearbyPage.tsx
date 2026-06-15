@@ -34,6 +34,7 @@ import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { getUserInitials } from '../../../shared/utils/string';
 import { GRADIENT_PRIMARY } from '../../../shared/colors';
+import TapButton from '../../../shared/components/TapButton';
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -262,10 +263,10 @@ const NearbyPage = () => {
             {[{ key: null, label: 'All', icon: null }, ...Object.entries(BUSINESS_SECTORS).filter(([k]) => k !== 'Free').map(([k, v]) => ({ key: k, label: v.label, icon: v.icon }))].map(({ key, label, icon }) => {
               const active = key === null ? !selectedSector : selectedSector === key;
               return (
-                <Button
+                <TapButton
                   key={String(key)}
                   size='small'
-                  onClick={() => setSelectedSector(key as string | null)}
+                  onTap={() => setSelectedSector(key as string | null)}
                   startIcon={icon ? <Box sx={{ display: 'flex', '& svg': { fontSize: '13px !important' } }}>{icon as React.ReactElement}</Box> : undefined}
                   sx={{
                     flexShrink: 0,
@@ -282,7 +283,7 @@ const NearbyPage = () => {
                   }}
                 >
                   {label}
-                </Button>
+                </TapButton>
               );
             })}
           </Box>
