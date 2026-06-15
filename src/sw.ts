@@ -5,6 +5,7 @@ declare let self: ServiceWorkerGlobalScope;
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
+
 // Allow auto-update to activate new service worker immediately
 self.addEventListener('message', (event: ExtendableMessageEvent) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
