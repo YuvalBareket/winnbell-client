@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import {
   ArrowBackIosNew, Person, Mail, Lock, Visibility, VisibilityOff,
-  Storefront, Google, ConfirmationNumber, EmojiEvents, CardGiftcard, Warning,
+  Storefront, Google, ConfirmationNumber, EmojiEvents, CardGiftcard, Sms, Warning,
 } from '@mui/icons-material';
 import { useNavigate, useParams, useSearchParams, useLocation, Navigate } from 'react-router-dom';
 import { api } from '../../../shared/api/client';
@@ -265,7 +265,7 @@ const RegisterPage = () => {
 
       {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
 
-      <Stack spacing={2.5}>
+      <Stack spacing={2}>
         <Box>
           <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Full Name</Typography>
           <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
@@ -340,7 +340,7 @@ const RegisterPage = () => {
           </Button>
         </Box>
 
-        <Stack spacing={0.5}>
+        <Stack spacing={1}>
           <FormControlLabel
             control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
             label={
@@ -361,14 +361,22 @@ const RegisterPage = () => {
             label={<Typography variant='caption' color='text.secondary'>I confirm that I am 18 years of age or older.</Typography>}
           />
 
-          <Box sx={{ bgcolor: 'rgba(237,108,2,0.07)', border: '1px solid', borderColor: 'warning.light', borderRadius: 2, p: 1 }}>
-          <Stack direction='row' spacing={1} alignItems='flex-start'>
-            <Warning sx={{ fontSize: 14, color: 'warning.main', flexShrink: 0, mt: 0.25 }} />
-            <Typography variant='caption' sx={{ lineHeight: 1.6, color: 'text.secondary' }}>
+          <Box sx={{ pt: 0.5 }}>
+            <Typography variant='caption' sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block' }}>
+              <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
               <strong>Legal notice:</strong> Falsely declaring your age is a criminal offence. If a prize winner is found to be under 18, their winnings will be immediately cancelled.
             </Typography>
-          </Stack>
-        </Box>
+          </Box>
+
+          <Box sx={{ pt: 0.5 }}>
+            <Typography variant='caption' sx={{ lineHeight: 1.5, color: 'text.secondary', display: 'block' }}>
+              <Sms sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
+              <strong>SMS consent:</strong> Phone verification is optional. If you choose to verify your phone number in the app, you agree to receive a one-time SMS verification code from Winnbell at the number you provide. Message frequency: 1 message per request. Msg & data rates may apply. Reply STOP to opt out, HELP for help. See our{' '}
+              <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>Privacy Policy</Typography>
+              {' '}and{' '}
+              <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>Terms of Service</Typography>.
+            </Typography>
+          </Box>
         </Stack>
 
         <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted || !ageVerified} disableElevation

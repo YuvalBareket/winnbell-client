@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import {
   ArrowBackIosNew, ConfirmationNumber, Mail, Lock, Visibility, VisibilityOff,
-  Login, Google, Storefront, EmojiEvents, CardGiftcard,
+  Login, Google, Storefront, EmojiEvents, CardGiftcard, Sms,
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
@@ -307,6 +307,16 @@ const LoginPage = () => {
             </Typography>
           }
         />
+
+        <Box sx={{ bgcolor: 'action.hover', borderRadius: 2, p: 1.25 }}>
+          <Typography variant='caption' sx={{ lineHeight: 1.6, color: 'text.secondary', display: 'block' }}>
+            <Sms sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
+            <strong>SMS consent:</strong> Phone verification is optional. If you choose to verify your phone number in the app, you agree to receive a one-time SMS verification code from Winnbell at the number you provide. Message frequency: 1 message per request. Msg & data rates may apply. Reply STOP to opt out, HELP for help. See our{' '}
+            <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>Privacy Policy</Typography>
+            {' '}and{' '}
+            <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>Terms of Service</Typography>.
+          </Typography>
+        </Box>
 
         <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted}
           endIcon={!loading && <Login />}
