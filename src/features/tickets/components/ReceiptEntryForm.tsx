@@ -26,6 +26,7 @@ import BusinessSelector from './BusinessSelector';
 import SelectedLocationPill from './SelectedLocationPill';
 import { getNearbyBusinesses } from '../../nearBy/api/nearBy.api';
 import { queryKeys } from '../../../shared/constants/queryKeys';
+import { MAX_ENTRIES_PER_RECEIPT } from '../../../shared/constants/entries';
 import { useSearchParticipatingLocations } from '../hooks/useAllParticipatingLocations';
 import { useSubmitReceiptEntry } from '../hooks/useSubmitReceiptEntry';
 import { fetchParticipatingLocationById } from '../api/ticketsApi';
@@ -537,13 +538,17 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           {/* Entry count preview */}
           {selectedLocation?.min_transaction_amount && parseFloat(transactionAmount) > 0 && (() => {
             const min = selectedLocation.min_transaction_amount!;
-            const count = Math.min(Math.floor(parseFloat(transactionAmount) / min), 10);
+            const rawCount = Math.floor(parseFloat(transactionAmount) / min);
+            const count = Math.min(rawCount, MAX_ENTRIES_PER_RECEIPT);
             if (count <= 0) return null;
+            const capped = rawCount > MAX_ENTRIES_PER_RECEIPT;
             return (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 0.5 }}>
                 <Typography variant="caption" color="text.secondary">
                   {count === 1
                     ? `Earns 1 entry (min $${min})`
+                    : capped
+                    ? `Earns ${count} entries (maximum per receipt)`
                     : `Earns ${count} entries ($${min} each)`}
                 </Typography>
               </Box>

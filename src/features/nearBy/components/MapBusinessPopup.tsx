@@ -14,6 +14,7 @@ import type { NearbyLocation } from '../types/nearBy.types';
 import { getLocationDetail } from '../api/nearBy.api';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import { PRIMARY_MAIN } from '../../../shared/colors';
+import { MAX_ENTRIES_PER_RECEIPT } from '../../../shared/constants/entries';
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -348,7 +349,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                   {detail?.min_transaction_amount != null ? (
                     <Stack spacing={0.75}>
                       <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
-                        {(() => { const amt = Number(detail.min_transaction_amount); return (<>Every <strong style={{ color: '#111' }}>${Number.isInteger(amt) ? amt : amt.toFixed(2)}</strong> spent = <strong style={{ color: '#111' }}>1 entry</strong>.</>); })()}
+                        {(() => { const amt = Number(detail.min_transaction_amount); return (<>Every <strong style={{ color: '#111' }}>${Number.isInteger(amt) ? amt : amt.toFixed(2)}</strong> spent = <strong style={{ color: '#111' }}>1 entry</strong>, up to <strong style={{ color: '#111' }}>{MAX_ENTRIES_PER_RECEIPT} entries</strong> per receipt.</>); })()}
                       </Typography>
                       {detail.terms_text && (
                         <Typography variant='caption' color='text.disabled' lineHeight={1.5}>
