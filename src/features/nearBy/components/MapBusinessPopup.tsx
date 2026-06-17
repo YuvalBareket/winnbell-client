@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import type { NearbyLocation } from '../types/nearBy.types';
+import type { NearbyLocation, NearbyLocationDetail } from '../types/nearBy.types';
 import { getLocationDetail } from '../api/nearBy.api';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import { PRIMARY_MAIN } from '../../../shared/colors';
@@ -31,19 +31,28 @@ type Props = {
   basicInfo: NearbyLocation | null;
   onClose: () => void;
   userLocation?: { latitude: number; longitude: number } | null;
+  /** When true the popup is shown as a read-only preview (business hub) — action buttons do nothing. */
+  preview?: boolean;
+  /** In preview mode, render this detail directly instead of fetching the public (subscription-gated) endpoint. */
+  previewDetail?: NearbyLocationDetail | null;
 };
 
-const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, userLocation }) => {
+const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, userLocation, preview = false, previewDetail = null }) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
 
-  const { data: detail, isLoading: detailLoading } = useQuery({
+  // Skip the public fetch in preview — that endpoint is subscription-gated and 404s for
+  // businesses that aren't live yet. Use the detail the business hub already has instead.
+  const { data: fetchedDetail, isLoading: fetchedLoading } = useQuery({
     queryKey: ['participating', 'location', locationId],
     queryFn: () => getLocationDetail(locationId!),
-    enabled: !!locationId,
+    enabled: !preview && !!locationId,
     staleTime: 5 * 60_000,
   });
+
+  const detail = preview ? (previewDetail ?? undefined) : fetchedDetail;
+  const detailLoading = preview ? false : fetchedLoading;
 
   const location = detail || basicInfo;
 
@@ -65,7 +74,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
   };
 
   const handleSubmitReceipt = () => {
-    if (!location) return;
+    if (!location || preview) return;
     onClose();
     navigate('/scan', { state: { preselectedBusinessId: businessId, preselectedLocation: detail || location } });
   };
@@ -392,7 +401,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
               variant='contained'
               size='large'
               startIcon={<ReceiptLong />}
-              onClick={detail?.cap_reached ? undefined : handleSubmitReceipt}
+              onClick={detail?.cap_reached || preview ? undefined : handleSubmitReceipt}
               sx={{
                 py: 1.6,
                 fontWeight: 800,

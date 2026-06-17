@@ -46,7 +46,7 @@ import BusinessHeroSection from './components/BusinessHeroSection';
 import LogoCropDialog from './components/LogoCropDialog';
 import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
 import type { BusinessLocation } from '../types/business.types';
-import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
+import type { NearbyLocation, NearbyLocationDetail } from '../../nearBy/types/nearBy.types';
 import {
   ALPHA_WHITE_10,
   ALPHA_WHITE_15,
@@ -285,7 +285,7 @@ const BusinessHubPage = () => {
 
           {/* Branch Management */}
           <Box>
-            <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
+            <Stack direction='row' alignItems='center' justifyContent='space-between' spacing={1.5} mb={2}>
               <Typography
                 variant='subtitle2'
                 fontWeight={800}
@@ -486,6 +486,7 @@ const BusinessHubPage = () => {
 
       {/* Profile preview popup - shows business profile as users see it */}
       <MapBusinessPopup
+        preview
         locationId={previewOpen && activeLocations.length > 0 ? activeLocations[0].id : null}
         basicInfo={previewOpen && activeLocations.length > 0 ? ({
           location_id: activeLocations[0].id,
@@ -497,6 +498,28 @@ const BusinessHubPage = () => {
           latitude: activeLocations[0].latitude ?? 0,
           longitude: activeLocations[0].longitude ?? 0,
         } satisfies NearbyLocation) : null}
+        previewDetail={previewOpen && activeLocations.length > 0 ? ({
+          location_id: activeLocations[0].id,
+          id: business.id,
+          business_id: business.id,
+          name: business.name,
+          business_name: business.name,
+          location_name: activeLocations[0].name,
+          sector: business.sector as NearbyLocation['sector'],
+          logo_url: business.logo_url,
+          address: activeLocations[0].address,
+          latitude: activeLocations[0].latitude ?? 0,
+          longitude: activeLocations[0].longitude ?? 0,
+          description: business.description,
+          terms_text: business.terms_text,
+          receipt_example_image_url: business.receipt_example_image_url,
+          min_transaction_amount: business.min_transaction_amount,
+          pending_min_transaction_amount: business.pending_min_transaction_amount,
+          website_url: business.website_url,
+          phone: business.phone,
+          other_locations: activeLocations.slice(1).map((l) => ({ id: l.id, name: l.name, address: l.address })),
+          cap_reached: false,
+        } satisfies NearbyLocationDetail) : null}
         onClose={() => setPreviewOpen(false)}
       />
     </Box>

@@ -463,25 +463,51 @@ const BusinessProfilePage = () => {
                   Add Another Location
                 </Button>
 
-                <Stack direction='row' spacing={2}>
+                <Stack
+                  direction='row'
+                  spacing={{ xs: 1, sm: 2 }}
+                  sx={{ '& button': { whiteSpace: 'nowrap' } }}
+                >
                   <Button
-                    size='large'
                     variant='outlined'
                     startIcon={<ArrowBack />}
                     onClick={() => setStep(0)}
-                    sx={{ fontWeight: 700, flex: 1 }}
+                    sx={{
+                      fontWeight: 700,
+                      flex: 1,
+                      fontSize: { xs: '0.8rem', sm: '1rem' },
+                      px: { xs: 1, sm: 1.5 },
+                      py: { xs: 1, sm: 1.75 },
+                      '& .MuiButton-startIcon': {
+                        marginRight: { xs: '0.3rem', sm: '0.5rem' },
+                        fontSize: { xs: '1rem', sm: '1.25rem' },
+                      },
+                    }}
                   >
                     Back
                   </Button>
                   <Button
-                    size='large'
                     variant='contained'
                     type='submit'
                     disabled={isPending}
                     endIcon={isPending ? undefined : <CheckCircle />}
-                    sx={{ fontWeight: 800, flex: 2, py: 1.75 }}
+                    sx={{
+                      fontWeight: 800,
+                      flex: 2,
+                      fontSize: { xs: '0.8rem', sm: '1rem' },
+                      px: { xs: 1, sm: 1.5 },
+                      py: { xs: 1, sm: 1.75 },
+                      '& .MuiButton-endIcon': {
+                        marginLeft: { xs: '0.3rem', sm: '0.5rem' },
+                        fontSize: { xs: '1rem', sm: '1.25rem' },
+                        '& svg': {
+                          width: { xs: '1em', sm: '1.25em' },
+                          height: { xs: '1em', sm: '1.25em' },
+                        },
+                      },
+                    }}
                   >
-                    {isPending ? <CircularProgress size={22} color='inherit' /> : 'Complete Setup'}
+                    {isPending ? <CircularProgress size={20} color='inherit' /> : 'Complete Setup'}
                   </Button>
                 </Stack>
 

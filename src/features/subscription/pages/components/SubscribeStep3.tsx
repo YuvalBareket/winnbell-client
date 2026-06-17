@@ -233,9 +233,9 @@ const SubscribeStep3 = ({
                   ? <Skeleton width={40} height={20} />
                   : <Typography variant='body2' fontWeight={700}>{effectiveLocations}</Typography>}
               </Stack>
-              <Stack direction='row' justifyContent='space-between'>
-                <Typography variant='body2' color='text.secondary'>Duration</Typography>
-                <Typography variant='body2' fontWeight={700}>Every campaign for 12 months</Typography>
+              <Stack direction='row' justifyContent='space-between' spacing={2}>
+                <Typography variant='body2' color='text.secondary' sx={{ flexShrink: 0 }}>Duration</Typography>
+                <Typography variant='body2' fontWeight={700} sx={{ textAlign: 'right' }}>Every campaign for 12 months</Typography>
               </Stack>
               <Divider />
               <Stack direction='row' justifyContent='space-between' alignItems='center'>
@@ -261,11 +261,16 @@ const SubscribeStep3 = ({
 
           <Button
             fullWidth variant='contained' size='large'
-            startIcon={foundingLoading ? undefined : <WorkspacePremium />}
+            startIcon={foundingLoading ? undefined : <WorkspacePremium sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }} />}
             onClick={onFoundingSubscribe}
             disabled={foundingLoading || loading}
             sx={{
-              py: 1.875, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
+              py: { xs: 1.4, sm: 1.875 },
+              px: { xs: 1.5, sm: 2 },
+              fontWeight: 800,
+              fontSize: { xs: '0.82rem', sm: '1rem' },
+              textTransform: 'none',
+              whiteSpace: 'nowrap',
               bgcolor: '#f59e0b', '&:hover': { bgcolor: '#d97706' },
               boxShadow: '0 4px 14px rgba(245,158,11,0.4)',
               '&:hover .MuiButton-root': { boxShadow: '0 6px 20px rgba(245,158,11,0.5)' },
@@ -362,10 +367,19 @@ const SubscribeStep3 = ({
           />
 
           <Button fullWidth variant='contained' size='large'
-            startIcon={loading ? undefined : <CreditCard />}
+            startIcon={loading ? undefined : <CreditCard sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }} />}
             onClick={onSubscribe}
             disabled={loading || foundingLoading}
-            sx={{ py: 1.875, fontWeight: 800, fontSize: '1rem', textTransform: 'none', boxShadow: '0 4px 14px rgba(2,146,183,0.35)', '&:hover': { boxShadow: '0 6px 20px rgba(2,146,183,0.45)' } }}>
+            sx={{
+              py: { xs: 1.4, sm: 1.875 },
+              px: { xs: 1.5, sm: 2 },
+              fontWeight: 800,
+              fontSize: { xs: '0.82rem', sm: '1rem' },
+              textTransform: 'none',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 4px 14px rgba(2,146,183,0.35)',
+              '&:hover': { boxShadow: '0 6px 20px rgba(2,146,183,0.45)' },
+            }}>
             {loading ? <CircularProgress size={24} color='inherit' /> : 'Start Campaign'}
           </Button>
 
