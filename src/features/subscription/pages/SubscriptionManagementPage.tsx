@@ -182,7 +182,7 @@ export default function SubscriptionManagementPage() {
             {cancelResult.refundType !== 'none' ? (
               <>Founding membership cancelled. You have been removed from upcoming campaigns and a <strong>refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
             ) : (
-              <>Subscription cancelled. You have been removed from the next campaign. Your plan stays active until the end of the current period.</>
+              <>Subscription cancelled. Your plan stays active until {periodEndLabel} and you keep your current campaign. It will not renew after that.</>
             )}
           </Alert>
         )}
@@ -192,6 +192,40 @@ export default function SubscriptionManagementPage() {
             {cancelError}
           </Alert>
         )}
+
+        {/* Expired founding member prompt */}
+        <AnimatePresence>
+          {sub?.is_founding && sub?.current_period_end && new Date(sub.current_period_end) < new Date() && (
+            <motion.div
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Paper elevation={0} sx={{ mb: 3, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'rgba(245,158,11,0.04)' }}>
+                <Stack direction='row' alignItems='center' spacing={2} mb={2}>
+                  <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
+                  </Box>
+                  <Box flex={1}>
+                    <Typography variant='h6' fontWeight={800}>Your founding year has ended</Typography>
+                    <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>Your founding partner year is complete. Start a plan to keep running campaigns.</Typography>
+                  </Box>
+                </Stack>
+                <Box>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={() => navigate('/subscribe')}
+                    sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}
+                  >
+                    Start a new plan
+                  </Button>
+                </Box>
+              </Paper>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Two-column grid on desktop, single column on mobile */}
         <Stack spacing={3}>
@@ -280,7 +314,7 @@ export default function SubscriptionManagementPage() {
                               ? 'One-time payment. All 12 monthly campaigns included, no renewal.'
                               : sub.cancel_at_period_end
                                 ? 'Your access continues until this date - no further charges'
-                                : 'Your next payment will be charged on this date'}
+                                : 'Your plan is billed on the last day of each month, so this is your next billing date.'}
                           </Typography>
                         </Box>
                       )}
@@ -382,7 +416,7 @@ export default function SubscriptionManagementPage() {
                         </Box>
                         <Box flex={1}>
                           <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                            Next Campaign
+                            {sub.draw_status === 'Open' ? 'Current Campaign' : 'Next Campaign'}
                           </Typography>
                           <Typography variant='h6' fontWeight={800} lineHeight={1.2}>{sub.draw_name}</Typography>
                         </Box>
@@ -427,6 +461,65 @@ export default function SubscriptionManagementPage() {
                     </Box>
                 </Paper>
               </motion.div>
+            ) : sub.status === 'Active' && sub.next_campaign_id ? (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+                  {/* Card header band */}
+                  <Box
+                    sx={{
+                      px: 3, py: 3,
+                      background: `linear-gradient(135deg, ${PRIMARY_MAIN}08 0%, ${PRIMARY_MAIN}12 100%)`,
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Stack direction='row' alignItems='center' spacing={2} mb={2}>
+                      <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: `${PRIMARY_MAIN}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <EmojiEvents sx={{ color: PRIMARY_MAIN, fontSize: 24 }} />
+                      </Box>
+                      <Box flex={1}>
+                        <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          Your Next Campaign
+                        </Typography>
+                        <Typography variant='h6' fontWeight={800} lineHeight={1.2}>{sub.next_campaign_name}</Typography>
+                      </Box>
+                    </Stack>
+                  </Box>
+
+                  {/* Campaign details */}
+                  <Box sx={{ px: 3, py: 3 }}>
+                    <Stack spacing={2} mb={2.5}>
+                      <Box>
+                        <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
+                          Campaign date
+                        </Typography>
+                        <Typography variant='body2' fontWeight={700}>
+                          {sub.next_campaign_date
+                            ? new Date(sub.next_campaign_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+                            : 'TBD'}
+                        </Typography>
+                      </Box>
+                      <Divider sx={{ my: 0 }} />
+                      <Box>
+                        <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.75 }}>
+                          Prize pool
+                        </Typography>
+                        <Typography variant='h5' fontWeight={900} color='primary.main' sx={{ fontSize: { xs: '1.75rem', md: '2rem' } }}>
+                          ${Number(sub.next_campaign_prize ?? 0).toFixed(2)}
+                        </Typography>
+                      </Box>
+                    </Stack>
+
+                    <Alert severity='info' icon={<EmojiEvents />} sx={{ borderRadius: 2 }}>
+                      When this campaign opens, your business goes live on the Winnbell map and customers can start earning entries from you.
+                    </Alert>
+                  </Box>
+                </Paper>
+              </motion.div>
             ) : (
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
@@ -441,11 +534,22 @@ export default function SubscriptionManagementPage() {
                     minHeight: 280, textAlign: 'center',
                   }}
                 >
-                <EmojiEvents sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
-                <Typography variant='body1' fontWeight={700} color='text.secondary'>No upcoming campaign</Typography>
-                <Typography variant='body2' color='text.disabled' sx={{ mt: 1 }}>
-                  You are not enrolled in any upcoming campaign yet.
-                </Typography>
+                <EmojiEvents sx={{ fontSize: 48, color: sub.status === 'Active' ? PRIMARY_MAIN : 'text.disabled', mb: 2 }} />
+                {sub.status === 'Active' ? (
+                  <>
+                    <Typography variant='body1' fontWeight={700} color='text.primary'>You are in for the next campaign</Typography>
+                    <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
+                      You are all set. When the next monthly campaign opens, your business goes live on the Winnbell map and customers can start earning entries from you.
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <Typography variant='body1' fontWeight={700} color='text.secondary'>No upcoming campaign</Typography>
+                    <Typography variant='body2' color='text.disabled' sx={{ mt: 1 }}>
+                      You are not enrolled in any upcoming campaign yet.
+                    </Typography>
+                  </>
+                )}
                 </Paper>
               </motion.div>
             )}
@@ -688,9 +792,13 @@ export default function SubscriptionManagementPage() {
                   </Alert>
                 )}
               </>
+            ) : sub.draw_id ? (
+              <DialogContentText>
+                Your plan stays active until <strong>{periodEndLabel}</strong>. You keep your spot in your current campaign, but your plan will not renew and you will not be entered into campaigns after that. No refund is issued.
+              </DialogContentText>
             ) : (
               <DialogContentText>
-                You'll be removed from the next upcoming campaign. No refund is issued - your subscription stays active until <strong>{periodEndLabel}</strong> and will not renew after that.
+                Cancelling will stop your subscription. You are not in a campaign yet, so you will not be entered into the next campaign and your plan will not renew.
               </DialogContentText>
             )}
           </Stack>

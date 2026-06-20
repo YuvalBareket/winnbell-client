@@ -1,8 +1,8 @@
 import {
   Box, Button, Typography, Stack, Divider, Skeleton,
-  IconButton, CircularProgress, FormControlLabel, Checkbox,
+  IconButton, CircularProgress,
 } from '@mui/material';
-import { Remove, Add, CreditCard, WorkspacePremium, CheckCircle } from '@mui/icons-material';
+import { Remove, Add, CreditCard, WorkspacePremium, CheckCircle, CalendarMonth } from '@mui/icons-material';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TIER_MAP, TIER_KEYS, MAX_TIER } from './subscribeTiers';
@@ -356,15 +356,48 @@ const SubscribeStep3 = ({
 
           {error && <Typography variant='body2' color='error' textAlign='center' mb={2}>{error}</Typography>}
 
-          <FormControlLabel
-            sx={{ mb: 2, display: 'flex', alignItems: 'flex-start', gap: 0.5 }}
-            control={<Checkbox defaultChecked size='small' sx={{ pt: 0 }} />}
-            label={
-              <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5 }}>
-                Automatically renew for next campaign - cancel anytime before the 7-day cutoff
-              </Typography>
-            }
-          />
+          {/* ── Campaign timing callout ── */}
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3, delay: 0.15 }}
+              style={{ marginBottom: 20 }}
+            >
+              <Box
+                sx={{
+                  borderRadius: 2,
+                  border: '1px solid rgba(2,146,183,0.2)',
+                  bgcolor: 'rgba(2,146,183,0.04)',
+                  p: 2.5,
+                  display: 'flex',
+                  gap: 2,
+                  alignItems: 'flex-start',
+                }}
+              >
+                <CalendarMonth
+                  sx={{
+                    fontSize: 20,
+                    color: 'primary.main',
+                    flexShrink: 0,
+                    mt: 0.25,
+                  }}
+                />
+                <Stack spacing={0.5} flex={1}>
+                  <Typography variant='subtitle2' fontWeight={700} color='text.primary'>
+                    Campaign timing
+                  </Typography>
+                  <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5 }}>
+                    This month's campaign is already running, so you'll be in the next one. Sign up now and you'll be all set the moment it opens.
+                  </Typography>
+                  <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.4, mt: 1.5, display: 'block' }}>
+                    No charge today. We bill on the last day of each month, and each payment covers the next campaign, so your first charge is at the end of this month.
+                  </Typography>
+                </Stack>
+              </Box>
+            </motion.div>
+          </AnimatePresence>
 
           <Button fullWidth variant='contained' size='large'
             startIcon={loading ? undefined : <CreditCard sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }} />}

@@ -16,6 +16,12 @@ export interface SubscriptionDetails {
   fee_at_entry: number | null;
   entries_per_location: number | null;
   active_location_count: number;
+  // The next campaign the business will be enrolled into when the admin opens it
+  // (null if no upcoming campaign has been created yet).
+  next_campaign_id: number | null;
+  next_campaign_name: string | null;
+  next_campaign_date: string | null;
+  next_campaign_prize: number | null;
 }
 
 export interface InvoiceLineItem {

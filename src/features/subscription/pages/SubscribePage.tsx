@@ -20,10 +20,9 @@ import SubscribeStep2 from './components/SubscribeStep2';
 import SubscribeStep3 from './components/SubscribeStep3';
 
 const FEATURES = [
-  { icon: <ConfirmationNumber />, text: 'Issue unlimited entries to your customers' },
-  { icon: <EmojiEvents />,        text: 'Enter the next monthly campaign and grow your prize pool' },
-  { icon: <Storefront />,         text: 'Appear on the Winnbell map so customers can find you' },
-  { icon: <Groups />,             text: 'Assign branch managers to run your locations' },
+  { icon: <EmojiEvents />,        text: 'Join the monthly prize campaign that keeps customers coming back' },
+  { icon: <Storefront />,         text: 'Appear on the Winnbell map so nearby customers can find you' },
+  { icon: <Groups />,             text: 'Invite branch managers to run each of your locations' },
 ];
 
 // ── Step headers ──────────────────────────────────────────────────────────────
@@ -146,7 +145,6 @@ const SubscribePage = () => {
         minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' },
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
-        '& > *': { minHeight: { md: '100dvh' }, alignItems: 'stretch' },
       }}
     >
       {/* ── Left brand panel ── */}
@@ -159,7 +157,10 @@ const SubscribePage = () => {
           justifyContent: 'space-between',
           p: { xs: 4, md: '5vh 6vw' },
           color: 'white',
-          position: 'relative',
+          position: { xs: 'relative', md: 'sticky' },
+          top: { xs: 'auto', md: 0 },
+          height: { xs: 'auto', md: '100dvh' },
+          alignSelf: { xs: 'auto', md: 'flex-start' },
           overflow: 'hidden',
           minHeight: { xs: 300, md: '100dvh' },
         }}
@@ -179,7 +180,7 @@ const SubscribePage = () => {
             Grow Your<br />Business
           </Typography>
           <Typography variant='body1' sx={{ opacity: 0.85, lineHeight: 1.8, maxWidth: 380, fontSize: { xs: '0.95rem', md: '1.05rem' } }}>
-            One flat monthly fee. Get listed on the map, issue entries to your customers, and compete in the monthly campaign.
+            A simple monthly subscription that brings customers back, month after month. Get on the Winnbell map and let your customers earn entries into the monthly prize draw.
           </Typography>
         </Box>
 
@@ -197,7 +198,7 @@ const SubscribePage = () => {
         </Stack>
 
         <Typography variant='caption' sx={{ opacity: 0.5, display: { xs: 'none', md: 'block' } }}>
-          Simple monthly subscription. Cancel anytime.
+          Simple monthly subscription. No contract, cancel anytime.
         </Typography>
       </Box>
 
@@ -212,7 +213,7 @@ const SubscribePage = () => {
           overflowY: 'auto',
         }}
       >
-        <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: 520, md: 560 } }}>
+        <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: 520, md: 560 } ,  zoom: { xs: 1, sm: 1, md: 0.9, lg: 1 }}}>
           <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
 
             {/* Step indicator */}
