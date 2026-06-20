@@ -105,7 +105,7 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
         >
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <Box>
               <Typography variant='h6' sx={{ fontWeight: 700, mb: 1, color: TEXT_PRIMARY }}>
                 Enter your phone number
@@ -131,6 +131,14 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
               helperText='US number or international with country code (e.g. +972...)'
             />
 
+            <Typography variant='caption' sx={{ color: TEXT_SECONDARY, lineHeight: 1.5, mt: 0, pb: 1.5 }}>
+              By tapping Send Code, you agree to receive a one-time verification text message from Winnbell at the number provided. Message frequency: 1 message per request. Msg & data rates may apply. Reply STOP to opt out, HELP for help.
+              {' '}
+              <a href='/privacy' target='_blank' rel='noopener noreferrer' style={{ color: PRIMARY_MAIN }}>Privacy Policy</a>
+              {' | '}
+              <a href='/terms' target='_blank' rel='noopener noreferrer' style={{ color: PRIMARY_MAIN }}>Terms of Service</a>
+            </Typography>
+
             <Button
               variant='contained'
               size='large'
@@ -138,6 +146,7 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
               disabled={isLoadingStep1 || !phone.trim()}
               endIcon={!isLoadingStep1 && <ArrowForward />}
               sx={{
+                
                 py: 1.5,
                 fontWeight: 700,
                 backgroundColor: PRIMARY_MAIN,
@@ -146,14 +155,6 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
             >
               {isLoadingStep1 ? <CircularProgress size={24} color='inherit' /> : 'Send Code'}
             </Button>
-
-            <Typography variant='caption' sx={{ color: TEXT_SECONDARY, textAlign: 'center', lineHeight: 1.5 }}>
-              By tapping Send Code, you agree to receive a one-time verification text message from Winnbell at the number provided. Message frequency: 1 message per request. Msg & data rates may apply. Reply STOP to opt out, HELP for help.
-              {' '}
-              <a href='/privacy' target='_blank' rel='noopener noreferrer' style={{ color: PRIMARY_MAIN }}>Privacy Policy</a>
-              {' | '}
-              <a href='/terms' target='_blank' rel='noopener noreferrer' style={{ color: PRIMARY_MAIN }}>Terms of Service</a>
-            </Typography>
           </Stack>
         </motion.div>
       ) : (
