@@ -132,7 +132,7 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
             />
 
             <Typography variant='caption' sx={{ color: TEXT_SECONDARY, lineHeight: 1.5, mt: 0, pb: 1.5 }}>
-              By tapping Send Code, you agree to receive a one-time verification text message from Winnbell at the number provided. Message frequency: 1 message per request. Msg & data rates may apply. Reply STOP to opt out, HELP for help.
+              By entering your phone number and tapping Send Code, you agree to receive a one-time verification code via SMS from Winnbell at that number, for account verification only. Message frequency: 1 message per request. Message and data rates may apply. Reply STOP to opt out, HELP for help.
               {' '}
               <a href='/privacy' target='_blank' rel='noopener noreferrer' style={{ color: PRIMARY_MAIN }}>Privacy Policy</a>
               {' | '}
