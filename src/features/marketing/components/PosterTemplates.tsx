@@ -20,13 +20,19 @@ export const THUMB_W_MOBILE = Math.round(POSTER_W * THUMB_SCALE_MOBILE); // ~61p
 export const THUMB_H_MOBILE = Math.round(POSTER_H * THUMB_SCALE_MOBILE); // ~86px
 
 export const HEADLINES = [
+  "Don't miss this month's campaign",
   'You are one scan away',
-  'Sometimes rewards start with a scan',
-  'Scan. Submit. See what you unlock.',
+  'Scan now. See what you unlock.',
 ];
 
 export const LEGAL_TEXT =
   'This business participates in Winnbell campaigns. No purchase necessary. A purchase will not increase chances of winning. Alternative free entry method available on the platform. 18+. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com';
+
+// ── Color palettes per template (html2canvas-safe: solid fills, no shadows/glows) ──
+const PALETTE_CLASSIC = { primary: '#195DE2', light: '#4A90E2', accent: '#EEF3FD' };
+const PALETTE_DARK    = { primary: '#0D1B2A', frame: '#1a2f47', gold: '#F5B932' };
+const PALETTE_FRESH   = { primary: '#059669', dark: '#047857', light: '#34D399', accent: '#F0FDF7' };
+const PALETTE_PINK    = { primary: '#EC4899', dark: '#BE185D', light: '#F472B6', accent: '#FDF2F8' };
 
 // ── Shared poster wrapper ─────────────────────────────────────────────────────
 export const PosterWrap = ({ children, bg }: { children: React.ReactNode; bg?: string }) => (
@@ -50,142 +56,194 @@ const QRWithBrand = ({ value, size, fgColor, logoSrc }: {
   return (
     <Box sx={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <QRCode value={value} size={size} level='H' fgColor={fgColor} />
-      {/* Gradient fade bubble */}
+      {/* White fade so the centered logo stays legible (required, renders fine in PDF) */}
       <Box sx={{
-        position: 'absolute',
-        top: '50%', left: '50%',
-        transform: 'translate(-50%, -50%)',
+        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
         width: bubbleSize, height: bubbleSize,
         background: 'radial-gradient(circle, rgba(255,255,255,0.82) 15%, rgba(255,255,255,0) 60%, rgba(255,255,255,0) 75%)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <Box
-          component='img'
-          src={logoSrc ?? '/winnbell_icon.svg'}
-          alt='Winnbell'
-          sx={{ height: logoSize, width: 'auto', display: 'block' }}
-        />
+        <Box component='img' src={logoSrc ?? '/winnbell_icon.svg'} alt='Winnbell'
+          sx={{ height: logoSize, width: 'auto', display: 'block' }} />
       </Box>
     </Box>
   );
 };
 
-// ── Template 1: Classic Blue ──────────────────────────────────────────────────
-export const PosterClassic = ({ businessName, scanUrl, headline }: PosterProps) => (
-  <PosterWrap>
-    {/* Header */}
+// Display font for headlines (Coiny is loaded app-wide in index.html). The Dark
+// template overrides with a heavy Jakarta for a more luxe, serious feel.
+const DISPLAY_FONT = '"Sora", "Plus Jakarta Sans", system-ui, sans-serif';
+const SANS_FONT = '"Plus Jakarta Sans", system-ui, sans-serif';
+
+// ── Theme contract for the shared base ────────────────────────────────────────
+interface PosterTheme {
+  pageBg: string;
+  headerBg: string;            // gradient or solid for the brand band
+  badgeBg: string;
+  badgeText: string;
+  headlineColor: string;
+  headlineFont?: string;       // defaults to the Coiny display face
+  headlineWeight?: number;     // for sans display (Coiny is single-weight)
+  qrFg: string;                // QR foreground - always dark/high-contrast on white
+  qrFrameBorder: string;
+  qrFrameBg: string;
+  qrOnDark?: boolean;          // wrap QR in a white card (dark templates)
+  logoSrc: string;
+  ctaBg: string;
+  ctaText: string;
+  reassureColor: string;
+  footerBg?: string;
+  footerBorder: string;
+  businessColor: string;
+  poweredColor: string;
+  legalColor: string;
+}
+
+// Single source of truth for layout + fit. Vertical budget (total 414):
+// header ~52 + footer ~78 leaves ~284 for the body. The body holds three blocks
+// (message / QR / CTA) ~244px tall, distributed with space-evenly so the
+// whitespace is balanced and nothing clips. Keep this rhythm when editing.
+const PosterBase = ({ businessName, scanUrl, headline, t }: PosterProps & { t: PosterTheme }) => (
+  <PosterWrap bg={t.pageBg}>
+    {/* Brand band */}
     <Box sx={{
-      background: 'linear-gradient(135deg, #195DE2 0%, #4A90E2 100%)',
-      color: 'white', py: 3, px: 3, textAlign: 'center', flexShrink: 0,
+      background: t.headerBg, color: 'white', py: 1.5, px: 3, flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
+      <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell'
+        sx={{ height: 28, width: 'auto', objectFit: 'contain' }} />
     </Box>
 
-    {/* Body */}
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 2, bgcolor: 'white' }}>
-      <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#1a1a1a', textAlign: 'center', mb: 3, lineHeight: 1.5 }}>
-        {headline}
-      </Typography>
-      <Box sx={{ p: '10px', border: '3px solid #195DE2', bgcolor: 'white' }}>
-        <QRWithBrand value={scanUrl} size={120} fgColor='#195DE2' logoSrc={iconBlue} />
+    {/* Body: three evenly-spaced blocks - message / QR / call to action */}
+    <Box sx={{
+      flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'space-evenly', px: 3, py: 1, bgcolor: t.pageBg,
+    }}>
+      {/* Block 1: badge eyebrow + headline (grouped so the badge reads as a kicker) */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box sx={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+          bgcolor: t.badgeBg, color: t.badgeText, px: 2, py: 0.6, borderRadius: '999px',
+          fontFamily: SANS_FONT, fontSize: '8.5px', fontWeight: 800, letterSpacing: 1.4,
+          textTransform: 'uppercase', textIndent: '1.4px', mb: 1,
+        }}>
+          Free to Enter
+        </Box>
+        <Typography sx={{
+          fontFamily: t.headlineFont ?? DISPLAY_FONT, fontWeight: t.headlineWeight ?? 600,
+          fontSize: 18, color: t.headlineColor, textAlign: 'center',
+          lineHeight: 1.18, letterSpacing: '-0.2px', maxWidth: '95%',
+        }}>
+          {headline}
+        </Typography>
       </Box>
 
+      {/* Block 2: the hero - QR */}
+      <Box sx={{ p: 0.75, bgcolor: t.qrFrameBg, borderRadius: 1, border: `3px solid ${t.qrFrameBorder}` }}>
+        {t.qrOnDark ? (
+          <Box sx={{ bgcolor: 'white', p: '5px', borderRadius: 0.5 }}>
+            <QRWithBrand value={scanUrl} size={110} fgColor={t.qrFg} logoSrc={t.logoSrc} />
+          </Box>
+        ) : (
+          <QRWithBrand value={scanUrl} size={110} fgColor={t.qrFg} logoSrc={t.logoSrc} />
+        )}
+      </Box>
+
+      {/* Block 3: loud CTA + reassurance */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box sx={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+          bgcolor: t.ctaBg, color: t.ctaText, px: 2.25, py: 0.6, borderRadius: '999px',
+          fontFamily: SANS_FONT, fontSize: '9.5px', fontWeight: 800, letterSpacing: 1.2,
+          textTransform: 'uppercase', textIndent: '1.2px', mb: 0.75,
+        }}>
+          Scan Now
+        </Box>
+        <Typography sx={{
+          fontFamily: SANS_FONT, fontSize: '8px', fontWeight: 600, color: t.reassureColor,
+          textAlign: 'center', lineHeight: 1.35,
+        }}>
+          No purchase necessary. Takes seconds.
+        </Typography>
+      </Box>
     </Box>
 
-    {/* Footer */}
-    <Box sx={{ bgcolor: '#EEF3FD', px: 2, pt: '10px', pb: '6px', borderTop: '1px solid rgba(25,93,230,0.15)', flexShrink: 0, textAlign: 'center' }}>
-      <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#195DE2', mb: 0.25 }}>{businessName}</Typography>
-      <Typography sx={{ fontSize: 9, color: '#888', letterSpacing: 1, textTransform: 'uppercase', mb: '6px' }}>Powered by Winnbell</Typography>
-      <Typography sx={{ fontSize: '5.5px', color: '#aaa', lineHeight: 1.45 }}>{LEGAL_TEXT}</Typography>
+    {/* Footer: business + powered + legal */}
+    <Box sx={{
+      bgcolor: t.footerBg ?? t.pageBg, px: 2, pt: '8px', pb: '6px',
+      borderTop: `1px solid ${t.footerBorder}`, flexShrink: 0, textAlign: 'center',
+    }}>
+      <Typography sx={{ fontFamily: SANS_FONT, fontSize: 12.5, fontWeight: 800, color: t.businessColor, mb: 0.2 }}>{businessName}</Typography>
+      <Typography sx={{ fontFamily: SANS_FONT, fontSize: 7.5, color: t.poweredColor, letterSpacing: 0.8, textTransform: 'uppercase', mb: '4px' }}>
+        Powered by Winnbell
+      </Typography>
+      <Typography sx={{ fontFamily: SANS_FONT, fontSize: '5.5px', color: t.legalColor, lineHeight: 1.45 }}>{LEGAL_TEXT}</Typography>
     </Box>
   </PosterWrap>
+);
+
+// ── Template 1: Classic Blue ──────────────────────────────────────────────────
+export const PosterClassic = (p: PosterProps) => (
+  <PosterBase {...p} t={{
+    pageBg: 'white',
+    headerBg: `linear-gradient(135deg, ${PALETTE_CLASSIC.primary} 0%, ${PALETTE_CLASSIC.light} 100%)`,
+    badgeBg: PALETTE_CLASSIC.primary, badgeText: 'white',
+    headlineColor: PALETTE_CLASSIC.primary,
+    qrFg: PALETTE_CLASSIC.primary, qrFrameBorder: PALETTE_CLASSIC.primary, qrFrameBg: 'white',
+    logoSrc: iconBlue,
+    ctaBg: PALETTE_CLASSIC.primary, ctaText: 'white',
+    reassureColor: '#5f6b7a',
+    footerBg: PALETTE_CLASSIC.accent, footerBorder: `${PALETTE_CLASSIC.primary}26`,
+    businessColor: PALETTE_CLASSIC.primary, poweredColor: '#8a93a0', legalColor: '#9aa0a6',
+  }} />
 );
 
 // ── Template 2: Dark Premium ──────────────────────────────────────────────────
-export const PosterDark = ({ businessName, scanUrl, headline }: PosterProps) => (
-  <PosterWrap bg='#0D1B2A'>
-    {/* Top */}
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 3, flexShrink: 0 }}>
-      <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
-    </Box>
-
-    {/* Body */}
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3 }}>
-      <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'white', textAlign: 'center', mb: 3, lineHeight: 1.6 }}>
-        {headline}
-      </Typography>
-      {/* Gold-framed QR */}
-      <Box sx={{ border: '3px solid #F5B932' }}>
-        <Box sx={{ p: '10px', bgcolor: '#0D1B2A' }}>
-          <QRWithBrand value={scanUrl} size={120} logoSrc={iconGold} />
-        </Box>
-      </Box>
-    </Box>
-
-    {/* Footer */}
-    <Box sx={{ borderTop: '1px solid rgba(245,185,50,0.2)', px: 3, pt: '10px', pb: '6px', textAlign: 'center', flexShrink: 0 }}>
-      <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#F5B932', mb: 0.25 }}>{businessName}</Typography>
-      <Typography sx={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, textTransform: 'uppercase', mb: '6px' }}>
-        Authorized Winnbell Partner
-      </Typography>
-      <Typography sx={{ fontSize: '5.5px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.45 }}>{LEGAL_TEXT}</Typography>
-    </Box>
-  </PosterWrap>
+export const PosterDark = (p: PosterProps) => (
+  <PosterBase {...p} t={{
+    pageBg: PALETTE_DARK.primary,
+    headerBg: PALETTE_DARK.primary,
+    badgeBg: PALETTE_DARK.gold, badgeText: PALETTE_DARK.primary,
+    headlineColor: 'white',
+    qrFg: PALETTE_DARK.primary, qrFrameBorder: PALETTE_DARK.gold, qrFrameBg: PALETTE_DARK.frame, qrOnDark: true,
+    logoSrc: iconGold,
+    ctaBg: PALETTE_DARK.gold, ctaText: PALETTE_DARK.primary,
+    reassureColor: 'rgba(255,255,255,0.7)',
+    footerBg: PALETTE_DARK.primary, footerBorder: `${PALETTE_DARK.gold}40`,
+    businessColor: PALETTE_DARK.gold, poweredColor: 'rgba(255,255,255,0.6)', legalColor: 'rgba(255,255,255,0.45)',
+  }} />
 );
 
 // ── Template 3: Fresh Green ───────────────────────────────────────────────────
-export const PosterFresh = ({ businessName, scanUrl, headline }: PosterProps) => (
-  <PosterWrap>
-    {/* Header */}
-    <Box sx={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 60%, #34D399 100%)', py: 3, px: 3, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
-    </Box>
-
-    {/* Body */}
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 2, bgcolor: 'white' }}>
-      <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#1a1a1a', mb: 3, textAlign: 'center' }}>
-        {headline}
-      </Typography>
-      <Box sx={{ p: '10px', border: '3px solid #10B981', bgcolor: 'white' }}>
-        <QRWithBrand value={scanUrl} size={120} fgColor='#059669' logoSrc={iconGreen} />
-      </Box>
-    </Box>
-
-    {/* Footer */}
-    <Box sx={{ bgcolor: '#F0FDF7', px: 2, pt: '10px', pb: '6px', borderTop: '1px solid rgba(5,150,105,0.15)', flexShrink: 0, textAlign: 'center' }}>
-      <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#059669', mb: 0.25 }}>{businessName}</Typography>
-      <Typography sx={{ fontSize: 9, color: '#888', letterSpacing: 1, textTransform: 'uppercase', mb: '6px' }}>Powered by Winnbell</Typography>
-      <Typography sx={{ fontSize: '5.5px', color: '#aaa', lineHeight: 1.45 }}>{LEGAL_TEXT}</Typography>
-    </Box>
-  </PosterWrap>
+export const PosterFresh = (p: PosterProps) => (
+  <PosterBase {...p} t={{
+    pageBg: 'white',
+    headerBg: `linear-gradient(135deg, ${PALETTE_FRESH.dark} 0%, ${PALETTE_FRESH.primary} 60%, ${PALETTE_FRESH.light} 100%)`,
+    badgeBg: PALETTE_FRESH.primary, badgeText: 'white',
+    headlineColor: '#064e3b',
+    qrFg: PALETTE_FRESH.dark, qrFrameBorder: PALETTE_FRESH.primary, qrFrameBg: 'white',
+    logoSrc: iconGreen,
+    ctaBg: PALETTE_FRESH.primary, ctaText: 'white',
+    reassureColor: '#5f6b7a',
+    footerBg: PALETTE_FRESH.accent, footerBorder: `${PALETTE_FRESH.primary}26`,
+    businessColor: PALETTE_FRESH.dark, poweredColor: '#8a93a0', legalColor: '#9aa0a6',
+  }} />
 );
 
 // ── Template 4: Light Pink ────────────────────────────────────────────────────
-export const PosterPink = ({ businessName, scanUrl, headline }: PosterProps) => (
-  <PosterWrap>
-    {/* Header */}
-    <Box sx={{ background: 'linear-gradient(135deg, #EC4899 0%, #F472B6 60%, #FBCFE8 100%)', py: 3, px: 3, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 34, width: 'auto', objectFit: 'contain' }} />
-    </Box>
-
-    {/* Body */}
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 2, bgcolor: 'white' }}>
-      <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#1a1a1a', textAlign: 'center', mb: 3, lineHeight: 1.5 }}>
-        {headline}
-      </Typography>
-      <Box sx={{ p: '10px', border: '3px solid #EC4899', bgcolor: 'white' }}>
-        <QRWithBrand value={scanUrl} size={120} fgColor='#BE185D' logoSrc={iconPink} />
-      </Box>
-    </Box>
-
-    {/* Footer */}
-    <Box sx={{ bgcolor: '#FDF2F8', px: 2, pt: '10px', pb: '6px', borderTop: '1px solid rgba(236,72,153,0.15)', flexShrink: 0, textAlign: 'center' }}>
-      <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#BE185D', mb: 0.25 }}>{businessName}</Typography>
-      <Typography sx={{ fontSize: 9, color: '#aaa', letterSpacing: 1, textTransform: 'uppercase', mb: '6px' }}>Powered by Winnbell</Typography>
-      <Typography sx={{ fontSize: '5.5px', color: '#aaa', lineHeight: 1.45 }}>{LEGAL_TEXT}</Typography>
-    </Box>
-  </PosterWrap>
+export const PosterPink = (p: PosterProps) => (
+  <PosterBase {...p} t={{
+    pageBg: 'white',
+    headerBg: `linear-gradient(135deg, ${PALETTE_PINK.primary} 0%, ${PALETTE_PINK.light} 60%, #F8B4D5 100%)`,
+    badgeBg: PALETTE_PINK.primary, badgeText: 'white',
+    headlineColor: '#831843',
+    qrFg: PALETTE_PINK.dark, qrFrameBorder: PALETTE_PINK.primary, qrFrameBg: 'white',
+    logoSrc: iconPink,
+    ctaBg: PALETTE_PINK.primary, ctaText: 'white',
+    reassureColor: '#5f6b7a',
+    footerBg: PALETTE_PINK.accent, footerBorder: `${PALETTE_PINK.primary}26`,
+    businessColor: PALETTE_PINK.dark, poweredColor: '#999', legalColor: '#9aa0a6',
+  }} />
 );
 
 // ── Template registry ─────────────────────────────────────────────────────────
