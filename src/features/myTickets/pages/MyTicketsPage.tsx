@@ -1,4 +1,4 @@
-import { Box, Container, Paper, Stack, Typography, useMediaQuery, useTheme, Autocomplete, TextField } from '@mui/material';
+import { Box, Container, Paper, Stack, Typography, useMediaQuery, useTheme, Autocomplete, TextField, CircularProgress } from '@mui/material';
 import { ConfirmationNumber } from '@mui/icons-material';
 import { ActiveTicketsList } from '../components/ActiveTicketsList';
 import { DrawSwiper } from '../../draw/components/DrawSwiper';
@@ -24,25 +24,42 @@ const MyTicketsPage = () => {
   const isManager = useAppSelector(selectIsLocationManager);
   const isBusinessUser = isBusiness || isManager;
 
-  const { data: subscription } = useSubscription(isBusiness || isManager);
-  const { data: businessData } = useBusinessData(isBusiness || isManager);
-  const drawIsUpcoming = isBusinessUser && subscription?.draw_status === 'Upcoming';
-  const hasNoActiveDraw = isBusinessUser && !!subscription && !subscription.draw_id;
-  const showPreparation = isBusinessUser && (drawIsUpcoming || hasNoActiveDraw);
+  const { data: subscription, isLoading: subLoading } = useSubscription(isBusinessUser);
+  const { data: businessData } = useBusinessData(isBusinessUser);
+
+  // The real "Distributed Entries" page is only meaningful while the business is
+  // actually in an OPEN campaign. Otherwise (no subscription yet, subscribed but
+  // the campaign hasn't opened, or cancelled and out of the draw) show the
+  // preparation/steps view. `subscription` is null when the business has never
+  // subscribed (the details query inner-joins the subscription row).
+  const isSubscribed = !!subscription && ['Active', 'Trialing', 'Past_Due'].includes(subscription.status);
+  const inOpenCampaign = subscription?.draw_status === 'Open' && !!subscription?.draw_id;
+  const showPreparation = isBusinessUser && !inOpenCampaign;
 
   const hasDescription = !!(businessData?.description?.trim());
   const hasLocations = (businessData?.locations?.length ?? 0) > 0;
   const locations = businessData?.locations ?? [];
 
+  // Wait for the subscription status before deciding which view to show, so we
+  // never flash the real entries page before falling back to preparation.
+  if (isBusinessUser && subLoading) {
+    return (
+      <Box sx={{ minHeight: '60dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress size={36} />
+      </Box>
+    );
+  }
+
   if (showPreparation) {
     return (
       <Box>
         <DrawPreparationView
-          subscription={subscription}
+          subscription={subscription ?? undefined}
           hasDescription={hasDescription}
           hasLocations={hasLocations}
           isDesktop={isDesktop}
           isManager={isManager}
+          isSubscribed={isSubscribed}
         />
       </Box>
     );

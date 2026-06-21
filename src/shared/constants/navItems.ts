@@ -47,6 +47,7 @@ export const managerNavItems: NavItem[] = [
   { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
   { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
+  { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 

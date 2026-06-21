@@ -21,6 +21,7 @@ interface DrawPreparationViewProps {
   hasLocations: boolean;
   isDesktop: boolean;
   isManager?: boolean;
+  isSubscribed?: boolean;
 }
 
 const DrawPreparationView = ({
@@ -29,6 +30,7 @@ const DrawPreparationView = ({
   hasLocations,
   isDesktop,
   isManager = false,
+  isSubscribed = true,
 }: DrawPreparationViewProps) => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -44,13 +46,20 @@ const DrawPreparationView = ({
     ? `$${Number(subscription.prize_amount).toFixed(0)}`
     : null;
 
-  const checklist = [
-    { label: 'Subscription active', done: true },
-    { label: `Registered for ${subscription?.draw_name ?? 'upcoming campaign'}`, done: true },
-    { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
-    { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
-    { label: 'Go live on the map when campaign opens', done: false, info: true },
-  ];
+  const checklist = isSubscribed
+    ? [
+        { label: 'Subscription active', done: true },
+        { label: `Registered for ${subscription?.draw_name ?? 'upcoming campaign'}`, done: true },
+        { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
+        { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
+        { label: 'Go live on the map when campaign opens', done: false, info: true },
+      ]
+    : [
+        { label: 'Subscribe to a campaign plan', done: false, path: '/subscribe' },
+        { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
+        { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
+        { label: 'Go live on the map when your campaign opens', done: false, info: true },
+      ];
   const taskItems = checklist.filter(c => !c.info);
   const completedCount = taskItems.filter(c => c.done).length;
   const progress = (completedCount / taskItems.length) * 100;
@@ -78,9 +87,13 @@ const DrawPreparationView = ({
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <Box>
-                <Typography variant='h5' fontWeight={800}>Preparing for Your Campaign</Typography>
+                <Typography variant='h5' fontWeight={800}>
+                  {isSubscribed ? 'Preparing for Your Campaign' : 'Get Your Business Ready'}
+                </Typography>
                 <Typography variant='body2' sx={{ opacity: 0.75, mt: 0.25 }}>
-                  You're registered - your business goes live when the campaign opens
+                  {isSubscribed
+                    ? "You're registered - your business goes live when the campaign opens"
+                    : 'A few quick steps to get your business live on Winnbell'}
                 </Typography>
               </Box>
             </motion.div>
@@ -99,7 +112,7 @@ const DrawPreparationView = ({
           >
             <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
             <Box sx={{ background: GRADIENT_HERO, p: 3, color: 'white' }}>
-              <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>Registered Campaign</Typography>
+              <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>{isSubscribed ? 'Registered Campaign' : 'Upcoming Campaign'}</Typography>
               <Typography variant='h6' fontWeight={800} sx={{ mt: 0.5 }}>
                 {subscription?.draw_name ?? 'Upcoming Monthly Campaign'}
               </Typography>
@@ -144,23 +157,48 @@ const DrawPreparationView = ({
           >
             {isManager ? (
               <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 3 }}>
-                <Typography variant='h6' fontWeight={800} mb={2}>What happens next?</Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {[
-                    { icon: <CheckCircle sx={{ fontSize: 20, color: 'success.main', flexShrink: 0 }} />, text: 'Business is registered for the upcoming campaign' },
-                    { icon: <EmojiEvents sx={{ fontSize: 20, color: 'primary.main', flexShrink: 0, opacity: 0.7 }} />, text: 'Entry generation opens when the campaign goes live' },
-                    { icon: <RadioButtonUnchecked sx={{ fontSize: 20, color: 'text.disabled', flexShrink: 0 }} />, text: 'Entries distributed to customers will appear here' },
-                  ].map((item, i) => (
-                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)', border: '1px solid', borderColor: 'divider' }}>
-                      {item.icon}
-                      <Typography variant='body2' fontWeight={600} color='text.secondary'>{item.text}</Typography>
+                <Typography variant='h6' fontWeight={800} mb={0.5}>How it works at your location</Typography>
+                <Typography variant='body2' color='text.secondary' mb={2.5}>
+                  {isSubscribed
+                    ? 'Your campaign is set up. Here is what to expect once it opens.'
+                    : 'Your location goes live once the business owner activates a plan.'}
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  {(isSubscribed
+                    ? [
+                        { title: 'Registered for the campaign', desc: `Your business is set for ${subscription?.draw_name ?? 'the upcoming campaign'}.` },
+                        { title: 'Campaign opens', desc: 'When it goes live, customers can submit receipts from your location to enter.' },
+                        { title: 'Entries appear here', desc: 'Every entry from your location shows up on this page to track.' },
+                      ]
+                    : [
+                        { title: 'Owner activates a plan', desc: 'The business needs an active campaign plan to go live.' },
+                        { title: 'Campaign opens', desc: 'Once live, customers can submit receipts from your location to enter.' },
+                        { title: 'Entries appear here', desc: 'Every entry from your location shows up on this page to track.' },
+                      ]
+                  ).map((step, i, arr) => (
+                    <Box key={i} sx={{ display: 'flex', gap: 1.75, position: 'relative', pb: i === arr.length - 1 ? 0 : 2.5 }}>
+                      {/* Connector line */}
+                      {i !== arr.length - 1 && (
+                        <Box sx={{ position: 'absolute', left: 15, top: 32, bottom: 0, width: '2px', bgcolor: 'divider' }} />
+                      )}
+                      {/* Numbered node */}
+                      <Box sx={{
+                        width: 32, height: 32, borderRadius: '50%', flexShrink: 0, zIndex: 1,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        bgcolor: i === 0 && isSubscribed ? 'success.main' : 'primary.main',
+                        color: 'white', fontWeight: 800, fontSize: 14,
+                      }}>
+                        {i + 1}
+                      </Box>
+                      <Box sx={{ pt: 0.25 }}>
+                        <Typography variant='body2' fontWeight={700} color='text.primary'>{step.title}</Typography>
+                        <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5, display: 'block', mt: 0.25 }}>
+                          {step.desc}
+                        </Typography>
+                      </Box>
                     </Box>
                   ))}
                 </Box>
-                <Divider sx={{ my: 3 }} />
-                <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7 }}>
-                  Once the campaign opens, customers can submit receipts from your location to earn entries. Distributed entries will show up in this page.
-                </Typography>
               </Paper>
             ) : (
               <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 3 }}>
