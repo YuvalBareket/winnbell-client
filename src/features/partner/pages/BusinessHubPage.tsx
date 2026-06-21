@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  CircularProgress,
 } from '@mui/material';
 import {
   AddBusiness,
@@ -117,12 +118,15 @@ const BusinessHubPage = () => {
   const handleConfirmRemoveLocation = () => {
     if (!removingLocation) return;
     const loc = removingLocation;
-    setRemovingLocation(null);
+    // Keep the dialog open with a loading button until the request resolves,
+    // then close it - avoids closing instantly and showing a blank load behind.
     doRemoveLocation(loc.id, {
       onSuccess: () => {
+        setRemovingLocation(null);
         setSnackbar({ open: true, message: 'Location removed and plan updated.', severity: 'success' });
       },
       onError: (err: unknown) => {
+        setRemovingLocation(null);
         const msg = (err as any)?.response?.data?.message;
         setSnackbar({ open: true, message: msg || 'Failed to remove location. Plan update may have failed.', severity: 'error' });
       },
@@ -393,7 +397,7 @@ const BusinessHubPage = () => {
         isLoading={isRemoving}
       />
 
-      <Dialog open={!!removingLocation} onClose={() => setRemovingLocation(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 1 } }}>
+      <Dialog open={!!removingLocation} onClose={() => { if (!isRemovingLocation) setRemovingLocation(null); }} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 1 } }}>
         <DialogTitle sx={{ fontWeight: 800, pb: 0.5 }}>Remove Location</DialogTitle>
         <DialogContent>
           <Stack spacing={2}>
@@ -446,14 +450,16 @@ const BusinessHubPage = () => {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setRemovingLocation(null)} sx={{ textTransform: 'none' }}>Cancel</Button>
+          <Button onClick={() => setRemovingLocation(null)} disabled={isRemovingLocation} sx={{ textTransform: 'none' }}>Cancel</Button>
           <Button
             variant='contained'
             color='error'
             onClick={handleConfirmRemoveLocation}
+            disabled={isRemovingLocation}
+            startIcon={isRemovingLocation ? <CircularProgress size={16} color='inherit' /> : undefined}
             sx={{ textTransform: 'none', fontWeight: 700 }}
           >
-            Remove
+            {isRemovingLocation ? 'Removing...' : 'Remove'}
           </Button>
         </DialogActions>
       </Dialog>
