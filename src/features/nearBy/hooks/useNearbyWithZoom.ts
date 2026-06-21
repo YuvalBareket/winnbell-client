@@ -9,26 +9,28 @@ export type ViewportBounds = {
   maxLng: number;
 };
 
-// Globally-aligned grid steps in degrees. A viewport is snapped to whichever
-// step is just larger than its span, so every user viewing roughly the same area
-// at the same zoom sends the IDENTICAL bbox. Identical bboxes collapse onto one
-// server cache entry, so thousands of users in the same area share a handful of
-// DB queries instead of each triggering their own. Snapping also enlarges the
-// box past the viewport, which replaces the old prefetch padding and lets the
-// user pan within the cell without refetching (fewer requests = no rate-limit).
+// Grid steps in degrees, chosen by zoom level (the box size).
 const GRID_STEPS = [0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10];
 
+function viewportCenter(b: ViewportBounds) {
+  return { lat: (b.minLat + b.maxLat) / 2, lng: (b.minLng + b.maxLng) / 2 };
+}
+
+// Build the fetch box. It is centered EXACTLY on the viewport center, so the
+// server (which sorts by distance to the box center and returns the 30 nearest)
+// always returns the locations closest to YOUR map center. Only the box SIZE is
+// quantized to a zoom-based step: this keeps the box stable across tiny zoom
+// changes (so the covered-area cache still works) without ever shifting the
+// center off you. Cross-user cache sharing is handled server-side, where the
+// bbox is rounded to a coarse grid before keying the cache.
 function snapBounds(b: ViewportBounds): ViewportBounds {
   const span = Math.max(b.maxLat - b.minLat, b.maxLng - b.minLng);
-  const step = GRID_STEPS.find((s) => s >= span) ?? GRID_STEPS[GRID_STEPS.length - 1];
-  const snap = (v: number, dir: 'floor' | 'ceil') =>
-    (dir === 'floor' ? Math.floor(v / step) : Math.ceil(v / step)) * step;
-  return {
-    minLat: snap(b.minLat, 'floor'),
-    maxLat: snap(b.maxLat, 'ceil'),
-    minLng: snap(b.minLng, 'floor'),
-    maxLng: snap(b.maxLng, 'ceil'),
-  };
+  // Epsilon tolerance: floating-point noise can make a span like 0.02 read as
+  // 0.020000000000000018, which would skip to the next (much larger) step.
+  const step = GRID_STEPS.find((s) => s >= span - 1e-9) ?? GRID_STEPS[GRID_STEPS.length - 1];
+  const c = viewportCenter(b);
+  const half = step; // generous radius around the true center; the 30 nearest fill the view
+  return { minLat: c.lat - half, maxLat: c.lat + half, minLng: c.lng - half, maxLng: c.lng + half };
 }
 
 export function useNearbyWithZoom(sector?: string | null, search?: string) {
@@ -74,7 +76,21 @@ export function useNearbyWithZoom(sector?: string | null, search?: string) {
     });
 
     results.forEach((loc) => accumulatedRef.current.set(loc.location_id, loc));
-    setLocations(Array.from(accumulatedRef.current.values()));
+
+    // Sort by distance to the ACTUAL viewport center so the list always shows the
+    // locations closest to the center of the visible map first (the server orders
+    // by the snapped center, and accumulated markers span multiple fetches).
+    const vp = lastViewportRef.current;
+    const all = Array.from(accumulatedRef.current.values());
+    if (vp) {
+      const c = viewportCenter(vp);
+      all.sort((a, b) => {
+        const da = (Number(a.latitude) - c.lat) ** 2 + (Number(a.longitude) - c.lng) ** 2;
+        const db = (Number(b.latitude) - c.lat) ** 2 + (Number(b.longitude) - c.lng) ** 2;
+        return da - db;
+      });
+    }
+    setLocations(all);
   }, []);
 
   const doFetch = useCallback(async (viewport: ViewportBounds, force = false) => {
