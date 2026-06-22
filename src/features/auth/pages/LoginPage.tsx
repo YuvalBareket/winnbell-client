@@ -138,16 +138,21 @@ const LoginPage = () => {
     if (!termsAccepted) { setError('Please accept the terms to continue.'); return; }
     setLoading(true);
     setError('');
+    // Must be set BEFORE signInWithPassword: the SIGNED_IN event fires useSupabaseSync
+    // synchronously, and it reads pendingInviteToken from localStorage to promote the
+    // user to manager. Setting it after sign-in (the old bug) meant the invite was
+    // missed and an existing user signing in via an invite link stayed a regular user.
+    if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
       if (signInError) {
+        localStorage.removeItem('pendingInviteToken');
         setError(signInError.message || 'Invalid email or password');
         setLoading(false);
       } else {
-        if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
         if (isAuthenticated) {
           // Redux already has a valid session — useSupabaseSync will early-return because
           // nothing changed server-side. Navigate directly using the role we already know.
@@ -159,6 +164,7 @@ const LoginPage = () => {
         // Loading resets via the syncError useEffect if sync fails.
       }
     } catch {
+      localStorage.removeItem('pendingInviteToken');
       setError('Invalid email or password');
       setLoading(false);
     }
