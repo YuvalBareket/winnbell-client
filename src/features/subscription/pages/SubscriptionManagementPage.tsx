@@ -16,20 +16,7 @@ import { PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15, MOBILE_CONTENT_HEIGHT } fr
 import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices } from '../hooks/useSubscription';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
-import { TIER_KEYS } from './components/subscribeTiers';
-
-const TIER_PRICE_MAP_CLIENT: Record<number, { monthly: { pricePerLocation: number }; yearly: { pricePerLocation: number } }> = {
-  250:  { monthly: { pricePerLocation: 250   }, yearly: { pricePerLocation: 3000  } },
-  500:  { monthly: { pricePerLocation: 490   }, yearly: { pricePerLocation: 5880  } },
-  750:  { monthly: { pricePerLocation: 720   }, yearly: { pricePerLocation: 8640  } },
-  1000: { monthly: { pricePerLocation: 940   }, yearly: { pricePerLocation: 11280 } },
-  1250: { monthly: { pricePerLocation: 1150  }, yearly: { pricePerLocation: 13800 } },
-  1500: { monthly: { pricePerLocation: 1350  }, yearly: { pricePerLocation: 16200 } },
-  1750: { monthly: { pricePerLocation: 1540  }, yearly: { pricePerLocation: 18480 } },
-  2000: { monthly: { pricePerLocation: 1720  }, yearly: { pricePerLocation: 20640 } },
-  2250: { monthly: { pricePerLocation: 1890  }, yearly: { pricePerLocation: 22680 } },
-  2500: { monthly: { pricePerLocation: 2000  }, yearly: { pricePerLocation: 24000 } },
-};
+import { TIER_KEYS, TIER_MAP } from './components/subscribeTiers';
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   Active:    { bg: 'rgba(46,125,50,0.1)',   color: '#2e7d32' },
@@ -306,7 +293,7 @@ export default function SubscriptionManagementPage() {
                       {periodEndLabel && (
                         <Box>
                           <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
-                            {sub.is_founding ? 'Membership expires' : sub.cancel_at_period_end ? 'Cancels on' : 'Renews on'}
+                            {sub.is_founding ? 'Membership expires' : sub.cancel_at_period_end ? 'Cancels on' : 'Next charge on'}
                           </Typography>
                           <Typography variant='h6' fontWeight={800} color='text.primary'>{periodEndLabel}</Typography>
                           <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
@@ -556,7 +543,7 @@ export default function SubscriptionManagementPage() {
           </Box>
 
           {/* ── Payment History ── */}
-          {!sub.is_founding && <motion.div
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
@@ -602,6 +589,8 @@ export default function SubscriptionManagementPage() {
                   ) : (
                     invoices.map((invoice, index) => {
                       const isPaid = invoice.status === 'paid';
+                      const isFounding = invoice.kind === 'founding';
+                      const isRefunded = invoice.status === 'void';
                       const dateLabel = new Date(invoice.date * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
                       const amount = isPaid ? invoice.amount_paid : invoice.amount_due;
 
@@ -651,20 +640,30 @@ export default function SubscriptionManagementPage() {
                                   ${amount.toFixed(2)}
                                 </Typography>
                                 <Chip
-                                  label={isPaid ? 'Paid' : invoice.status === 'open' ? 'Open' : invoice.status === 'void' ? 'Void' : 'Failed'}
+                                  label={isRefunded ? 'Refunded' : isPaid ? 'Paid' : invoice.status === 'open' ? 'Open' : invoice.status === 'void' ? 'Void' : 'Failed'}
                                   size='small'
                                   sx={{
                                     fontWeight: 700,
                                     fontSize: '0.7rem',
                                     height: 20,
-                                    bgcolor: isPaid ? 'rgba(46,125,50,0.1)' : 'rgba(211,47,47,0.1)',
-                                    color: isPaid ? 'success.dark' : 'error.main',
+                                    bgcolor: isRefunded ? 'rgba(120,120,120,0.12)' : isPaid ? 'rgba(46,125,50,0.1)' : 'rgba(211,47,47,0.1)',
+                                    color: isRefunded ? 'text.secondary' : isPaid ? 'success.dark' : 'error.main',
                                   }}
                                 />
                               </Stack>
                               {subLines.length > 0 && (
                                 <Stack spacing={0.25} pl={0.25}>
                                   {subLines.map((line, li) => {
+                                    // Founding payments are one-time annual charges — show the
+                                    // server's description verbatim (it carries any refund note)
+                                    // instead of synthesizing a per-location monthly breakdown.
+                                    if (isFounding) {
+                                      return (
+                                        <Typography key={li} variant='caption' color='text.secondary' sx={{ display: 'block', lineHeight: 1.5 }}>
+                                          {line.description ?? 'Founding Partner'}
+                                        </Typography>
+                                      );
+                                    }
                                     const qty = line.quantity ?? 1;
                                     const pricePerLoc = qty > 0 ? Math.abs(line.amount) / qty : Math.abs(line.amount);
                                     const label = qty > 1
@@ -688,7 +687,7 @@ export default function SubscriptionManagementPage() {
               )}
             </Box>
             </Paper>
-          </motion.div>}
+          </motion.div>
 
         </Stack>
 
@@ -739,14 +738,14 @@ export default function SubscriptionManagementPage() {
                 <Stack direction='row' justifyContent='space-between'>
                   <Typography variant='body2' color='text.secondary'>Price per location</Typography>
                   <Typography variant='body2' fontWeight={700}>
-                    ${(TIER_PRICE_MAP_CLIENT[newTier]?.[(sub.billing_interval ?? 'monthly') as 'monthly' | 'yearly']?.pricePerLocation ?? 0).toLocaleString()}
+                    ${(TIER_MAP[newTier] ?? 0).toLocaleString()}
                   </Typography>
                 </Stack>
                 <Divider />
                 <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                  <Typography variant='body2' fontWeight={700}>New {(sub.billing_interval ?? 'monthly') === 'yearly' ? 'yearly' : 'monthly'} total</Typography>
+                  <Typography variant='body2' fontWeight={700}>New monthly total</Typography>
                   <Typography variant='h6' fontWeight={900} color='primary.main'>
-                    ${((TIER_PRICE_MAP_CLIENT[newTier]?.[(sub.billing_interval ?? 'monthly') as 'monthly' | 'yearly']?.pricePerLocation ?? 0) * (sub.active_location_count ?? 1)).toLocaleString()}
+                    ${((TIER_MAP[newTier] ?? 0) * (sub.active_location_count ?? 1)).toLocaleString()}
                   </Typography>
                 </Stack>
               </Stack>

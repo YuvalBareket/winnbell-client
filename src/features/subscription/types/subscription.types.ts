@@ -42,6 +42,8 @@ export interface SubscriptionInvoice {
   description: InvoiceLineItem[];
   invoice_pdf: string | null;
   hosted_invoice_url: string | null;
+  // 'founding' = one-time annual founding payment (render line text verbatim).
+  kind?: 'founding';
 }
 
 export interface FoundingAvailability {
