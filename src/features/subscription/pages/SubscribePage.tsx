@@ -4,13 +4,15 @@ import {
   IconButton,
 } from '@mui/material';
 import {
-  ConfirmationNumber, EmojiEvents, Storefront, Groups, ArrowBack,
+  EmojiEvents, Storefront, Groups, ArrowBack,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../../shared/api/client';
+import AppHeader from '../../../shared/components/AppHeader';
+import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
-  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, MOBILE_CONTENT_HEIGHT,
+  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { getUploadUrl, updateCampaignSettingsApi } from '../../partner/api/business.api';
@@ -49,6 +51,7 @@ const SubscribePage = () => {
   const { data: businessData } = useBusinessData();
   const locationCount = businessData?.locations?.filter(l => l.is_active).length ?? null;
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [savedThreshold, setSavedThreshold] = useState<number | null>(null);
 
@@ -144,9 +147,19 @@ const SubscribePage = () => {
       sx={{
         minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' },
         display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
+        flexDirection: 'column',
       }}
     >
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+
+      {/* ── Main split-screen content ── */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+        }}
+      >
       {/* ── Left brand panel ── */}
       <Box
         sx={{
@@ -154,8 +167,6 @@ const SubscribePage = () => {
           background: GRADIENT_HERO,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
-          p: { xs: 4, md: '5vh 6vw' },
           color: 'white',
           position: { xs: 'relative', md: 'sticky' },
           top: { xs: 'auto', md: 0 },
@@ -168,15 +179,11 @@ const SubscribePage = () => {
         <Box sx={{ position: 'absolute', top: -80, right: -80, width: 320, height: 320, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(70px)', pointerEvents: 'none' }} />
         <Box sx={{ position: 'absolute', bottom: -80, left: -60, width: 260, height: 260, borderRadius: '50%', bgcolor: 'rgba(66,189,186,0.18)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
-        <Stack direction='row' alignItems='center' spacing={1.5}>
-          <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: ALPHA_WHITE_20, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <ConfirmationNumber sx={{ fontSize: 24 }} />
-          </Box>
-          <Typography variant='h5' fontWeight={900} letterSpacing={-0.5}>Winnbell</Typography>
-        </Stack>
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
 
-        <Box sx={{ my: { xs: 3, md: 0 } }}>
-          <Typography variant='h2' fontWeight={900} lineHeight={1.1} mb={2} sx={{ fontSize: { xs: '2.2rem', md: '3rem', lg: '3.5rem' } }}>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', px: { xs: 4, md: '6vw' }, pt: { xs: 1.5, md: '2vh' }, pb: { xs: 4, md: '5vh' }, position: 'relative', zIndex: 1 }}>
+        <Box sx={{ mt: 0, mb: { xs: 3, md: 0 } }}>
+          <Typography variant='h2' fontWeight={900} lineHeight={1.1} mb={2} sx={{ fontSize: { xs: '2.2rem', md: '2.5rem', lg: '2.5rem' } }}>
             Grow Your<br />Business
           </Typography>
           <Typography variant='body1' sx={{ opacity: 0.85, lineHeight: 1.8, maxWidth: 380, fontSize: { xs: '0.95rem', md: '1.05rem' } }}>
@@ -200,6 +207,7 @@ const SubscribePage = () => {
         <Typography variant='caption' sx={{ opacity: 0.5, display: { xs: 'none', md: 'block' } }}>
           Simple monthly subscription. No contract, cancel anytime.
         </Typography>
+        </Box>
       </Box>
 
       {/* ── Right wizard panel ── */}
@@ -310,6 +318,7 @@ const SubscribePage = () => {
             </AnimatePresence>
           </Paper>
         </Box>
+      </Box>
       </Box>
     </Box>
   );

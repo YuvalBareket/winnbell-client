@@ -21,7 +21,6 @@ import {
   Storefront,
   LocationOn,
   CheckCircle,
-  ConfirmationNumber,
 } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
@@ -102,12 +101,9 @@ const BusinessProfilePage = () => {
         <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: 'rgba(66,165,245,0.2)', filter: 'blur(50px)', pointerEvents: 'none' }} />
 
         {/* Logo */}
-        <Stack direction='row' alignItems='center' spacing={1.5} mb={{ xs: 0, md: 5 }}>
-          <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: ALPHA_WHITE_20, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ConfirmationNumber sx={{ fontSize: 24 }} />
-          </Box>
-          <Typography variant='h5' fontWeight={900} letterSpacing={-0.5}>Winnbell</Typography>
-        </Stack>
+        <Box sx={{ mb: { xs: 0, md: 5 } }}>
+          <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 40, width: 'auto', objectFit: 'contain' }} />
+        </Box>
 
         <Typography variant='h3' fontWeight={900} lineHeight={1.15} mb={2} sx={{ display: { xs: 'none', md: 'block' } }}>
           Set Up Your<br />Business
