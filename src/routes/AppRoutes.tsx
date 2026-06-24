@@ -22,6 +22,7 @@ import RegionGate from '../shared/components/RegionGate';
 import LoadingScreen from '../shared/components/LoadingScreen';
 import LandingPage from '../features/landing/LandingPage';
 import BusinessLandingPage from '../features/landing/BusinessLandingPage';
+import ScanWelcomePage from '../features/landing/ScanWelcomePage';
 
 // Eager: login/register + the light everyday pages. Keeping them in the main bundle makes
 // navigating to them instant (no chunk-load delay) — the only wait is then any page-level
@@ -120,6 +121,7 @@ const AppRoutes = () => {
           : <LandingPage />
       } />
       <Route path='/for-business' element={<BusinessLandingPage />} />
+      <Route path='/start' element={<ScanWelcomePage />} />
       <Route path='/region-blocked' element={<RegionBlockedPage />} />
       <Route path='/login' element={<RegionGate><LoginPage /></RegionGate>} />
       <Route path='/register/:role?' element={<RegionGate><RegisterPage /></RegionGate>} />

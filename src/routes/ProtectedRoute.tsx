@@ -61,7 +61,9 @@ const ProtectedRoute = () => {
     const lid = params.get('l');
     if (window.location.pathname === '/scan' && lid) {
       localStorage.setItem('pendingLocationId', lid);
-      return <Navigate to='/' replace />;
+      // High-intent flyer scanner: send them to the personalized conversion page,
+      // not the generic landing.
+      return <Navigate to={`/start?l=${lid}`} replace />;
     }
     return <Navigate to='/' replace />;
   }
