@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Paper } from '@mui/material';
-import QrCode2Icon from '@mui/icons-material/QrCode2';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 interface UserVisualProps {
   primaryColor: string;
@@ -43,7 +43,7 @@ const UserVisual: React.FC<UserVisualProps> = ({ primaryColor, compact }) => {
             boxShadow: `0 4px 14px ${primaryColor}4D`,
           }}
         >
-          <QrCode2Icon sx={{ color: 'white', fontSize: 24 }} />
+          <ReceiptLongIcon sx={{ color: 'white', fontSize: 24 }} />
         </Box>
       </Box>
     );
@@ -129,7 +129,7 @@ const UserVisual: React.FC<UserVisualProps> = ({ primaryColor, compact }) => {
           boxShadow: 3,
         }}
       >
-        <QrCode2Icon sx={{ color: 'white', fontSize: 28 }} />
+        <ReceiptLongIcon sx={{ color: 'white', fontSize: 28 }} />
       </Box>
     </Box>
   );
