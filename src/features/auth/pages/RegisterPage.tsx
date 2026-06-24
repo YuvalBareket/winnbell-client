@@ -170,7 +170,7 @@ const RegisterPage = () => {
     if (!formData.fullName) { setError('Please enter your full name.'); return; }
     if (!formData.email) { setError('Please enter your email address.'); return; }
     if (!formData.password) { setError('Please enter a password.'); return; }
-    if (!ageVerified || !termsAccepted) { setError('Please confirm your age and accept the terms.'); return; }
+    if (!ageVerified || !termsAccepted) { setError('Please confirm your eligibility and accept the terms.'); return; }
     setLoading(true);
     setError('');
     try {
@@ -358,13 +358,13 @@ const RegisterPage = () => {
 
           <FormControlLabel
             control={<Checkbox checked={ageVerified} onChange={(e) => setAgeVerified(e.target.checked)} size='small' />}
-            label={<Typography variant='caption' color='text.secondary'>I confirm that I am 18 years of age or older.</Typography>}
+            label={<Typography variant='caption' color='text.secondary'>I confirm that I am 18 years of age or older and a legal U.S. resident.</Typography>}
           />
 
           <Box sx={{ pt: 0.5 }}>
             <Typography variant='caption' sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block' }}>
               <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
-              <strong>Legal notice:</strong> Falsely declaring your age is a criminal offence. If a prize winner is found to be under 18, their winnings will be immediately cancelled.
+              <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
             </Typography>
           </Box>
         </Stack>
