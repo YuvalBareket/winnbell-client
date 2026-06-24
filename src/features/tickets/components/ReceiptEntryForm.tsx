@@ -8,6 +8,7 @@ import {
   CircularProgress,
   Collapse,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -16,7 +17,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { AccessTime, Close, EmojiEvents, ReceiptOutlined, EventBusy } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
+import { AccessTime, Close, EmojiEvents, ReceiptOutlined, EventBusy, GppGood } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import { PRIMARY_MAIN, GRADIENT_PRIMARY } from '../../../shared/colors';
@@ -86,6 +88,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [submittedEntryCount, setSubmittedEntryCount] = useState<number>(1);
   const [exampleOpen, setExampleOpen] = useState(false);
+  const [confirmSubmitOpen, setConfirmSubmitOpen] = useState(false);
 
   const debouncedTerm = useDebounce(searchTerm, 350);
 
@@ -255,10 +258,16 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmitClick = () => {
+    if (!isFormValid || !selectedLocation) return;
+    setConfirmSubmitOpen(true);
+  };
+
+  const handleConfirmedSubmit = () => {
     if (!isFormValid || !selectedLocation) return;
 
     setErrorMessage('');
+    setConfirmSubmitOpen(false);
     const amount = parseFloat(transactionAmount);
     const times = receiptKeystrokeTimesRef.current;
     let typingDurationMs: number | undefined;
@@ -605,7 +614,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           <Button
             variant="contained"
             fullWidth
-            onClick={handleSubmit}
+            onClick={handleSubmitClick}
             disabled={!isFormValid || submitReceiptEntry.isPending || riskLevel.isThrottled || riskLevel.isDailyLimitReached}
             sx={{
               mt: 0.5,
@@ -641,6 +650,216 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       </Collapse>
 
       </>}
+
+      {/* Confirmation Dialog — Premium Design */}
+      <Dialog
+        open={confirmSubmitOpen}
+        onClose={() => setConfirmSubmitOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            overflow: 'hidden',
+          },
+        }}
+      >
+        {/* Rich Gradient Header */}
+        <Box
+          sx={{
+            background: GRADIENT_PRIMARY,
+            p: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Soft glowing light accents (shine effect) */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -40,
+              right: -30,
+              width: 150,
+              height: 150,
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.28)',
+              filter: 'blur(40px)',
+              pointerEvents: 'none',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -50,
+              left: -40,
+              width: 120,
+              height: 120,
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.18)',
+              filter: 'blur(35px)',
+              pointerEvents: 'none',
+            }}
+          />
+
+          {/* Icon container with elevated presentation */}
+          <Box
+            sx={{
+              width: 72,
+              height: 72,
+              borderRadius: '50%',
+              bgcolor: 'rgba(255, 255, 255, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              backdropFilter: 'blur(4px)',
+              position: 'relative',
+              zIndex: 1,
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+            }}
+          >
+            <GppGood
+              sx={{
+                fontSize: 40,
+                color: '#ffffff',
+              }}
+            />
+          </Box>
+
+          {/* Heading in white on gradient */}
+          <Typography
+            sx={{
+              fontWeight: 900,
+              fontSize: '1.5rem',
+              color: '#ffffff',
+              textAlign: 'center',
+              letterSpacing: -0.3,
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            Before you submit
+          </Typography>
+        </Box>
+
+        {/* Content with generous spacing */}
+        <DialogContent
+          sx={{
+            pt: 3.5,
+            pb: 3,
+            px: 3,
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              lineHeight: 1.75,
+              mb: 2,
+              fontWeight: 500,
+            }}
+          >
+            Every winning receipt is reviewed by hand before we award a prize.
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              lineHeight: 1.75,
+              fontWeight: 500,
+            }}
+          >
+            Make sure your details are accurate. Submitting false or altered information will result in a permanent ban.
+          </Typography>
+        </DialogContent>
+
+        {/* Action buttons with clear hierarchy */}
+        <DialogActions
+          sx={{
+            gap: 1.5,
+            p: 2.5,
+            bgcolor: 'background.paper',
+            flexDirection: 'row-reverse',
+          }}
+        >
+          {/* Primary CTA: Prominent, gradient-inspired button */}
+          <Button
+            onClick={handleConfirmedSubmit}
+            variant="contained"
+            disabled={submitReceiptEntry.isPending}
+            sx={{
+              flex: 1,
+              whiteSpace: 'nowrap',
+              fontWeight: 800,
+              textTransform: 'none',
+              borderRadius: 2.5,
+              height: 48,
+              bgcolor: primaryColor || PRIMARY_MAIN,
+              color: '#ffffff',
+              boxShadow: `0 6px 20px ${alpha(primaryColor || PRIMARY_MAIN, 0.4)}`,
+              transition: 'all 180ms cubic-bezier(0.2, 0, 0, 1)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%)',
+                pointerEvents: 'none',
+              },
+              '&:hover': {
+                bgcolor: primaryColor || PRIMARY_MAIN,
+                boxShadow: `0 8px 28px ${alpha(primaryColor || PRIMARY_MAIN, 0.5)}`,
+                transform: 'translateY(-2px)',
+              },
+              '&:active': {
+                transform: 'translateY(0px)',
+                boxShadow: `0 2px 8px ${alpha(primaryColor || PRIMARY_MAIN, 0.3)}`,
+              },
+              '&:disabled': {
+                opacity: 0.55,
+                boxShadow: 'none',
+                transform: 'none',
+              },
+            }}
+          >
+            {submitReceiptEntry.isPending ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                <CircularProgress size={18} color="inherit" />
+                <span>Confirming...</span>
+              </Box>
+            ) : (
+              'Submit Entry'
+            )}
+          </Button>
+
+          {/* Secondary action: Subtle, professional */}
+          <Button
+            onClick={() => setConfirmSubmitOpen(false)}
+            variant="text"
+            sx={{
+              flex: 1,
+              fontWeight: 700,
+              textTransform: 'none',
+              borderRadius: 2.5,
+              height: 48,
+              color: 'text.secondary',
+              transition: 'all 180ms ease-out',
+              '&:hover': {
+                bgcolor: (theme) => alpha(theme.palette.text.primary, 0.05),
+                color: 'text.primary',
+              },
+            }}
+          >
+            Go Back
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <EntrySuccessDialog
         open={successDialogOpen}

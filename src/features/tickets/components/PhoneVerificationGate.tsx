@@ -191,7 +191,7 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
               slotProps={{
                 htmlInput: {
                   maxLength: 6,
-                  style: { letterSpacing: '0.3em', fontSize: '1.25rem' },
+                  style: { letterSpacing: '0.3em'},
                 },
               }}
             />
