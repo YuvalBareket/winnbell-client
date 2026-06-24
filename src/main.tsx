@@ -14,11 +14,16 @@ export const queryClient = new QueryClient({
   },
 });
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <>
-    {/* 2. Wrap your App */}
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </>,
+// Reuse the root across Vite HMR updates. Calling createRoot() twice on the
+// same container leaves React with a stale tree and throws
+// "removeChild ... not a child of this node" on the next reconcile.
+const container = document.getElementById('root')!;
+const w = window as unknown as { __APP_ROOT__?: ReactDOM.Root };
+const root = w.__APP_ROOT__ ?? ReactDOM.createRoot(container);
+w.__APP_ROOT__ = root;
+
+root.render(
+  <QueryClientProvider client={queryClient}>
+    <App />
+  </QueryClientProvider>,
 );

@@ -3,7 +3,7 @@ import { Box, Typography, Paper } from '@mui/material';
 import { Schedule, ConfirmationNumber } from '@mui/icons-material';
 import type { IDrawSummary } from '../types';
 import { calculateDaysLeft, formatCurrency } from '../../../shared/utils/date';
-import { GRADIENT_DRAW_CARD, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20 } from '../../../shared/colors';
+import { GRADIENT_DRAW_CARD, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, SHADOW_CARD } from '../../../shared/colors';
 
 // Use destructuring here to get the 'draw' property from props
 export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
@@ -23,7 +23,7 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
         mb: 4,
         background: GRADIENT_DRAW_CARD,
         color: 'white',
-        boxShadow: '0px 10px 40px 2px rgba(2, 146, 183, 0.55)',
+        boxShadow: SHADOW_CARD,
       }}
     >
       {/* Decorative Blur Orbs */}

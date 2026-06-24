@@ -19,7 +19,8 @@ export const ACCENT_GOLD_DARK   = '#a0822f';   // darker gold for contrast (dark
 // ── Backgrounds ──────────────────────────────
 export const BG_PAGE            = '#ffffff';   // auth pages, legal pages, hub page (Floral White)
 export const BG_DEFAULT         = '#ffffff';   // MUI background.default (Floral White)
-export const BG_APP_GRADIENT    = `linear-gradient(155deg, #e8f1fc 0%, #f6f8fd 45%, #fbf3e0 100%)`;
+// Fixed-px dark band at the top (never stretches on tall/scrolling pages) fading into the light base gradient.
+export const BG_APP_GRADIENT    = `linear-gradient(167deg, #4278b5 0px, #4d8ccb 38px, #66a3df 72px, #88bcef 106px, #a9d0f4 140px, #c6e0f7 174px, #ddebfb 208px, #e8f1fc 240px, rgba(232,241,252,0) 290px) no-repeat, linear-gradient(167deg, #e8f1fc 0%, #f4f8fd 50%, #f7fafe 100%)`;
 export const BG_SURFACE         = '#FFFFFF';   // card surfaces
 export const BG_SUBTLE          = '#f1f5f9';   // subtle section backgrounds (warmer subtle)
 

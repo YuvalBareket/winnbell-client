@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Paper, BottomNavigation, BottomNavigationAction } from '@mui/material';
 import { ConfirmationNumber, Storefront } from '@mui/icons-material';
-import { AnimatePresence, motion } from 'framer-motion';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AppMenuDrawer from './AppMenuDrawer';
 import AppHeader from './AppHeader';
@@ -69,7 +68,7 @@ const MainLayout = () => {
 
       {/* Mobile header - hidden on desktop, hidden on pages with their own hero */}
       {!hasOwnHeader && !isNearby && !isActivity && !isStats && !isMarketing && !isSettings && !isDrawsHistory && !isSubscribe && !isSubscriptionManage && (
-        <AppHeader onMenuOpen={() => setMenuOpen(true)} />
+        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
       )}
 
       {/* Mobile drawer */}
@@ -88,18 +87,9 @@ const MainLayout = () => {
           transition: 'margin 0.3s ease',
         }}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Outlet />
+        </Box>
       </Box>
 
       {/* Mobile bottom nav - hidden on desktop, hidden for admin */}

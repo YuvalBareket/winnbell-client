@@ -9,8 +9,11 @@ import { api } from '../../../shared/api/client';
 import {
   PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
   BORDER_LIGHT, BG_DEFAULT, TEXT_PRIMARY, TEXT_SECONDARY, SHADOW_ELEVATED,
+  APP_HEADER_HEIGHT,
 } from '../../../shared/colors';
 import { ConfirmationNumber } from '@mui/icons-material';
+import AppHeader from '../../../shared/components/AppHeader';
+import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 
 interface Props {
   onVerified: () => void;
@@ -26,6 +29,7 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
@@ -96,7 +100,7 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
   const isLoadingStep2 = verifyOtpMutation.isPending;
 
   const formContent = (
-    <AnimatePresence mode='wait'>
+    <AnimatePresence mode='wait' >
       {step === 'phone' ? (
         <motion.div
           key='phone-form'
@@ -243,21 +247,27 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
       transition={{ duration: 0.4 }}
       style={{ width: '100%', height: '100%' }}
     >
-      {/* ── Mobile layout (hidden on md+) ─────────────────────────────── */}
-      <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column' }}>
+      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+
+      {/* ── Mobile layout (hidden on md+) — pulled up to cover the app header ── */}
+      <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', mt: `-${APP_HEADER_HEIGHT}px`}}>
+
         {/* Hero Section */}
         <Box
           sx={{
             background: GRADIENT_HERO,
             color: 'white',
-            pt: 4,
-            pb: 9,
-            px: 3,
+            pt: 0,
+            pb: 9.5,
             position: 'relative',
             overflow: 'hidden',
             borderRadius: { xs: 0, sm: '0 0 32px 32px' },
           }}
         >
+          <Box sx={{ position: 'relative', zIndex: 2 }}>
+            <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
+          </Box>
+
           {/* Decorative orbs */}
           <Box sx={{
             position: 'absolute', top: -80, right: -80,
@@ -271,7 +281,7 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
           }} />
 
           {/* Title and subtitle */}
-          <Box sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+          <Box sx={{ position: 'relative', zIndex: 1, textAlign: 'center', px: 3, pt: 1 }}>
             <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>
               {isPromo ? 'One Step to Claim Your Entry' : 'Verify Your Phone'}
             </Typography>
