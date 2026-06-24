@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../shared/api/client';
 import { queryKeys } from '../../shared/constants/queryKeys';
-import LandingNavbar from './components/LandingNavbar';
 import LandingHero from './components/LandingHero';
 import HowItWorks from './components/HowItWorks';
 import Testimonial from './components/Testimonial';
@@ -27,7 +26,6 @@ const LandingPage = () => {
 
   return (
     <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', overflowX: 'hidden', zoom: { xs: 0.9, md: 1 } }}>
-      <LandingNavbar onNavigate={navigate} />
       <LandingHero onNavigate={navigate} />
       <HowItWorks />
       <Testimonial />

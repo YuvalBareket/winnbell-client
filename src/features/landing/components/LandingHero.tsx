@@ -2,6 +2,7 @@ import { Box, Typography, Button, Stack, Container } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15 } from '../../../shared/colors';
+import LandingNavbar from './LandingNavbar';
 
 interface LandingHeroProps {
   onNavigate: (path: string) => void;
@@ -12,7 +13,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
     <Box
       sx={{
         background: GRADIENT_HERO,
-        pt: { xs: 8, md: 12 },
+        pt: 0,
         pb: { xs: 10, md: 16 },
         px: { xs: 2.5, md: 0 },
         color: 'white',
@@ -24,7 +25,9 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
       <Box sx={{ position: 'absolute', top: '-20%', right: '-5%', width: 400, height: 400, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.05)', filter: 'blur(60px)', pointerEvents: 'none' }} />
       <Box sx={{ position: 'absolute', bottom: '-10%', left: '-5%', width: 300, height: 300, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.04)', filter: 'blur(50px)', pointerEvents: 'none' }} />
 
-      <Container maxWidth='md' sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+      <LandingNavbar onNavigate={onNavigate} />
+
+      <Container maxWidth='md' sx={{ position: 'relative', zIndex: 1, textAlign: 'center', pt: { xs: 5, md: 5 } }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}

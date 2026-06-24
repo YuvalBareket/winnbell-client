@@ -22,13 +22,11 @@ const BusinessLandingPage = () => {
 
   return (
     <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', overflowX: 'hidden', zoom: { xs: 0.9, md: 1 } }}>
-      <LandingNavbar onNavigate={navigate} variant='business' />
-
       {/* Business Hero */}
       <Box
         sx={{
           background: GRADIENT_HERO_WARM,
-          pt: { xs: 8, md: 12 },
+          pt: 0,
           pb: { xs: 10, md: 16 },
           px: { xs: 2.5, md: 0 },
           color: 'white',
@@ -40,7 +38,9 @@ const BusinessLandingPage = () => {
         <Box sx={{ position: 'absolute', top: '-20%', right: '-5%', width: 480, height: 480, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.04)', filter: 'blur(70px)', pointerEvents: 'none' }} />
         <Box sx={{ position: 'absolute', bottom: '-15%', left: '-8%', width: 360, height: 360, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.03)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
-        <Container maxWidth='md' sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+        <LandingNavbar onNavigate={navigate} variant='business' />
+
+        <Container maxWidth='md' sx={{ position: 'relative', zIndex: 1, textAlign: 'center', pt: { xs: 5, md: 5 } }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
