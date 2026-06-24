@@ -43,7 +43,7 @@ import {
   ALPHA_WHITE_30,
   ALPHA_WHITE_70,
   PRIMARY_MAIN,
-  GRADIENT_HERO_WARM,
+  GRADIENT_HERO,
   TEXT_TERTIARY,
   ALPHA_PRIMARY_06,
 } from '../colors';
@@ -159,7 +159,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
 
         {/* Hero header */}
         <Box sx={{
-          background: GRADIENT_HERO_WARM,
+          background: GRADIENT_HERO,
           px: 3,
           pt: { xs: 2.5, sm: 5.5 },
           pb: { xs: 2, sm: 4 },
