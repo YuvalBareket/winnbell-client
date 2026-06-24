@@ -15,6 +15,7 @@ import { getLocationDetail } from '../api/nearBy.api';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 import { MAX_ENTRIES_PER_RECEIPT } from '../../../shared/constants/entries';
+import { formatDistanceMiles } from '../../../shared/utils/distance';
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -180,7 +181,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                       icon={<LocationOn sx={{ fontSize: '11px !important', color: `${PRIMARY_MAIN} !important` }} />}
                       label={(() => {
                         const d = haversineKm(userLocation.latitude, userLocation.longitude, Number(location.latitude), Number(location.longitude));
-                        return d < 1 ? `${(d * 1000).toFixed(0)} m` : `${d.toFixed(1)} km`;
+                        return formatDistanceMiles(d);
                       })()}
                       size='small'
                       sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: `${PRIMARY_MAIN}12`, color: PRIMARY_MAIN }}

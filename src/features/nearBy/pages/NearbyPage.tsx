@@ -33,6 +33,7 @@ import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { getUserInitials } from '../../../shared/utils/string';
+import { formatDistanceMiles } from '../../../shared/utils/distance';
 import { GRADIENT_PRIMARY } from '../../../shared/colors';
 import TapButton from '../../../shared/components/TapButton';
 
@@ -390,7 +391,7 @@ const NearbyPage = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
                         <Typography variant='caption' sx={{ fontWeight: 600, color: 'text.secondary' }}>
                           {userLocation
-                            ? `${haversineKm(userLocation.latitude, userLocation.longitude, partner.latitude, partner.longitude).toFixed(1)} km away`
+                            ? `${formatDistanceMiles(haversineKm(userLocation.latitude, userLocation.longitude, partner.latitude, partner.longitude))} away`
                             : sectorInfo.label}
                         </Typography>
                         <Chip
