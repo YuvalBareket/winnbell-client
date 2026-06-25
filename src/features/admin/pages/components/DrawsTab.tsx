@@ -898,7 +898,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                 />
               }
               label={
-                <Typography variant='body2'>Apply fraud penalty (+10 risk score)</Typography>
+                <Typography variant='body2'>Apply fraud penalty (+12 risk score)</Typography>
               }
               sx={{ m: 0 }}
             />
