@@ -226,7 +226,7 @@ export const useUpdateUserRole = () => {
 
 type DrawBusinessRow = {
   id: number; name: string; sector: string; logo_url: string | null;
-  fee_at_entry: number; contribution_amount: number; joined_at: string;
+  fee_at_entry: number; joined_at: string;
 };
 
 type DrawBusinessesPage = { rows: DrawBusinessRow[]; total: number };
