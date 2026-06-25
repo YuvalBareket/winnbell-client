@@ -114,13 +114,6 @@ export interface AdminAnalytics {
     promo: number;
     total: number;
   };
-  amoe: {
-    total_requests: number;
-    approved: number;
-    rejected: number;
-    weekly_limit_count: number;
-    campaign_ended_count: number;
-  };
   fraud: {
     high_risk: number;
     medium_risk: number;

@@ -217,26 +217,18 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                   </Box>
                   <Stack spacing={1.5}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='body2' color='text.secondary'>Total Requests</Typography>
-                      <Typography variant='body2' fontWeight={700}>{(analytics?.amoe?.total_requests ?? 0).toLocaleString()}</Typography>
+                      <Typography variant='body2' color='text.secondary'>Free Entries</Typography>
+                      <Chip label={(analytics?.entrySourceMix?.free ?? 0).toLocaleString()} size='small' color='success' />
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='body2' color='text.secondary'>Approval Rate</Typography>
+                      <Typography variant='body2' color='text.secondary'>Share of All Entries</Typography>
                       <Typography variant='body2' fontWeight={700} color='success.main'>
-                        {analytics?.amoe?.total_requests ? ((analytics.amoe.approved / analytics.amoe.total_requests) * 100).toFixed(1) : '0'}%
+                        {analytics?.entrySourceMix?.total ? ((analytics.entrySourceMix.free / analytics.entrySourceMix.total) * 100).toFixed(1) : '0'}%
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='body2' color='text.secondary'>Approved</Typography>
-                      <Chip label={(analytics?.amoe?.approved ?? 0).toLocaleString()} size='small' color='success' />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='body2' color='text.secondary'>Weekly limit hit</Typography>
-                      <Chip label={analytics?.amoe?.weekly_limit_count ?? 0} size='small' variant='outlined' />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='body2' color='text.secondary'>No active campaign</Typography>
-                      <Chip label={analytics?.amoe?.campaign_ended_count ?? 0} size='small' variant='outlined' />
+                      <Typography variant='body2' color='text.secondary'>Total Entries (all sources)</Typography>
+                      <Typography variant='body2' fontWeight={700}>{(analytics?.entrySourceMix?.total ?? 0).toLocaleString()}</Typography>
                     </Box>
                   </Stack>
                 </CardContent>
