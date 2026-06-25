@@ -716,7 +716,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
-              backdropFilter: 'blur(4px)',
               position: 'relative',
               zIndex: 1,
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
