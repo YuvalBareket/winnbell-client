@@ -129,8 +129,8 @@ export const useCloseDraw = () => {
 export const usePickWinner = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ drawId, applyPenalty = false }: { drawId: number; applyPenalty?: boolean }) =>
-      pickWinner(drawId, applyPenalty),
+    mutationFn: ({ drawId, applyPenalty = false, reason }: { drawId: number; applyPenalty?: boolean; reason?: string }) =>
+      pickWinner(drawId, applyPenalty, reason),
     onSuccess: (_, { drawId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });

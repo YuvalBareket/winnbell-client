@@ -288,6 +288,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const [reviewDrawId, setReviewDrawId] = useState<number | null>(null);
   const [reviewDismissed, setReviewDismissed] = useState(false);
   const [penaltyChecked, setPenaltyChecked] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   const [rejectedExpanded, setRejectedExpanded] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [expandedDrawId, setExpandedDrawId] = useState<number | null>(null);
@@ -357,11 +358,15 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
 
   const handlePickAnother = async () => {
     if (!reviewDrawId) return;
+    const reason = rejectReason.trim();
+    if (!reason) { onSnackError('Please enter a reason for disqualifying this winner.'); return; }
     try {
-      await pickWinner.mutateAsync({ drawId: reviewDrawId, applyPenalty: penaltyChecked });
+      await pickWinner.mutateAsync({ drawId: reviewDrawId, applyPenalty: penaltyChecked, reason });
       setPenaltyChecked(false);
+      setRejectReason('');
     } catch (e: any) {
       setReviewDrawId(null);
+      setRejectReason('');
       onSnackError(e?.response?.data?.message ?? 'Failed to pick another winner');
     }
   };
@@ -371,6 +376,9 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
     try {
       await confirmWinnerMutation.mutateAsync(reviewDrawId);
       setReviewDrawId(null);
+      // Prevent the auto-open effect from re-opening the dialog before the draws cache
+      // reflects winner_confirmed = true (otherwise it briefly reopens with no candidate).
+      setReviewDismissed(true);
       onSnackSuccess('Winner confirmed successfully');
     } catch (e: any) {
       onSnackError(e?.response?.data?.message ?? 'Failed to confirm winner');
@@ -419,16 +427,16 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
         <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setConfirmPick({ id: draw.id, entryCount: draw.entry_count ?? 0 }); }} fullWidth={!inline}>Pick Winner</Button>
       )}
       {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && draw.winner_user_id && (
-        <Button size='small' variant='outlined' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setReviewDismissed(false); setReviewDrawId(draw.id); }} fullWidth={!inline}>Pick Another</Button>
-      )}
-      {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && draw.winner_user_id && (
         <Button size='small' variant='contained' color='success' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setReviewDismissed(false); setReviewDrawId(draw.id); }} fullWidth={!inline}>Verify Winner</Button>
       )}
       {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && (
         <Button size='small' variant='outlined' color='info' startIcon={<LockOpenIcon />} onClick={(e) => { e.stopPropagation(); setConfirmReopen(draw.id); }} fullWidth={!inline}>Reopen</Button>
       )}
       {draw.status?.toUpperCase() === 'CLOSED' && draw.winner_confirmed && (
-        <Chip label='Winner Verified' size='small' color='success' />
+        <>
+          <Chip label='Winner Verified' size='small' color='success' />
+          <Button size='small' variant='outlined' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setReviewDismissed(false); setReviewDrawId(draw.id); }} fullWidth={!inline}>Campaign Info</Button>
+        </>
       )}
       <Button size='small' variant='outlined' startIcon={<ContentCopyIcon />} onClick={(e) => { e.stopPropagation(); handleDuplicate(draw.id); }} fullWidth={!inline} disabled={duplicateDraw.isPending}>
         Duplicate
@@ -649,14 +657,14 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       {/* Candidate review */}
       <Dialog
         open={!!reviewDrawId}
-        onClose={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); }}
+        onClose={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); setRejectReason(''); }}
         maxWidth='sm'
         fullWidth
       >
         <DialogTitle sx={{ pb: 1 }}>
           <Stack direction='row' alignItems='center' spacing={1}>
             <EmojiEventsIcon sx={{ color: 'warning.main' }} />
-            <Typography variant='h6' fontWeight={700}>Review Candidate Winner</Typography>
+            <Typography variant='h6' fontWeight={700}>{candidate?.winnerConfirmed ? 'Campaign Record' : 'Review Candidate Winner'}</Typography>
           </Stack>
         </DialogTitle>
         <DialogContent dividers sx={{ px: 3, py: 2 }}>
@@ -825,6 +833,11 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                                     {rw.transactionDate ? ` - ${new Date(rw.transactionDate).toLocaleDateString()}` : ''}
                                   </Typography>
                                 )}
+                                {rw.reason && (
+                                  <Typography variant='caption' sx={{ color: 'text.primary', fontStyle: 'italic', borderLeft: '2px solid', borderColor: 'divider', pl: 1, mt: 0.25 }}>
+                                    Reason: {rw.reason}
+                                  </Typography>
+                                )}
                                 <Typography variant='caption' color='text.disabled'>
                                   Rejected {new Date(rw.rejectedAt).toLocaleString()}
                                 </Typography>
@@ -853,6 +866,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
           </AnimatePresence>
         </DialogContent>
         <DialogActions sx={{ flexDirection: 'column', gap: 1, px: 3, pb: 2.5, pt: 2, alignItems: 'stretch' }}>
+          {!candidate?.winnerConfirmed && (<>
           <Button
             fullWidth
             variant='contained'
@@ -863,6 +877,17 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
             {confirmWinnerMutation.isPending ? 'Confirming...' : 'Confirm Winner'}
           </Button>
           <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 1.5 }}>
+            <TextField
+              fullWidth
+              size='small'
+              multiline
+              minRows={2}
+              label='Reason for disqualification (required)'
+              placeholder='e.g. Contacted the location; they confirmed no receipt matching this submission exists.'
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              sx={{ mb: 1.5 }}
+            />
             <FormControlLabel
               control={
                 <Checkbox
@@ -882,18 +907,19 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
               variant='outlined'
               color='error'
               onClick={handlePickAnother}
-              disabled={pickWinner.isPending || confirmWinnerMutation.isPending || candidateLoading}
+              disabled={pickWinner.isPending || confirmWinnerMutation.isPending || candidateLoading || !rejectReason.trim()}
               sx={{ mt: 1 }}
             >
               {pickWinner.isPending ? 'Picking...' : 'Reject and Pick Next'}
             </Button>
           </Box>
+          </>)}
           <Button
             fullWidth
-            onClick={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); }}
+            onClick={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); setRejectReason(''); }}
             disabled={confirmWinnerMutation.isPending}
           >
-            Cancel
+            {candidate?.winnerConfirmed ? 'Close' : 'Cancel'}
           </Button>
         </DialogActions>
       </Dialog>
