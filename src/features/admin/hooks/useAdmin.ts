@@ -500,6 +500,7 @@ export const useDrawRejectedWinners = (drawId: number | null) => {
         id: number;
         rejectedAt: string;
         riskPenalty: number;
+        reason: string | null;
         ticketId: number;
         ticketCode: string;
         receiptIdentifier: string | null;
