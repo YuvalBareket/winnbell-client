@@ -11,6 +11,7 @@ import {
 import { formatTicketDate } from '../../../shared/utils/date';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import { useMyTickets } from '../hooks/useMyTickets';
+import { MAX_ENTRIES_PER_DRAW } from '../../../shared/constants/entries';
 import { selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
 import type { BusinessTicket, UserTicket } from '../types/myTicket.types';
@@ -188,7 +189,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
   }, [setupObserver]);
 
   const displayCount = totalCount;
-  const CAP = 30;
+  const CAP = MAX_ENTRIES_PER_DRAW;
   const progress = Math.min((totalCount / CAP) * 100, 100);
   const isMaxed = totalCount >= CAP;
   const progressColor = isMaxed ? STATUS_ACTIVATED_TEXT : totalCount >= 20 ? STATUS_PENDING_TEXT : PRIMARY_MAIN;
@@ -256,7 +257,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
           {!isBusiness && !isLoading && (
             <Typography variant='caption' sx={{ fontWeight: 700, color: progressColor, pb: 0.5, transition: 'color 0.3s' }}>
-              {isMaxed ? '🎉 Maxed out!' : `${CAP - totalCount} slots left`}
+              {isMaxed ? ' Maxed out!' : `${CAP - totalCount} slots left`}
             </Typography>
           )}
         </Box>

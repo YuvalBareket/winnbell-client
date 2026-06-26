@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '../../../shared/hooks/useDebounce';
+import { MAX_ENTRIES_PER_DRAW } from '../../../shared/constants/entries';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -306,10 +307,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           </Box>
           <Box>
             <Typography variant="subtitle1" fontWeight={800} color="text.primary" sx={{ mb: 0.5 }}>
-              You're maxed out for this campaign! 🎉
+              You're maxed out for this campaign! 
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-              You've submitted all <strong>30 entries</strong> for this campaign. That's the maximum - sit back and wait for the results. Good luck!
+              You've submitted all <strong>{MAX_ENTRIES_PER_DRAW} entries</strong> for this campaign. That's the maximum - sit back and wait for the results. Good luck!
             </Typography>
           </Box>
         </Box>

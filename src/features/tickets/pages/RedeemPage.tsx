@@ -84,7 +84,7 @@ const RedeemPage = () => {
   const { data: subscription } = useSubscription(isBusinessAdmin);
 
   // Phone verification status — fetched fresh from server on every page visit
-  const { isPhoneVerified, isPhoneVerifiedLoaded, isError: riskLevelError, refetch: refetchRiskLevel } = useMyRiskLevel();
+  const { isPhoneVerified, isPhoneVerifiedLoaded, isError: riskLevelError, refetch: refetchRiskLevel, isDrawCapped } = useMyRiskLevel();
 
   // Entry mode - lightweight single-field fetch for user side,
   // business users always stay in 'code' mode (they generate, not submit receipts).
@@ -287,9 +287,9 @@ const didAutoActivate = useRef(false);
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
           >
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, alignItems: 'flex-start' }}>
-              {/* Left panel */}
-              <Paper
+            <Box sx={{ display: 'grid', gridTemplateColumns: isDrawCapped && entryMode === 'receipt' ? '1fr' : '1fr 1fr', gap: 3, alignItems: 'flex-start' }}>
+              {/* Left panel — hidden only in the capped receipt state (matches the single-column grid above) */}
+              {!(isDrawCapped && entryMode === 'receipt') && <Paper
               elevation={0}
               sx={{
                 borderRadius: 2, overflow: 'hidden',
@@ -354,7 +354,7 @@ const didAutoActivate = useRef(false);
                 <UserVisual primaryColor={primaryColor} />
               </Box>
             )}
-            </Paper>
+            </Paper>}
 
             {/* Right panel: actions */}
             <Paper
@@ -490,8 +490,8 @@ const didAutoActivate = useRef(false);
             </Box>
             {entryMode === 'receipt' ? (
               <>
-                {/* AMOE - compact row on mobile, hidden when a location is selected (unless form is blocked) */}
-                {(!receiptLocationSelected || receiptFormBlocked) && <Paper
+                {/* AMOE - compact row on mobile, hidden when a location is selected (unless form is blocked), and hidden when draw capped */}
+                {(!receiptLocationSelected || receiptFormBlocked) && !isDrawCapped && <Paper
                   elevation={0}
                   onClick={() => navigate('/freeTicket')}
                   sx={{

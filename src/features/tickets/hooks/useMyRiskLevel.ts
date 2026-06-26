@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getMyRiskLevel } from '../api/ticketsApi';
 import { queryKeys } from '../../../shared/constants/queryKeys';
+import { MAX_ENTRIES_PER_DRAW } from '../../../shared/constants/entries';
 
 export const useMyRiskLevel = () => {
   const { data, refetch, error } = useQuery({
@@ -23,7 +24,7 @@ export const useMyRiskLevel = () => {
     requiresImage: data?.requiresImage ?? false,
     isThrottled: data?.isThrottled ?? false,
     drawEntryCount: data?.drawEntryCount ?? 0,
-    isDrawCapped: (data?.drawEntryCount ?? 0) >= 30,
+    isDrawCapped: (data?.drawEntryCount ?? 0) >= MAX_ENTRIES_PER_DRAW,
     dailyCount,
     dailyLimit,
     isDailyLimitReached: dailyCount >= dailyLimit,

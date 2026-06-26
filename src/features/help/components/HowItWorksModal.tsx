@@ -17,6 +17,7 @@ import {
   CardGiftcard,
   EmojiEventsOutlined,
 } from '@mui/icons-material';
+import { MAX_ENTRIES_PER_DRAW } from '../../../shared/constants/entries';
 
 interface Props {
   open: boolean;
@@ -39,7 +40,7 @@ const steps = [
   {
     icon: ReceiptLongOutlined,
     title: 'Submit Your Receipt',
-    description: 'Visit a participating partner business and submit your receipt to earn a campaign entry. Up to 30 entries per campaign per member.',
+    description: `Visit a participating partner business and submit your receipt to earn a campaign entry. Up to ${MAX_ENTRIES_PER_DRAW} entries per campaign per member.`,
     color: '#f59e0b', // amber
   },
   {
