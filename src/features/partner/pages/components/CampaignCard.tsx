@@ -20,7 +20,7 @@ import { getUploadUrl } from '../../api/business.api';
 
 interface CampaignCardProps {
   business: BusinessData;
-  updateCampaignSettings?: (data: { min_transaction_amount: number | null; receipt_example_image_url?: string | null }) => void;
+  updateCampaignSettings?: (data: { min_transaction_amount: number; receipt_example_image_url?: string | null }) => void;
   isUpdatingSettings?: boolean;
 }
 
@@ -88,8 +88,10 @@ const CampaignCard = ({
   };
 
   const saveThreshold = () => {
-    const parsed = thresholdValue.trim() === '' ? null : parseFloat(thresholdValue);
-    if (parsed !== null && (isNaN(parsed) || parsed < 0)) return;
+    const trimmed = thresholdValue.trim();
+    if (trimmed === '') return; // Prevent empty submission
+    const parsed = parseFloat(trimmed);
+    if (isNaN(parsed) || parsed <= 0) return; // Prevent non-positive submission
     updateCampaignSettings?.({ min_transaction_amount: parsed });
     setEditingThreshold(false);
   };
@@ -125,10 +127,14 @@ const CampaignCard = ({
 
   // ── Live preview for threshold ───────────────────────
   const previewThreshold = useMemo(() => {
-    const val = thresholdValue.trim() === '' ? null : parseFloat(thresholdValue);
-    if (val == null || isNaN(val) || val <= 0) return null;
+    const trimmed = thresholdValue.trim();
+    if (trimmed === '') return null;
+    const val = parseFloat(trimmed);
+    if (isNaN(val) || val <= 0) return null;
     return val;
   }, [thresholdValue]);
+
+  const isThresholdValid = thresholdValue.trim() !== '' && previewThreshold !== null;
 
   const displayThreshold = editingThreshold ? previewThreshold : business.min_transaction_amount;
 
@@ -232,10 +238,8 @@ const CampaignCard = ({
                   </Typography>
                   {!editingThreshold && (
                     <Box>
-                      <Typography variant='body2' sx={{ color: business.min_transaction_amount != null ? 'text.primary' : 'text.disabled', fontWeight: 600, mt: 0.25 }}>
-                        {business.min_transaction_amount != null
-                          ? `${formatCurrency(business.min_transaction_amount)} per entry`
-                          : 'No minimum'}
+                      <Typography variant='body2' sx={{ color: 'text.primary', fontWeight: 600, mt: 0.25 }}>
+                        {`${formatCurrency(business.min_transaction_amount)} per entry`}
                       </Typography>
                       {business.pending_min_transaction_amount != null && (
                         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.75, px: 1, py: 0.25, borderRadius: 2, bgcolor: 'rgba(237,108,2,0.08)', border: '1px solid rgba(237,108,2,0.2)' }}>
@@ -335,7 +339,7 @@ const CampaignCard = ({
                       <Button
                         size='small'
                         variant='contained'
-                        disabled={isUpdatingSettings}
+                        disabled={isUpdatingSettings || !isThresholdValid}
                         onClick={saveThreshold}
                         startIcon={isUpdatingSettings ? <CircularProgress size={14} color='inherit' /> : <Check sx={{ fontSize: 16 }} />}
                         sx={{ ...btnBase, fontWeight: 800 }}

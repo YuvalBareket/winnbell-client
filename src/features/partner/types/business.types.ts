@@ -9,7 +9,7 @@ export interface BusinessSetupInput {
   businessName: string;
   businessSector: string;
   description: string;
-  min_transaction_amount?: number | null;
+  min_transaction_amount?: number;
   locations: LocationInput[];
 }
 
@@ -57,7 +57,7 @@ export interface BusinessData {
   is_participating: boolean;
   entry_mode: EntryMode;
   entry_cap: number | null;              // NULL = falls back to global cap
-  min_transaction_amount: number | null; // NULL = no minimum
+  min_transaction_amount: number;        // always present; minimum required per receipt
   pending_min_transaction_amount: number | null; // set when changed during active campaign
   global_entry_cap: number | null;       // platform ceiling set by admin
   subscription_status: string | null;

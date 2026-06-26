@@ -356,22 +356,16 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                     </Typography>
                   </Stack>
 
-                  {detail?.min_transaction_amount != null ? (
-                    <Stack spacing={0.75}>
-                      <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
-                        {(() => { const amt = Number(detail.min_transaction_amount); return (<>Every <strong style={{ color: '#111' }}>${Number.isInteger(amt) ? amt : amt.toFixed(2)}</strong> spent = <strong style={{ color: '#111' }}>1 entry</strong>, up to <strong style={{ color: '#111' }}>{MAX_ENTRIES_PER_RECEIPT} entries</strong> per receipt.</>); })()}
-                      </Typography>
-                      {detail.terms_text && (
-                        <Typography variant='caption' color='text.disabled' lineHeight={1.5}>
-                          {detail.terms_text}
-                        </Typography>
-                      )}
-                    </Stack>
-                  ) : (
+                  <Stack spacing={0.75}>
                     <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
-                      {detail?.terms_text || 'Submit a receipt from this business to earn an entry in the campaign.'}
+                      {(() => { const amt = Number(detail?.min_transaction_amount); if (!Number.isFinite(amt) || amt <= 0) return null; return (<>Every <strong style={{ color: '#111' }}>${Number.isInteger(amt) ? amt : amt.toFixed(2)}</strong> spent = <strong style={{ color: '#111' }}>1 entry</strong>, up to <strong style={{ color: '#111' }}>{MAX_ENTRIES_PER_RECEIPT} entries</strong> per receipt.</>); })()}
                     </Typography>
-                  )}
+                    {detail?.terms_text && (
+                      <Typography variant='caption' color='text.disabled' lineHeight={1.5}>
+                        {detail.terms_text}
+                      </Typography>
+                    )}
+                  </Stack>
                 </Box>
               </>
             )}

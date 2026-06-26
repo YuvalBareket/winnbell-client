@@ -546,8 +546,9 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           />
 
           {/* Entry count preview */}
-          {selectedLocation?.min_transaction_amount && parseFloat(transactionAmount) > 0 && (() => {
-            const min = selectedLocation.min_transaction_amount!;
+          {selectedLocation && parseFloat(transactionAmount) > 0 && (() => {
+            const min = selectedLocation.min_transaction_amount;
+            if (min == null || min <= 0) return null;
             const rawCount = Math.floor(parseFloat(transactionAmount) / min);
             const count = Math.min(rawCount, MAX_ENTRIES_PER_RECEIPT);
             if (count <= 0) return null;
