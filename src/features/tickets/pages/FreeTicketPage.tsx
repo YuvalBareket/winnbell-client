@@ -93,12 +93,7 @@ const FreeTicketPage: React.FC = () => {
           zoom: { xs: 0.9, md: 1 },
         }}
       >
-        {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2, pt: 2 }}>
-          <Typography variant='h5' sx={{ textAlign: 'center', fontWeight: 800 }}>
-            Weekly Free Entry
-          </Typography>
-        </Box>
+
 
         {/* Main content - flex:1 pushes footer down naturally */}
         <Box
