@@ -31,6 +31,7 @@ import {
   DashboardOutlined,
   PeopleOutlined,
   NotificationsOutlined,
+  CardGiftcardOutlined,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, Fragment } from 'react';
@@ -109,6 +110,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Campaigns Hub', icon: <EmojiEventsOutlined />, path: '/draws/history' },
         { label: 'My Plan', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
         { label: 'Marketing', icon: <CampaignOutlined />, path: '/marketing' },
+        { label: 'Invite Friends', icon: <CardGiftcardOutlined />, path: '/invite' },
         { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
       ]
     : isManager
@@ -117,6 +119,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
         { label: 'Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
+        { label: 'Invite Friends', icon: <CardGiftcardOutlined />, path: '/invite' },
         { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
       ]
     : [
@@ -124,6 +127,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Submit Receipt', icon: <ReceiptLongOutlined />, path: '/scan' },
         { label: 'My Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Campaigns Hub', icon: <EmojiEventsOutlined />, path: '/draws/history' },
+        { label: 'Invite Friends', icon: <CardGiftcardOutlined />, path: '/invite' },
         { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
       ];
 
@@ -231,7 +235,10 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
             Navigation
           </Typography>
           <List disablePadding>
-            {mainNavItems.map((item) => (
+            {mainNavItems.map((item) => {
+              const isInvite = item.path === '/invite';
+              const isActive = location.pathname === item.path;
+              return (
               <TapListItemButton
                 key={item.path}
                 onTap={() => handleNav(item.path)}
@@ -241,36 +248,36 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                   py: itemPy,
                   px: 1.5,
                   transition: 'all 0.15s ease',
-                  ...(location.pathname === item.path && {
-                    bgcolor: ALPHA_PRIMARY_06,
-                  }),
+                  bgcolor: isActive ? PRIMARY_MAIN : (isInvite ? ALPHA_PRIMARY_06 : 'transparent'),
+                  border: isInvite && !isActive ? `1px solid ${ALPHA_PRIMARY_06}` : 'none',
                   '&:hover': {
-                    bgcolor: ALPHA_PRIMARY_06,
-                    transform: 'translateX(3px)',
+                    bgcolor: isActive ? PRIMARY_MAIN : ALPHA_PRIMARY_06,
+                    transform: isActive ? 'none' : 'translateX(3px)',
                   },
-                  '&:hover .nav-icon': { color: PRIMARY_MAIN },
+                  '&:hover .nav-icon': { color: isActive ? 'white' : PRIMARY_MAIN },
                   '&:hover .nav-chevron': { opacity: 1, transform: 'translateX(2px)' },
                 }}
               >
                 <ListItemIcon
                   className='nav-icon'
-                  sx={{ minWidth: 34, color: location.pathname === item.path ? PRIMARY_MAIN : 'text.secondary', transition: 'color 0.15s ease', '& svg': { fontSize: { xs: 20, sm: 24 } } }}
+                  sx={{ minWidth: 34, color: isActive ? 'white' : (isInvite ? PRIMARY_MAIN : 'text.secondary'), transition: 'color 0.15s ease', '& svg': { fontSize: { xs: 20, sm: 24 } } }}
                 >
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText
                   primary={item.label}
-                  primaryTypographyProps={{ fontWeight: 600, fontSize: { xs: '0.82rem', sm: '0.88rem' }, letterSpacing: '-0.01em' }}
+                  primaryTypographyProps={{ fontWeight: isActive ? 700 : 600, fontSize: { xs: '0.82rem', sm: '0.88rem' }, letterSpacing: '-0.01em', color: isActive ? 'white' : 'inherit' }}
                 />
                 <ChevronRight
                   className='nav-chevron'
                   sx={{
-                    fontSize: 16, color: 'text.disabled',
-                    opacity: 0.4, transition: 'all 0.15s ease',
+                    fontSize: 16, color: isActive ? 'white' : 'text.disabled',
+                    opacity: isActive ? 0.9 : 0.4, transition: 'all 0.15s ease',
                   }}
                 />
               </TapListItemButton>
-            ))}
+            );
+            })}
           </List>
         </Box>
 

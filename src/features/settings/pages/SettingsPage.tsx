@@ -10,7 +10,6 @@ import { motion } from 'framer-motion';
 import { SettingsOutlined } from '@mui/icons-material';
 import { useLogout } from '../../../shared/hooks/useLogout';
 import { api } from '../../../shared/api/client';
-import InviteFriendCard from '../../referral/components/InviteFriendCard';
 import {
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
   BORDER_LIGHT, SHADOW_CARD, SHADOW_CARD_HOVER, MOBILE_CONTENT_HEIGHT,
@@ -128,9 +127,6 @@ const SettingsPage = () => {
 
           {/* Right Column - Settings Cards */}
           <Stack spacing={3} sx={{ minWidth: 0 }}>
-            {/* Invite a Friend Card */}
-            <InviteFriendCard />
-
             {/* Danger Zone Card */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}

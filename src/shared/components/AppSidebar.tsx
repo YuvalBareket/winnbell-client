@@ -13,7 +13,7 @@ import {
 import {
   BusinessOutlined, ConfirmationNumberOutlined,
   BarChartOutlined, ReceiptLongOutlined, FeedOutlined,
-  SettingsOutlined, CampaignOutlined, EmojiEventsOutlined,
+  SettingsOutlined, CampaignOutlined, EmojiEventsOutlined, CardGiftcardOutlined,
 } from '@mui/icons-material';
 import {
   GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING, ALPHA_PRIMARY_04, ALPHA_PRIMARY_06, GRADIENT_SIDEBAR,
@@ -43,6 +43,7 @@ const AppSidebar = () => {
     { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
     { label: 'My Plan', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
     { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
+    { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },
     { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
   ];
 
@@ -135,14 +136,16 @@ const AppSidebar = () => {
             const active = path === '/admin'
               ? location.pathname === '/admin'
               : location.pathname === path || location.pathname.startsWith(path + '/');
+            const isInvite = path === '/invite';
             return (
               <ListItemButton
                 key={path}
                 onClick={() => navigate(path)}
                 sx={{
                   borderRadius: 2.5, mb: 0.2, px: 1.5, py: 0.5, '@media (max-height: 700px)': { py: 0.5, mb: 0.1 },
-                  bgcolor: active ? PRIMARY_MAIN : 'transparent',
+                  bgcolor: active ? PRIMARY_MAIN : (isInvite ? ALPHA_PRIMARY_06 : 'transparent'),
                   boxShadow: active ? '0 2px 8px rgba(25,93,230,0.3)' : 'none',
+                  border: isInvite && !active ? `1px solid ${ALPHA_PRIMARY_06}` : 'none',
                   '&:hover': {
                     bgcolor: active ? PRIMARY_MAIN : ALPHA_PRIMARY_06,
                     transform: active ? 'none' : 'translateX(2px)',
@@ -153,7 +156,7 @@ const AppSidebar = () => {
                 <ListItemIcon sx={{ minWidth: 34 }}>
                   <Icon sx={{
                     fontSize: 20,
-                    color: active ? 'white' : TEXT_SECONDARY,
+                    color: active ? 'white' : (isInvite ? PRIMARY_MAIN : TEXT_SECONDARY),
                     transition: 'color 0.15s ease',
                   }} />
                 </ListItemIcon>

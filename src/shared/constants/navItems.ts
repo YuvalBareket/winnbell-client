@@ -16,6 +16,7 @@ import {
   DashboardOutlined,
   PeopleOutlined,
   NotificationsOutlined,
+  CardGiftcardOutlined,
 } from '@mui/icons-material';
 
 export interface NavItem {
@@ -29,6 +30,7 @@ export const userNavItems: NavItem[] = [
   { label: 'Submit Receipt', Icon: ReceiptLongOutlined, path: '/scan' },
   { label: 'My Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
+  { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 
@@ -48,6 +50,7 @@ export const managerNavItems: NavItem[] = [
   { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
   { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
+  { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 

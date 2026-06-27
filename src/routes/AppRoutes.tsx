@@ -44,6 +44,7 @@ import NearbyPage from '../features/nearBy/pages/NearbyPage';
 import ActivityPage from '../features/activity/pages/ActivityPage';
 import DrawHistoryPage from '../features/draw/pages/DrawHistoryPage';
 import SettingsPage from '../features/settings/pages/SettingsPage';
+import InviteFriendsPage from '../features/referral/pages/InviteFriendsPage';
 
 // Kept lazy: these pull in heavy libraries that don't belong in the initial bundle —
 // RedeemPage (QR scanner / html5-qrcode), legal pages (react-markdown), Stats & Admin
@@ -169,6 +170,7 @@ const AppRoutes = () => {
               <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
               <Route path='/subscription/success' element={<SubscriptionSuccessPage />} />
               <Route path='/settings' element={<SettingsPage />} />
+              <Route path='/invite' element={<InviteFriendsPage />} />
               <Route path='/marketing' element={<MarketingPage />} />
               {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}
             </>
