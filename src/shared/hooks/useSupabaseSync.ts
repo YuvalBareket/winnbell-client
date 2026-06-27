@@ -57,6 +57,8 @@ export const useSupabaseSync = (retryCount = 0) => {
       // OAuth it isn't, so we store pendingRole in localStorage in handleSocialSignUp and read it here.
       const pendingInviteToken = localStorage.getItem('pendingInviteToken');
       const pendingRole = localStorage.getItem('pendingRole');
+      // Referral code captured on the /join landing page (only rewards a fresh registration).
+      const pendingReferralCode = localStorage.getItem('pendingReferralCode');
 
       // Navigate after an explicit login/signup action, not on silent session restore
       const isFreshLogin = event === 'SIGNED_IN' || event === 'USER_UPDATED';
@@ -77,10 +79,12 @@ export const useSupabaseSync = (retryCount = 0) => {
         const data = await syncUserFn(session.access_token, {
           role: pendingRole,
           inviteToken: pendingInviteToken,
+          referralCode: pendingReferralCode,
         });
 
         localStorage.removeItem('pendingInviteToken');
         localStorage.removeItem('pendingRole');
+        localStorage.removeItem('pendingReferralCode');
         localStorage.setItem('wasLoggedIn', '1');
         dispatch(login({ user: data.user, token: data.token, refreshToken: data.refreshToken ?? null }));
 

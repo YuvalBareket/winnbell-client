@@ -14,6 +14,7 @@ import {
 import { ConfirmationNumber } from '@mui/icons-material';
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import ReferralBonusSuccessDialog from './ReferralBonusSuccessDialog';
 
 interface Props {
   onVerified: () => void;
@@ -30,6 +31,7 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showReferralCongrats, setShowReferralCongrats] = useState(false);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
@@ -68,9 +70,13 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
       const res = await api.post('/phone/verify-otp', { code: verifyCode });
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setError('');
-      onVerified();
+      if (data?.referralBonusGranted) {
+        setShowReferralCongrats(true);
+      } else {
+        onVerified();
+      }
     },
     onError: (err: any) => {
       const message = err?.response?.data?.message;
@@ -248,6 +254,13 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
       style={{ width: '100%', height: '100%' }}
     >
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <ReferralBonusSuccessDialog
+        open={showReferralCongrats}
+        onViewEntries={() => {
+          setShowReferralCongrats(false);
+          onVerified();
+        }}
+      />
 
       {/* ── Mobile layout (hidden on md+) — pulled up to cover the app header ── */}
       <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', mt: `-${APP_HEADER_HEIGHT}px`}}>

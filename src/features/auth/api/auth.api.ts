@@ -23,11 +23,15 @@ export const loginUserFn = async (
 
 export const syncUserFn = async (
   accessToken: string,
-  options?: { role?: string | null; inviteToken?: string | null },
+  options?: { role?: string | null; inviteToken?: string | null; referralCode?: string | null },
 ): Promise<AuthResponse> => {
   const response = await api.post<AuthResponse>(
     '/auth/sync',
-    { role: options?.role || null, inviteToken: options?.inviteToken || null },
+    {
+      role: options?.role || null,
+      inviteToken: options?.inviteToken || null,
+      referralCode: options?.referralCode || null,
+    },
     { headers: { Authorization: `Bearer ${accessToken}` } },
   );
   return response.data;
