@@ -18,6 +18,7 @@ export interface TicketBase {
 export interface UserTicket extends TicketBase {
   business_name: string;
   business_sector: string;
+  location_id?: number | null;
   location_name?: string;
   logo_url?: string | null;
 }

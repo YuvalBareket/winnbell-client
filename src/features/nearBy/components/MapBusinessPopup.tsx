@@ -106,25 +106,122 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
             },
       }}
     >
+      {/* Drag handle -- mobile only -- always visible */}
+      {!isDesktop && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1.5, pb: 0.5, flexShrink: 0 }}>
+          <Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: 'divider' }} />
+        </Box>
+      )}
+
+      {/* Close button -- always visible */}
+      <IconButton
+        onClick={onClose}
+        size='small'
+        sx={{ position: 'absolute', top: isDesktop ? 16 : 20, right: 16, bgcolor: 'rgba(0,0,0,0.06)', zIndex: 1, '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' } }}
+      >
+        <Close fontSize='small' />
+      </IconButton>
+
+      {/* Loading skeleton -- shown when drawer is open but no location yet (detailLoading + no basicInfo) */}
+      {!location && detailLoading && (
+        <>
+          {/* Skeleton hero banner */}
+          <Box
+            sx={{
+              flexShrink: 0,
+              px: 2.5,
+              pt: isDesktop ? 2.5 : 1.5,
+              pb: 2.5,
+              bgcolor: 'background.paper',
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Stack direction='row' spacing={2} alignItems='flex-start'>
+              <Skeleton
+                variant='circular'
+                width={80}
+                height={80}
+                sx={{ flexShrink: 0 }}
+              />
+
+              <Box flex={1} minWidth={0} pt={0.5}>
+                <Skeleton variant='text' width='85%' height={28} sx={{ mb: 0.75 }} />
+                <Stack direction='row' spacing={0.75} flexWrap='wrap' useFlexGap>
+                  <Skeleton variant='rounded' width={70} height={22} />
+                  <Skeleton variant='rounded' width={80} height={22} />
+                  <Skeleton variant='rounded' width={75} height={22} />
+                </Stack>
+              </Box>
+            </Stack>
+          </Box>
+
+          {/* Skeleton body */}
+          <Box
+            sx={{
+              flex: 1,
+              overflowY: 'auto',
+              px: 2.5,
+              pt: 2.5,
+              pb: 2,
+              '&::-webkit-scrollbar': { display: 'none' },
+              scrollbarWidth: 'none',
+            }}
+          >
+            <Box>
+              {/* Description skeleton */}
+              <Stack direction='row' spacing={1} mb={2.5}>
+                <Skeleton variant='circular' width={17} height={17} sx={{ flexShrink: 0, mt: 0.3 }} />
+                <Box flex={1}>
+                  <Skeleton variant='text' width='100%' height={18} />
+                  <Skeleton variant='text' width='85%' height={18} />
+                  <Skeleton variant='text' width='60%' height={18} />
+                </Box>
+              </Stack>
+              {/* Address skeleton */}
+              <Stack direction='row' spacing={1} mb={2.5}>
+                <Skeleton variant='circular' width={17} height={17} sx={{ flexShrink: 0, mt: 0.3 }} />
+                <Box flex={1}>
+                  <Skeleton variant='text' width='90%' height={18} />
+                  <Skeleton variant='text' width={100} height={16} />
+                </Box>
+              </Stack>
+              {/* Phone skeleton */}
+              <Stack direction='row' spacing={1} mb={2}>
+                <Skeleton variant='circular' width={17} height={17} sx={{ flexShrink: 0 }} />
+                <Skeleton variant='text' width={120} height={16} />
+              </Stack>
+              <Divider sx={{ mb: 2.5 }} />
+              {/* How to earn skeleton */}
+              <Skeleton variant='rounded' width='100%' height={100} sx={{ borderRadius: 2 }} />
+            </Box>
+          </Box>
+
+          {/* Skeleton action buttons */}
+          <Box
+            sx={{
+              flexShrink: 0,
+              px: 2.5,
+              pt: 1.5,
+              pb: isDesktop ? 2.5 : 3,
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.25,
+            }}
+          >
+            <Skeleton variant='rounded' width='100%' height={52} sx={{ borderRadius: 1 }} />
+            <Skeleton variant='rounded' width='100%' height={52} sx={{ borderRadius: 1 }} />
+          </Box>
+        </>
+      )}
+
+      {/* Hero, body, and actions -- shows real content when location is available */}
       {location && (
         <>
-          {/* Drag handle -- mobile only */}
-          {!isDesktop && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1.5, pb: 0.5, flexShrink: 0 }}>
-              <Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: 'divider' }} />
-            </Box>
-          )}
-
-          {/* Close button */}
-          <IconButton
-            onClick={onClose}
-            size='small'
-            sx={{ position: 'absolute', top: isDesktop ? 16 : 20, right: 16, bgcolor: 'rgba(0,0,0,0.06)', zIndex: 1, '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' } }}
-          >
-            <Close fontSize='small' />
-          </IconButton>
-
-          {/* Hero banner */}
+          {/* Real hero banner */}
           <Box
             sx={{
               flexShrink: 0,

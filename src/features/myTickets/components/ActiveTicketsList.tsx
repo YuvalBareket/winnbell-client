@@ -1,7 +1,7 @@
 import { Box, Typography, Stack, Chip, Skeleton, Avatar, LinearProgress, CircularProgress } from '@mui/material';
 import { Circle, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import EmptyState from '../../../shared/components/EmptyState';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -15,6 +15,7 @@ import { MAX_ENTRIES_PER_DRAW } from '../../../shared/constants/entries';
 import { selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
 import type { BusinessTicket, UserTicket } from '../types/myTicket.types';
+import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
 
 // --- Animation variants ---
 const itemVariants = {
@@ -27,7 +28,7 @@ const itemVariants = {
 };
 
 // --- Shared ticket row wrapper ---
-const TicketRowWrapper = ({ children, index }: { children: React.ReactNode; index: number }) => (
+const TicketRowWrapper = ({ children, index, isClickable = false, onClick }: { children: React.ReactNode; index: number; isClickable?: boolean; onClick?: () => void }) => (
   <motion.div
     custom={index}
     variants={itemVariants}
@@ -35,6 +36,7 @@ const TicketRowWrapper = ({ children, index }: { children: React.ReactNode; inde
     animate="visible"
   >
     <Box
+      onClick={isClickable ? onClick : undefined}
       sx={{
         border: '1px solid',
         borderColor: 'divider',
@@ -47,7 +49,11 @@ const TicketRowWrapper = ({ children, index }: { children: React.ReactNode; inde
         justifyContent: 'space-between',
         alignItems: 'center',
         transition: 'box-shadow 160ms ease-out, transform 160ms ease-out',
-        '&:hover': {
+        cursor: isClickable ? 'pointer' : 'default',
+        '&:hover': isClickable ? {
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          transform: 'translateY(-2px)',
+        } : {
           boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
           transform: 'translateY(-1px)',
         },
@@ -59,12 +65,18 @@ const TicketRowWrapper = ({ children, index }: { children: React.ReactNode; inde
 );
 
 // --- 1. USER TICKET COMPONENT ---
-const UserTicketRow = ({ ticket, index }: { ticket: UserTicket; index: number }) => {
+const UserTicketRow = ({ ticket, index, onLocationClick }: { ticket: UserTicket; index: number; onLocationClick?: (locationId: number) => void }) => {
   const sectorInfo =
     BUSINESS_SECTORS[ticket.business_sector] || BUSINESS_SECTORS.Free;
   const { date, time } = formatTicketDate(ticket.activated_at ?? '');
+  const isClickable = !!ticket.location_id;
+
   return (
-    <TicketRowWrapper index={index}>
+    <TicketRowWrapper
+      index={index}
+      isClickable={isClickable}
+      onClick={isClickable && onLocationClick ? () => onLocationClick(ticket.location_id!) : undefined}
+    >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
         <Avatar
           src={ticket.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${ticket.logo_url}` : undefined}
@@ -167,6 +179,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
   const isBusinessOwner = useAppSelector(selectIsBusiness);
   const isLocation = useAppSelector(selectIsLocationManager);
   const isBusiness = isBusinessOwner || isLocation;
+  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
 
   const { tickets: allTickets, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, totalCount, cap, perLocationCap, activeLocationCount } = useMyTickets(draw_id ?? 0, locationId);
 
@@ -305,7 +318,12 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
             isBusiness ? (
               <BusinessTicketRow key={ticket.id} ticket={ticket as BusinessTicket} index={index} />
             ) : (
-              <UserTicketRow key={ticket.id} ticket={ticket as UserTicket} index={index} />
+              <UserTicketRow
+                key={ticket.id}
+                ticket={ticket as UserTicket}
+                index={index}
+                onLocationClick={(locId) => setSelectedLocationId(locId)}
+              />
             ),
           )
         ) : isBusiness ? (
@@ -335,6 +353,16 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
       <Box ref={sentinelRef} sx={{ pb: 2, display: 'flex', justifyContent: 'center' }}>
         {isFetchingNextPage && <CircularProgress size={24} />}
       </Box>
+
+      {/* Location detail drawer (reused from map) */}
+      {!isBusiness && (
+        <MapBusinessPopup
+          locationId={selectedLocationId}
+          basicInfo={null}
+          onClose={() => setSelectedLocationId(null)}
+          userLocation={null}
+        />
+      )}
     </>
   );
 };
