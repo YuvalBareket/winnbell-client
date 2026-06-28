@@ -236,7 +236,6 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
           </Typography>
           <List disablePadding>
             {mainNavItems.map((item) => {
-              const isInvite = item.path === '/invite';
               const isActive = location.pathname === item.path;
               return (
               <TapListItemButton
@@ -248,8 +247,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                   py: itemPy,
                   px: 1.5,
                   transition: 'all 0.15s ease',
-                  bgcolor: isActive ? PRIMARY_MAIN : (isInvite ? ALPHA_PRIMARY_06 : 'transparent'),
-                  border: isInvite && !isActive ? `1px solid ${ALPHA_PRIMARY_06}` : 'none',
+                  bgcolor: isActive ? PRIMARY_MAIN : 'transparent',
                   '&:hover': {
                     bgcolor: isActive ? PRIMARY_MAIN : ALPHA_PRIMARY_06,
                     transform: isActive ? 'none' : 'translateX(3px)',
@@ -260,7 +258,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
               >
                 <ListItemIcon
                   className='nav-icon'
-                  sx={{ minWidth: 34, color: isActive ? 'white' : (isInvite ? PRIMARY_MAIN : 'text.secondary'), transition: 'color 0.15s ease', '& svg': { fontSize: { xs: 20, sm: 24 } } }}
+                  sx={{ minWidth: 34, color: isActive ? 'white' : 'text.secondary', transition: 'color 0.15s ease', '& svg': { fontSize: { xs: 20, sm: 24 } } }}
                 >
                   {item.icon}
                 </ListItemIcon>
