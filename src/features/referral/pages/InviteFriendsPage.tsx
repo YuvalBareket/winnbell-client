@@ -51,7 +51,7 @@ const InviteFriendsPage = () => {
     {
       icon: <ShareOutlined />,
       title: 'Share your link',
-      text: 'Know someone who could use a little extra luck this month? Share your link and invite them to join Winnbell. Because sometimes the little things mean the most.',
+      text: 'Copy or share your unique referral link with friends via email, text, or social media',
     },
     {
       icon: <PersonAddOutlined />,
