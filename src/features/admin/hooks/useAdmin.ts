@@ -36,8 +36,9 @@ import {
   adminImageDecision,
   sendNotification,
   fetchNotificationHistory,
+  fetchGrowthAnalytics,
 } from '../api/adminApi';
-import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput } from '../types/admin.types';
+import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useAdminBusinesses = (params: { limit: number; search: string }) => {
@@ -530,5 +531,16 @@ export const useDrawAuditLog = (drawId: number | null) => {
     },
     enabled: drawId !== null,
     staleTime: 10_000,
+  });
+};
+
+export const useGrowthAnalytics = () => {
+  return useQuery({
+    queryKey: ['admin', 'growth-analytics'],
+    queryFn: async () => {
+      const { data } = await fetchGrowthAnalytics();
+      return data as GrowthAnalytics;
+    },
+    staleTime: 2 * 60_000,
   });
 };

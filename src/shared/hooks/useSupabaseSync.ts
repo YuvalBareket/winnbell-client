@@ -59,6 +59,17 @@ export const useSupabaseSync = (retryCount = 0) => {
       const pendingRole = localStorage.getItem('pendingRole');
       // Referral code captured on the /join landing page (only rewards a fresh registration).
       const pendingReferralCode = localStorage.getItem('pendingReferralCode');
+      // Acquisition channel (analytics §4), derived from how the user arrived. Priority:
+      // referral link > promo code > location flyer > direct. Server sets it on fresh signup only.
+      const pendingTicketCode = localStorage.getItem('pendingTicketCode');
+      const pendingLocationId = localStorage.getItem('pendingLocationId');
+      const acquisitionSource = pendingReferralCode
+        ? 'referral'
+        : (pendingTicketCode && pendingTicketCode.startsWith('PROMO'))
+          ? 'promo_code'
+          : (pendingLocationId || pendingTicketCode)
+            ? 'location_flyer'
+            : 'direct';
 
       // Navigate after an explicit login/signup action, not on silent session restore
       const isFreshLogin = event === 'SIGNED_IN' || event === 'USER_UPDATED';
@@ -80,6 +91,7 @@ export const useSupabaseSync = (retryCount = 0) => {
           role: pendingRole,
           inviteToken: pendingInviteToken,
           referralCode: pendingReferralCode,
+          acquisitionSource,
         });
 
         localStorage.removeItem('pendingInviteToken');

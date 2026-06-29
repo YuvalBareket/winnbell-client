@@ -6,6 +6,7 @@ import type {
   CreateDrawInput,
   Draw,
   UpdateDrawInput,
+  GrowthAnalytics,
 } from '../types/admin.types';
 
 export const fetchBusinesses = (params: { page: number; limit: number; search?: string }) =>
@@ -136,3 +137,6 @@ export const sendNotification = (data: { title: string; body: string; url?: stri
 
 export const fetchNotificationHistory = () =>
   api.get('/admin/notifications/history');
+
+export const fetchGrowthAnalytics = () =>
+  api.get<GrowthAnalytics>('/admin/analytics/growth');

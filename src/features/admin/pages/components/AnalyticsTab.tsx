@@ -22,6 +22,8 @@ import {
   Skeleton,
   IconButton,
   Tooltip,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import BlockIcon from '@mui/icons-material/Block';
@@ -29,12 +31,14 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts';
 import { useAdminAnalytics, useAdminBusinesses, useAllDraws, useCampaignComparison, useEntryVolume, useLocationBreakdown } from '../../hooks/useAdmin';
 import { BG_PAGE } from '../../../../shared/colors';
+import GrowthDashboard from '../../components/GrowthDashboard';
 
 interface Props {
   isMobile: boolean;
 }
 
 const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
+  const [tabValue, setTabValue] = useState(0);
   const { data: draws } = useAllDraws();
   const [selectedBiz, setSelectedBiz] = useState<{ id: number; name: string } | null>(null);
   const [analyticsDrawFilter, setAnalyticsDrawFilter] = useState<number | null>(null);
@@ -67,8 +71,18 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
 
   return (
     <Stack spacing={3}>
-      {/* Filters */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+      {/* Tabs */}
+      <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)}>
+        <Tab label='Growth & North Star' />
+        <Tab label='Deep Dive Analytics' />
+      </Tabs>
+
+      {tabValue === 0 ? (
+        <GrowthDashboard />
+      ) : (
+        <>
+          {/* Filters */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <Autocomplete
           size='small'
           options={draws ?? []}
@@ -580,6 +594,8 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
             />
           </Card>
         </Stack>
+      )}
+        </>
       )}
     </Stack>
   );

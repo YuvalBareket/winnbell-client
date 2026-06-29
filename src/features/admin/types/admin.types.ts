@@ -137,3 +137,94 @@ export interface AdminAnalytics {
     total: number;
   };
 }
+
+export interface GrowthAnalytics {
+  northStar: {
+    paying_businesses: number;
+    new_paying_this_month: number;
+    total_users: number;
+    mau: number;
+    mrr: number;
+    business_churn_pct: number;
+    user_growth_pct: number | null;
+    paying_business_growth_pct: number | null;
+    avg_entries_per_active_user: number;
+    pct_businesses_acquired_organically: number | null;
+    pct_users_acquired_organically: number;
+  };
+  businessGrowth: {
+    total_businesses: number;
+    paying_businesses: number;
+    founding_members: number;
+    new_businesses_this_month: number;
+    new_paying_this_month: number;
+    business_growth_pct: number | null;
+    paying_business_growth_pct: number | null;
+  };
+  userGrowth: {
+    total_users: number;
+    new_this_month: number;
+    user_growth_pct: number | null;
+    mau: number;
+    wau: number;
+    dau: number;
+    mau_over_total_pct: number;
+    wau_over_mau_pct: number;
+    dau_over_mau_pct: number;
+  };
+  acquisition: {
+    total: number;
+    by_source: { source: string; count: number; pct: number }[];
+  };
+  businessRetention: {
+    monthly_subs: number;
+    yearly_subs: number;
+    active_paying: number;
+    cancelled: number;
+    pending_cancel: number;
+    churn_pct: number;
+    active_paying_pct: number;
+  };
+  userRetention: {
+    m1_pct: number;
+    m2_pct: number;
+    m3_pct: number;
+    eligible_m1: number;
+    eligible_m2: number;
+    eligible_m3: number;
+  };
+  engagement: {
+    active_users: number;
+    total_entries: number;
+    avg_entries: number;
+    median_entries: number;
+    avg_businesses: number;
+    single_business_pct: number;
+    multi_business_pct: number;
+    over_20_pct: number;
+    at_30_pct: number;
+    amoe_only_pct: number;
+  };
+  revenue: {
+    mrr: number;
+    arr: number;
+    founding_this_month: number;
+    revenue_this_month: number;
+    arpb: number;
+    ltv_estimate: number | null;
+    trend: { draw_id: number; name: string; draw_date: string; revenue: number; businesses: number }[];
+  };
+  fraud: {
+    quarantined_entries: number;
+    rejected_winners: number;
+    suspended_users: number;
+    high_risk_users: number;
+    threshold_probes: number;
+    verifications_this_month: number;
+    entries_this_month: number;
+  };
+  geo: {
+    by_state: { state: string; count: number }[];
+    by_city: { city: string; count: number }[];
+  };
+}
