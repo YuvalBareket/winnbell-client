@@ -24,8 +24,10 @@ export const fetchMyBusinessDetails = async (): Promise<BusinessData> => {
 };
 
 export const createInviteLink = async (locationId: number): Promise<{ inviteLink: string }> => {
-  const response = await api.post<{ inviteLink: string }>(`/business/locations/${locationId}/invite`);
-  return response.data;
+  // Server returns only the signed token; build the full link from the current origin
+  // (like the referral link) so it always matches the environment the owner is using.
+  const response = await api.post<{ token: string }>(`/business/locations/${locationId}/invite`);
+  return { inviteLink: `${window.location.origin}/register/Location?token=${response.data.token}` };
 };
 
 export const updateBusiness = async (data: UpdateBusinessInput): Promise<void> => {
