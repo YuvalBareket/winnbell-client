@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useReferralLink } from '../hooks/useReferralLink';
 import {
-  GRADIENT_HERO, PRIMARY_MAIN, ALPHA_WHITE_15, ALPHA_WHITE_30,
+  GRADIENT_HERO, PRIMARY_MAIN, PRIMARY_LIGHT, ALPHA_WHITE_15, ALPHA_WHITE_30,
   BORDER_LIGHT, SHADOW_CARD, SHADOW_CARD_HOVER, MOBILE_CONTENT_HEIGHT,
   TEXT_SECONDARY, TEXT_HEADING,
 } from '../../../shared/colors';
@@ -51,7 +51,7 @@ const InviteFriendsPage = () => {
     {
       icon: <ShareOutlined />,
       title: 'Share your link',
-      text: 'Copy or share your unique referral link with friends via email, text, or social media.',
+      text: 'Know someone who could use a little extra luck this month? Share your link and invite them to join Winnbell. Because sometimes the little things mean the most.',
     },
     {
       icon: <PersonAddOutlined />,
@@ -122,8 +122,7 @@ const InviteFriendsPage = () => {
                   lineHeight: 1.6,
                 }}
               >
-                When your friends join through your link, they receive a bonus entry into the current monthly draw. No payment needed.
-              </Typography>
+Know someone who could use a little extra luck this month? Share your link and invite them to join Winnbell. Because sometimes the little things mean the most.              </Typography>
             </Box>
 
             {/* Link display */}
@@ -224,11 +223,11 @@ const InviteFriendsPage = () => {
       transition={{ duration: 0.5, delay: 0.31 }}
     >
       <Stack
-        spacing={2}
+        spacing={3}
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-          gap: { xs: 2, md: 3 },
+          gap: 3,
         }}
       >
         {steps.map((step, i) => (
@@ -350,9 +349,21 @@ const InviteFriendsPage = () => {
       <Box sx={{ textAlign: 'center', py: { xs: 2, md: 3 } }}>
         <Typography
           sx={{
-            color: TEXT_SECONDARY,
-            fontSize: '0.9rem',
-            lineHeight: 1.6,
+            fontWeight: 650,
+            fontSize: { xs: '0.9rem', md: '1rem' },
+            textAlign: 'center',
+            display: 'inline-block',
+            background: `linear-gradient(110deg, ${PRIMARY_MAIN} 0%, ${PRIMARY_MAIN} 43%, ${PRIMARY_LIGHT} 50%, ${PRIMARY_MAIN} 57%, ${PRIMARY_MAIN} 100%)`,
+            backgroundSize: '200% 100%',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            willChange: 'background-position',
+            animation: 'inviteShimmer 2.8s linear infinite',
+            '@keyframes inviteShimmer': {
+              '0%': { backgroundPosition: '100% 0' },
+              '100%': { backgroundPosition: '-100% 0' },
+            },
           }}
         >
           Good things are better shared. It only takes a moment to bring a friend along.
@@ -409,7 +420,7 @@ const InviteFriendsPage = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               style={{ position: 'sticky', top: 24, zIndex: 10 }}
             >
-              <Stack spacing={2}>
+              <Stack spacing={3}>
                 {steps.map((step, i) => (
                   <motion.div
                     key={i}
