@@ -7,6 +7,7 @@ import {
   Stack,
   Chip,
   Button,
+  Tooltip,
   Table,
   TableContainer,
   TableHead,
@@ -36,6 +37,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockIcon from '@mui/icons-material/Lock';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutline';
@@ -408,6 +410,10 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const active = draws?.filter((d) => d.status?.toUpperCase() === 'OPEN') ?? [];
   const upcoming = draws?.filter((d) => d.status?.toUpperCase() === 'UPCOMING') ?? [];
   const history = draws?.filter((d) => d.status?.toUpperCase() === 'CLOSED') ?? [];
+  // A campaign can only be closed when there is an Upcoming campaign to take over: closing
+  // atomically opens it, so the platform is never left without an open campaign. With none
+  // upcoming, the Close action is disabled (the server also rejects it as a backstop).
+  const hasUpcoming = upcoming.length > 0;
 
   const renderActions = (draw: any, inline = false) => (
     <Stack direction='row' gap={1} sx={{ flexWrap: 'wrap' }} justifyContent={inline ? 'flex-end' : undefined}>
@@ -421,7 +427,15 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
         <Button size='small' variant='contained' color='success' startIcon={<LockOpenIcon />} onClick={(e) => { e.stopPropagation(); setConfirmOpen(draw.id); }} fullWidth={!inline}>Open</Button>
       )}
       {draw.status?.toUpperCase() === 'OPEN' && (
-        <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} onClick={(e) => { e.stopPropagation(); setConfirmClose(draw.id); }} fullWidth={!inline}>Close</Button>
+        hasUpcoming ? (
+          <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} onClick={(e) => { e.stopPropagation(); setConfirmClose(draw.id); }} fullWidth={!inline}>Close</Button>
+        ) : (
+          <Tooltip title='Create an upcoming campaign first. Closing opens the next campaign automatically, so there is always one open.'>
+            <Box component='span' sx={{ width: inline ? 'auto' : '100%', display: inline ? 'inline-flex' : 'block' }}>
+              <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} disabled fullWidth={!inline}>Close</Button>
+            </Box>
+          </Tooltip>
+        )
       )}
       {draw.status?.toUpperCase() === 'CLOSED' && !draw.winner_confirmed && !draw.winner_user_id && (
         <Button size='small' variant='contained' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setConfirmPick({ id: draw.id, entryCount: draw.entry_count ?? 0 }); }} fullWidth={!inline}>Pick Winner</Button>
@@ -585,18 +599,39 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
         </DialogActions>
       </Dialog>
 
-      {/* Close confirmation */}
-      <Dialog open={!!confirmClose} onClose={() => setConfirmClose(null)}>
-        <DialogTitle>Close Campaign?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Closing this campaign will prevent any new entries from being counted. You can pick a winner after closing.
+      {/* Close confirmation — deliberately heavy/red: closing is a major, hard-to-reverse action */}
+      <Dialog
+        open={!!confirmClose}
+        onClose={() => setConfirmClose(null)}
+        maxWidth='xs'
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2, border: '2px solid', borderColor: 'error.main', overflow: 'hidden' } }}
+      >
+        <Box sx={{ bgcolor: 'error.main', color: 'white', px: 3, py: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <WarningAmberRoundedIcon sx={{ fontSize: 32 }} />
+          <Typography variant='h6' fontWeight={800} sx={{ letterSpacing: '-0.2px' }}>Close this campaign?</Typography>
+        </Box>
+        <DialogContent sx={{ pt: 3 }}>
+          <DialogContentText sx={{ color: 'text.primary', fontWeight: 600, mb: 1.5 }}>
+            This will immediately end the current campaign and open the next upcoming one. It affects every business and entry in the draw, and is not easily reversed.
+          </DialogContentText>
+          <DialogContentText sx={{ color: 'error.main', fontWeight: 800, fontSize: '1.05rem' }}>
+            Only continue if you are 100% sure.
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmClose(null)}>Cancel</Button>
-          <Button variant='contained' color='warning' onClick={handleCloseDraw} disabled={closeDraw.isPending}>
-            {closeDraw.isPending ? 'Closing...' : 'Close Campaign'}
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button variant='outlined' onClick={() => setConfirmClose(null)} sx={{ fontWeight: 700, textTransform: 'none' }}>
+            Cancel
+          </Button>
+          <Button
+            variant='contained'
+            color='error'
+            startIcon={!closeDraw.isPending && <WarningAmberRoundedIcon />}
+            onClick={handleCloseDraw}
+            disabled={closeDraw.isPending}
+            sx={{ fontWeight: 800, textTransform: 'none' }}
+          >
+            {closeDraw.isPending ? 'Closing...' : 'Yes, close the campaign'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -643,7 +678,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
         <DialogTitle>Reopen Campaign?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Reopening this campaign will set its status back to Open. Only allowed if no winner has been picked and no other campaign is currently open.
+            Reopening sets this campaign back to Open and reverts the campaign that opened when it was closed back to Upcoming, so there is still exactly one open campaign. This is only possible if no winner has been picked here and the reverted campaign has no entries yet.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
