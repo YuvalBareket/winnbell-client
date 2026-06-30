@@ -92,6 +92,9 @@ export const useSupabaseSync = (retryCount = 0) => {
           inviteToken: pendingInviteToken,
           referralCode: pendingReferralCode,
           acquisitionSource,
+          // Which location's flyer (for location_flyer) and which promo code (for promo_code).
+          acquiredViaLocationId: pendingLocationId ? Number(pendingLocationId) : null,
+          promoCode: (pendingTicketCode && pendingTicketCode.startsWith('PROMO')) ? pendingTicketCode : null,
         });
 
         localStorage.removeItem('pendingInviteToken');

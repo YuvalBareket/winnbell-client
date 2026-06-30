@@ -23,7 +23,7 @@ export const loginUserFn = async (
 
 export const syncUserFn = async (
   accessToken: string,
-  options?: { role?: string | null; inviteToken?: string | null; referralCode?: string | null; acquisitionSource?: string | null },
+  options?: { role?: string | null; inviteToken?: string | null; referralCode?: string | null; acquisitionSource?: string | null; acquiredViaLocationId?: number | null; promoCode?: string | null },
 ): Promise<AuthResponse> => {
   const response = await api.post<AuthResponse>(
     '/auth/sync',
@@ -32,6 +32,8 @@ export const syncUserFn = async (
       inviteToken: options?.inviteToken || null,
       referralCode: options?.referralCode || null,
       acquisitionSource: options?.acquisitionSource || null,
+      acquiredViaLocationId: options?.acquiredViaLocationId ?? null,
+      promoCode: options?.promoCode || null,
     },
     { headers: { Authorization: `Bearer ${accessToken}` } },
   );
