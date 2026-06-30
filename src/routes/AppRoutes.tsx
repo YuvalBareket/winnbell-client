@@ -56,7 +56,7 @@ const BusinessAgreementPage = lazy(() => import('../features/legal/pages/Busines
 const BusinessDashboard = lazy(() => import('../features/admin/pages/BusinessDashboard'));
 const BusinessProfilePage = lazy(() => import('../features/partner/pages/BusinessProfilePage'));
 const BusinessHubPage = lazy(() => import('../features/partner/pages/BusinessHubPage'));
-const StatsPage = lazy(() => import('../features/stats/pages/StatsPage'));
+const BusinessAnalyticsPage = lazy(() => import('../features/partner/pages/BusinessAnalyticsPage'));
 const MarketingPage = lazy(() => import('../features/marketing/pages/MarketingPage'));
 const CampaignDashboardPage = lazy(() => import('../features/campaign/pages/CampaignDashboardPage'));
 
@@ -165,7 +165,7 @@ const AppRoutes = () => {
               <Route path='/campaign' element={isBusinessAdmin || isManager ? <CampaignDashboardPage /> : <Navigate to='/tickets' replace />} />
               <Route path='/tickets' element={<MyTicketsPage />} />
               <Route path='/draws/history' element={<DrawHistoryPage />} />
-              <Route path='/stats' element={<StatsPage />} />
+              <Route path='/stats' element={<BusinessAnalyticsPage />} />
               <Route path='/subscribe' element={<SubscribePage />} />
               <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
               <Route path='/subscription/success' element={<SubscriptionSuccessPage />} />

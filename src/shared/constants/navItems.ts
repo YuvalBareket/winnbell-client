@@ -36,7 +36,7 @@ export const userNavItems: NavItem[] = [
 export const businessNavItems: NavItem[] = [
   { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
   { label: 'Campaign Dashboard', Icon: CampaignOutlined, path: '/campaign' },
-  { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
+  { label: 'Analytics', Icon: BarChartOutlined, path: '/stats' },
   { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
   { label: 'My Plan', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
   { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
@@ -47,7 +47,7 @@ export const businessNavItems: NavItem[] = [
 export const managerNavItems: NavItem[] = [
   { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
   { label: 'Campaign Dashboard', Icon: CampaignOutlined, path: '/campaign' },
-  { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
+  { label: 'Analytics', Icon: BarChartOutlined, path: '/stats' },
   { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];

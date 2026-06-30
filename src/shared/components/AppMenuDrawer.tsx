@@ -104,7 +104,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
         { label: 'Campaign Dashboard', icon: <CampaignOutlined />, path: '/campaign' },
-        { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
+        { label: 'Analytics', icon: <BarChartOutlined />, path: '/stats' },
         { label: 'Campaigns Hub', icon: <EmojiEventsOutlined />, path: '/draws/history' },
         { label: 'My Plan', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
         { label: 'Marketing', icon: <CampaignOutlined />, path: '/marketing' },
@@ -115,7 +115,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
         { label: 'Campaign Dashboard', icon: <CampaignOutlined />, path: '/campaign' },
-        { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
+        { label: 'Analytics', icon: <BarChartOutlined />, path: '/stats' },
         { label: 'Invite Friends', icon: <CardGiftcardOutlined />, path: '/invite' },
         { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
       ]

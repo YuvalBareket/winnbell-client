@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Drawer, Box, Typography, Avatar, Button, Stack, Chip, IconButton, Divider,
   useMediaQuery, useTheme, Skeleton,
@@ -11,7 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { NearbyLocation, NearbyLocationDetail } from '../types/nearBy.types';
-import { getLocationDetail } from '../api/nearBy.api';
+import { getLocationDetail, logBusinessProfileView } from '../api/nearBy.api';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 import { MAX_ENTRIES_PER_RECEIPT } from '../../../shared/constants/entries';
@@ -61,6 +61,15 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
   // the list endpoint does), so normalize for display.
   const displayName = detail?.business_name || detail?.location_name || basicInfo?.name || '';
   const businessId = detail?.business_id ?? basicInfo?.id;
+
+  // Acquisition analytics: log a profile view once the real (non-preview) profile loads. Uses the
+  // authoritative business_id from the fetched detail (basicInfo.id is a LOCATION id). Server dedupes.
+  useEffect(() => {
+    const realBusinessId = detail?.business_id;
+    if (!preview && typeof realBusinessId === 'number' && realBusinessId > 0) {
+      logBusinessProfileView(realBusinessId, locationId);
+    }
+  }, [detail?.business_id, locationId, preview]);
 
   const sectorInfo = location
     ? BUSINESS_SECTORS[location.sector] || UNKNOWN_SECTOR

@@ -38,7 +38,7 @@ const AppSidebar = () => {
   const businessNavItems: NavItem[] = [
     { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
     { label: 'Campaign Dashboard', Icon: CampaignOutlined, path: '/campaign' },
-    { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
+    { label: 'Analytics', Icon: BarChartOutlined, path: '/stats' },
     { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
     { label: 'My Plan', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
     { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
