@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Paper, BottomNavigation, BottomNavigationAction } from '@mui/material';
 import { ConfirmationNumber, Storefront } from '@mui/icons-material';
+import EqualizerIcon from '@mui/icons-material/Equalizer';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AppMenuDrawer from './AppMenuDrawer';
 import AppHeader from './AppHeader';
@@ -31,10 +32,11 @@ const MainLayout = () => {
   const isManager = useAppSelector(selectIsLocationManager);
   const isAdmin = useAppSelector(selectIsAdmin);
   const isBusinessOrManager = isBusinessAdmin || isManager;
-  // Business/manager users use /activity as their mobile home; regular users use /scan
-  const mobileMainPath = isBusinessOrManager ? '/activity' : '/scan';
+  // Business/manager users use /campaign (Campaign Dashboard) as their mobile home; regular users use /scan
+  const mobileMainPath = isBusinessOrManager ? '/campaign' : '/scan';
   const isNearby = location.pathname === '/nearby';
   const isActivity = location.pathname === '/activity';
+  const isCampaign = location.pathname === '/campaign';
   const isStats = location.pathname === '/stats';
   const isMarketing = location.pathname === '/marketing';
   const isSettings = location.pathname === '/settings';
@@ -49,7 +51,9 @@ const MainLayout = () => {
   // mobile, so we navigate on pointer-up instead (see useTap).
   const tapNearby = useTap(() => navigate('/nearby'));
   const tapMain = useTap(() => navigate(mobileMainPath));
-  const tapTickets = useTap(() => navigate('/tickets'));
+  // Third bottom-nav slot: business/manager get Analytics; regular users keep My Entries.
+  const thirdNavPath = isBusinessOrManager ? '/stats' : '/tickets';
+  const tapThird = useTap(() => navigate(thirdNavPath));
 
   return (
     <InstallPromptProvider>
@@ -67,7 +71,7 @@ const MainLayout = () => {
       <AppSidebar />
 
       {/* Mobile header - hidden on desktop, hidden on pages with their own hero */}
-      {!hasOwnHeader && !isNearby && !isActivity && !isStats && !isMarketing && !isSettings && !isDrawsHistory && !isSubscribe && !isSubscriptionManage && (
+      {!hasOwnHeader && !isNearby && !isActivity && !isCampaign && !isStats && !isMarketing && !isSettings && !isDrawsHistory && !isSubscribe && !isSubscriptionManage && (
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
       )}
 
@@ -160,10 +164,10 @@ const MainLayout = () => {
             />
 
             <BottomNavigationAction
-              {...tapTickets}
-              value='/tickets'
+              {...tapThird}
+              value={thirdNavPath}
               showLabel={false}
-              icon={<ConfirmationNumber />}
+              icon={isBusinessOrManager ? <EqualizerIcon /> : <ConfirmationNumber />}
             />
           </BottomNavigation>
         </Paper>

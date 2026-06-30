@@ -24,7 +24,6 @@ import {
   ChevronRight,
   EmojiEventsOutlined,
   AdminPanelSettingsOutlined,
-  FeedOutlined,
   SettingsOutlined,
   CampaignOutlined,
   HelpOutlineOutlined,
@@ -104,8 +103,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     : isBusiness
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
-        { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
-        { label: 'Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
+        { label: 'Campaign Dashboard', icon: <CampaignOutlined />, path: '/campaign' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
         { label: 'Campaigns Hub', icon: <EmojiEventsOutlined />, path: '/draws/history' },
         { label: 'My Plan', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
@@ -116,8 +114,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     : isManager
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
-        { label: 'Receipt Activity', icon: <FeedOutlined />, path: '/activity' },
-        { label: 'Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
+        { label: 'Campaign Dashboard', icon: <CampaignOutlined />, path: '/campaign' },
         { label: 'Statistics', icon: <BarChartOutlined />, path: '/stats' },
         { label: 'Invite Friends', icon: <CardGiftcardOutlined />, path: '/invite' },
         { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },

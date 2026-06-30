@@ -10,7 +10,6 @@ import {
   ArticleOutlined,
   EmojiEventsOutlined,
   AdminPanelSettingsOutlined,
-  FeedOutlined,
   SettingsOutlined,
   CampaignOutlined,
   DashboardOutlined,
@@ -36,20 +35,19 @@ export const userNavItems: NavItem[] = [
 
 export const businessNavItems: NavItem[] = [
   { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
-  { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
-  { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
+  { label: 'Campaign Dashboard', Icon: CampaignOutlined, path: '/campaign' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
-  { label: 'Campaign', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
+  { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
+  { label: 'My Plan', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
   { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
+  { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 
 export const managerNavItems: NavItem[] = [
-  { label: 'Nearby Partners', Icon: StorefrontOutlined, path: '/nearby' },
-  { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
-  { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
+  { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
+  { label: 'Campaign Dashboard', Icon: CampaignOutlined, path: '/campaign' },
   { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
-  { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
   { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];

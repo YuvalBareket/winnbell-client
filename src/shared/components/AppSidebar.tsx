@@ -11,8 +11,8 @@ import {
   userNavItems, managerNavItems, adminNavItems, legalNavItems, businessLegalNavItems, type NavItem,
 } from '../constants/navItems';
 import {
-  BusinessOutlined, ConfirmationNumberOutlined,
-  BarChartOutlined, ReceiptLongOutlined, FeedOutlined,
+  BusinessOutlined,
+  BarChartOutlined, ReceiptLongOutlined,
   SettingsOutlined, CampaignOutlined, EmojiEventsOutlined, CardGiftcardOutlined,
 } from '@mui/icons-material';
 import {
@@ -37,8 +37,7 @@ const AppSidebar = () => {
 
   const businessNavItems: NavItem[] = [
     { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
-    { label: 'Receipt Activity', Icon: FeedOutlined, path: '/activity' },
-    { label: 'Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
+    { label: 'Campaign Dashboard', Icon: CampaignOutlined, path: '/campaign' },
     { label: 'Statistics', Icon: BarChartOutlined, path: '/stats' },
     { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
     { label: 'My Plan', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },

@@ -41,7 +41,6 @@ import SubscribePage from '../features/subscription/pages/SubscribePage';
 import SubscriptionSuccessPage from '../features/subscription/pages/SubscriptionSuccessPage';
 import SubscriptionManagementPage from '../features/subscription/pages/SubscriptionManagementPage';
 import NearbyPage from '../features/nearBy/pages/NearbyPage';
-import ActivityPage from '../features/activity/pages/ActivityPage';
 import DrawHistoryPage from '../features/draw/pages/DrawHistoryPage';
 import SettingsPage from '../features/settings/pages/SettingsPage';
 import InviteFriendsPage from '../features/referral/pages/InviteFriendsPage';
@@ -59,6 +58,7 @@ const BusinessProfilePage = lazy(() => import('../features/partner/pages/Busines
 const BusinessHubPage = lazy(() => import('../features/partner/pages/BusinessHubPage'));
 const StatsPage = lazy(() => import('../features/stats/pages/StatsPage'));
 const MarketingPage = lazy(() => import('../features/marketing/pages/MarketingPage'));
+const CampaignDashboardPage = lazy(() => import('../features/campaign/pages/CampaignDashboardPage'));
 
 // Light fallback for in-app route chunk loading — a gentle spinner, NOT the full-screen
 // branded LoadingScreen (which is reserved for boot + auth/entry pages below).
@@ -119,7 +119,7 @@ const AppRoutes = () => {
       {/* --- Public Routes --- */}
       <Route path='/' element={
         isAuthenticated
-          ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan'} replace />
+          ? <Navigate to={isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/campaign' : '/scan'} replace />
           : <LandingPage />
       } />
       <Route path='/for-business' element={<BusinessLandingPage />} />
@@ -162,7 +162,7 @@ const AppRoutes = () => {
             <>
               <Route path='/nearby' element={isBusinessAdmin ? <BusinessHubPage /> : <NearbyPage />} />
               <Route path='/scan' element={<RedeemPage />} />
-              <Route path='/activity' element={isBusinessAdmin || isManager ? <ActivityPage /> : <Navigate to='/tickets' replace />} />
+              <Route path='/campaign' element={isBusinessAdmin || isManager ? <CampaignDashboardPage /> : <Navigate to='/tickets' replace />} />
               <Route path='/tickets' element={<MyTicketsPage />} />
               <Route path='/draws/history' element={<DrawHistoryPage />} />
               <Route path='/stats' element={<StatsPage />} />
