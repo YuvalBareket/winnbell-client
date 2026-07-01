@@ -17,6 +17,8 @@ import {
   Snackbar,
   CircularProgress,
   Avatar,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { motion } from 'framer-motion';
@@ -32,9 +34,11 @@ import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../store/hook';
-import { selectCurrentUser, selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
+import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectBusinessIsActive } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { useCampaignHeader, useCampaignKpis, useCampaignEntries, useApproveEntry, useCampaigns } from '../hooks/useCampaignData';
+import { useSubscription } from '../../subscription/hooks/useSubscription';
+import DrawPreparationView from '../../tickets/components/DrawPreparationView';
 import {
   GRADIENT_HERO,
   ALPHA_WHITE_15,
@@ -79,7 +83,14 @@ const CampaignDashboardPage = () => {
   const { data: bizData } = useBusinessData(true);
   const locations = (bizData?.locations ?? []).filter((l) => l.is_active) as BusinessLocation[];
 
-  const { data: campaignsData } = useCampaigns();
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+  const businessIsActive = useAppSelector(selectBusinessIsActive);
+  const { data: subscription } = useSubscription(isBusiness);
+  const hasDescription = !!(bizData?.description?.trim());
+  const hasLocations = (bizData?.locations?.length ?? 0) > 0;
+
+  const { data: campaignsData, isLoading: campaignsLoading } = useCampaigns();
   const campaigns = campaignsData ?? [];
   const selectedCampaign = campaigns.find(c => c.draw_id === selectedCampaignId) ?? campaigns.find(c => c.is_current) ?? campaigns[0] ?? null;
   const campaignIdForQuery = selectedCampaign?.draw_id;
@@ -145,6 +156,21 @@ const CampaignDashboardPage = () => {
 
   // No campaign state
   const noCampaign = !headerData?.has_campaign;
+
+  // A business with no campaigns yet (just subscribed, waiting for the next draw to open, or
+  // not subscribed at all) sees the preparation / "getting ready" view instead of an empty dashboard.
+  if (!campaignsLoading && campaigns.length === 0) {
+    return (
+      <DrawPreparationView
+        subscription={subscription ?? undefined}
+        hasDescription={hasDescription}
+        hasLocations={hasLocations}
+        isDesktop={isDesktop}
+        isManager={isManager}
+        isSubscribed={businessIsActive}
+      />
+    );
+  }
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
