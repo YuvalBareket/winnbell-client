@@ -43,7 +43,7 @@ export interface CampaignEntry {
 
 export interface CampaignEntriesResult {
   items: CampaignEntry[];
-  next_cursor: number | null;
+  next_cursor: string | null;
 }
 
 export const fetchCampaigns = async (): Promise<CampaignListItem[]> => {
@@ -74,7 +74,7 @@ export const fetchCampaignKpis = async (
 export const fetchCampaignEntries = async (params: {
   location_id?: number;
   needs_review?: boolean;
-  cursor?: number;
+  cursor?: string;
   limit?: number;
   campaign_id?: number;
 }): Promise<CampaignEntriesResult> => {

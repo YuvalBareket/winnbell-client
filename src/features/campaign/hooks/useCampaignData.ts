@@ -49,7 +49,7 @@ export const useCampaignEntries = (locationId?: number, needsReview: boolean = f
         limit: 20,
         campaign_id: campaignId,
       }),
-    initialPageParam: undefined as number | undefined,
+    initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     staleTime: 30_000,
   });

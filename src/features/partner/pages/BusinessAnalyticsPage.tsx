@@ -460,7 +460,7 @@ const BusinessAnalyticsPage = () => {
     : category === 'acquisition' ? acquisitionQ
     : category === 'engagement' ? engagementQ
     : revenueQ;
-  const { isLoading, isError, refetch, isFetching, isPlaceholderData } = activeQuery;
+  const { isLoading, isError, refetch, isPlaceholderData } = activeQuery;
 
   // Plain (non-hook) label mapper — safe to call inside the per-category renderers.
   const withLabels = <T extends { bucket: string }>(rows: T[]) =>
@@ -607,48 +607,174 @@ const BusinessAnalyticsPage = () => {
           <motion.div variants={itemVariants}>
             <ChartCard title="Draw Capacity Used" subtitle="Entries issued against your cap">
               <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: CHART_HEIGHT }}>
-                {cap?.cap == null ? (
-                  <Box sx={{ textAlign: 'center', py: 4 }}>
-                    <Typography variant="h3" fontWeight={800} sx={{ letterSpacing: '-1px' }}>
-                      {formatNum(cap?.used)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Entries issued — no cap set
-                    </Typography>
-                  </Box>
-                ) : (
-                  <>
-                    <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 1.5 }}>
-                      <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
-                        {formatPct(capPct)}
+                {(() => {
+                  const showPerDraw = spanMonths >= 3 && (o?.draw_capacity?.length ?? 0) > 1;
+                  const drawsToShow = showPerDraw ? [...(o?.draw_capacity ?? [])].reverse() : null;
+
+                  if (showPerDraw && drawsToShow && drawsToShow.length > 0) {
+                    // Per-draw list rendering for multi-draw ranges
+                    return (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 2,
+                          minHeight: CHART_HEIGHT,
+                          maxHeight: CHART_HEIGHT,
+                          overflowY: 'auto',
+                          pr: 1,
+                          '&::-webkit-scrollbar': {
+                            width: '6px',
+                          },
+                          '&::-webkit-scrollbar-track': {
+                            bgcolor: 'transparent',
+                          },
+                          '&::-webkit-scrollbar-thumb': {
+                            bgcolor: 'action.hover',
+                            borderRadius: '3px',
+                          },
+                        }}
+                      >
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0 },
+                            visible: {
+                              opacity: 1,
+                              transition: { staggerChildren: 0.06, delayChildren: 0 },
+                            },
+                          }}
+                          initial="hidden"
+                          animate="visible"
+                          style={{
+                            flexGrow: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            gap: 16,
+                          }}
+                        >
+                          {drawsToShow.map((draw) => {
+                            const isNearFull = draw.pct >= 90;
+                            const isCurrent = draw.status === 'Open';
+
+                            return (
+                              <motion.div
+                                key={draw.draw_id}
+                                variants={{
+                                  hidden: { opacity: 0, x: -8 },
+                                  visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+                                }}
+                              >
+                                <Stack spacing={0.75}>
+                                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                    <Stack direction="row" alignItems="center" spacing={0.75}>
+                                      <Typography variant="body2" fontWeight={700}>
+                                        {draw.label}
+                                      </Typography>
+                                      {isCurrent && (
+                                        <Chip
+                                          label="Current"
+                                          size="small"
+                                          sx={{
+                                            height: 20,
+                                            fontSize: '0.65rem',
+                                            fontWeight: 700,
+                                            bgcolor: ALPHA_PRIMARY_10,
+                                            color: PRIMARY_MAIN,
+                                          }}
+                                        />
+                                      )}
+                                    </Stack>
+                                    <Stack direction="row" spacing={1} alignItems="baseline">
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={700}
+                                        sx={{ color: isNearFull ? STATUS_PENDING_TEXT : 'text.secondary' }}
+                                      >
+                                        {formatPct(draw.pct)}
+                                      </Typography>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                        color="text.disabled"
+                                        sx={{ minWidth: '60px', textAlign: 'right' }}
+                                      >
+                                        {formatNum(draw.used)} {draw.cap !== null ? `/ ${formatNum(draw.cap)}` : ''}
+                                      </Typography>
+                                    </Stack>
+                                  </Stack>
+                                  {draw.cap !== null ? (
+                                    <LinearProgress
+                                      variant="determinate"
+                                      value={draw.pct}
+                                      sx={{
+                                        height: 10,
+                                        borderRadius: 5,
+                                        bgcolor: 'action.hover',
+                                        '& .MuiLinearProgress-bar': {
+                                          borderRadius: 5,
+                                          backgroundColor: isNearFull ? AMBER_HOURGLASS : PRIMARY_MAIN,
+                                        },
+                                      }}
+                                    />
+                                  ) : (
+                                    <Typography variant="caption" color="text.disabled">
+                                      No cap for this draw
+                                    </Typography>
+                                  )}
+                                </Stack>
+                              </motion.div>
+                            );
+                          })}
+                        </motion.div>
+                      </Box>
+                    );
+                  }
+
+                  // Single-draw or no-cap fallback (original UI)
+                  return cap?.cap == null ? (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                      <Typography variant="h3" fontWeight={800} sx={{ letterSpacing: '-1px' }}>
+                        {formatNum(cap?.used)}
                       </Typography>
-                      <Typography variant="body2" fontWeight={700} color="text.secondary">
-                        {formatNum(cap?.used)} / {formatNum(cap?.cap)}
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Entries issued. No cap set
                       </Typography>
-                    </Stack>
-                    <LinearProgress
-                      variant="determinate"
-                      value={capPct}
-                      sx={{
-                        height: 14,
-                        borderRadius: 7,
-                        bgcolor: 'action.hover',
-                        '& .MuiLinearProgress-bar': {
-                          borderRadius: 7,
-                          backgroundColor: capNearFull ? AMBER_HOURGLASS : PRIMARY_MAIN,
-                        },
-                      }}
-                    />
-                    {capNearFull && (
-                      <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mt: 1.5 }}>
-                        <WarningAmberOutlined sx={{ fontSize: 18, color: STATUS_PENDING_TEXT }} />
-                        <Typography variant="caption" fontWeight={700} sx={{ color: STATUS_PENDING_TEXT }}>
-                          Approaching your entry cap
+                    </Box>
+                  ) : (
+                    <>
+                      <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 1.5 }}>
+                        <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
+                          {formatPct(capPct)}
+                        </Typography>
+                        <Typography variant="body2" fontWeight={700} color="text.secondary">
+                          {formatNum(cap?.used)} / {formatNum(cap?.cap)}
                         </Typography>
                       </Stack>
-                    )}
-                  </>
-                )}
+                      <LinearProgress
+                        variant="determinate"
+                        value={capPct}
+                        sx={{
+                          height: 14,
+                          borderRadius: 7,
+                          bgcolor: 'action.hover',
+                          '& .MuiLinearProgress-bar': {
+                            borderRadius: 7,
+                            backgroundColor: capNearFull ? AMBER_HOURGLASS : PRIMARY_MAIN,
+                          },
+                        }}
+                      />
+                      {capNearFull && (
+                        <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mt: 1.5 }}>
+                          <WarningAmberOutlined sx={{ fontSize: 18, color: STATUS_PENDING_TEXT }} />
+                          <Typography variant="caption" fontWeight={700} sx={{ color: STATUS_PENDING_TEXT }}>
+                            Approaching your entry cap
+                          </Typography>
+                        </Stack>
+                      )}
+                    </>
+                  );
+                })()}
               </Box>
             </ChartCard>
           </motion.div>
@@ -935,7 +1061,10 @@ const BusinessAnalyticsPage = () => {
       );
     }
 
-    const shouldShowRefreshing = (isFetching || isPlaceholderData) && !isLoading;
+    // Only show the overlay while we're actually displaying stale PLACEHOLDER data for a filter
+    // that hasn't loaded yet. A background refetch of already-correct data (isFetching) should
+    // refresh silently, so the overlay never lingers over data that already matches the filters.
+    const shouldShowRefreshing = isPlaceholderData && !isLoading;
 
     const content =
       category === 'overview' ? renderOverview()

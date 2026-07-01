@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -6,7 +6,6 @@ import {
   Paper,
   Stack,
   Skeleton,
-  Alert,
   Chip,
   Button,
   ToggleButton,
@@ -14,20 +13,16 @@ import {
   Autocomplete,
   TextField,
   LinearProgress,
-  Snackbar,
   CircularProgress,
   Avatar,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 import {
   CampaignOutlined,
   TrendingUpOutlined,
-  ChevronRight,
   CheckCircleOutlineOutlined,
-  WarningAmberOutlined,
   Schedule,
 } from '@mui/icons-material';
 import AppHeader from '../../../shared/components/AppHeader';
@@ -36,7 +31,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectBusinessIsActive } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
-import { useCampaignHeader, useCampaignKpis, useCampaignEntries, useApproveEntry, useCampaigns } from '../hooks/useCampaignData';
+import { useCampaignHeader, useCampaignKpis, useCampaignEntries, useCampaigns } from '../hooks/useCampaignData';
 import { useSubscription } from '../../subscription/hooks/useSubscription';
 import DrawPreparationView from '../../tickets/components/DrawPreparationView';
 import {
@@ -44,10 +39,7 @@ import {
   ALPHA_WHITE_15,
   ALPHA_WHITE_30,
   MOBILE_CONTENT_HEIGHT_NO_HEADER,
-  STATUS_ACTIVATED_TEXT,
   TEXT_SECONDARY,
-  TEXT_TERTIARY,
-  ALPHA_GREEN_10,
   SHADOW_CARD,
 } from '../../../shared/colors';
 import { formatCurrency, formatRelativeTime } from '../../../shared/utils/date';
@@ -76,7 +68,6 @@ const CampaignDashboardPage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
   const [dateRange, setDateRange] = useState<'today' | 'wtd' | 'mtd'>('today');
-  const [needsReviewFilter, setNeedsReviewFilter] = useState(false);
   const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -110,11 +101,7 @@ const CampaignDashboardPage = () => {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useCampaignEntries(locationIdForQuery, needsReviewFilter, campaignIdForQuery);
-
-  // Approve entry mutation
-  const { mutate: approveEntryMutation, isPending: isApproving } = useApproveEntry();
-  const [approveError, setApproveError] = useState<string | null>(null);
+  } = useCampaignEntries(locationIdForQuery, false, campaignIdForQuery);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -130,14 +117,6 @@ const CampaignDashboardPage = () => {
     if (observerTarget.current) observer.observe(observerTarget.current);
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, isEntriesLoading, fetchNextPage]);
-
-  const handleApproveEntry = useCallback((ticketId: number) => {
-    approveEntryMutation(ticketId, {
-      onError: () => {
-        setApproveError('Failed to approve entry. Try again.');
-      },
-    });
-  }, [approveEntryMutation]);
 
   const displayEntries = entriesData?.pages.flatMap((p) => p.items) ?? [];
 
@@ -533,43 +512,6 @@ const CampaignDashboardPage = () => {
               )}
             </motion.div>
 
-            {/* Needs Review Banner */}
-            {!noCampaign && headerData && headerData.needs_review_count > 0 && (
-              <motion.div variants={itemVariants}>
-                <Paper
-                  elevation={0}
-                  onClick={() => setNeedsReviewFilter(true)}
-                  sx={{
-                    p: 2.5,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(245,158,11,0.06)',
-                    border: '1px solid rgba(245,158,11,0.2)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      bgcolor: 'rgba(245,158,11,0.1)',
-                      transform: 'translateY(-2px)',
-                    },
-                  }}
-                >
-                  <Stack direction="row" alignItems="center" spacing={2} justifyContent="space-between">
-                    <Stack direction="row" alignItems="center" spacing={1.5}>
-                      <WarningAmberOutlined sx={{ color: '#f59e0b', fontSize: 24 }} />
-                      <Box>
-                        <Typography variant="body2" fontWeight={700} color="#ea580c">
-                          {headerData.needs_review_count} {headerData.needs_review_count === 1 ? 'entry' : 'entries'} need your review
-                        </Typography>
-                        <Typography variant="caption" color={TEXT_SECONDARY}>
-                          Tap to see entries flagged for review
-                        </Typography>
-                      </Box>
-                    </Stack>
-                    <ChevronRight sx={{ color: TEXT_TERTIARY, flexShrink: 0 }} />
-                  </Stack>
-                </Paper>
-              </motion.div>
-            )}
-
             {/* Entries Feed */}
             {!noCampaign && (
               <motion.div variants={itemVariants}>
@@ -578,14 +520,9 @@ const CampaignDashboardPage = () => {
                   <Box sx={{ px: 3, py: 1.5, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Stack direction="row" alignItems="center" spacing={2}>
                       <Typography variant="subtitle2" fontWeight={700} color={TEXT_SECONDARY} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.75rem' }}>
-                        {needsReviewFilter ? 'Entries Needing Review' : 'Recent Entries'}
+                        Recent Entries
                       </Typography>
                     </Stack>
-                    {needsReviewFilter && (
-                      <Button size="small" onClick={() => setNeedsReviewFilter(false)} sx={{ textTransform: 'none', fontWeight: 600 }}>
-                        Show all
-                      </Button>
-                    )}
                   </Box>
 
                   {/* Loading state */}
@@ -601,12 +538,10 @@ const CampaignDashboardPage = () => {
                     <Box sx={{ p: 4, textAlign: 'center' }}>
                       <CampaignOutlined sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
                       <Typography variant="body1" fontWeight={600} color="text.primary">
-                        {needsReviewFilter ? "You're all caught up" : 'No entries yet'}
+                        No entries yet
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {needsReviewFilter
-                          ? 'All entries have been reviewed'
-                          : 'Entries from customers will appear here'}
+                        Entries from customers will appear here
                       </Typography>
                     </Box>
                   ) : (
@@ -629,10 +564,9 @@ const CampaignDashboardPage = () => {
                                 py: 2.5,
                                 borderBottom: idx === displayEntries.length - 1 ? 'none' : '1px solid',
                                 borderColor: 'divider',
-                                bgcolor: isUnderReview ? ((t) => alpha(t.palette.warning.main, 0.1)) : 'transparent',
                                 transition: 'bgcolor 0.2s ease',
                                 '&:hover': {
-                                  bgcolor: isUnderReview ? ((t) => alpha(t.palette.warning.main, 0.1)) : 'action.hover',
+                                  bgcolor: 'action.hover',
                                 },
                               }}
                             >
@@ -678,63 +612,30 @@ const CampaignDashboardPage = () => {
                                   </Box>
                                 </Stack>
 
-                                {/* Status and action */}
-                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
-                                  <Box flex={1}>
-                                    {isUnderReview ? (
-                                      entry.reviewable ? (
-                                        <Chip
-                                          label="Under review"
-                                          size="small"
-                                          sx={{
-                                            fontWeight: 600,
-                                            height: 22,
-                                            bgcolor: 'warning.light',
-                                            color: 'warning.dark',
-                                          }}
-                                        />
-                                      ) : (
-                                        <Chip
-                                          label="Under review"
-                                          size="small"
-                                          sx={{
-                                            fontWeight: 600,
-                                            height: 22,
-                                            bgcolor: (t) => alpha(t.palette.error.main, 0.12),
-                                            color: 'error.main',
-                                          }}
-                                        />
-                                      )
-                                    ) : (
-                                      <Chip
-                                        label="Approved"
-                                        size="small"
-                                        sx={{
-                                          fontWeight: 600,
-                                          height: 22,
-                                          bgcolor: ALPHA_GREEN_10,
-                                          color: STATUS_ACTIVATED_TEXT,
-                                        }}
-                                      />
-                                    )}
-                                  </Box>
-                                  {isUnderReview && entry.reviewable && (
-                                    <Button
+                                {/* Status */}
+                                <Box sx={{ mt: 1 }}>
+                                  {isUnderReview ? (
+                                    <Chip
+                                      label="Under review"
                                       size="small"
-                                      variant="contained"
-                                      disabled={isApproving}
-                                      onClick={() => handleApproveEntry(entry.ticket_id)}
-                                      sx={{ fontWeight: 700, textTransform: 'none' }}
-                                      startIcon={isApproving && <CircularProgress size={14} color="inherit" />}
-                                    >
-                                      {isApproving ? 'Approving...' : 'Approve'}
-                                    </Button>
+                                      variant="outlined"
+                                      color="warning"
+                                      sx={{ fontWeight: 600, height: 22 }}
+                                    />
+                                  ) : (
+                                    <Chip
+                                      label="Approved"
+                                      size="small"
+                                      variant="outlined"
+                                      color="success"
+                                      sx={{ fontWeight: 600, height: 22 }}
+                                    />
                                   )}
-                                </Stack>
+                                </Box>
                               </Box>
 
                               {/* Desktop layout */}
-                              <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '40px minmax(0, 1fr) 120px 130px 104px', gap: 2, alignItems: 'center' }}>
+                              <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '40px minmax(0, 1fr) 120px 130px', gap: 2, alignItems: 'center' }}>
                                 <Avatar
                                   sx={{
                                     width: 40,
@@ -783,57 +684,23 @@ const CampaignDashboardPage = () => {
 
                                 <Box>
                                   {isUnderReview ? (
-                                    entry.reviewable ? (
-                                      <Chip
-                                        label="Under review"
-                                        size="small"
-                                        sx={{
-                                          fontWeight: 600,
-                                          height: 24,
-                                          bgcolor: 'warning.light',
-                                          color: 'warning.dark',
-                                        }}
-                                      />
-                                    ) : (
-                                      <Chip
-                                        label="Under review"
-                                        size="small"
-                                        sx={{
-                                          fontWeight: 600,
-                                          height: 24,
-                                          bgcolor: (t) => alpha(t.palette.error.main, 0.12),
-                                          color: 'error.main',
-                                        }}
-                                      />
-                                    )
+                                    <Chip
+                                      label="Under review"
+                                      size="small"
+                                      variant="outlined"
+                                      color="warning"
+                                      sx={{ fontWeight: 600, height: 24 }}
+                                    />
                                   ) : (
                                     <Chip
                                       label="Approved"
                                       size="small"
-                                      sx={{
-                                        fontWeight: 600,
-                                        height: 24,
-                                        bgcolor: ALPHA_GREEN_10,
-                                        color: STATUS_ACTIVATED_TEXT,
-                                      }}
+                                      variant="outlined"
+                                      color="success"
+                                      sx={{ fontWeight: 600, height: 24 }}
                                     />
                                   )}
                                 </Box>
-
-                                {isUnderReview && entry.reviewable ? (
-                                  <Button
-                                    size="small"
-                                    variant="contained"
-                                    disabled={isApproving}
-                                    onClick={() => handleApproveEntry(entry.ticket_id)}
-                                    sx={{ fontWeight: 700, textTransform: 'none' }}
-                                    startIcon={isApproving && <CircularProgress size={14} color="inherit" />}
-                                  >
-                                    Approve
-                                  </Button>
-                                ) : (
-                                  <Box />
-                                )}
                               </Box>
                             </Box>
                           </motion.div>
@@ -852,17 +719,6 @@ const CampaignDashboardPage = () => {
           </Stack>
         </motion.div>
       </Container>
-
-      <Snackbar
-        open={!!approveError}
-        autoHideDuration={4000}
-        onClose={() => setApproveError(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="error" variant="filled" onClose={() => setApproveError(null)}>
-          {approveError}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };

@@ -26,6 +26,7 @@ export interface OverviewResponse {
   new_pct: number;
   returning_pct: number;
   entry_cap: { used: number; cap: number | null; pct: number };
+  draw_capacity: { draw_id: number; label: string; status: string; used: number; cap: number | null; pct: number }[];
   series: AnalyticsSeriesPoint[];
 }
 
