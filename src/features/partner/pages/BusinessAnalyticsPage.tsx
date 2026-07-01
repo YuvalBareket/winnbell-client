@@ -684,7 +684,7 @@ const BusinessAnalyticsPage = () => {
               value={formatPct(a?.conversion_pct)}
               tint={ALPHA_PRIMARY_10}
               iconColor={PRIMARY_MAIN}
-              caption="Viewers who made a purchase"
+              caption="Customers who viewed your page first"
             />
           </StatGrid>
         </motion.div>
