@@ -49,7 +49,7 @@ export interface RevenueResponse {
   total_qualifying_revenue: number;
   threshold: number;
   avg_purchase_amount: number;
-  revenue_change_pct: number | null;
+  qualifying_receipts: number;
   series: AnalyticsSeriesPoint[];
 }
 

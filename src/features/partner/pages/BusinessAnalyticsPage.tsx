@@ -16,8 +16,9 @@ import {
   Tabs,
   Tab,
   LinearProgress,
+  CircularProgress,
 } from '@mui/material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   QueryStatsOutlined,
   GroupsOutlined,
@@ -31,7 +32,7 @@ import {
   AttachMoneyOutlined,
   SellOutlined,
   ShoppingBagOutlined,
-  TrendingDownOutlined,
+  ReceiptLongOutlined,
   WarningAmberOutlined,
   ShowChartOutlined,
   PieChartOutlineOutlined,
@@ -327,6 +328,47 @@ const EmptyChart = ({ height = 260, message }: { height?: number; message: strin
   </Box>
 );
 
+// Refreshing overlay shown when refetching after filter changes
+const RefreshingOverlay = () => {
+  const overlayVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.15 } },
+    exit: { opacity: 0, transition: { duration: 0.25 } },
+  };
+
+  return (
+    <motion.div
+      variants={overlayVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 'inherit',
+        zIndex: 10,
+        backdropFilter: 'blur(3px)',
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.85, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.25 }}>
+          <CircularProgress size={40} thickness={3.5} />
+          <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ letterSpacing: 0.2 }}>
+            Refreshing...
+          </Typography>
+        </Box>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 // recharts injects active/payload/label — keep prop typing loose to avoid version churn
 const ChartTooltip = (props: any) => {
   const { active, payload, label, money } = props;
@@ -418,7 +460,7 @@ const BusinessAnalyticsPage = () => {
     : category === 'acquisition' ? acquisitionQ
     : category === 'engagement' ? engagementQ
     : revenueQ;
-  const { isLoading, isError, refetch } = activeQuery;
+  const { isLoading, isError, refetch, isFetching, isPlaceholderData } = activeQuery;
 
   // Plain (non-hook) label mapper — safe to call inside the per-category renderers.
   const withLabels = <T extends { bucket: string }>(rows: T[]) =>
@@ -828,24 +870,12 @@ const BusinessAnalyticsPage = () => {
               caption="Average qualifying purchase"
             />
             <StatTile
-              icon={
-                (r?.revenue_change_pct ?? 0) < 0
-                  ? <TrendingDownOutlined sx={{ fontSize: 22 }} />
-                  : <TrendingUpOutlined sx={{ fontSize: 22 }} />
-              }
-              label="Compared to Last Draw"
-              value={
-                r?.revenue_change_pct == null
-                  ? 'No data'
-                  : `${r.revenue_change_pct > 0 ? '+' : ''}${formatPct(r.revenue_change_pct)}`
-              }
+              icon={<ReceiptLongOutlined sx={{ fontSize: 22 }} />}
+              label="Qualifying Receipts"
+              value={formatNum(r?.qualifying_receipts ?? 0)}
               tint={ALPHA_PRIMARY_10}
               iconColor={PRIMARY_MAIN}
-              caption={
-                r?.revenue_change_pct == null
-                  ? 'No previous draw to compare yet'
-                  : 'Draw sales vs the previous draw'
-              }
+              caption="Purchases that earned an entry"
             />
           </StatGrid>
         </motion.div>
@@ -904,18 +934,24 @@ const BusinessAnalyticsPage = () => {
         </Stack>
       );
     }
-    switch (category) {
-      case 'overview':
-        return renderOverview();
-      case 'acquisition':
-        return renderAcquisition();
-      case 'engagement':
-        return renderEngagement();
-      case 'revenue':
-        return renderRevenue();
-      default:
-        return null;
-    }
+
+    const shouldShowRefreshing = (isFetching || isPlaceholderData) && !isLoading;
+
+    const content =
+      category === 'overview' ? renderOverview()
+      : category === 'acquisition' ? renderAcquisition()
+      : category === 'engagement' ? renderEngagement()
+      : category === 'revenue' ? renderRevenue()
+      : null;
+
+    return (
+      <Box sx={{ position: 'relative' }}>
+        <AnimatePresence>{shouldShowRefreshing && <RefreshingOverlay />}</AnimatePresence>
+        <motion.div key={category} variants={containerVariants} initial="hidden" animate="visible">
+          {content}
+        </motion.div>
+      </Box>
+    );
   };
 
   return (
@@ -1097,9 +1133,7 @@ const BusinessAnalyticsPage = () => {
               We could not load your analytics. Please try again.
             </Alert>
           ) : (
-            <motion.div key={category} variants={containerVariants} initial="hidden" animate="visible">
-              {renderContent()}
-            </motion.div>
+            renderContent()
           )}
         </Stack>
       </Container>
