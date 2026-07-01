@@ -16,6 +16,7 @@ import {
   PeopleOutlined,
   NotificationsOutlined,
   CardGiftcardOutlined,
+  RocketLaunchOutlined,
 } from '@mui/icons-material';
 
 export interface NavItem {
@@ -39,8 +40,7 @@ export const businessNavItems: NavItem[] = [
   { label: 'Analytics', Icon: BarChartOutlined, path: '/stats' },
   { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
   { label: 'My Plan', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
-  { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
-  { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },
+  { label: 'Grow', Icon: RocketLaunchOutlined, path: '/marketing' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 
@@ -48,7 +48,6 @@ export const managerNavItems: NavItem[] = [
   { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
   { label: 'Campaign Dashboard', Icon: CampaignOutlined, path: '/campaign' },
   { label: 'Analytics', Icon: BarChartOutlined, path: '/stats' },
-  { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 

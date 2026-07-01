@@ -26,7 +26,7 @@ export const HEADLINES = [
 ];
 
 export const LEGAL_TEXT =
-  'This business participates in Winnbell campaigns. No purchase necessary. A purchase will not increase chances of winning. Alternative free entry method available on the platform. 18+. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com';
+  'This business participates in campaigns operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Alternative free entry method available on the platform. 18+. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com';
 
 // ── Color palettes per template (html2canvas-safe: solid fills, no shadows/glows) ──
 const PALETTE_CLASSIC = { primary: '#195DE2', light: '#4A90E2', accent: '#EEF3FD' };
@@ -48,7 +48,7 @@ export const PosterWrap = ({ children, bg }: { children: React.ReactNode; bg?: s
 export interface PosterProps { businessName: string; scanUrl: string; headline: string }
 
 // ── QR code with centered logo bubble (WhatsApp-style) ───────────────────────
-const QRWithBrand = ({ value, size, fgColor, logoSrc }: {
+export const QRWithBrand = ({ value, size, fgColor, logoSrc }: {
   value: string; size: number; fgColor?: string; logoSrc?: string;
 }) => {
   const bubbleSize = Math.round(size * 0.7);

@@ -10,6 +10,7 @@ export const PRIMARY_DEEP       = '#0f3a6b';   // deep navy (success dialog grad
 export const PRIMARY_DARK       = '#0f3a6b';   // draw card gradient start (Baltic Blue)
 export const PRIMARY_DARKER     = '#0a2747';   // draw card gradient end (slightly darker Baltic)
 export const BRAND_NAVY         = '#0f3a6b';   // hero gradient end (BusinessHub, Drawer) (Baltic Blue)
+export const BRAND_ICON_BLUE    = '#195DE2';   // Winnbell icon blue (matches winnbell_icon_*.svg + flyer QR)
 
 // ── Accent - warm gold for rewards/wins ──────
 export const ACCENT_GOLD        = '#c5a047';   // warm amber-gold accent (Golden Bronze)
