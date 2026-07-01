@@ -24,6 +24,8 @@ export interface NearbyLocationDetail extends NearbyLocation {
   business_name?: string;
   business_id?: number;
   cap_reached?: boolean;
+  // active location + active subscription + enrolled in the current open draw; gates the submit button.
+  is_participating?: boolean;
 }
 
 export interface ILocationCoords {

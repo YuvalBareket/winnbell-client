@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Box, Typography, Paper, Stack, Chip, Divider, Link,
 } from '@mui/material';
@@ -13,9 +14,11 @@ import {
   SHADOW_CARD,
   SHADOW_CARD_HOVER,
 } from '../../../shared/colors';
+import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
 import type { IDrawResult } from '../types';
 
 const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
+  const [profileLocationId, setProfileLocationId] = useState<number | null>(null);
   const hasWinner = !!draw.winner_name;
   const isClosed = draw.status?.toLowerCase() === 'closed';
   const isOpen = draw.status?.toLowerCase() === 'open';
@@ -185,9 +188,27 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
                     {winnerFirstName} won
                   </Typography>
                   <Typography variant='body2' color={TEXT_SECONDARY} sx={{ lineHeight: 1.5 }}>
-                    {draw.winner_business_name
-                      ? `Selected with ${draw.winner_business_name} receipt`
-                      : 'Selected with free weekly entry'}
+                    {draw.winner_business_name ? (
+                      <>
+                        Selected with{' '}
+                        {draw.winner_location_id ? (
+                          <Link
+                            component='button'
+                            type='button'
+                            onClick={() => setProfileLocationId(draw.winner_location_id ?? null)}
+                            underline='hover'
+                            sx={{ fontWeight: 700, color: PRIMARY_MAIN, verticalAlign: 'baseline' }}
+                          >
+                            {draw.winner_business_name}
+                          </Link>
+                        ) : (
+                          draw.winner_business_name
+                        )}{' '}
+                        receipt
+                      </>
+                    ) : (
+                      'Selected with free weekly entry'
+                    )}
                   </Typography>
                 </Box>
               </Stack>
@@ -215,6 +236,14 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
           </Box>
         </Box>
       </Box>
+
+      {profileLocationId != null && (
+        <MapBusinessPopup
+          locationId={profileLocationId}
+          basicInfo={null}
+          onClose={() => setProfileLocationId(null)}
+        />
+      )}
     </Paper>
   );
 };

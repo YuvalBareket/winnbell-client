@@ -9,13 +9,8 @@ export const getNearbyBusinesses = async (
   return data;
 };
 
-export const getLocationDetail = async (locationId: number): Promise<NearbyLocationDetail> => {
-  const { data } = await api.get<NearbyLocationDetail>(`/business/participating/locations/${locationId}`);
+export const getLocationProfileById = async (locationId: number): Promise<NearbyLocationDetail> => {
+  // The server records a profile view (regular Users only) as part of serving this endpoint.
+  const { data } = await api.get<NearbyLocationDetail>(`/business/locations/${locationId}/profile`);
   return data;
-};
-
-// Fire-and-forget: log that the current user opened a business profile (Acquisition analytics).
-// The server dedupes to one view per user-business and never errors the client; ignore failures.
-export const logBusinessProfileView = (businessId: number, locationId?: number | null): void => {
-  api.post('/business/profile-view', { businessId, locationId: locationId ?? null }).catch(() => {});
 };

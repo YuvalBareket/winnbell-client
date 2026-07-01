@@ -13,5 +13,6 @@ export interface IDrawResult extends IDrawSummary {
   winning_ticket_code?: string;
   winner_business_name?: string;
   winner_location_name?: string;
+  winner_location_id?: number;
   entry_count?: number;
 }

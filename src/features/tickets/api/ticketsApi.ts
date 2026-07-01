@@ -62,7 +62,7 @@ export const searchParticipatingLocations = (q: string): Promise<ParticipatingLo
   api.get('/business/participating/locations/search', { params: { q } }).then(r => r.data);
 
 export const fetchParticipatingLocationById = (locationId: number): Promise<ParticipatingLocation | null> =>
-  api.get(`/business/participating/locations/${locationId}`).then(r => r.data).catch(() => null);
+  api.get(`/business/locations/${locationId}/profile`).then(r => r.data).catch(() => null);
 
 export interface ReceiptEntryPayload {
   locationId: number;

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Drawer, Box, Typography, Avatar, Button, Stack, Chip, IconButton, Divider,
   useMediaQuery, useTheme, Skeleton,
@@ -11,7 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { NearbyLocation, NearbyLocationDetail } from '../types/nearBy.types';
-import { getLocationDetail, logBusinessProfileView } from '../api/nearBy.api';
+import { getLocationProfileById } from '../api/nearBy.api';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 import { MAX_ENTRIES_PER_RECEIPT } from '../../../shared/constants/entries';
@@ -47,7 +47,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
   // businesses that aren't live yet. Use the detail the business hub already has instead.
   const { data: fetchedDetail, isLoading: fetchedLoading } = useQuery({
     queryKey: ['participating', 'location', locationId],
-    queryFn: () => getLocationDetail(locationId!),
+    queryFn: () => getLocationProfileById(locationId!),
     enabled: !preview && !!locationId,
     staleTime: 5 * 60_000,
   });
@@ -62,14 +62,13 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
   const displayName = detail?.business_name || detail?.location_name || basicInfo?.name || '';
   const businessId = detail?.business_id ?? basicInfo?.id;
 
-  // Acquisition analytics: log a profile view once the real (non-preview) profile loads. Uses the
-  // authoritative business_id from the fetched detail (basicInfo.id is a LOCATION id). Server dedupes.
-  useEffect(() => {
-    const realBusinessId = detail?.business_id;
-    if (!preview && typeof realBusinessId === 'number' && realBusinessId > 0) {
-      logBusinessProfileView(realBusinessId, locationId);
-    }
-  }, [detail?.business_id, locationId, preview]);
+  // Only hide the submit action when the server explicitly says the business is not currently
+  // participating (e.g. a past winner's profile). undefined (hub preview / basicInfo-only) keeps
+  // the previous behavior so the map and preview are unaffected.
+  const canSubmitReceipt = detail?.is_participating !== false;
+
+  // Profile-view analytics are recorded server-side when the location detail is fetched
+  // (only for regular Users), so there is no client-side view logging here.
 
   const sectorInfo = location
     ? BUSINESS_SECTORS[location.sector] || UNKNOWN_SECTOR
@@ -492,31 +491,35 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
               gap: 1.25,
             }}
           >
-            {detail?.cap_reached && (
-              <Typography variant='caption' color='text.disabled' textAlign='center' sx={{ mb: 0.25 }}>
-                This location has reached its entry limit for the current campaign.
-              </Typography>
+            {canSubmitReceipt && (
+              <>
+                {detail?.cap_reached && (
+                  <Typography variant='caption' color='text.disabled' textAlign='center' sx={{ mb: 0.25 }}>
+                    This location has reached its entry limit for the current campaign.
+                  </Typography>
+                )}
+                <Button
+                  fullWidth
+                  variant='contained'
+                  size='large'
+                  startIcon={<ReceiptLong />}
+                  onClick={detail?.cap_reached || preview ? undefined : handleSubmitReceipt}
+                  sx={{
+                    py: 1.6,
+                    fontWeight: 800,
+                    fontSize: '0.95rem',
+                    bgcolor: detail?.cap_reached ? '#e5e7eb' : PRIMARY_MAIN,
+                    boxShadow: detail?.cap_reached ? 'none' : `0 6px 20px ${PRIMARY_MAIN}40`,
+                    cursor: detail?.cap_reached ? 'not-allowed' : 'pointer',
+                    transition: 'transform 160ms ease-out, box-shadow 160ms ease-out',
+                    '&:hover': detail?.cap_reached ? { bgcolor: '#e5e7eb' } : { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.92)' },
+                    '&:active': detail?.cap_reached ? {} : { transform: 'scale(0.97)' },
+                  }}
+                >
+                  Submit a Receipt
+                </Button>
+              </>
             )}
-            <Button
-              fullWidth
-              variant='contained'
-              size='large'
-              startIcon={<ReceiptLong />}
-              onClick={detail?.cap_reached || preview ? undefined : handleSubmitReceipt}
-              sx={{
-                py: 1.6,
-                fontWeight: 800,
-                fontSize: '0.95rem',
-                bgcolor: detail?.cap_reached ? '#e5e7eb' : PRIMARY_MAIN,
-                boxShadow: detail?.cap_reached ? 'none' : `0 6px 20px ${PRIMARY_MAIN}40`,
-                cursor: detail?.cap_reached ? 'not-allowed' : 'pointer',
-                transition: 'transform 160ms ease-out, box-shadow 160ms ease-out',
-                '&:hover': detail?.cap_reached ? { bgcolor: '#e5e7eb' } : { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.92)' },
-                '&:active': detail?.cap_reached ? {} : { transform: 'scale(0.97)' },
-              }}
-            >
-              Submit a Receipt
-            </Button>
             <Button
               fullWidth
               variant='outlined'
