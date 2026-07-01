@@ -473,6 +473,10 @@ const BusinessAnalyticsPage = () => {
   const renderOverview = () => {
     const o = overviewQ.data;
     const seriesData = withLabels(o?.series ?? []);
+    const avgSeriesData = seriesData.map((s) => ({
+      ...s,
+      avg_per_customer: s.participants > 0 ? Math.round((s.entries / s.participants) * 10) / 10 : 0,
+    }));
     const newVal = o?.new_participants ?? 0;
     const returningVal = o?.returning_participants ?? 0;
     const cap = o?.entry_cap;
@@ -791,14 +795,18 @@ const BusinessAnalyticsPage = () => {
               <EmptyChart message="No activity in this period" />
             ) : (
               <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-                <ComposedChart data={seriesData} margin={{ left: -14, right: 8 }}>
+                <ComposedChart data={avgSeriesData} margin={{ left: -14, right: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                   <XAxis dataKey="label" tick={AXIS_TICK} axisLine={false} tickLine={false} minTickGap={16} />
-                  <YAxis tick={AXIS_TICK} allowDecimals={false} axisLine={false} tickLine={false} />
+                  <YAxis yAxisId="left" tick={AXIS_TICK} allowDecimals={false} axisLine={false} tickLine={false} />
+                  {spanMonths >= 3 && (
+                    <YAxis yAxisId="right" orientation="right" tick={AXIS_TICK} axisLine={false} tickLine={false} width={30} />
+                  )}
                   <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }} content={<ChartTooltip />} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="entries" name="Entries" fill={PRIMARY_LIGHT} radius={[5, 5, 0, 0]} maxBarSize={40} />
+                  <Bar yAxisId="left" dataKey="entries" name="Entries" fill={PRIMARY_LIGHT} radius={[5, 5, 0, 0]} maxBarSize={40} />
                   <Line
+                    yAxisId="left"
                     type="monotone"
                     dataKey="participants"
                     name="Customers"
@@ -806,6 +814,17 @@ const BusinessAnalyticsPage = () => {
                     strokeWidth={2.5}
                     dot={false}
                   />
+                  {spanMonths >= 3 && (
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="avg_per_customer"
+                      name="Avg per customer"
+                      stroke={ACCENT_GOLD_DARK}
+                      strokeWidth={2.5}
+                      dot={false}
+                    />
+                  )}
                 </ComposedChart>
               </ResponsiveContainer>
             )}
@@ -828,7 +847,7 @@ const BusinessAnalyticsPage = () => {
               value={formatNum(a?.new_users_acquired)}
               tint={ALPHA_PRIMARY_10}
               iconColor={PRIMARY_MAIN}
-              caption="First-timers you brought to the app"
+              caption="First-timers you brought to the platform app"
             />
             <StatTile
               icon={<TravelExploreOutlined sx={{ fontSize: 22 }} />}
@@ -848,11 +867,11 @@ const BusinessAnalyticsPage = () => {
             />
             <StatTile
               icon={<TrendingUpOutlined sx={{ fontSize: 22 }} />}
-              label="Visit to Entry"
+              label="Visit to Entry Conversion"
               value={formatPct(a?.conversion_pct)}
               tint={ALPHA_PRIMARY_10}
               iconColor={PRIMARY_MAIN}
-              caption="Customers who viewed your page first"
+              caption="Viewers who went on to submit an entry"
             />
           </StatGrid>
         </motion.div>
