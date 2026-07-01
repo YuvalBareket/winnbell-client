@@ -13,7 +13,7 @@ import {
 import {
   BusinessOutlined,
   BarChartOutlined, ReceiptLongOutlined,
-  SettingsOutlined, CampaignOutlined, EmojiEventsOutlined, CardGiftcardOutlined,
+  SettingsOutlined, CampaignOutlined, EmojiEventsOutlined,
 } from '@mui/icons-material';
 import {
   GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING, ALPHA_PRIMARY_04, ALPHA_PRIMARY_06, GRADIENT_SIDEBAR,
@@ -42,7 +42,6 @@ const AppSidebar = () => {
     { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
     { label: 'My Plan', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
     { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
-    { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },
     { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
   ];
 

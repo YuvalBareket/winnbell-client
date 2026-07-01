@@ -170,7 +170,7 @@ const AppRoutes = () => {
               <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
               <Route path='/subscription/success' element={<SubscriptionSuccessPage />} />
               <Route path='/settings' element={<SettingsPage />} />
-              <Route path='/invite' element={<InviteFriendsPage />} />
+              {isUser && <Route path='/invite' element={<InviteFriendsPage />} />}
               <Route path='/marketing' element={<MarketingPage />} />
               {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}
             </>
