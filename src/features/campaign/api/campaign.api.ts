@@ -2,6 +2,7 @@ import { api } from '../../../shared/api/client';
 
 export interface CampaignHeaderData {
   has_campaign: boolean;
+  status?: string;
   campaign_name: string | null;
   prize_amount: number | null;
   draw_date: string | null;
@@ -10,6 +11,15 @@ export interface CampaignHeaderData {
   entry_cap: number | null;
   cap_reached: boolean;
   needs_review_count: number;
+}
+
+export interface CampaignListItem {
+  draw_id: number;
+  name: string;
+  prize_amount: number;
+  draw_date: string;
+  status: string;
+  is_current: boolean;
 }
 
 export interface CampaignKpiData {
@@ -36,8 +46,15 @@ export interface CampaignEntriesResult {
   next_cursor: number | null;
 }
 
-export const fetchCampaignHeader = async (locationId?: number): Promise<CampaignHeaderData> => {
-  const params = locationId ? { location_id: locationId } : {};
+export const fetchCampaigns = async (): Promise<CampaignListItem[]> => {
+  const res = await api.get<CampaignListItem[]>('/business/campaign/list');
+  return res.data;
+};
+
+export const fetchCampaignHeader = async (locationId?: number, campaignId?: number): Promise<CampaignHeaderData> => {
+  const params: Record<string, unknown> = {};
+  if (locationId) params.location_id = locationId;
+  if (campaignId != null) params.draw_id = campaignId;
   const res = await api.get<CampaignHeaderData>('/business/campaign/header', { params });
   return res.data;
 };
@@ -45,9 +62,11 @@ export const fetchCampaignHeader = async (locationId?: number): Promise<Campaign
 export const fetchCampaignKpis = async (
   dateRange: DateRange,
   locationId?: number,
+  campaignId?: number,
 ): Promise<CampaignKpiData> => {
-  const params: any = { date_range: dateRange };
+  const params: Record<string, unknown> = { date_range: dateRange };
   if (locationId) params.location_id = locationId;
+  if (campaignId != null) params.draw_id = campaignId;
   const res = await api.get<CampaignKpiData>('/business/campaign/kpis', { params });
   return res.data;
 };
@@ -57,12 +76,14 @@ export const fetchCampaignEntries = async (params: {
   needs_review?: boolean;
   cursor?: number;
   limit?: number;
+  campaign_id?: number;
 }): Promise<CampaignEntriesResult> => {
-  const queryParams: any = {};
+  const queryParams: Record<string, unknown> = {};
   if (params.location_id !== undefined) queryParams.location_id = params.location_id;
   if (params.needs_review !== undefined) queryParams.needs_review = params.needs_review;
   if (params.cursor !== undefined) queryParams.cursor = params.cursor;
   if (params.limit !== undefined) queryParams.limit = params.limit;
+  if (params.campaign_id !== undefined) queryParams.draw_id = params.campaign_id;
 
   const res = await api.get<CampaignEntriesResult>('/business/campaign/entries', {
     params: queryParams,

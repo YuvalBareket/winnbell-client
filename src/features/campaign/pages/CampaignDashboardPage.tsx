@@ -34,7 +34,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
-import { useCampaignHeader, useCampaignKpis, useCampaignEntries, useApproveEntry } from '../hooks/useCampaignData';
+import { useCampaignHeader, useCampaignKpis, useCampaignEntries, useApproveEntry, useCampaigns } from '../hooks/useCampaignData';
 import {
   GRADIENT_HERO,
   ALPHA_WHITE_15,
@@ -73,10 +73,17 @@ const CampaignDashboardPage = () => {
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
   const [dateRange, setDateRange] = useState<'today' | 'wtd' | 'mtd'>('today');
   const [needsReviewFilter, setNeedsReviewFilter] = useState(false);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const { data: bizData } = useBusinessData(true);
   const locations = (bizData?.locations ?? []).filter((l) => l.is_active) as BusinessLocation[];
+
+  const { data: campaignsData } = useCampaigns();
+  const campaigns = campaignsData ?? [];
+  const selectedCampaign = campaigns.find(c => c.draw_id === selectedCampaignId) ?? campaigns.find(c => c.is_current) ?? campaigns[0] ?? null;
+  const campaignIdForQuery = selectedCampaign?.draw_id;
+  const isCurrentCampaign = selectedCampaign?.is_current ?? true;
 
   // Determine the location_id to use for queries
   const locationIdForQuery = isManager
@@ -84,15 +91,15 @@ const CampaignDashboardPage = () => {
     : (selectedLocation !== '' ? (selectedLocation as number) : undefined);
 
   // Queries
-  const { data: headerData, isLoading: isHeaderLoading } = useCampaignHeader(locationIdForQuery, true);
-  const { data: kpiData, isLoading: isKpiLoading } = useCampaignKpis(dateRange, locationIdForQuery, true);
+  const { data: headerData, isLoading: isHeaderLoading } = useCampaignHeader(locationIdForQuery, campaignIdForQuery, true);
+  const { data: kpiData, isLoading: isKpiLoading } = useCampaignKpis(dateRange, locationIdForQuery, isCurrentCampaign ? undefined : campaignIdForQuery, true);
   const {
     data: entriesData,
     isLoading: isEntriesLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useCampaignEntries(locationIdForQuery, needsReviewFilter);
+  } = useCampaignEntries(locationIdForQuery, needsReviewFilter, campaignIdForQuery);
 
   // Approve entry mutation
   const { mutate: approveEntryMutation, isPending: isApproving } = useApproveEntry();
@@ -194,6 +201,20 @@ const CampaignDashboardPage = () => {
               <motion.div variants={itemVariants}>
                 <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: 'white', border: '1px solid', borderColor: 'divider' }}>
                   <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
+                    {/* Campaign selector */}
+                    {campaigns.length > 1 && (
+                      <Autocomplete
+                        size="small"
+                        options={campaigns}
+                        getOptionLabel={(opt) => `${opt.name}${opt.is_current ? ' (Current)' : ''}`}
+                        value={selectedCampaign}
+                        onChange={(_, val) => setSelectedCampaignId(val?.draw_id ?? null)}
+                        isOptionEqualToValue={(a, b) => a.draw_id === b.draw_id}
+                        renderInput={(params) => <TextField {...params} label="Campaign" />}
+                        sx={{ minWidth: 200 }}
+                      />
+                    )}
+
                     {/* Location filter for owners */}
                     {isBusiness && locations.length > 0 && (
                       <Autocomplete
@@ -208,43 +229,45 @@ const CampaignDashboardPage = () => {
                       />
                     )}
 
-                    {/* Date range toggle */}
-                    <ToggleButtonGroup
-                      value={dateRange}
-                      exclusive
-                      onChange={(_e, newRange) => {
-                        if (newRange !== null) setDateRange(newRange as any);
-                      }}
-                      size="small"
-                      sx={{
-                        height: 'fit-content',
-                        ml: 'auto',
-                        '& .MuiToggleButton-root': {
-                          border: '1px solid',
-                          borderColor: 'divider',
-                          color: 'text.secondary',
-                          transition: 'all 0.2s ease',
-                          '&:hover': { bgcolor: 'action.hover' },
-                        },
-                        '& .MuiToggleButton-root.Mui-selected': {
-                          bgcolor: 'primary.main',
-                          color: 'white',
-                          borderColor: 'primary.main',
-                          fontWeight: 600,
-                          '&:hover': { bgcolor: 'primary.dark' },
-                        },
-                      }}
-                    >
-                      <ToggleButton value="today" aria-label="today">
-                        Today
-                      </ToggleButton>
-                      <ToggleButton value="wtd" aria-label="week to date">
-                        WTD
-                      </ToggleButton>
-                      <ToggleButton value="mtd" aria-label="month to date">
-                        MTD
-                      </ToggleButton>
-                    </ToggleButtonGroup>
+                    {/* Date range toggle — only for the current (Open) campaign */}
+                    {isCurrentCampaign && (
+                      <ToggleButtonGroup
+                        value={dateRange}
+                        exclusive
+                        onChange={(_e, newRange) => {
+                          if (newRange !== null) setDateRange(newRange as any);
+                        }}
+                        size="small"
+                        sx={{
+                          height: 'fit-content',
+                          ml: 'auto',
+                          '& .MuiToggleButton-root': {
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            color: 'text.secondary',
+                            transition: 'all 0.2s ease',
+                            '&:hover': { bgcolor: 'action.hover' },
+                          },
+                          '& .MuiToggleButton-root.Mui-selected': {
+                            bgcolor: 'primary.main',
+                            color: 'white',
+                            borderColor: 'primary.main',
+                            fontWeight: 600,
+                            '&:hover': { bgcolor: 'primary.dark' },
+                          },
+                        }}
+                      >
+                        <ToggleButton value="today" aria-label="today">
+                          Today
+                        </ToggleButton>
+                        <ToggleButton value="wtd" aria-label="week to date">
+                          WTD
+                        </ToggleButton>
+                        <ToggleButton value="mtd" aria-label="month to date">
+                          MTD
+                        </ToggleButton>
+                      </ToggleButtonGroup>
+                    )}
                   </Stack>
 
                   {/* KPI Cards */}
@@ -377,8 +400,8 @@ const CampaignDashboardPage = () => {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 0.75,
-                          bgcolor: 'primary.main',
-                          color: 'white',
+                          bgcolor: headerData?.status === 'Open' ? 'primary.main' : 'action.disabledBackground',
+                          color: headerData?.status === 'Open' ? 'white' : 'text.secondary',
                           px: 1.5,
                           py: 0.5,
                           borderRadius: 12,
@@ -391,10 +414,10 @@ const CampaignDashboardPage = () => {
                             width: 8,
                             height: 8,
                             borderRadius: '50%',
-                            bgcolor: 'white',
+                            bgcolor: headerData?.status === 'Open' ? 'white' : 'text.disabled',
                           }}
                         />
-                        Active
+                        {headerData?.status === 'Open' ? 'Active' : 'Ended'}
                       </Box>
                     </Stack>
 
