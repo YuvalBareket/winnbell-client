@@ -101,7 +101,7 @@ const CampaignDashboardPage = () => {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useCampaignEntries(locationIdForQuery, false, campaignIdForQuery);
+  } = useCampaignEntries(locationIdForQuery, campaignIdForQuery);
 
   // Infinite scroll observer
   useEffect(() => {

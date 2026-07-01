@@ -1,5 +1,5 @@
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchCampaigns, fetchCampaignHeader, fetchCampaignKpis, fetchCampaignEntries, approveEntry, type DateRange } from '../api/campaign.api';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { fetchCampaigns, fetchCampaignHeader, fetchCampaignKpis, fetchCampaignEntries, type DateRange } from '../api/campaign.api';
 
 // Query key factory for campaign data
 const campaignQueryKeys = {
@@ -8,8 +8,8 @@ const campaignQueryKeys = {
   header: (locationId?: number, campaignId?: number) => ['campaign', 'header', locationId ?? 'all', campaignId ?? 'current'] as const,
   kpis: (dateRange: DateRange, locationId?: number, campaignId?: number) =>
     ['campaign', 'kpis', dateRange, locationId ?? 'all', campaignId ?? 'current'] as const,
-  entries: (locationId?: number, needsReview?: boolean, campaignId?: number) =>
-    ['campaign', 'entries', locationId ?? 'all', needsReview ?? false, campaignId ?? 'current'] as const,
+  entries: (locationId?: number, campaignId?: number) =>
+    ['campaign', 'entries', locationId ?? 'all', campaignId ?? 'current'] as const,
 };
 
 export const useCampaigns = () => {
@@ -38,13 +38,12 @@ export const useCampaignKpis = (dateRange: DateRange, locationId?: number, campa
   });
 };
 
-export const useCampaignEntries = (locationId?: number, needsReview: boolean = false, campaignId?: number) => {
+export const useCampaignEntries = (locationId?: number, campaignId?: number) => {
   return useInfiniteQuery({
-    queryKey: campaignQueryKeys.entries(locationId, needsReview, campaignId),
+    queryKey: campaignQueryKeys.entries(locationId, campaignId),
     queryFn: ({ pageParam }) =>
       fetchCampaignEntries({
         location_id: locationId,
-        needs_review: needsReview,
         cursor: pageParam,
         limit: 20,
         campaign_id: campaignId,
@@ -52,19 +51,5 @@ export const useCampaignEntries = (locationId?: number, needsReview: boolean = f
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     staleTime: 30_000,
-  });
-};
-
-export const useApproveEntry = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (ticketId: number) => approveEntry(ticketId),
-    onSuccess: () => {
-      // Invalidate all campaign entries queries to refetch with updated status
-      queryClient.invalidateQueries({ queryKey: ['campaign', 'entries'] });
-      // Also invalidate header to update needs_review_count
-      queryClient.invalidateQueries({ queryKey: ['campaign', 'header'] });
-    },
   });
 };

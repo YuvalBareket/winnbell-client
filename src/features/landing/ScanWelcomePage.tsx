@@ -35,7 +35,7 @@ const ScanWelcomePage = () => {
 
   const { data: loc } = useQuery({
     queryKey: ['publicLocation', lid],
-    queryFn: () => api.get<PublicLocation>(`/business/locations/${lid}/profile`).then(r => r.data).catch(() => null),
+    queryFn: () => api.get<PublicLocation>(`/business/participating/locations/${lid}`).then(r => r.data).catch(() => null),
     enabled: !!lid,
     staleTime: 5 * 60_000,
     retry: false,

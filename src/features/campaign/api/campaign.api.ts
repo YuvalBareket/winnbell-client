@@ -10,7 +10,6 @@ export interface CampaignHeaderData {
   entries_used: number;
   entry_cap: number | null;
   cap_reached: boolean;
-  needs_review_count: number;
 }
 
 export interface CampaignListItem {
@@ -37,7 +36,6 @@ export interface CampaignEntry {
   transaction_amount: number | null;
   entry_source: string;
   status: 'active' | 'under_review';
-  reviewable: boolean;
   created_at: string;
 }
 
@@ -73,14 +71,12 @@ export const fetchCampaignKpis = async (
 
 export const fetchCampaignEntries = async (params: {
   location_id?: number;
-  needs_review?: boolean;
   cursor?: string;
   limit?: number;
   campaign_id?: number;
 }): Promise<CampaignEntriesResult> => {
   const queryParams: Record<string, unknown> = {};
   if (params.location_id !== undefined) queryParams.location_id = params.location_id;
-  if (params.needs_review !== undefined) queryParams.needs_review = params.needs_review;
   if (params.cursor !== undefined) queryParams.cursor = params.cursor;
   if (params.limit !== undefined) queryParams.limit = params.limit;
   if (params.campaign_id !== undefined) queryParams.draw_id = params.campaign_id;
@@ -89,8 +85,4 @@ export const fetchCampaignEntries = async (params: {
     params: queryParams,
   });
   return res.data;
-};
-
-export const approveEntry = async (ticketId: number): Promise<void> => {
-  await api.patch(`/business/tickets/${ticketId}/qualify`, { disqualify: false });
 };
