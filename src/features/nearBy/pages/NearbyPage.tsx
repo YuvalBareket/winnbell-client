@@ -28,6 +28,7 @@ import BusinessMap from '../components/BusinessMap';
 import type { RootState } from '../../../store/store';
 import MapBusinessPopup from '../components/MapBusinessPopup';
 import { useNearbyWithZoom } from '../hooks/useNearbyWithZoom';
+import { useBusinessSearch } from '../hooks/useBusinessSearch';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import { useAppSelector } from '../../../store/hook';
@@ -58,9 +59,17 @@ const listItemVariants = {
 
 const NearbyPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
+  const [focusTarget, setFocusTarget] = useState<{ lat: number; lng: number } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Debounce the search box so global search fires at most once per 400ms of typing.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchTerm), 400);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
 
   const user = useAppSelector(selectCurrentUser);
   const initials = getUserInitials(user?.fullName);
@@ -114,13 +123,19 @@ const NearbyPage = () => {
 
   // 2. Pull Location and Fetch Data
   const { userLocation } = useSelector((state: RootState) => state.auth);
-  const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyWithZoom(selectedSector, searchTerm);
+  const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyWithZoom(selectedSector);
 
-  // 3. Find the specific location object for the popup
+  // Global search drives the LIST (finds businesses ANYWHERE, not just the on-screen viewport);
+  // the MAP keeps showing viewport-nearby markers and only moves when a result is tapped.
+  const isSearching = debouncedSearch.trim().length >= 2;
+  const { data: searchResults = [], isLoading: isSearchLoading, isError: isSearchError } = useBusinessSearch(debouncedSearch, isSearching);
+  const filteredLocations = isSearching ? searchResults : locations;
+  const listLoading = isSearching ? isSearchLoading : isLoading;
+  const listError = isSearching ? isSearchError : isError;
+
+  // 3. Find the specific location object for the popup - may come from nearby OR the search results.
   const selectedLocation =
-    locations.find((loc) => loc.location_id === selectedLocationId) || null;
-
-  const filteredLocations = locations;
+    [...locations, ...searchResults].find((loc) => loc.location_id === selectedLocationId) || null;
 
   return (
     <Box
@@ -147,10 +162,11 @@ const NearbyPage = () => {
         }}
       >
         <BusinessMap
-          locations={filteredLocations}
+          locations={locations}
           userLocation={userLocation}
           onBusinessClick={(id) => setSelectedLocationId(id)}
           onViewportChange={onViewportChange}
+          focusLocation={focusTarget}
         />
 
         {/* Floating Search Bar */}
@@ -307,16 +323,16 @@ const NearbyPage = () => {
           }}
         >
           {/* Initial load spinner - only when no data yet */}
-          {isLoading && (
+          {listLoading && (
             <Box display='flex' justifyContent='center' p={4}><CircularProgress /></Box>
           )}
 
-          {isError && !isLoading && (
+          {listError && !listLoading && (
             <Typography color='error' align='center' sx={{ p: 4 }}>Error loading nearby places.</Typography>
           )}
 
           {/* Empty state - no filter results */}
-          {!isLoading && !isError && filteredLocations.length === 0 && (searchTerm.length > 0 || !!selectedSector) && (
+          {!listLoading && !listError && filteredLocations.length === 0 && (searchTerm.length > 0 || !!selectedSector) && (
             <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
               <SearchOff sx={{ fontSize: 56, color: 'text.disabled', mb: 1.5 }} />
               <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
@@ -332,7 +348,7 @@ const NearbyPage = () => {
           )}
 
           {/* Empty state - no nearby partners at all */}
-          {!isLoading && !isError && filteredLocations.length === 0 && searchTerm.length === 0 && !selectedSector && (
+          {!listLoading && !listError && filteredLocations.length === 0 && searchTerm.length === 0 && !selectedSector && (
             <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
               <StorefrontIcon sx={{ fontSize: 56, color: 'text.disabled', mb: 1.5 }} />
               <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
@@ -351,7 +367,13 @@ const NearbyPage = () => {
                 <motion.div key={partner.location_id} custom={index} variants={listItemVariants} initial="hidden" animate="visible">
                   <Paper
                     elevation={0}
-                    onClick={() => setSelectedLocationId(partner.location_id)}
+                    onClick={() => {
+                      setSelectedLocationId(partner.location_id);
+                      // Fly the map to the tapped business (esp. useful for off-screen search hits).
+                      if (partner.latitude && partner.longitude) {
+                        setFocusTarget({ lat: partner.latitude, lng: partner.longitude });
+                      }
+                    }}
                     sx={{
                       p: 1.25,
                       borderRadius: 6,

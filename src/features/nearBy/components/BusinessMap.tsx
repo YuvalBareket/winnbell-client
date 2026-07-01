@@ -54,6 +54,9 @@ type Props = {
   onBusinessClick?: (locationId: number) => void;
   userLocation?: { latitude: number; longitude: number } | null;
   onViewportChange?: (bounds: ViewportBounds) => void;
+  /** When set (and changed), fly the map to this point. Used by search: tapping a result flies
+   *  the map there, which shifts the viewport and lets the normal nearby fetch drop its marker. */
+  focusLocation?: { lat: number; lng: number } | null;
 };
 
 function getViewportBounds(map: google.maps.Map): ViewportBounds | null {
@@ -64,7 +67,7 @@ function getViewportBounds(map: google.maps.Map): ViewportBounds | null {
   return { minLat: sw.lat(), maxLat: ne.lat(), minLng: sw.lng(), maxLng: ne.lng() };
 }
 
-export default function BusinessMap({ locations, onBusinessClick, userLocation, onViewportChange }: Props) {
+export default function BusinessMap({ locations, onBusinessClick, userLocation, onViewportChange, focusLocation }: Props) {
   const mapRef = useRef<google.maps.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const markersByLocRef = useRef<Map<number, google.maps.Marker>>(new Map());
@@ -179,6 +182,15 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
     map.setCenter(pos);
     map.setZoom(14);
   }, [userLocation, mapReady]);
+
+  // Fly to a searched business. panTo animates; the resulting idle fires onViewportChange, so the
+  // normal nearby fetch pulls in that area (and its marker) for the new viewport.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || !focusLocation) return;
+    map.panTo({ lat: Number(focusLocation.lat), lng: Number(focusLocation.lng) });
+    map.setZoom(15);
+  }, [focusLocation, mapReady]);
 
   return <div ref={containerRef} style={{ width: '100%', height: '100%', borderRadius: '8px' }} />;
 }

@@ -131,13 +131,15 @@ export function useNearbyWithZoom(sector?: string | null, search?: string) {
         ...(sectorRef.current ? { sector: sectorRef.current } : {}),
         ...(searchRef.current ? { name: searchRef.current } : {}),
       };
-      const results = await getNearbyBusinesses(params);
+      const results = await getNearbyBusinesses(params, controller.signal);
 
       if (controller.signal.aborted) return;
       cellCacheRef.current.set(cacheKey, { results, ts: Date.now() });
       applyResults(results, snapped);
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') return;
+      // If this controller was aborted, the request was superseded (native abort OR axios
+      // CanceledError) — bail silently. Only surface a real network/server failure.
+      if (controller.signal.aborted) return;
       setIsError(true);
     } finally {
       if (!controller.signal.aborted) setIsFetching(false);

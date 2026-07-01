@@ -49,6 +49,8 @@ export interface ParticipatingLocation {
   location_id: number;
   location_name: string;
   address: string;
+  latitude?: number;
+  longitude?: number;
   business_id: number;
   business_name: string;
   sector: string;
