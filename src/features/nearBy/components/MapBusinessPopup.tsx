@@ -46,7 +46,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
 
   // Skip the public fetch in preview — that endpoint is subscription-gated and 404s for
   // businesses that aren't live yet. Use the detail the business hub already has instead.
-  const { data: fetchedDetail, isLoading: fetchedLoading } = useQuery({
+  const { data: fetchedDetail, isLoading: fetchedLoading, isError: fetchError, refetch } = useQuery({
     queryKey: ['participating', 'location', locationId],
     queryFn: () => getLocationProfileById(locationId!),
     enabled: !preview && !!locationId,
@@ -229,6 +229,20 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
             <Skeleton variant='rounded' width='100%' height={52} sx={{ borderRadius: 1 }} />
           </Box>
         </>
+      )}
+
+      {/* Error state -- the fetch failed and there is no basic info to fall back to (e.g. a winner
+          profile whose business is unavailable). Without this the drawer would render blank. */}
+      {!location && !detailLoading && fetchError && (
+        <Box sx={{ px: 3, py: 6, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+          <InfoOutlined sx={{ fontSize: 40, color: 'text.disabled' }} />
+          <Typography variant='body2' color='text.secondary'>
+            We couldn't load this business. Please try again.
+          </Typography>
+          <Button variant='outlined' size='small' onClick={() => refetch()} sx={{ fontWeight: 700, textTransform: 'none' }}>
+            Try again
+          </Button>
+        </Box>
       )}
 
       {/* Hero, body, and actions -- shows real content when location is available */}
