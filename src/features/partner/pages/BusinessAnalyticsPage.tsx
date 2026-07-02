@@ -710,7 +710,7 @@ const BusinessAnalyticsPage = () => {
                                   {draw.cap !== null ? (
                                     <LinearProgress
                                       variant="determinate"
-                                      value={draw.pct}
+                                      value={Math.min(Math.max(draw.pct, 0), 100)}
                                       sx={{
                                         height: 10,
                                         borderRadius: 5,

@@ -193,19 +193,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       setSelectedLocationCapReached(!!('cap_reached' in preselectedLocation && preselectedLocation.cap_reached));
       return;
     }
-    // Fallback: try to find by ID in nearby/search results
-    if (preselectedBusinessId) {
-      const nearbyMatch = nearbyLocations.find((loc) => loc.id === preselectedBusinessId);
-      if (nearbyMatch) {
-        setSelectedLocation(toParticipating(nearbyMatch));
-        return;
-      }
-      const searchMatch = searchResults.find((loc) => loc.business_id === preselectedBusinessId);
-      if (searchMatch) {
-        setSelectedLocation(searchMatch);
-      }
-    }
-  }, [preselectedLocationData, preselectedLocation, preselectedBusinessId, nearbyLocations, searchResults, selectedLocation]);
+    // No business-id-only fallback: a business id alone can't identify WHICH branch of a
+    // multi-location business the user meant. Every real caller passes the exact preselectedLocation
+    // (or preselectedLocationId) above, so there is nothing to fall back to here.
+  }, [preselectedLocationData, preselectedLocation, selectedLocation]);
 
   // ──────────────────────────────────────────────────
   // Derived state
