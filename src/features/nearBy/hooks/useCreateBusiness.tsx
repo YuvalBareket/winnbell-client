@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
 import type { NearbyLocation } from '../types/nearBy.types';
-import type { RootState } from '../../../store/store';
 import { getNearbyBusinesses } from '../api/nearBy.api';
 import { queryKeys } from '../../../shared/constants/queryKeys';
+import { useAppSelector } from '../../../store/hook';
 
 export const useNearbyBusinesses = () => {
-  const { userLocation } = useSelector((state: RootState) => state.auth);
+  const { userLocation } = useAppSelector((state) => state.auth);
   return useQuery<NearbyLocation[]>({
     queryKey: [...queryKeys.nearby.all, userLocation?.latitude, userLocation?.longitude],
     queryFn: () => {

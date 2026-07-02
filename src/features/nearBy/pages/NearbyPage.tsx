@@ -20,12 +20,10 @@ import {
   SearchOff,
   Storefront as StorefrontIcon,
 } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
 
 // Architecture Imports
 import { useCurrentLocation } from '../hooks/useCurrentLocation';
 import BusinessMap from '../components/BusinessMap';
-import type { RootState } from '../../../store/store';
 import MapBusinessPopup from '../components/MapBusinessPopup';
 import { useNearbyWithZoom } from '../hooks/useNearbyWithZoom';
 import { useBusinessSearch } from '../hooks/useBusinessSearch';
@@ -122,7 +120,7 @@ const NearbyPage = () => {
   const { refreshLocation } = useCurrentLocation();
 
   // 2. Pull Location and Fetch Data
-  const { userLocation } = useSelector((state: RootState) => state.auth);
+  const { userLocation } = useAppSelector((state) => state.auth);
   const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyWithZoom(selectedSector);
 
   // Global search drives the LIST (finds businesses ANYWHERE, not just the on-screen viewport);

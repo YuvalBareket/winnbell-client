@@ -286,19 +286,19 @@ const CampaignDashboardPage = () => {
                     ) : kpiData ? (
                       <>
                         <KpiCard
-                          icon={<CheckCircleOutlineOutlined sx={{ color: '#1976d2', fontSize: 22 }} />}
+                          icon={<CheckCircleOutlineOutlined sx={{ color: 'primary.main', fontSize: 22 }} />}
                           label="Entries"
                           value={kpiData.entries.toLocaleString()}
                           color="rgba(25,118,210,0.12)"
                         />
                         <KpiCard
-                          icon={<TrendingUpOutlined sx={{ color: '#388e3c', fontSize: 22 }} />}
+                          icon={<TrendingUpOutlined sx={{ color: 'success.main', fontSize: 22 }} />}
                           label="Revenue"
                           value={formatCurrency(kpiData.revenue)}
                           color="rgba(56,142,60,0.12)"
                         />
                         <KpiCard
-                          icon={<CampaignOutlined sx={{ color: '#f57c00', fontSize: 22 }} />}
+                          icon={<CampaignOutlined sx={{ color: 'warning.main', fontSize: 22 }} />}
                           label="Customers"
                           value={kpiData.customers.toLocaleString()}
                           color="rgba(245,124,0,0.12)"

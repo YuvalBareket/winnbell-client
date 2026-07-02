@@ -137,7 +137,7 @@ const didAutoActivate = useRef(false);
           setActivatedCode(pending);
           setSuccessDialogOpen(true);
         },
-        onError: (err: any) => {
+        onError: (err) => {
           setIsAutoActivating(false);
           setErrorMessage(err?.response?.data?.message || 'Promotional entry failed.');
           setErrorOpen(true);
@@ -150,7 +150,7 @@ const didAutoActivate = useRef(false);
           setActivatedCode(pending);
           setSuccessDialogOpen(true);
         },
-        onError: (err: any) => {
+        onError: (err) => {
           setIsAutoActivating(false);
           setErrorMessage(err?.response?.data?.message || 'Activation failed.');
           setErrorOpen(true);
@@ -166,7 +166,7 @@ const didAutoActivate = useRef(false);
         setActivatedCode(scannedCode);
         setSuccessDialogOpen(true);
       },
-      onError: (err: any) => {
+      onError: (err) => {
         const msg = err?.response?.data?.message || 'Invalid or already used entry code.';
         setErrorMessage(msg);
         setErrorOpen(true);
@@ -183,7 +183,7 @@ const didAutoActivate = useRef(false);
         setSuccessDialogOpen(true);
         setCode('');
       },
-      onError: (err: any) => {
+      onError: (err) => {
         const msg = err?.response?.data?.message || 'Invalid or already used entry code.';
         setErrorMessage(msg);
         setErrorOpen(true);

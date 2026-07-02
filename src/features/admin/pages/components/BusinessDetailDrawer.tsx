@@ -144,7 +144,7 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
             <Stack direction='row' spacing={2} alignItems='center'>
               <Avatar sx={{ width: 56, height: 56, bgcolor: 'secondary.main', fontSize: 22, fontWeight: 700 }}>
                 {biz.logo_url
-                  ? <Box component='img' src={biz.logo_url} alt={biz.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ? <Box component='img' src={`${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${biz.logo_url}`} alt={biz.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <StorefrontIcon />}
               </Avatar>
               <Box>

@@ -12,8 +12,8 @@ export interface AddressCoords {
 }
 
 export const autoCompleteAddress = async (text: string): Promise<AddressSuggestion[]> => {
-  const q = encodeURIComponent(text.trim());
-  const res = await api.post<AddressSuggestion[]>(`/business/address/?q=${q}`, {});
+  // Conventional POST: the query travels in the JSON body (server also accepts ?q= as fallback).
+  const res = await api.post<AddressSuggestion[]>('/business/address', { q: text.trim() });
   return res.data;
 };
 

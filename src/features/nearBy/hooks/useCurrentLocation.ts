@@ -1,10 +1,10 @@
-import { useDispatch } from 'react-redux';
 import { useEffect, useCallback } from 'react';
 import type { TCoords } from '../../auth/types/auth.types';
 import { setUserLocation } from '../../../store/slices/authSlice';
+import { useAppDispatch } from '../../../store/hook';
 
 export function useCurrentLocation() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const refreshLocation = useCallback(async (): Promise<TCoords | null> => {
     if (!('geolocation' in navigator)) {

@@ -122,7 +122,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       setReceiptImageUrl(null);
       onSuccess?.(data.ticketId);
     },
-    onError: (err: any) => {
+    onError: (err) => {
       const message = err?.response?.data?.message || 'Submission failed. Please try again.';
       if (message === 'A receipt image is required to submit an entry.') {
         setRequiresImage(true);

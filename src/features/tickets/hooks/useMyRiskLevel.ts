@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import { getMyRiskLevel } from '../api/ticketsApi';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 import { MAX_ENTRIES_PER_DRAW } from '../../../shared/constants/entries';
@@ -14,7 +15,7 @@ export const useMyRiskLevel = () => {
   });
 
   // 401 = token refresh in progress, keep showing spinner, not error page
-  const is401 = (error as any)?.response?.status === 401;
+  const is401 = isAxiosError(error) && error.response?.status === 401;
   const isRealError = !!error && !data && !is401;
 
   const dailyCount = data?.dailyCount ?? 0;
