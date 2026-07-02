@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { store } from '../../store/store';
-import { login, logout } from '../../store/slices/authSlice';
+import { logout, removeAccount, updateAccountTokens } from '../../store/slices/authSlice';
 import { supabase } from '../lib/supabase';
 
 export const api = axios.create({
@@ -11,11 +11,31 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-// 1. Request Interceptor — attach current token from Redux
+// Read/delete the Authorization header across axios header shapes (AxiosHeaders instance
+// or plain object) without using `any`.
+type HeaderBag = { get?: (k: string) => unknown; delete?: (k: string) => void; Authorization?: unknown; authorization?: unknown };
+const readAuthHeader = (h: unknown): string => {
+  const bag = h as HeaderBag | undefined;
+  if (!bag) return '';
+  const viaGet = typeof bag.get === 'function' ? bag.get('Authorization') : undefined;
+  return String(viaGet ?? bag.Authorization ?? bag.authorization ?? '');
+};
+const deleteAuthHeader = (h: unknown): void => {
+  const bag = h as HeaderBag | undefined;
+  if (!bag) return;
+  if (typeof bag.delete === 'function') bag.delete('Authorization');
+  delete bag.Authorization;
+  delete bag.authorization;
+};
+
+// 1. Request Interceptor — attach the ACTIVE account's token from Redux, UNLESS the caller
+// explicitly set its own Authorization. /auth/sync must send the SUPABASE access token; with
+// multi-account a user can be signed in while syncing a second account, and overwriting that
+// header with the internal token made every add-account sign-in fail with 401.
 api.interceptors.request.use(
   (config) => {
     const token = store.getState().auth.token;
-    if (token) {
+    if (token && !readAuthHeader(config.headers)) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -37,16 +57,33 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !error.config?._retry) {
       error.config._retry = true;
 
-      const { refreshToken, user } = store.getState().auth;
+      // Only handle 401s from requests that carried the ACTIVE account's internal token.
+      // Anything else — /auth/sync's Supabase token, or a token from an account that was
+      // switched away from / already rotated by a concurrent refresh — must never consume
+      // the active account's refresh token or log anyone out.
+      const sentAuth = readAuthHeader(error.config?.headers);
+      const sentToken = sentAuth.startsWith('Bearer ') ? sentAuth.slice(7) : sentAuth;
+      const entry = store.getState().auth;
+      if (!entry.token || sentToken !== entry.token) {
+        return Promise.reject(error);
+      }
+      // Pin the account this 401 belongs to NOW. The user may switch accounts while the
+      // refresh below is in flight; every follow-up action (retry token, account drop) must
+      // target THIS account, never "whichever account is active by then".
+      const failingId = entry.activeAccountId;
+      const failingUser = entry.user;
 
-      if (refreshToken && user) {
+      if (entry.refreshToken && failingUser) {
         try {
           if (!refreshPromise) {
             const base = (error.config.baseURL || import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+            const refreshTokenToUse = entry.refreshToken;
             refreshPromise = axios
-              .post(`${base}/auth/refresh`, { refreshToken })
+              .post(`${base}/auth/refresh`, { refreshToken: refreshTokenToUse })
               .then(({ data }) => {
-                store.dispatch(login({ user, token: data.token, refreshToken: data.refreshToken }));
+                // updateAccountTokens (NOT login): writes the rotated tokens back to this
+                // account without re-activating it if the user switched away mid-refresh.
+                store.dispatch(updateAccountTokens({ user: failingUser, token: data.token, refreshToken: data.refreshToken }));
               })
               .finally(() => { refreshPromise = null; });
           }
@@ -58,21 +95,46 @@ api.interceptors.response.use(
           // (e.g. the risk-level screen), so for GETs we reject and let the query retry.
           const method = (error.config.method ?? 'get').toLowerCase();
           const isMutation = method !== 'get' && method !== 'head' && method !== 'options';
-          if (isMutation) {
+          // Retry with the refreshed token of the SAME account the request was fired as.
+          // Never let the request interceptor attach the CURRENT active token here — after a
+          // mid-refresh account switch that would re-issue the mutation as the wrong user.
+          const refreshedAcc = (store.getState().auth.accounts ?? []).find((a) => a.user.id === failingId);
+          if (isMutation && refreshedAcc) {
+            deleteAuthHeader(error.config.headers);
+            error.config.headers.Authorization = `Bearer ${refreshedAcc.token}`;
             return api(error.config);
           }
           return Promise.reject(error);
         } catch {
-          // Refresh failed — fall through to logout
+          // Refresh failed — fall through to dropping the account
         }
       }
 
-      // No refresh token or refresh failed — hard logout
-      const wasAuthenticated = store.getState().auth.isAuthenticated;
-      store.dispatch(logout());
-      import('../../main').then(({ queryClient }) => queryClient.clear()).catch(() => {});
-      if (wasAuthenticated) {
-        supabase.auth.signOut().catch(() => {});
+      // Refresh failed or unavailable: drop ONLY the failing account. If another account is
+      // saved on this device, fall back to it (Instagram-style) instead of logging everything
+      // out; only when it was the last account do we perform the full logout.
+      const now = store.getState().auth;
+      const stillSaved = (now.accounts ?? []).some((a) => a.user.id === failingId);
+      if (failingId == null || !stillSaved) {
+        // Already removed by a concurrent handler — nothing left to do.
+        return Promise.reject(error);
+      }
+      const others = now.accounts.filter((a) => a.user.id !== failingId);
+      // Clear cached data only when the failing account is the one on screen.
+      if (now.activeAccountId === failingId) {
+        import('../../main').then(({ queryClient }) => queryClient.clear()).catch(() => {});
+      }
+      if (others.length > 0) {
+        store.dispatch(removeAccount({ id: failingId }));
+        // Keep the Supabase session: it may belong to the remaining account, and the app
+        // runs on internal JWTs anyway (useSupabaseSync's identity check ignores a
+        // mismatched session, so it can never resurrect the dropped account).
+      } else {
+        const wasAuthenticated = now.isAuthenticated;
+        store.dispatch(logout());
+        if (wasAuthenticated) {
+          supabase.auth.signOut().catch(() => {});
+        }
       }
     }
 

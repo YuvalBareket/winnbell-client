@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { selectIsAuthenticated, selectCurrentUser, selectIsBusiness } from '../../store/selectors/authSelectors';
-import { login, logout } from '../../store/slices/authSlice';
+import { login, logout, addAccount } from '../../store/slices/authSlice';
+import { store } from '../../store/store';
 import { syncUserFn } from '../../features/auth/api/auth.api';
 
 export const useSupabaseSync = (retryCount = 0) => {
@@ -40,6 +41,7 @@ export const useSupabaseSync = (retryCount = 0) => {
         if (event === 'SIGNED_OUT') {
           localStorage.removeItem('pendingRole');
           localStorage.removeItem('pendingInviteToken');
+          localStorage.removeItem('pendingAddAccount');
           localStorage.removeItem('install_prompt_dismissed');
           if (isAuthenticatedRef.current) {
             dispatch(logout());
@@ -57,6 +59,10 @@ export const useSupabaseSync = (retryCount = 0) => {
       // OAuth it isn't, so we store pendingRole in localStorage in handleSocialSignUp and read it here.
       const pendingInviteToken = localStorage.getItem('pendingInviteToken');
       const pendingRole = localStorage.getItem('pendingRole');
+      // Set by the "add account" flow (see LoginPage add mode) right before signing in the
+      // SECOND account. When set, we append the new account instead of replacing the current
+      // one, and we must NOT let the "already authenticated" guard below short-circuit.
+      const isAddingAccount = localStorage.getItem('pendingAddAccount') === '1';
       // Referral code captured on the /join landing page (only rewards a fresh registration).
       const pendingReferralCode = localStorage.getItem('pendingReferralCode');
       // Acquisition channel (analytics §4), derived from how the user arrived. Priority:
@@ -76,7 +82,7 @@ export const useSupabaseSync = (retryCount = 0) => {
 
       if (
         isRegionBlocked.current ||
-        (isAuthenticatedRef.current && !needsResyncRef.current && !pendingInviteToken && !pendingRole) ||
+        (isAuthenticatedRef.current && !needsResyncRef.current && !pendingInviteToken && !pendingRole && !isAddingAccount) ||
         syncing.current
       ) return;
 
@@ -101,7 +107,31 @@ export const useSupabaseSync = (retryCount = 0) => {
         localStorage.removeItem('pendingRole');
         localStorage.removeItem('pendingReferralCode');
         localStorage.setItem('wasLoggedIn', '1');
-        dispatch(login({ user: data.user, token: data.token, refreshToken: data.refreshToken ?? null }));
+
+        // Decide add-vs-replace by IDENTITY, not just the flag. The flag alone is fragile for the
+        // add-REGISTER flow (the new account's session only arrives after an email round-trip, during
+        // which the current account's own token refresh could fire). Comparing the just-synced user
+        // to the active account is timing-independent:
+        //  - no active account, or same user as active  -> normal login / token-refresh write-back
+        //  - different user + intentional add            -> append the second account
+        //  - different user + NOT an add (stale session) -> ignore, never clobber the active account
+        const payload = { user: data.user, token: data.token, refreshToken: data.refreshToken ?? null };
+        const authNow = store.getState().auth;
+        const activeId = authNow.activeAccountId;
+        const syncedId = data.user.id;
+
+        if (activeId == null || syncedId === activeId) {
+          dispatch(login(payload));
+        } else if (isAddingAccount) {
+          localStorage.removeItem('pendingAddAccount');
+          import('../../main').then(({ queryClient }) => queryClient.clear()).catch(() => {});
+          dispatch(addAccount(payload));
+        } else {
+          // A Supabase session for a different user than the active account with no add intent
+          // (e.g. a resync firing on reload while the active account differs). Leave the active
+          // account untouched.
+          return;
+        }
 
         if (isFreshLogin) {
           const pendingLocationId = localStorage.getItem('pendingLocationId');
@@ -122,6 +152,19 @@ export const useSupabaseSync = (retryCount = 0) => {
         const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
         const status = axiosErr?.response?.status;
         const message = axiosErr?.response?.data?.message;
+        // Only treat this as a failed ADD when there is actually a signed-in account to
+        // protect. A stale flag on a logged-out fresh login must fall through to the normal
+        // error handling below (region block, deleted account, etc.).
+        if (isAddingAccount && isAuthenticatedRef.current) {
+          // A second-account add failed at the sync step. Keep the CURRENT account fully
+          // intact: never dispatch logout and never call supabase.signOut() here (signOut
+          // would fire SIGNED_OUT and wipe the current account). The half-established
+          // Supabase session is harmless (the app runs on internal JWTs and the reload
+          // guard ignores it). Clear the flag and return to the current account's home.
+          localStorage.removeItem('pendingAddAccount');
+          navigate('/');
+          return;
+        }
         if (message === 'REGION_RESTRICTED') {
           isRegionBlocked.current = true;
           dispatch(logout());
@@ -155,6 +198,9 @@ export const useSupabaseSync = (retryCount = 0) => {
         }
       } finally {
         syncing.current = false;
+        // NOTE: pendingAddAccount is intentionally NOT cleared here. For the add-REGISTER flow it
+        // must survive until the new account's session arrives after the email round-trip. It is
+        // cleared where it is actually consumed (the add branch) or where the add fails.
       }
     });
 

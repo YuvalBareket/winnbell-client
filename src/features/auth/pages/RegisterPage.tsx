@@ -116,6 +116,9 @@ const RegisterPage = () => {
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
   const inviteToken = searchParams.get('token');
+  // "Add account" mode: reached from the account switcher / add-account login while already
+  // signed in. Creates a SECOND account and keeps the current one (see useSupabaseSync).
+  const addMode = searchParams.get('add') === '1';
   const roleLower = role?.toLowerCase();
   const isBusinessOwner = roleLower === 'business' && !inviteToken;
   const isLocationManager = inviteToken !== null;
@@ -152,6 +155,9 @@ const RegisterPage = () => {
     const roleFormatted = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User';
     localStorage.setItem('pendingRole', roleFormatted);
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
+    // Add-account via OAuth: flag BEFORE the redirect so useSupabaseSync appends the new
+    // account (keeps the current one) when the session returns on /sso-callback.
+    if (addMode) localStorage.setItem('pendingAddAccount', '1');
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -161,6 +167,7 @@ const RegisterPage = () => {
     if (oauthError) {
       localStorage.removeItem('pendingRole');
       localStorage.removeItem('pendingInviteToken');
+      localStorage.removeItem('pendingAddAccount');
       setError(oauthError.message || 'Social login failed');
       setGoogleLoading(false);
     }
@@ -186,6 +193,9 @@ const RegisterPage = () => {
       // fires during the call. pendingRole acts as a fallback if JWT metadata is unavailable.
       localStorage.setItem('pendingRole', roleFormatted);
       if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
+      // Add-account: flag it so that when the new account's session arrives (after the user
+      // confirms their email) useSupabaseSync APPENDS it and keeps the current account.
+      if (addMode) localStorage.setItem('pendingAddAccount', '1');
 
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
@@ -201,6 +211,7 @@ const RegisterPage = () => {
       if (signUpError) {
         localStorage.removeItem('pendingRole');
         localStorage.removeItem('pendingInviteToken');
+        localStorage.removeItem('pendingAddAccount');
         setError(signUpError.message || 'Registration failed');
         return;
       }
@@ -210,6 +221,7 @@ const RegisterPage = () => {
       // Navigate to email verification — user must confirm before syncing
       const params = new URLSearchParams({ role: roleFormatted });
       if (inviteToken) params.set('token', inviteToken);
+      if (addMode) params.set('add', '1');
       navigate(`/verify-email?${params.toString()}`);
     } catch {
       setError('Registration failed');
@@ -224,8 +236,10 @@ const RegisterPage = () => {
   //   ? <Handshake sx={{ color: 'white', fontSize: 36 }} />
   //   : <Person sx={{ color: 'white', fontSize: 36 }} />;
 
-  const roleTitle = isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Partner Program' : 'Join Winnbell';
-  const roleSubtitle = isLocationManager
+  const roleTitle = addMode ? 'Add Account' : isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Partner Program' : 'Join Winnbell';
+  const roleSubtitle = addMode
+    ? 'Create a new account to add to this device.'
+    : isLocationManager
     ? 'Complete your profile to manage your branch.'
     : isBusinessOwner
     ? 'Register your brand to start issuing entries.'
@@ -385,7 +399,7 @@ const RegisterPage = () => {
       <Box sx={{ pt: 1, textAlign: 'center' }}>
         <Typography variant='body2' color='text.secondary' fontWeight={600}>
           Already have an account?{' '}
-          <Typography component='span' onClick={() => navigate(inviteToken ? `/login/?token=${inviteToken}` : '/login')}
+          <Typography component='span' onClick={() => navigate(addMode ? '/login?add=1' : inviteToken ? `/login/?token=${inviteToken}` : '/login')}
             sx={{ color: 'primary.main', fontWeight: 800, cursor: 'pointer' }}>
             Sign In
           </Typography>
@@ -396,7 +410,9 @@ const RegisterPage = () => {
 
   // ─── Redirect already-authenticated users ───────────────────────────────────
 
-  if (syncLoaded && isAuth) {
+  // In add-account mode an authenticated user MUST stay to create the second account, so only
+  // redirect away when NOT adding.
+  if (syncLoaded && isAuth && !addMode) {
     const dest = isAdminUser ? '/admin' : (isBusinessUser || isManagerUser) ? '/activity' : '/scan';
     return <Navigate to={dest} replace />;
   }

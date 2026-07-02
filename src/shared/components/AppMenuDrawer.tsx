@@ -9,6 +9,7 @@ import {
   Stack,
   Divider,
   Chip,
+  Collapse,
 } from '@mui/material';
 import TapListItemButton from './TapListItemButton';
 import {
@@ -31,11 +32,12 @@ import {
   PeopleOutlined,
   NotificationsOutlined,
   CardGiftcardOutlined,
+  UnfoldMore,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, Fragment } from 'react';
 import { useAppSelector } from '../../store/hook';
-import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl } from '../../store/selectors/authSelectors';
+import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl, selectAccounts, selectCanAddAccount } from '../../store/selectors/authSelectors';
 import { useLogout } from '../hooks/useLogout';
 import {
   ALPHA_WHITE_15,
@@ -51,6 +53,7 @@ import { getUserInitials, getRoleLabel } from '../utils/string';
 import HowItWorksModal from '../../features/help/components/HowItWorksModal';
 import GetAppOutlinedIcon from '@mui/icons-material/GetAppOutlined';
 import { useInstallPromptTrigger } from '../../features/install/InstallPromptContext';
+import AccountSwitcher from './AccountSwitcher';
 
 interface Props {
   open: boolean;
@@ -73,7 +76,14 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const isAdmin = useAppSelector(selectIsAdmin);
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const businessLogoUrl = useAppSelector(selectBusinessLogoUrl);
+  const accounts = useAppSelector(selectAccounts);
+  const canAddAccount = useAppSelector(selectCanAddAccount);
+  // Available whenever the user can switch (2 accounts) OR add one (under the cap), so a
+  // single-account user can still reach "Add account".
+  const showSwitcher = accounts.length > 1 || canAddAccount;
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
+  // Mobile uses an inline expansion (not a nested Menu, which the Drawer's focus trap blocks).
+  const [switcherExpanded, setSwitcherExpanded] = useState(false);
   const { canInstall, openInstallDialog } = useInstallPromptTrigger();
   const showInstallOption = canInstall;
 
@@ -178,7 +188,25 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
             borderRadius: '50%',
           }} />
 
-          <Stack direction='row' spacing={2} alignItems='center' sx={{ position: 'relative', zIndex: 1 }}>
+          <Stack
+            direction='row'
+            spacing={2}
+            alignItems='center'
+            sx={{
+              position: 'relative',
+              zIndex: 1,
+              cursor: showSwitcher ? 'pointer' : 'default',
+              transition: 'all 0.15s ease',
+              borderRadius: 1.5,
+              px: 0.5,
+              py: 0.5,
+              mx: -0.5,
+              '&:hover': {
+                bgcolor: showSwitcher ? ALPHA_WHITE_15 : 'transparent',
+              },
+            }}
+            onClick={() => showSwitcher && setSwitcherExpanded((v) => !v)}
+          >
             <Avatar
               src={businessLogoUrl ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${businessLogoUrl}` : undefined}
               sx={{
@@ -220,8 +248,28 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                 }}
               />
             </Box>
+            {showSwitcher && (
+              <UnfoldMore
+                sx={{
+                  fontSize: 18,
+                  color: 'white',
+                  flexShrink: 0,
+                  transition: 'transform 0.2s ease',
+                  transform: switcherExpanded ? 'scaleY(-1)' : 'scaleY(1)',
+                }}
+              />
+            )}
           </Stack>
         </Box>
+
+        {/* Inline account switcher (expands under the hero). Its onClose fires on an actual
+            action (switch / remove / add) - close the WHOLE drawer then, not just the section,
+            so the user lands on the new account's page unobstructed. */}
+        <Collapse in={switcherExpanded} timeout={220} unmountOnExit>
+          <Box sx={{ px: 1, pt: 1 }}>
+            <AccountSwitcher variant='inline' onClose={() => { setSwitcherExpanded(false); onClose(); }} />
+          </Box>
+        </Collapse>
 
         {/* Main nav */}
         <Box sx={{ px: 2, pt: { xs: 1.5, sm: 2.5 } }}>

@@ -85,6 +85,9 @@ const LoginPage = () => {
   const inviteToken = searchParams.get('token');
   const sessionError = searchParams.get('error') === 'session';
   const accountDeleted = searchParams.get('deleted') === '1';
+  // "Add account" mode: reached from the account switcher while already signed in. Signs in a
+  // SECOND account and keeps the current one, instead of replacing it. See useSupabaseSync.
+  const addMode = searchParams.get('add') === '1';
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -119,6 +122,9 @@ const LoginPage = () => {
   const handleSocialLogin = async (provider: 'google') => {
     setGoogleLoading(true);
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
+    // Add-account via OAuth: the flag must be in localStorage BEFORE the redirect so
+    // useSupabaseSync appends the new account when the session returns on /sso-callback.
+    if (addMode) localStorage.setItem('pendingAddAccount', '1');
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -127,6 +133,7 @@ const LoginPage = () => {
     });
     if (oauthError) {
       localStorage.removeItem('pendingInviteToken');
+      localStorage.removeItem('pendingAddAccount');
       setError(oauthError.message || 'Social login failed');
       setGoogleLoading(false);
     }
@@ -143,6 +150,9 @@ const LoginPage = () => {
     // user to manager. Setting it after sign-in (the old bug) meant the invite was
     // missed and an existing user signing in via an invite link stayed a regular user.
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
+    // Add-account: flag BEFORE sign-in so useSupabaseSync appends (keeps the current account)
+    // instead of replacing it when the SIGNED_IN event fires.
+    if (addMode) localStorage.setItem('pendingAddAccount', '1');
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
@@ -150,21 +160,25 @@ const LoginPage = () => {
       });
       if (signInError) {
         localStorage.removeItem('pendingInviteToken');
+        localStorage.removeItem('pendingAddAccount');
         setError(signInError.message || 'Invalid email or password');
         setLoading(false);
       } else {
-        if (isAuthenticated) {
+        // In add mode we must let useSupabaseSync run (it performs the addAccount on the
+        // SIGNED_IN event), so do NOT take the already-authenticated shortcut below.
+        if (isAuthenticated && !addMode) {
           // Redux already has a valid session — useSupabaseSync will early-return because
           // nothing changed server-side. Navigate directly using the role we already know.
           const dest = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan';
           navigate(dest, { replace: true });
         }
-        // If not yet authenticated: keep loading=true — useSupabaseSync will call /auth/sync
-        // on the SIGNED_IN event (first-time login) and navigate when done.
+        // If not yet authenticated (or adding an account): keep loading=true — useSupabaseSync
+        // calls /auth/sync on the SIGNED_IN event and navigates when done.
         // Loading resets via the syncError useEffect if sync fails.
       }
     } catch {
       localStorage.removeItem('pendingInviteToken');
+      localStorage.removeItem('pendingAddAccount');
       setError('Invalid email or password');
       setLoading(false);
     }
@@ -187,9 +201,9 @@ const LoginPage = () => {
               <ArrowBackIosNew fontSize='small' />
             </IconButton>
           )}
-          <Typography variant='h4' sx={{ fontWeight: 700 }}>Welcome Back</Typography>
+          <Typography variant='h4' sx={{ fontWeight: 700 }}>{addMode ? 'Add Account' : 'Welcome Back'}</Typography>
         </Stack>
-        <Typography variant='body1' color='text.secondary'>Sign in to check your entries</Typography>
+        <Typography variant='body1' color='text.secondary'>{addMode ? 'Sign in to the account you want to add' : 'Sign in to check your entries'}</Typography>
       </Box>
 
       {sessionError && (
@@ -324,7 +338,7 @@ const LoginPage = () => {
       <Box sx={{ mt: 'auto', pt: 2, textAlign: 'center' }}>
         <Typography variant='body2' color='text.secondary' fontWeight={500}>
           Don't have an account?{' '}
-          <Typography component='span' onClick={() => navigate(inviteToken ? `/register/?token=${inviteToken}` : '/register')}
+          <Typography component='span' onClick={() => navigate(addMode ? '/register?add=1' : inviteToken ? `/register/?token=${inviteToken}` : '/register')}
             sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
             Create new account
           </Typography>
@@ -335,7 +349,9 @@ const LoginPage = () => {
 
   // ─── Redirect already-authenticated users ───────────────────────────────────
 
-  if (isLoaded && isAuthenticated) {
+  // In add-account mode an authenticated user MUST stay on this page to sign in the second
+  // account, so only redirect away when NOT adding.
+  if (isLoaded && isAuthenticated && !addMode) {
     const dest = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan';
     return <Navigate to={dest} replace />;
   }

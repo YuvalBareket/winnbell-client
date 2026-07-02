@@ -2,10 +2,11 @@ import {
   Box, Typography, Avatar, List, ListItemButton,
   ListItemIcon, ListItemText, Stack, Divider, Chip,
 } from '@mui/material';
-import { Logout } from '@mui/icons-material';
+import { Logout, UnfoldMore } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 import { useAppSelector } from '../../store/hook';
-import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl } from '../../store/selectors/authSelectors';
+import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl, selectAccounts, selectCanAddAccount } from '../../store/selectors/authSelectors';
 import { useLogout } from '../hooks/useLogout';
 import {
   userNavItems, managerNavItems, adminNavItems, legalNavItems, businessLegalNavItems, type NavItem,
@@ -20,6 +21,7 @@ import {
   TEXT_TERTIARY,
 } from '../colors';
 import { getUserInitials, getRoleLabel, getRoleColor } from '../utils/string';
+import AccountSwitcher from './AccountSwitcher';
 
 const AppSidebar = () => {
   const navigate = useNavigate();
@@ -31,9 +33,16 @@ const AppSidebar = () => {
   const isAdmin = useAppSelector(selectIsAdmin);
   const businessIsActive = useAppSelector(selectBusinessIsActive);
   const businessLogoUrl = useAppSelector(selectBusinessLogoUrl);
+  const accounts = useAppSelector(selectAccounts);
+  const canAddAccount = useAppSelector(selectCanAddAccount);
   const initials = getUserInitials(user?.fullName);
   const roleLabel = getRoleLabel(isAdmin, isBusiness, isManager);
   const roleColor = getRoleColor(isAdmin, isBusiness, isManager);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const switcherOpen = Boolean(anchorEl);
+  // The switcher is useful whenever the user can switch (2 accounts) OR add one (under the cap).
+  // With a single account that means it is always available so "Add account" is reachable.
+  const showSwitcher = accounts.length > 1 || canAddAccount;
 
   const businessNavItems: NavItem[] = [
     { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
@@ -69,8 +78,9 @@ const AppSidebar = () => {
       
       </Stack>
 
-      {/* User identity card */}
+      {/* User identity card - opens the account switcher (switch or add another account) */}
       <Box
+        onClick={(e: React.MouseEvent<HTMLElement>) => showSwitcher && setAnchorEl(e.currentTarget)}
         sx={{
           mx: 2, mb: 0.5, px: 1.5, py: 0.75, '@media (max-height: 700px)': { py: 0.8, mb: 0.6 },
           bgcolor: ALPHA_PRIMARY_04,
@@ -78,6 +88,7 @@ const AppSidebar = () => {
           border: `1px solid ${ALPHA_PRIMARY_06}`,
           display: 'flex', alignItems: 'center', gap: 1.5,
           transition: 'all 0.2s ease',
+          cursor: showSwitcher ? 'pointer' : 'default',
           '&:hover': {
             bgcolor: ALPHA_PRIMARY_06,
           },
@@ -117,6 +128,15 @@ const AppSidebar = () => {
             borderRadius: '6px',
           }}
         />
+        {showSwitcher && (
+          <UnfoldMore
+            sx={{
+              fontSize: 16, color: TEXT_SECONDARY, flexShrink: 0,
+              transition: 'transform 0.2s ease',
+              transform: switcherOpen ? 'scaleY(-1)' : 'scaleY(1)',
+            }}
+          />
+        )}
       </Box>
 
       <Divider sx={{ mx: 2, mb: 0.5 }} />
@@ -239,6 +259,13 @@ const AppSidebar = () => {
       <Typography variant='caption' color={TEXT_TERTIARY} sx={{ px: 3, pb: 1.5, display: 'block', fontSize: '0.68rem', '@media (max-height: 700px)': { pb: 0.75 } }}>
         Winnbell v1.0 · {new Date().getFullYear()}
       </Typography>
+
+      {/* Account switcher menu */}
+      <AccountSwitcher
+        anchorEl={anchorEl}
+        open={switcherOpen}
+        onClose={() => setAnchorEl(null)}
+      />
     </Box>
   );
 };
