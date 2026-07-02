@@ -42,15 +42,15 @@ const CampaignSwiperCard = ({ draw }: CampaignSwiperCardProps) => {
         position: 'relative',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         willChange: 'transform',
-        // Closed card: blue top stripe accent
+        // Closed card: blue left stripe accent
         ...(!isOpen && {
           '&::before': {
             content: '""',
             position: 'absolute',
             top: 0,
             left: 0,
-            right: 0,
-            height: '4px',
+            bottom: 0,
+            width: '4px',
             background: PRIMARY_MAIN,
             pointerEvents: 'none',
           },

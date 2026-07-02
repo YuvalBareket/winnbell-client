@@ -149,25 +149,27 @@ const DrawHistoryPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Stack spacing={3}>
-            <Box>
-              <Skeleton
-                variant='rounded'
-                height={280}
-                sx={{ borderRadius: 2, mb: 3 }}
-              />
-            </Box>
-            <Box>
-              <Skeleton variant='text' width='200px' height={32} sx={{ mb: 2 }} />
-              {[1, 2].map(i => (
+            <Stack spacing={{ xs: 3, md: 10.75 }}>
+              {/* Deck skeleton: the centered featured card */}
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Skeleton
-                  key={i}
                   variant='rounded'
-                  height={200}
-                  sx={{ borderRadius: 2, mb: 2.5 }}
+                  sx={{
+                    width: { xs: '100%', md: 300 },
+                    maxWidth: 340,
+                    height: { xs: 150, md: 200 },
+                    borderRadius: 3,
+                  }}
                 />
-              ))}
-            </Box>
+              </Box>
+              {/* Detail skeleton: two stat cards, then the terms block */}
+              <Stack spacing={1.5} sx={{ px: 2 }}>
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5}>
+                  <Skeleton variant='rounded' sx={{ flex: 1, height: 72, borderRadius: 2 }} />
+                  <Skeleton variant='rounded' sx={{ flex: 1, height: 72, borderRadius: 2 }} />
+                </Stack>
+                <Skeleton variant='rounded' sx={{ height: 88, borderRadius: 2 }} />
+              </Stack>
             </Stack>
           </motion.div>
         )}
@@ -225,7 +227,9 @@ const DrawHistoryPage = () => {
                     height: { xs: `${cardHeight}px`, md: '100%' },
                     opacity: 0,
                     pointerEvents: 'none',
-                    transitionProperty: 'transform, opacity',
+                    // Only transition transform, not opacity: on a fast swipe a fading card would
+                    // linger and pile up behind the deck. Snapping opacity keeps max 3 cards visible.
+                    transitionProperty: 'transform',
                   },
                   '& .swiper-slide-active, & .swiper-slide-next, & .swiper-slide-prev': {
                     opacity: 1,
