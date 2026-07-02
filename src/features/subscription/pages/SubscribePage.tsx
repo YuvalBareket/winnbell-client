@@ -9,6 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../../shared/api/client';
+import { isStripeCheckoutUrl } from '../../../shared/utils/url';
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
 import {
@@ -112,6 +113,7 @@ const SubscribePage = () => {
       const { data } = await api.post<{ url: string }>('/business/subscription/checkout', {
         entries_per_location: selectedTier,
       });
+      if (!isStripeCheckoutUrl(data.url)) throw new Error('Invalid checkout URL');
       window.location.href = data.url;
     } catch (err: any) {
       const msg = err.response?.data?.error ?? '';
@@ -131,6 +133,7 @@ const SubscribePage = () => {
     setError('');
     try {
       const { data } = await api.post<{ url: string }>('/business/subscription/checkout', { founding: true });
+      if (!isStripeCheckoutUrl(data.url)) throw new Error('Invalid checkout URL');
       window.location.href = data.url;
     } catch (err: any) {
       const msg = err.response?.data?.error ?? '';

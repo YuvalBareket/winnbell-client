@@ -16,6 +16,7 @@ import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 import { MAX_ENTRIES_PER_RECEIPT } from '../../../shared/constants/entries';
 import { formatDistanceMiles } from '../../../shared/utils/distance';
+import { safeHttpUrl } from '../../../shared/utils/url';
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -61,6 +62,10 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
   // the list endpoint does), so normalize for display.
   const displayName = detail?.business_name || detail?.location_name || basicInfo?.name || '';
   const businessId = detail?.business_id ?? basicInfo?.id;
+
+  // Never trust the business-supplied website field: only render it as a link if it is a real
+  // http(s) URL (blocks javascript:/data: URIs that would run in a customer's browser).
+  const safeWebsite = safeHttpUrl(detail?.website_url);
 
   // Only hide the submit action when the server explicitly says the business is not currently
   // participating (e.g. a past winner's profile). undefined (hub preview / basicInfo-only) keeps
@@ -393,8 +398,9 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                   </Box>
                 )}
 
-                {/* Website */}
-                {detail?.website_url && (
+                {/* Website - only rendered as a link when it is a valid http(s) URL, so a business
+                    can never inject a javascript: URI that would execute in a customer's browser. */}
+                {safeWebsite && (
                   <Box mb={2}>
                     <Stack direction='row' spacing={1} alignItems='center'>
                       <Box sx={{ height: 18, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
@@ -402,13 +408,13 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                       </Box>
                       <Typography
                         component='a'
-                        href={detail.website_url}
+                        href={safeWebsite}
                         target='_blank'
                         rel='noopener noreferrer'
                         variant='caption'
                         sx={{ color: PRIMARY_MAIN, fontWeight: 700, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                       >
-                        {detail.website_url.replace(/^https?:\/\//, '')}
+                        {safeWebsite.replace(/^https?:\/\//, '')}
                       </Typography>
                     </Stack>
                   </Box>
