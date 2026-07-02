@@ -284,7 +284,7 @@ const DrawHistoryPage = () => {
                   transition={{ duration: 0.4, ease: 'easeOut' }}
                   exit={{ opacity: 0, y: -16 }}
                 >
-                  <Stack spacing={1.5} sx={{ pb: 1.5, pt: 0.5, px: 2 }}>
+                  <Stack spacing={1.5} sx={{ pb: 1.5, pt: 0.5, px: { xs: 0, md: 2 }, mx: { xs: -1, md: 0 } }}>
                     <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems="stretch">
                     {/* Winner Block */}
                     {isClosed && hasWinner && (
@@ -494,7 +494,7 @@ const DrawHistoryPage = () => {
                               display: 'block',
                             }}
                           >
-                            This business participates in campaigns operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Alternative free entry method available on the platform. 18+. Void where prohibited.
+                            Campaign operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Free entry method available on the platform. 18+. Void where prohibited.
                           </Typography>
                           <Link
                             href={`/rules/${selectedDraw.id}`}
