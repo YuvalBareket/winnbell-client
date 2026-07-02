@@ -83,6 +83,9 @@ const AppRoutes = () => {
   const isAdmin = useAppSelector(selectIsAdmin);
   const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
 
+  // Where to send a user who hits a route their role can't access (their own home).
+  const homePath = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/campaign' : '/scan';
+
   // Syncs an active Supabase session into Redux (handles SSO callbacks)
   const [retryCount, setRetryCount] = useState(0);
   const { syncError, isLoaded, isSignedIn } = useSupabaseSync(retryCount);
@@ -165,13 +168,13 @@ const AppRoutes = () => {
               <Route path='/campaign' element={isBusinessAdmin || isManager ? <CampaignDashboardPage /> : <Navigate to='/tickets' replace />} />
               <Route path='/tickets' element={<MyTicketsPage />} />
               <Route path='/draws/history' element={<DrawHistoryPage />} />
-              <Route path='/stats' element={<BusinessAnalyticsPage />} />
-              <Route path='/subscribe' element={<SubscribePage />} />
-              <Route path='/subscription/manage' element={<SubscriptionManagementPage />} />
+              <Route path='/stats' element={isBusinessAdmin || isManager ? <BusinessAnalyticsPage /> : <Navigate to={homePath} replace />} />
+              <Route path='/subscribe' element={isBusinessAdmin ? <SubscribePage /> : <Navigate to={homePath} replace />} />
+              <Route path='/subscription/manage' element={isBusinessAdmin ? <SubscriptionManagementPage /> : <Navigate to={homePath} replace />} />
               <Route path='/subscription/success' element={<SubscriptionSuccessPage />} />
               <Route path='/settings' element={<SettingsPage />} />
               {isUser && <Route path='/invite' element={<InviteFriendsPage />} />}
-              <Route path='/marketing' element={<MarketingPage />} />
+              <Route path='/marketing' element={isBusinessAdmin || isManager ? <MarketingPage /> : <Navigate to={homePath} replace />} />
               {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}
             </>
           )}
