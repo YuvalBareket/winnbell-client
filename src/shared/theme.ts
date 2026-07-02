@@ -49,6 +49,10 @@ export const theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          // Reserve the scrollbar track so transient overflow (animations, card swipes) never shifts the layout
+          scrollbarGutter: 'stable',
+        },
         body: {
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',

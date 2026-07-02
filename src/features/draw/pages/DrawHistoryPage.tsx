@@ -1,33 +1,80 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Box, Container, Typography, Paper, Stack, Skeleton,
+  Box, Container, Typography, Paper, Stack, Skeleton, useTheme, useMediaQuery, Link,
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { EffectCoverflow } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/effect-coverflow';
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
-import { EmojiEvents, EmojiEventsOutlined } from '@mui/icons-material';
+import {
+  EmojiEvents, EmojiEventsOutlined, ConfirmationNumberOutlined, ArticleOutlined, HourglassEmptyOutlined,
+} from '@mui/icons-material';
 import EmptyState from '../../../shared/components/EmptyState';
 import { useGetDrawHistory } from '../hooks/useGetDraws';
 import {
-  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, TEXT_HEADING,
-  TEXT_SECONDARY, BORDER_LIGHT, MOBILE_CONTENT_HEIGHT,
+  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
+  TEXT_SECONDARY, MOBILE_CONTENT_HEIGHT_NO_HEADER, BG_SURFACE, PRIMARY_MAIN, ACCENT_GOLD, ACCENT_GOLD_DARK, SHADOW_CARD, SHADOW_CARD_HOVER, SHADOW_FLOAT, ALPHA_PRIMARY_10, BORDER_SUBTLE,
+  SUCCESS_GREEN, ALPHA_SUCCESS_04, ALPHA_SUCCESS_08, ALPHA_SUCCESS_12, ALPHA_SUCCESS_25,
+  ALPHA_AMBER_04, ALPHA_AMBER_08, ALPHA_AMBER_12, ALPHA_AMBER_25,
 } from '../../../shared/colors';
-import DrawHistoryCard from '../components/DrawHistoryCard';
+import CampaignSwiperCard from '../components/CampaignSwiperCard';
+import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
+import type { IDrawResult } from '../types';
 
 const DrawHistoryPage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedDrawIndex, setSelectedDrawIndex] = useState(0);
+  const [profileLocationId, setProfileLocationId] = useState<number | null>(null);
   const { data: history, isLoading, isError } = useGetDrawHistory();
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+
+  // Measure the deck area so card size and spread scale with the screen instead of fixed px
+  const [deckEl, setDeckEl] = useState<HTMLDivElement | null>(null);
+  const [deckSize, setDeckSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (!deckEl) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const width = Math.round(entry.contentRect.width);
+      const height = Math.round(entry.contentRect.height);
+      setDeckSize(prev => (prev.width === width && prev.height === height ? prev : { width, height }));
+    });
+    ro.observe(deckEl);
+    return () => ro.disconnect();
+  }, [deckEl]);
+
+  // Ratios from the approved design: mobile card is ~36% of the deck height, neighbors split the rest;
+  // desktop cluster spans ~80% of the deck width around a fixed-width card
+  const CARD_WIDTH_MD = 300;
+  const cardHeight = Math.max(120, Math.round(deckSize.height * 0.36));
+  const peekY = Math.round((deckSize.height - cardHeight) / 2);
+  const peekX = Math.max(40, Math.round((deckSize.width * 0.8 - CARD_WIDTH_MD) / 2));
+  const stretch = isDesktop ? CARD_WIDTH_MD - peekX : cardHeight - peekY;
 
   // Separate active and closed campaigns
   const activeCampaigns = history?.filter(d => d.status?.toLowerCase() === 'open') ?? [];
   const closedCampaigns = history?.filter(d => d.status?.toLowerCase() === 'closed') ?? [];
 
+  // Combine: active first, then closed
+  const allCampaigns: IDrawResult[] = [...activeCampaigns, ...closedCampaigns];
+  const selectedDraw = allCampaigns[selectedDrawIndex] || null;
+
+  // Helper for winner block (reused from DrawHistoryCard)
+  const winnerFirstName = selectedDraw?.winner_name ? selectedDraw.winner_name.split(' ')[0] : '';
+  const hasWinner = !!selectedDraw?.winner_name;
+  const isClosed = selectedDraw?.status?.toLowerCase() === 'closed';
+
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 }, zoom: { xs: 0.9, md: 1 } }}>
+    // xs: AppHeader renders inside this box, so only the 76px bottom nav is external; / 0.9 cancels the xs zoom so the fixed page fills the viewport exactly
+    <Box sx={{  overflowX: 'hidden', display: 'flex', flexDirection: 'column', zoom: { xs: 0.9, md: 1 } }}>
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Hero Header */}
-      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 6, color: 'white' }}>
+      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 4, color: 'white', flexShrink: 0, borderRadius: '0 0 32px 32px' }}>
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
         <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
           <Stack direction='row' alignItems='center' spacing={2}>
@@ -69,7 +116,7 @@ const DrawHistoryPage = () => {
         </Container>
       </Box>
 
-      <Container maxWidth='lg' sx={{ mt: 4 }}>
+      <Container maxWidth='lg' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: { xs: 1.5, md: 4.75 }, pb: 1.5, px: 3 }}>
         {/* Error state */}
         {isError && (
           <motion.div
@@ -150,94 +197,339 @@ const DrawHistoryPage = () => {
           </motion.div>
         )}
 
-        {/* Active campaign section */}
-        {!isLoading && history && history.length > 0 && activeCampaigns.length > 0 && (
+        {/* Campaigns Deck and Detail Section */}
+        {!isLoading && history && history.length > 0 && allCampaigns.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Box sx={{ mb: 5 }}>
-            <Typography
-              variant='subtitle1'
-              fontWeight={800}
-              color={TEXT_HEADING}
-              sx={{
-                mb: 2.5,
-                fontSize: '0.95rem',
-                letterSpacing: '0.5px',
-                textTransform: 'uppercase',
-                color: TEXT_SECONDARY,
-              }}
-            >
-              Current Campaign
-            </Typography>
-            <Stack spacing={2.5}>
-              {activeCampaigns.map(draw => (
-                <DrawHistoryCard key={draw.id} draw={draw} />
-              ))}
-            </Stack>
-            </Box>
-          </motion.div>
-        )}
-
-        {/* Past campaigns section */}
-        {!isLoading && history && closedCampaigns.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                mb: 2.5,
-                pb: 2.5,
-                borderBottom: `1px solid ${BORDER_LIGHT}`,
-              }}
-            >
-              <Typography
-                variant='subtitle1'
-                fontWeight={800}
-                color={TEXT_HEADING}
-                sx={{
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                  color: TEXT_SECONDARY,
-                }}
-              >
-                Past Campaigns
-              </Typography>
+            <Stack spacing={{ xs: 3, md: 10.75 }}>
+              {/* TOP SECTION: Swiper Deck */}
               <Box
+                ref={setDeckEl}
                 sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 24,
-                  height: 24,
-                  borderRadius: '50%',
-                  bgcolor: 'rgba(0,0,0,0.04)',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  color: TEXT_SECONDARY,
+                  flexShrink: 0,
+                  // xs: 60% of the visual content area, derived from the viewport (not parents) so the
+                  // measured card sizing can't feed back into the deck height; 180px ~= hero + page padding
+                  height: { xs: `calc((${MOBILE_CONTENT_HEIGHT_NO_HEADER} / 0.9 - 180px) * 0.6)`, md: '200px' },
+                  overflow: 'visible',
+                  '& .swiper': {
+                    width: '100%',
+                    height: '100%',
+                    mx: 'auto',
+                    overflow: 'visible',
+                  },
+                  '& .swiper-slide': {
+                    width: { xs: '100%', md: `${CARD_WIDTH_MD}px` },
+                    height: { xs: `${cardHeight}px`, md: '100%' },
+                    opacity: 0,
+                    pointerEvents: 'none',
+                    transitionProperty: 'transform, opacity',
+                  },
+                  '& .swiper-slide-active, & .swiper-slide-next, & .swiper-slide-prev': {
+                    opacity: 1,
+                    pointerEvents: 'auto',
+                  },
+                  '& .swiper-slide-active > div': {
+                    boxShadow: SHADOW_FLOAT,
+                  },
+                  '& .swiper-slide-next > div, & .swiper-slide-prev > div': {
+                    boxShadow: SHADOW_CARD,
+                  },
                 }}
               >
-                {closedCampaigns.length}
+                {deckSize.height > 0 && (
+                <Swiper
+                  key={`${isDesktop ? 'horizontal' : 'vertical'}-${Math.round(stretch / 20)}`}
+                  effect="coverflow"
+                  coverflowEffect={{
+                    rotate: 0,
+                    stretch,
+                    depth: 160,
+                    modifier: 1,
+                    slideShadows: false,
+                  }}
+                  grabCursor
+                  modules={[EffectCoverflow]}
+                  direction={isDesktop ? 'horizontal' : 'vertical'}
+                  centeredSlides
+                  slidesPerView="auto"
+                  loop={allCampaigns.length >= 3}
+                  speed={420}
+                  slideToClickedSlide
+                  onSlideChange={(swiper) => setSelectedDrawIndex(swiper.realIndex)}
+                >
+                  {allCampaigns.map((draw) => (
+                    <SwiperSlide key={draw.id}>
+                      <CampaignSwiperCard draw={draw} />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+                )}
               </Box>
-            </Box>
-            <Stack spacing={2.5}>
-              {closedCampaigns.map(draw => (
-                <DrawHistoryCard key={draw.id} draw={draw} />
-              ))}
+
+              {/* BOTTOM SECTION: Detail for Selected Campaign */}
+              {selectedDraw && (
+                <motion.div
+                  key={selectedDraw.id}
+                  // animate from above: downward-translated content extends the document's scrollable
+                  // height and flashes the scrollbar on every swipe; upward overflow does not
+                  initial={{ opacity: 0, y: -12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                  exit={{ opacity: 0, y: -16 }}
+                >
+                  <Stack spacing={1.5} sx={{ pb: 1.5, pt: 0.5, px: 2 }}>
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems="stretch">
+                    {/* Winner Block */}
+                    {isClosed && hasWinner && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.05 }}
+                        style={{ flex: 1, minWidth: 0 }}
+                      >
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            p: 1.5,
+                            height: '100%',
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, ${ALPHA_SUCCESS_08} 0%, ${ALPHA_SUCCESS_04} 100%)`,
+                            border: `1px solid ${ALPHA_SUCCESS_25}`,
+                            boxShadow: SHADOW_CARD,
+                            transition: 'all 0.3s ease-in-out',
+                          }}
+                        >
+                          <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 36,
+                                height: 36,
+                                borderRadius: '10px',
+                                bgcolor: ALPHA_SUCCESS_12,
+                                flexShrink: 0,
+                              }}
+                            >
+                              <EmojiEventsOutlined
+                                sx={{
+                                  fontSize: 20,
+                                  color: SUCCESS_GREEN,
+                                }}
+                              />
+                            </Box>
+                            <Box flex={1}>
+                              <Typography variant="body2" fontWeight={700} color="text.primary" sx={{ mb: 0.5, fontSize: '0.85rem' }}>
+                                {winnerFirstName} won
+                              </Typography>
+                              <Typography variant="caption" color={TEXT_SECONDARY} sx={{ lineHeight: 1.5, fontSize: '0.75rem', display: 'block' }}>
+                                {selectedDraw.winner_business_name ? (
+                                  <>
+                                    Selected with{' '}
+                                    {selectedDraw.winner_location_id ? (
+                                      <Link
+                                        component="button"
+                                        type="button"
+                                        onClick={() => setProfileLocationId(selectedDraw.winner_location_id ?? null)}
+                                        underline="hover"
+                                        sx={{ fontWeight: 700, color: PRIMARY_MAIN, verticalAlign: 'baseline' }}
+                                      >
+                                        {selectedDraw.winner_business_name}
+                                      </Link>
+                                    ) : (
+                                      selectedDraw.winner_business_name
+                                    )}{' '}
+                                    receipt
+                                  </>
+                                ) : (
+                                  'Selected with free weekly entry'
+                                )}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Paper>
+                      </motion.div>
+                    )}
+
+                    {/* Verification in Progress */}
+                    {isClosed && !hasWinner && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.05 }}
+                        style={{ flex: 1, minWidth: 0 }}
+                      >
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            p: 1.5,
+                            height: '100%',
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, ${ALPHA_AMBER_08} 0%, ${ALPHA_AMBER_04} 100%)`,
+                            border: `1px solid ${ALPHA_AMBER_25}`,
+                            boxShadow: SHADOW_CARD,
+                            transition: 'all 0.3s ease-in-out',
+                          }}
+                        >
+                          <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 36,
+                                height: 36,
+                                borderRadius: '10px',
+                                bgcolor: ALPHA_AMBER_12,
+                                flexShrink: 0,
+                              }}
+                            >
+                              <HourglassEmptyOutlined
+                                sx={{
+                                  fontSize: 20,
+                                  color: ACCENT_GOLD,
+                                }}
+                              />
+                            </Box>
+                            <Box flex={1}>
+                              <Typography variant="body2" fontWeight={700} color={ACCENT_GOLD_DARK} sx={{ mb: 0.5, fontSize: '0.85rem' }}>
+                                Verification in progress
+                              </Typography>
+                              <Typography variant="caption" color={TEXT_SECONDARY} sx={{ lineHeight: 1.5, fontSize: '0.75rem', display: 'block' }}>
+                                A potential winner has been selected and is undergoing eligibility and fraud verification. We will announce the final winner soon.
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Paper>
+                      </motion.div>
+                    )}
+
+                    {/* Current Entries */}
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.1 }}
+                      style={{ flex: 1, minWidth: 0 }}
+                    >
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 1.5,
+                          height: '100%',
+                          borderRadius: 2,
+                          bgcolor: BG_SURFACE,
+                          border: `1px solid ${BORDER_SUBTLE}`,
+                          boxShadow: SHADOW_CARD,
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          '&:hover': {
+                            boxShadow: SHADOW_CARD_HOVER,
+                          },
+                        }}
+                      >
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 36,
+                              height: 36,
+                              borderRadius: '10px',
+                              bgcolor: ALPHA_PRIMARY_10,
+                              flexShrink: 0,
+                            }}
+                          >
+                            <ConfirmationNumberOutlined
+                              sx={{
+                                fontSize: 18,
+                                color: PRIMARY_MAIN,
+                              }}
+                            />
+                          </Box>
+                          <Box flex={1}>
+                            <Typography variant="caption" color={TEXT_SECONDARY} display="block" sx={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.4px', mb: 0.25 }}>
+                              Total Entries
+                            </Typography>
+                            <Typography variant="body1" fontWeight={700} color="text.primary" sx={{ fontSize: '1.1rem' }}>
+                              {selectedDraw.entry_count?.toLocaleString() || '0'}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </Paper>
+                    </motion.div>
+                    </Stack>
+
+                    {/* Terms and Rules */}
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.15 }}
+                    >
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: BG_SURFACE,
+                          border: `1px solid ${BORDER_SUBTLE}`,
+                          boxShadow: SHADOW_CARD,
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }}
+                      >
+                        <Stack spacing={1}>
+                          <Typography
+                            variant="caption"
+                            color={TEXT_SECONDARY}
+                            sx={{
+                              lineHeight: 1.6,
+                              fontSize: '0.7rem',
+                              display: 'block',
+                            }}
+                          >
+                            This business participates in campaigns operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Alternative free entry method available on the platform. 18+. Void where prohibited.
+                          </Typography>
+                          <Link
+                            href={`/rules/${selectedDraw.id}`}
+                            underline="none"
+                            sx={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              color: PRIMARY_MAIN,
+                              transition: 'all 0.2s ease-in-out',
+                              '&:hover': {
+                                gap: 0.75,
+                              },
+                            }}
+                          >
+                            <ArticleOutlined sx={{ fontSize: 16 }} />
+                            Official Rules
+                          </Link>
+                        </Stack>
+                      </Paper>
+                    </motion.div>
+                  </Stack>
+                </motion.div>
+              )}
             </Stack>
-            </Box>
           </motion.div>
         )}
       </Container>
+
+      {/* Business Location Popup */}
+      {profileLocationId != null && (
+        <MapBusinessPopup
+          locationId={profileLocationId}
+          basicInfo={null}
+          onClose={() => setProfileLocationId(null)}
+        />
+      )}
     </Box>
   );
 };

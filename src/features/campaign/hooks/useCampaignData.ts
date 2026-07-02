@@ -1,5 +1,6 @@
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { fetchCampaigns, fetchCampaignHeader, fetchCampaignKpis, fetchCampaignEntries, type DateRange } from '../api/campaign.api';
+import { getDrawResult } from '../../draw/api/draw.api';
 
 // Query key factory for campaign data
 const campaignQueryKeys = {
@@ -51,5 +52,14 @@ export const useCampaignEntries = (locationId?: number, campaignId?: number) => 
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     staleTime: 30_000,
+  });
+};
+
+export const useDrawResult = (drawId: number, enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ['draw', 'result', drawId],
+    queryFn: () => getDrawResult(drawId),
+    staleTime: 60_000,
+    enabled,
   });
 };

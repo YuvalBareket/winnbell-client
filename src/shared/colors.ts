@@ -58,6 +58,7 @@ export const TABLE_HEADER_BG       = '#f5f5f5';
 // ── Special accents ──────────────────────────
 export const GOLD_TROPHY    = '#fbbf24';  // trophy icon
 export const AMBER_HOURGLASS= '#f59e0b';  // hourglass icon
+export const SUCCESS_GREEN  = '#10b981';  // winner / success states
 export const VERIFIED_BLUE  = '#60a5fa';  // verified badge
 export const GOOGLE_BLUE    = '#1565c0';  // Google brand color — only for Google sign-in button
 export const SHADOW_GOOGLE  = '0 2px 8px rgba(66,133,244,0.3)'; // Google button hover shadow
@@ -82,12 +83,26 @@ export const SHADOW_CARD           = `0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgb
 export const SHADOW_CARD_HOVER     = `0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08)`;
 export const SHADOW_ELEVATED       = `0 4px 6px rgba(0,0,0,0.03), 0 12px 32px rgba(0,0,0,0.08)`;
 export const SHADOW_FLOAT          = `0 8px 28px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.04)`;
+// Deep, glossy shadow - dark layered drop for a shiny, premium "lifted card" feel
+export const SHADOW_CARD_DEEP      = `0 18px 40px rgba(0,0,0,0.34), 0 8px 16px rgba(0,0,0,0.24), 0 2px 4px rgba(0,0,0,0.18)`;
 export const SHADOW_PRIMARY_GLOW   = `0 4px 20px rgba(21,101,192,0.35), 0 0px 40px rgba(21,101,192,0.15)`;
 export const SHADOW_BOTTOM_NAV     = `0 -2px 12px rgba(0,0,0,0.06), 0 -1px 4px rgba(0,0,0,0.03)`;
 
 // ── Alpha / Overlay utilities ─────────────────
+export const ALPHA_BLACK_04    = 'rgba(0,0,0,0.04)';
+export const ALPHA_BLACK_06    = 'rgba(0,0,0,0.06)';
+export const ALPHA_SUCCESS_04  = 'rgba(16,185,129,0.04)';
+export const ALPHA_SUCCESS_08  = 'rgba(16,185,129,0.08)';
+export const ALPHA_SUCCESS_12  = 'rgba(16,185,129,0.12)';
+export const ALPHA_SUCCESS_25  = 'rgba(16,185,129,0.25)';
+export const ALPHA_AMBER_04    = 'rgba(245,158,11,0.04)';
+export const ALPHA_AMBER_08    = 'rgba(245,158,11,0.08)';
+export const ALPHA_AMBER_12    = 'rgba(245,158,11,0.12)';
+export const ALPHA_AMBER_25    = 'rgba(245,158,11,0.25)';
 export const ALPHA_PRIMARY_10  = 'rgba(21,101,192,0.1)';
 export const ALPHA_PRIMARY_20  = 'rgba(21,101,192,0.2)';
+export const ALPHA_PRIMARY_25  = 'rgba(21,101,192,0.25)';
+export const ALPHA_PRIMARY_40  = 'rgba(21,101,192,0.4)';
 export const ALPHA_PRIMARY_04  = 'rgba(21,101,192,0.04)';
 export const ALPHA_PRIMARY_06  = 'rgba(21,101,192,0.06)';
 export const ALPHA_WHITE_10    = 'rgba(255,255,255,0.1)';
