@@ -16,7 +16,7 @@ import EmptyState from '../../../shared/components/EmptyState';
 import { useGetDrawHistory } from '../hooks/useGetDraws';
 import {
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
-  TEXT_SECONDARY, MOBILE_CONTENT_HEIGHT_NO_HEADER, BG_SURFACE, PRIMARY_MAIN, ACCENT_GOLD, ACCENT_GOLD_DARK, SHADOW_CARD, SHADOW_CARD_HOVER, SHADOW_FLOAT, ALPHA_PRIMARY_10, BORDER_SUBTLE,
+  TEXT_SECONDARY, MOBILE_CONTENT_HEIGHT_NO_HEADER, BG_SURFACE, PRIMARY_MAIN, ACCENT_GOLD, ACCENT_GOLD_DARK, SHADOW_CARD, SHADOW_CARD_HOVER, SHADOW_FLOAT, SHADOW_PRIMARY_GLOW, ALPHA_PRIMARY_10, BORDER_SUBTLE,
   SUCCESS_GREEN, ALPHA_SUCCESS_04, ALPHA_SUCCESS_08, ALPHA_SUCCESS_12, ALPHA_SUCCESS_25,
   ALPHA_AMBER_04, ALPHA_AMBER_08, ALPHA_AMBER_12, ALPHA_AMBER_25,
 } from '../../../shared/colors';
@@ -241,10 +241,14 @@ const DrawHistoryPage = () => {
                     pointerEvents: 'auto',
                   },
                   '& .swiper-slide-active > div': {
-                    boxShadow: SHADOW_FLOAT,
+                    boxShadow: `${SHADOW_PRIMARY_GLOW}, ${SHADOW_FLOAT}`,
+                    filter: 'brightness(1.04)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   },
                   '& .swiper-slide-next > div, & .swiper-slide-prev > div': {
                     boxShadow: SHADOW_CARD,
+                    filter: 'brightness(0.92) saturate(0.95)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   },
                 }}
               >
@@ -253,9 +257,9 @@ const DrawHistoryPage = () => {
                   key={`${isDesktop ? 'horizontal' : 'vertical'}-${Math.round(stretch / 20)}`}
                   effect="coverflow"
                   coverflowEffect={{
-                    rotate: 0,
+                    rotate: -17,
                     stretch,
-                    depth: 160,
+                    depth: 120,
                     modifier: 1,
                     slideShadows: false,
                   }}
