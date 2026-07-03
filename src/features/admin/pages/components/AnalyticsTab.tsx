@@ -26,7 +26,7 @@ import {
   Tab,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import BlockIcon from '@mui/icons-material/Block';
+import ClearIcon from '@mui/icons-material/Clear';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts';
 import { useAdminAnalytics, useAdminBusinesses, useAllDraws, useCampaignComparison, useEntryVolume, useLocationBreakdown } from '../../hooks/useAdmin';
@@ -47,8 +47,23 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
   const bizDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
   const [locationSearchInput, setLocationSearchInput] = useState('');
+  const locDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [locationPage, setLocationPage] = useState(0);
   const [locationRowsPerPage, setLocationRowsPerPage] = useState(25);
+
+  // Search-as-you-type (debounced), matching the Business filter above. The old field only
+  // committed on Enter, so typing appeared to do nothing.
+  const handleLocationSearchChange = (value: string) => {
+    setLocationSearchInput(value);
+    if (locDebounceRef.current) clearTimeout(locDebounceRef.current);
+    locDebounceRef.current = setTimeout(() => { setLocationSearch(value); setLocationPage(0); }, 300);
+  };
+  const clearLocationSearch = () => {
+    if (locDebounceRef.current) clearTimeout(locDebounceRef.current);
+    setLocationSearchInput('');
+    setLocationSearch('');
+    setLocationPage(0);
+  };
 
   const analyticsBusinessFilter = selectedBiz?.id ?? null;
   const isFiltered = !!(analyticsBusinessFilter || analyticsDrawFilter);
@@ -480,9 +495,11 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                   size='small'
                   placeholder='Search business or location…'
                   value={locationSearchInput}
-                  onChange={(e) => setLocationSearchInput(e.target.value)}
+                  onChange={(e) => handleLocationSearchChange(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
+                      // Commit immediately on Enter (skip the debounce wait).
+                      if (locDebounceRef.current) clearTimeout(locDebounceRef.current);
                       setLocationSearch(locationSearchInput);
                       setLocationPage(0);
                     }
@@ -495,8 +512,8 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                     ),
                     endAdornment: locationSearchInput && (
                       <InputAdornment position='end'>
-                        <IconButton size='small' onClick={() => { setLocationSearchInput(''); setLocationSearch(''); setLocationPage(0); }}>
-                          <BlockIcon fontSize='small' />
+                        <IconButton size='small' aria-label='Clear search' onClick={clearLocationSearch}>
+                          <ClearIcon fontSize='small' />
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -514,7 +531,6 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                     <TableCell align='center'>Activated</TableCell>
                     <TableCell align='center'>Quarantined</TableCell>
                     {!isMobile && <TableCell align='center'>Receipts</TableCell>}
-                    {!isMobile && <TableCell align='center'>QR Codes</TableCell>}
                     {!isMobile && <TableCell align='right'>Avg. Transaction</TableCell>}
                     {!isMobile && <TableCell align='right'>Cap Usage</TableCell>}
                   </TableRow>
@@ -522,13 +538,13 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                 <TableBody>
                   {locationLoading ? (
                     <TableRow>
-                      <TableCell colSpan={8}>
+                      <TableCell colSpan={7}>
                         <Skeleton variant='rectangular' height={200} />
                       </TableCell>
                     </TableRow>
                   ) : (locationData?.rows ?? []).length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} align='center' sx={{ py: 4 }}>
+                      <TableCell colSpan={7} align='center' sx={{ py: 4 }}>
                         <Typography variant='body2' color='text.secondary'>No locations found</Typography>
                       </TableCell>
                     </TableRow>
@@ -551,7 +567,6 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                             : <Typography variant='body2' color='text.disabled'>-</Typography>}
                         </TableCell>
                         {!isMobile && <TableCell align='center'>{loc.receipt_tickets.toLocaleString()}</TableCell>}
-                        {!isMobile && <TableCell align='center'>{loc.code_tickets.toLocaleString()}</TableCell>}
                         {!isMobile && (
                           <TableCell align='right'>
                             {loc.avg_transaction != null

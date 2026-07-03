@@ -59,6 +59,29 @@ export const TABLE_HEADER_BG       = '#f5f5f5';
 export const GOLD_TROPHY    = '#fbbf24';  // trophy icon
 export const AMBER_HOURGLASS= '#f59e0b';  // hourglass icon
 export const SUCCESS_GREEN  = '#10b981';  // winner / success states
+
+// ── Analytics / dashboards ───────────────────
+// Semantic metric colors (good / caution / bad) and a categorical palette for charts &
+// progress bars. Single source of truth so admin analytics never hardcodes hex again.
+export const METRIC_GOOD        = '#2e7d32';  // healthy / up-is-good
+export const METRIC_GOOD_TINT   = 'rgba(46,125,50,0.12)';
+export const METRIC_WARN        = '#f57c00';  // caution
+export const METRIC_WARN_TINT   = 'rgba(245,124,0,0.12)';
+export const METRIC_BAD         = '#c62828';  // unhealthy / down-is-bad
+export const METRIC_BAD_TINT    = 'rgba(198,40,40,0.12)';
+export const METRIC_NEUTRAL     = TEXT_SECONDARY;
+// Categorical series (entry sources, acquisition channels, activity bands). Distinct + on-brand.
+export const CHART_BLUE         = PRIMARY_MAIN;
+export const CHART_BLUE_TINT    = 'rgba(21,101,192,0.12)';
+export const CHART_GREEN        = '#2e7d32';
+export const CHART_GREEN_TINT   = 'rgba(46,125,50,0.12)';
+export const CHART_ORANGE       = '#ef6c00';
+export const CHART_ORANGE_TINT  = 'rgba(239,108,0,0.12)';
+export const CHART_PURPLE       = '#7b1fa2';
+export const CHART_PURPLE_TINT  = 'rgba(123,31,162,0.12)';
+export const CHART_TEAL         = '#00838f';
+export const CHART_TEAL_TINT    = 'rgba(0,131,143,0.12)';
+export const CHART_GRID         = '#eef2f7';  // recharts CartesianGrid stroke
 export const VERIFIED_BLUE  = '#60a5fa';  // verified badge
 export const GOOGLE_BLUE    = '#1565c0';  // Google brand color — only for Google sign-in button
 export const SHADOW_GOOGLE  = '0 2px 8px rgba(66,133,244,0.3)'; // Google button hover shadow
