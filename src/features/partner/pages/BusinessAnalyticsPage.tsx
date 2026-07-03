@@ -17,10 +17,12 @@ import {
   Tab,
   LinearProgress,
   CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  QueryStatsOutlined,
+  BarChartOutlined,
   GroupsOutlined,
   ConfirmationNumberOutlined,
   AutorenewOutlined,
@@ -54,8 +56,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import AppHeader from '../../../shared/components/AppHeader';
-import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import { useAppSelector } from '../../../store/hook';
 import {
   selectCurrentUser,
@@ -68,9 +69,6 @@ import type { AnalyticsBucket } from '../api/analytics.api';
 import type { BusinessLocation } from '../types/business.types';
 import { formatCurrency, formatMonth } from '../../../shared/utils/date';
 import {
-  GRADIENT_HERO,
-  ALPHA_WHITE_15,
-  ALPHA_WHITE_30,
   MOBILE_CONTENT_HEIGHT,
   PRIMARY_MAIN,
   PRIMARY_LIGHT,
@@ -411,11 +409,12 @@ const CHART_HEIGHT = 260;
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 const BusinessAnalyticsPage = () => {
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const user = useAppSelector(selectCurrentUser);
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
 
-  const [menuOpen, setMenuOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
   const [duration, setDuration] = useState<DurationKey>('mtd');
   const [category, setCategory] = useState<CategoryKey>('overview');
@@ -1109,127 +1108,82 @@ const BusinessAnalyticsPage = () => {
     );
   };
 
+  // Location + date-period controls. Desktop: header card actions. Mobile: a body card below.
+  const analyticsControls = (
+    <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems={{ md: 'center' }} sx={{ width: { xs: '100%', md: 'auto' } }}>
+      {showLocationFilter && (
+        <Autocomplete
+          size="small"
+          options={activeLocations}
+          getOptionLabel={(opt) => opt.name}
+          value={activeLocations.find((l) => l.id === selectedLocation) ?? null}
+          onChange={(_, val) => setSelectedLocation(val?.id ?? '')}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          renderInput={(params) => <TextField {...params} label="All locations" />}
+          sx={{ minWidth: 190 }}
+        />
+      )}
+      {duration === 'month' && (
+        <TextField
+          select
+          size="small"
+          label="Select month"
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          sx={{ minWidth: 170 }}
+        >
+          {monthOptions.map((o) => (
+            <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
+          ))}
+        </TextField>
+      )}
+      <Box sx={{ overflowX: 'auto', maxWidth: '100%', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
+        <ToggleButtonGroup
+          value={duration}
+          exclusive
+          onChange={(_e, val) => { if (val !== null) setDuration(val as DurationKey); }}
+          size="small"
+          sx={{
+            flexWrap: 'nowrap',
+            gap: 1,
+            '& .MuiToggleButtonGroup-grouped': {
+              border: '1px solid', borderColor: 'divider', borderRadius: '999px !important',
+              px: 1.75, color: 'text.secondary', whiteSpace: 'nowrap', transition: 'all 0.2s ease',
+              '&:hover': { bgcolor: 'action.hover' },
+              '&.Mui-selected': { bgcolor: 'primary.main', color: 'white', borderColor: 'primary.main', fontWeight: 700, '&:hover': { bgcolor: 'primary.dark' } },
+            },
+          }}
+        >
+          {DURATION_TABS.map((d) => (
+            <ToggleButton key={d.key} value={d.key} aria-label={d.label}>{d.label}</ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </Box>
+    </Stack>
+  );
+
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
-      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <AppPageHero
+        title='Analytics'
+        subtitle={isBusiness ? 'Understand your customers and growth' : 'Branch performance insights'}
+        icon={<BarChartOutlined sx={{ fontSize: 28 }} />}
+        actions={isDesktop ? analyticsControls : undefined}
+      />
 
-      {/* Hero */}
-      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 10, color: 'white', borderRadius: '0 0 32px 32px' }}>
-        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-        <Container maxWidth="lg" sx={{ px: 3, pt: { xs: 1, md: 0 }, zoom: { xs: 0.9, md: 1 } }}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4 }}>
-              <Box
-                sx={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 2,
-                  bgcolor: ALPHA_WHITE_15,
-                  border: `1px solid ${ALPHA_WHITE_30}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <QueryStatsOutlined sx={{ color: 'white', fontSize: 28 }} />
-              </Box>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
-              <Box>
-                <Typography variant="h5" fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
-                  Analytics
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.75 }}>
-                  {isBusiness ? 'Business performance insights' : 'Branch performance insights'}
-                </Typography>
-              </Box>
-            </motion.div>
-          </Stack>
-        </Container>
-      </Box>
-
-      <Container maxWidth="lg" sx={{ mt: -6, zoom: { xs: 0.9, md: 1 } }}>
+      <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 1 } }}>
         <Stack spacing={{ xs: 2, sm: 3 }}>
-          {/* Controls: location + duration */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <Paper
-              elevation={0}
-              sx={{ p: { xs: 1.75, sm: 2 }, borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: SHADOW_CARD }}
-            >
-              <Stack spacing={1.75}>
-                {(showLocationFilter || duration === 'month') && (
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-                    {showLocationFilter && (
-                      <Autocomplete
-                        size="small"
-                        options={activeLocations}
-                        getOptionLabel={(opt) => opt.name}
-                        value={activeLocations.find((l) => l.id === selectedLocation) ?? null}
-                        onChange={(_, val) => setSelectedLocation(val?.id ?? '')}
-                        isOptionEqualToValue={(a, b) => a.id === b.id}
-                        renderInput={(params) => <TextField {...params} label="All locations" />}
-                        sx={{ minWidth: 200 }}
-                      />
-                    )}
-                    {duration === 'month' && (
-                      <TextField
-                        select
-                        size="small"
-                        label="Select month"
-                        value={selectedMonth}
-                        onChange={(e) => setSelectedMonth(e.target.value)}
-                        sx={{ minWidth: 180 }}
-                      >
-                        {monthOptions.map((o) => (
-                          <MenuItem key={o.value} value={o.value}>
-                            {o.label}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    )}
-                  </Stack>
-                )}
-
-                <Box sx={{ overflowX: 'auto', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
-                  <ToggleButtonGroup
-                    value={duration}
-                    exclusive
-                    onChange={(_e, val) => {
-                      if (val !== null) setDuration(val as DurationKey);
-                    }}
-                    size="small"
-                    sx={{
-                      flexWrap: { xs: 'nowrap', md: 'wrap' },
-                      gap: 1,
-                      '& .MuiToggleButtonGroup-grouped': {
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        borderRadius: '999px !important',
-                        px: 1.75,
-                        color: 'text.secondary',
-                        whiteSpace: 'nowrap',
-                        transition: 'all 0.2s ease',
-                        '&:hover': { bgcolor: 'action.hover' },
-                        '&.Mui-selected': {
-                          bgcolor: 'primary.main',
-                          color: 'white',
-                          borderColor: 'primary.main',
-                          fontWeight: 700,
-                          '&:hover': { bgcolor: 'primary.dark' },
-                        },
-                      },
-                    }}
-                  >
-                    {DURATION_TABS.map((d) => (
-                      <ToggleButton key={d.key} value={d.key} aria-label={d.label}>
-                        {d.label}
-                      </ToggleButton>
-                    ))}
-                  </ToggleButtonGroup>
-                </Box>
-              </Stack>
-            </Paper>
-          </motion.div>
+          {/* Controls (location + date period): in the header card on desktop, here on mobile. */}
+          {!isDesktop && (
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+              <Paper
+                elevation={0}
+                sx={{ p: { xs: 1.75, sm: 2 }, borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: SHADOW_CARD }}
+              >
+                {analyticsControls}
+              </Paper>
+            </motion.div>
+          )}
 
           {/* Category tabs */}
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>

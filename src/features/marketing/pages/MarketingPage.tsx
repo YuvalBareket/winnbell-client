@@ -1,15 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import AppHeader from '../../../shared/components/AppHeader';
-import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import {
   Box, Container, Typography, Stack, Paper, Button, Chip,
   useMediaQuery, useTheme, Snackbar, Alert,
   CircularProgress, Autocomplete, TextField,
 } from '@mui/material';
 import {
-  RocketLaunchOutlined, ContentCopy, FileDownload, Print,
-  CheckCircleOutline, Check, RecordVoiceOverOutlined,
+  ContentCopy, FileDownload, Print,
+  CheckCircleOutline, Check, RecordVoiceOverOutlined, CampaignOutlined,
 } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -17,7 +16,7 @@ import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager, selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import {
-   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, PRIMARY_MAIN, PRIMARY_DEEP, BRAND_ICON_BLUE, MOBILE_CONTENT_HEIGHT,
+   PRIMARY_MAIN, PRIMARY_DEEP, BRAND_ICON_BLUE, MOBILE_CONTENT_HEIGHT,
    SHADOW_CARD,
 } from '../../../shared/colors';
 import {
@@ -68,7 +67,6 @@ const MarketingPage = () => {
   const { data: businessData } = useBusinessData(isBusiness);
 
   // State
-  const [menuOpen, setMenuOpen] = useState(false);
   const [selectedId, setSelectedId] = useState('classic');
   const [headline, setHeadline] = useState(HEADLINES[0]);
   const [copied, setCopied] = useState(false);
@@ -320,50 +318,32 @@ const MarketingPage = () => {
     }
   };
 
+  const showLocationSelector = isBusiness && locations.length > 1 && !isManager;
+  // Desktop: a compact location dropdown in the header card. Mobile: the full "Choose a
+  // location" card stays in the body below.
+  const headerLocationControl = showLocationSelector ? (
+    <Autocomplete
+      size='small'
+      options={locations}
+      getOptionLabel={(opt) => opt.name}
+      value={locations.find(l => l.id === selectedLocationId) ?? null}
+      onChange={(_, val) => setSelectedLocationId(val?.id ?? '')}
+      isOptionEqualToValue={(a, b) => a.id === b.id}
+      renderInput={(params) => <TextField {...params} label='Location' placeholder='Pick a location' />}
+      sx={{ minWidth: 220 }}
+    />
+  ) : null;
+
   return (
     <Box ref={topRef} sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8 }}>
-      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <AppPageHero
+        title='Grow Engagement'
+        subtitle='Turn more customers into scans and see what is working'
+        icon={<CampaignOutlined sx={{ fontSize: 28 }} />}
+        actions={isDesktop ? headerLocationControl : undefined}
+      />
 
-      {/* ════════════════════════════════════════════════════════════════════════
-          HERO
-      ════════════════════════════════════════════════════════════════════════ */}
-      <Box sx={{
-        background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: isDesktop ? 12 : 8,
-        color: 'white', borderRadius: '0 0 32px 32px',
-      }}>
-        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-        <Container maxWidth='lg' sx={{ pt: { xs: 2, md: 1 }, px: 3 }}>
-          <Stack direction='row' alignItems='center' spacing={2}>
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-            >
-              <Box sx={{
-                width: 60, height: 60, borderRadius: 2.5,
-                bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <RocketLaunchOutlined sx={{ color: 'white', fontSize: 32 }} />
-              </Box>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <Box>
-                <Typography variant='h4' fontWeight={800}>Grow Engagment</Typography>
-                <Typography variant='body2' sx={{ opacity: 0.85, lineHeight: 1.5 }}>
-                  Turn more customers into scans, and see what's working.
-                </Typography>
-              </Box>
-            </motion.div>
-          </Stack>
-        </Container>
-      </Box>
-
-      <Container maxWidth='lg' sx={{ mt: isDesktop ? -6 : -2, position: 'relative', zIndex: 1 }}>
+      <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 }, position: 'relative', zIndex: 1 }}>
         <Box
           sx={{
             display: 'grid',
@@ -374,9 +354,9 @@ const MarketingPage = () => {
         >
 
           {/* ════════════════════════════════════════════════════════════════════════
-              LOCATION SELECTOR
+              LOCATION SELECTOR (mobile only - on desktop it lives in the header card)
           ════════════════════════════════════════════════════════════════════════ */}
-          {isBusiness && locations.length > 1 && !isManager && (
+          {!isDesktop && showLocationSelector && (
             <Box sx={{ gridColumn: '1 / -1' }}>
               <motion.div
                 initial={{ opacity: 0, y: 16 }}

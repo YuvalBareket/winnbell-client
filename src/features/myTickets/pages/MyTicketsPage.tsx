@@ -1,6 +1,6 @@
-import { Box, Container, Paper, Stack, Typography, useMediaQuery, useTheme, Autocomplete, TextField, CircularProgress } from '@mui/material';
-import { ConfirmationNumber } from '@mui/icons-material';
+import { Box, Container, Paper, Typography, useMediaQuery, useTheme, Autocomplete, TextField, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import { ActiveTicketsList } from '../components/ActiveTicketsList';
 import { DrawSwiper } from '../../draw/components/DrawSwiper';
 import { useState } from 'react';
@@ -9,12 +9,7 @@ import { selectIsBusiness, selectIsLocationManager } from '../../../store/select
 import { useSubscription } from '../../subscription/hooks/useSubscription';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import DrawPreparationView from '../../tickets/components/DrawPreparationView';
-import {
-  GRADIENT_HERO,
-  ALPHA_WHITE_15,
-  ALPHA_WHITE_30,
-  MOBILE_CONTENT_HEIGHT,
-} from '../../../shared/colors';
+import { MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import { riseIn, staggerContainer } from '../../../shared/motion';
 
 const MyTicketsPage = () => {
@@ -70,30 +65,12 @@ const MyTicketsPage = () => {
   if (isDesktop) {
     return (
       <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 6 }}>
-        {/* Hero */}
-        <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
-          <Container maxWidth='lg'>
-            <Stack direction='row' alignItems='center' spacing={2}>
-              <Box sx={{
-                width: 52, height: 52, borderRadius: 2,
-                bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <ConfirmationNumber sx={{ color: 'white', fontSize: 28 }} />
-              </Box>
-              <Box>
-                <Typography variant='h5' fontWeight={800}>
-                  {isBusinessUser ? 'Distributed Entries' : 'My Entries'}
-                </Typography>
-                <Typography variant='body2' sx={{ opacity: 0.75 }}>
-                  {isBusinessUser ? 'Track all distributed entries by campaign' : 'Your entries for all active campaigns'}
-                </Typography>
-              </Box>
-            </Stack>
-          </Container>
-        </Box>
+        <AppPageHero
+          title={isBusinessUser ? 'Distributed Entries' : 'My Entries'}
+          subtitle={isBusinessUser ? 'Track your distributed entries' : 'Your entries for this campaign'}
+        />
 
-        <Container maxWidth='lg' sx={{ mt: -5 }}>
+        <Container maxWidth='lg' sx={{ mt: 1 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 3, alignItems: 'flex-start' }}>
             {/* Draw selector */}
             <Paper
@@ -154,49 +131,53 @@ const MyTicketsPage = () => {
 
   // Mobile
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={staggerContainer}
-    >
-      {/* overflowX clip: entrance translations must never widen the document, or the mobile
-          browser rescales the page (zoom flash). clip, not hidden, so no scroll container. */}
-      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, zoom: { xs: 0.9, md: 1 }, overflowX: 'clip' }}>
-      {/* Draw deck - rises in */}
-      <motion.div variants={riseIn}>
-        <Box sx={{ pt: 2 }}>
-          <DrawSwiper
-            draw_id={activeDrawId}
-            onDrawChange={(id) => setActiveDrawId(id)}
-          />
+    // overflowX clip: entrance translations must never widen the document, or the mobile
+    // browser rescales the page (zoom flash). clip, not hidden, so no scroll container.
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, overflowX: 'clip' }}>
+      {/* Generic hero renders full-size, OUTSIDE the zoom box below. */}
+      <AppPageHero
+        title={isBusinessUser ? 'Distributed Entries' : 'My Entries'}
+        subtitle={isBusinessUser ? 'Track your distributed entries' : 'Your entries for this campaign'}
+      />
+
+      <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+        <Box sx={{ zoom: { xs: 0.9, md: 1 } }}>
+          {/* Draw deck - rises in */}
+          <motion.div variants={riseIn}>
+            <Box sx={{ pt: 3 }}>
+              <DrawSwiper
+                draw_id={activeDrawId}
+                onDrawChange={(id) => setActiveDrawId(id)}
+              />
+            </Box>
+          </motion.div>
+
+          {/* Location selector - pops in */}
+          {isBusiness && !isManager && locations.length > 1 && (
+            <motion.div variants={riseIn}>
+              <Box sx={{ px: 2, pt: 1.5, position: 'relative', pr: 2.5 }}>
+                <Autocomplete
+                  size='small'
+                  fullWidth
+                  disablePortal
+                  options={locations}
+                  getOptionLabel={(opt) => opt.name}
+                  value={locations.find(l => l.id === selectedLocationId) ?? null}
+                  onChange={(_, val) => setSelectedLocationId(val?.id ?? undefined)}
+                  isOptionEqualToValue={(a, b) => a.id === b.id}
+                  renderInput={(params) => <TextField {...params} label='All locations' sx={{}} />}
+                />
+              </Box>
+            </motion.div>
+          )}
+
+          {/* Ticket list - pops in with stagger */}
+          <motion.div variants={riseIn}>
+            <ActiveTicketsList draw_id={activeDrawId} locationId={selectedLocationId} />
+          </motion.div>
         </Box>
       </motion.div>
-
-      {/* Location selector - pops in */}
-      {isBusiness && !isManager && locations.length > 1 && (
-        <motion.div variants={riseIn}>
-          <Box sx={{ px: 2, pt: 1.5, position: 'relative', pr: 2.5 }}>
-            <Autocomplete
-              size='small'
-              fullWidth
-              disablePortal
-              options={locations}
-              getOptionLabel={(opt) => opt.name}
-              value={locations.find(l => l.id === selectedLocationId) ?? null}
-              onChange={(_, val) => setSelectedLocationId(val?.id ?? undefined)}
-              isOptionEqualToValue={(a, b) => a.id === b.id}
-              renderInput={(params) => <TextField {...params} label='All locations' sx={{}} />}
-            />
-          </Box>
-        </motion.div>
-      )}
-
-      {/* Ticket list - pops in with stagger */}
-      <motion.div variants={riseIn}>
-        <ActiveTicketsList draw_id={activeDrawId} locationId={selectedLocationId} />
-      </motion.div>
-      </Box>
-    </motion.div>
+    </Box>
   );
 };
 

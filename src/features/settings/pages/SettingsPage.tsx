@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import AppHeader from '../../../shared/components/AppHeader';
-import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import {
   Box, Container, Typography, Stack, Paper,
   Button, Alert, useMediaQuery, useTheme,
@@ -11,7 +10,6 @@ import { SettingsOutlined } from '@mui/icons-material';
 import { useLogout } from '../../../shared/hooks/useLogout';
 import { api } from '../../../shared/api/client';
 import {
-  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
   BORDER_LIGHT, SHADOW_CARD, SHADOW_CARD_HOVER, MOBILE_CONTENT_HEIGHT,
   TEXT_SECONDARY, TEXT_HEADING,
 } from '../../../shared/colors';
@@ -20,69 +18,20 @@ const SettingsPage = () => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const handleLogout = useLogout();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8, zoom: { xs: 0.9, md: 1 } }}>
-      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
-
-      {/* Hero Section */}
-      <Box
-        sx={{
-          background: GRADIENT_HERO,
-          pt: { xs: 0, md: 3 },
-          pb: isDesktop ? 9 : 6,
-          color: 'white',
-          borderRadius: '0 0 32px 32px',
-        }}
-      >
-        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
-          <Stack direction='row' alignItems='center' spacing={2}>
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-            >
-              <Box
-                sx={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 2,
-                  bgcolor: ALPHA_WHITE_15,
-                  border: `1px solid ${ALPHA_WHITE_30}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
-                <SettingsOutlined sx={{ color: 'white', fontSize: 32 }} />
-              </Box>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <Box>
-                <Typography variant='h5' fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
-                  Settings
-                </Typography>
-                <Typography variant='body2' sx={{ opacity: 0.85, mt: 0.25 }}>
-                  Manage your account and preferences
-                </Typography>
-              </Box>
-            </motion.div>
-          </Stack>
-        </Container>
-      </Box>
+      <AppPageHero
+        title='Settings'
+        subtitle='Manage your account and preferences'
+        icon={<SettingsOutlined sx={{ fontSize: 28 }} />}
+      />
 
       {/* Main Content Grid */}
-      <Container maxWidth='lg' sx={{ mt: isDesktop ? -4 : -2 }}>
+      <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>
         <Box
           sx={{
             display: 'grid',

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import {
   Box, Container, Typography, Paper, Chip, Divider, LinearProgress,
 } from '@mui/material';
@@ -7,13 +6,9 @@ import {
   EmojiEvents, CheckCircle, RadioButtonUnchecked, CalendarMonth, OpenInNew,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import {
-  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
-} from '../../../shared/colors';
+import { GRADIENT_HERO } from '../../../shared/colors';
 import type { SubscriptionDetails } from '../../subscription/hooks/useSubscription';
-import AppHeader from '../../../shared/components/AppHeader';
-import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
-import { usePageHeader } from '../../../shared/context/PageHeaderContext';
+import AppPageHero from '../../../shared/components/AppPageHero';
 
 interface DrawPreparationViewProps {
   subscription: SubscriptionDetails | undefined;
@@ -33,9 +28,6 @@ const DrawPreparationView = ({
   isSubscribed = true,
 }: DrawPreparationViewProps) => {
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const { claimHeader, releaseHeader } = usePageHeader();
-  useEffect(() => { claimHeader(); return () => releaseHeader(); }, [claimHeader, releaseHeader]);
 
   const drawDate = subscription?.draw_date ? new Date(subscription.draw_date) : null;
   const daysUntil = drawDate
@@ -66,42 +58,15 @@ const DrawPreparationView = ({
 
   return (
     <Box sx={{ minHeight: isDesktop ? 'auto' : 'calc(100dvh - 138px)', pb: 6 }}>
-      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
-      {/* Hero */}
-      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 9, color: 'white', borderRadius: '0 0 32px 32px' }}>
-        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-            >
-              <Box sx={{ width: 52, height: 52, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <EmojiEvents sx={{ color: 'white', fontSize: 26 }} />
-              </Box>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <Box>
-                <Typography variant='h5' fontWeight={800}>
-                  {isSubscribed ? 'Preparing for Your Campaign' : 'Get Your Business Ready'}
-                </Typography>
-                <Typography variant='body2' sx={{ opacity: 0.75, mt: 0.25 }}>
-                  {isSubscribed
-                    ? "You're registered - your business goes live when the campaign opens"
-                    : 'A few quick steps to get your business live on Winnbell'}
-                </Typography>
-              </Box>
-            </motion.div>
-          </Box>
-        </Container>
-      </Box>
+      <AppPageHero
+        title={isSubscribed ? 'Preparing for Your Campaign' : 'Get Your Business Ready'}
+        subtitle={isSubscribed
+          ? "You're registered - your business goes live when the campaign opens"
+          : 'A few quick steps to get your business live on Winnbell'}
+        icon={<EmojiEvents sx={{ fontSize: 26 }} />}
+      />
 
-      <Container maxWidth='lg' sx={{ mt: -5 }}>
+      <Container maxWidth='lg' sx={{ mt: 1 }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap: 3, alignItems: 'flex-start' }}>
 
           {/* Left: Draw info card */}

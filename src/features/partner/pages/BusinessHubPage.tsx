@@ -28,7 +28,8 @@ import { useState, useRef } from 'react';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import AppHeader from '../../../shared/components/AppHeader';
-import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import BusinessHeroSection from './components/BusinessHeroSection';
+import { useMenuDrawer } from '../../../shared/context/MenuDrawerContext';
 import { useBusinessData } from '../hooks/useBusinessData';
 import { useAddLocation } from '../hooks/useAddLocation';
 import { useRemoveLocation } from '../hooks/useRemoveLocation';
@@ -43,7 +44,6 @@ import { useUpdateCampaignSettings } from '../hooks/useUpdateCampaignSettings';
 import AddLocationDialog from './components/AddLocationDialog';
 import InviteManagerDialog from './components/InviteManagerDialog';
 import RemoveManagerDialog from './components/RemoveManagerDialog';
-import BusinessHeroSection from './components/BusinessHeroSection';
 import LogoCropDialog from './components/LogoCropDialog';
 import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
 import type { BusinessLocation } from '../types/business.types';
@@ -72,9 +72,9 @@ const BusinessHubPage = () => {
   const { mutate: doRemoveLocation, isPending: isRemovingLocation } = useRemoveLocation();
   const { mutate: updateCampaignSettings, isPending: isUpdatingSettings } = useUpdateCampaignSettings();
   const { upload: uploadLogo, isUploading: isUploadingLogo, error: logoError, clearError: clearLogoError } = useUploadBusinessLogo();
+  const { openMenu } = useMenuDrawer();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<BusinessLocation | null>(null);
   const [businessDrawerOpen, setBusinessDrawerOpen] = useState(false);
   const [addLocationOpen, setAddLocationOpen] = useState(false);
@@ -195,11 +195,9 @@ const BusinessHubPage = () => {
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
-      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
-
       <BusinessHeroSection
         business={business}
-        header={<AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />}
+        header={<AppHeader onMenuOpen={openMenu} onGradient />}
         onLogoClick={() => fileInputRef.current?.click()}
         isUploading={isUploadingLogo}
         logoFileInputRef={fileInputRef}

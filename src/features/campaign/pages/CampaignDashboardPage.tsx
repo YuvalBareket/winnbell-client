@@ -25,8 +25,7 @@ import {
   CheckCircleOutlineOutlined,
   Schedule,
 } from '@mui/icons-material';
-import AppHeader from '../../../shared/components/AppHeader';
-import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectBusinessIsActive } from '../../../store/selectors/authSelectors';
@@ -35,9 +34,6 @@ import { useCampaignHeader, useCampaignKpis, useCampaignEntries, useCampaigns } 
 import { useSubscription } from '../../subscription/hooks/useSubscription';
 import DrawPreparationView from '../../tickets/components/DrawPreparationView';
 import {
-  GRADIENT_HERO,
-  ALPHA_WHITE_15,
-  ALPHA_WHITE_30,
   MOBILE_CONTENT_HEIGHT_NO_HEADER,
   TEXT_SECONDARY,
   SHADOW_CARD,
@@ -65,7 +61,6 @@ const CampaignDashboardPage = () => {
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
 
-  const [menuOpen, setMenuOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
   const [dateRange, setDateRange] = useState<'today' | 'wtd' | 'mtd'>('today');
   const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
@@ -160,132 +155,85 @@ const CampaignDashboardPage = () => {
     );
   }
 
+  // Campaign selector, location filter, date-range toggle. On DESKTOP they go into the page
+  // header card (actions slot); on MOBILE they stay in the body above the KPIs (the mobile hero
+  // is a gradient band where these white controls would look out of place).
+  const headerControls = noCampaign ? null : (
+    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+      {campaigns.length > 1 && (
+        <Autocomplete
+          size="small"
+          options={campaigns}
+          getOptionLabel={(opt) => `${opt.name}${opt.is_current ? ' (Current)' : ''}`}
+          value={selectedCampaign}
+          onChange={(_, val) => setSelectedCampaignId(val?.draw_id ?? null)}
+          isOptionEqualToValue={(a, b) => a.draw_id === b.draw_id}
+          renderInput={(params) => <TextField {...params} label="Campaign" />}
+          sx={{ minWidth: 190 }}
+        />
+      )}
+      {isBusiness && locations.length > 0 && (
+        <Autocomplete
+          size="small"
+          options={locations}
+          getOptionLabel={(opt) => opt.name}
+          value={locations.find((l) => l.id === selectedLocation) ?? null}
+          onChange={(_, val) => setSelectedLocation(val?.id ?? '')}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          renderInput={(params) => <TextField {...params} label="All locations" />}
+          sx={{ minWidth: 170 }}
+        />
+      )}
+      {isCurrentCampaign && (
+        <ToggleButtonGroup
+          value={dateRange}
+          exclusive
+          onChange={(_e, newRange) => { if (newRange !== null) setDateRange(newRange as 'today' | 'wtd' | 'mtd'); }}
+          size="small"
+          sx={{
+            height: 'fit-content',
+            '& .MuiToggleButton-root': {
+              border: '1px solid', borderColor: 'divider', color: 'text.secondary',
+              transition: 'all 0.2s ease', '&:hover': { bgcolor: 'action.hover' },
+            },
+            '& .MuiToggleButton-root.Mui-selected': {
+              bgcolor: 'primary.main', color: 'white', borderColor: 'primary.main', fontWeight: 600,
+              '&:hover': { bgcolor: 'primary.dark' },
+            },
+          }}
+        >
+          <ToggleButton value="today" aria-label="today">Today</ToggleButton>
+          <ToggleButton value="wtd" aria-label="week to date">WTD</ToggleButton>
+          <ToggleButton value="mtd" aria-label="month to date">MTD</ToggleButton>
+        </ToggleButtonGroup>
+      )}
+    </Stack>
+  );
+
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
-      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <AppPageHero
+        title='Campaign Dashboard'
+        subtitle='Monitor your active campaign and entries'
+        icon={<CampaignOutlined sx={{ fontSize: 28 }} />}
+        actions={isDesktop ? headerControls : undefined}
+      />
 
-      {/* Hero */}
-      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 10, color: 'white', borderRadius: '0 0 32px 32px' }}>
-        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-        <Container maxWidth="lg" sx={{ px: 3, pt: 1, zoom: { xs: 0.9, md: 0.85 } }}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-            >
-              <Box
-                sx={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 2,
-                  bgcolor: ALPHA_WHITE_15,
-                  border: `1px solid ${ALPHA_WHITE_30}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <CampaignOutlined sx={{ color: 'white', fontSize: 28 }} />
-              </Box>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <Box>
-                <Typography variant="h5" fontWeight={800}>
-                  Campaign Dashboard
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.75 }}>
-                  Monitor your active campaign and entries
-                </Typography>
-              </Box>
-            </motion.div>
-          </Stack>
-        </Container>
-      </Box>
-
-      <Container maxWidth="lg" sx={{ mt: -6, zoom: { xs: 0.9, md: 0.85 } }}>
+      {/* zoom stays on the content only (not the header), so the hero renders full-size. */}
+      <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 1 }, zoom: { xs: 0.9, md: 0.85 } }}>
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
           <Stack spacing={3}>
             {/* KPIs Section */}
             {!noCampaign && (
               <motion.div variants={itemVariants}>
                 <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: 'white', border: '1px solid', borderColor: 'divider' }}>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
-                    {/* Campaign selector */}
-                    {campaigns.length > 1 && (
-                      <Autocomplete
-                        size="small"
-                        options={campaigns}
-                        getOptionLabel={(opt) => `${opt.name}${opt.is_current ? ' (Current)' : ''}`}
-                        value={selectedCampaign}
-                        onChange={(_, val) => setSelectedCampaignId(val?.draw_id ?? null)}
-                        isOptionEqualToValue={(a, b) => a.draw_id === b.draw_id}
-                        renderInput={(params) => <TextField {...params} label="Campaign" />}
-                        sx={{ minWidth: 200 }}
-                      />
-                    )}
-
-                    {/* Location filter for owners */}
-                    {isBusiness && locations.length > 0 && (
-                      <Autocomplete
-                        size="small"
-                        options={locations}
-                        getOptionLabel={(opt) => opt.name}
-                        value={locations.find((l) => l.id === selectedLocation) ?? null}
-                        onChange={(_, val) => setSelectedLocation(val?.id ?? '')}
-                        isOptionEqualToValue={(a, b) => a.id === b.id}
-                        renderInput={(params) => <TextField {...params} label="All locations" />}
-                        sx={{ minWidth: 180 }}
-                      />
-                    )}
-
-                    {/* Date range toggle — only for the current (Open) campaign */}
-                    {isCurrentCampaign && (
-                      <ToggleButtonGroup
-                        value={dateRange}
-                        exclusive
-                        onChange={(_e, newRange) => {
-                          if (newRange !== null) setDateRange(newRange as any);
-                        }}
-                        size="small"
-                        sx={{
-                          height: 'fit-content',
-                          ml: 'auto',
-                          '& .MuiToggleButton-root': {
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            color: 'text.secondary',
-                            transition: 'all 0.2s ease',
-                            '&:hover': { bgcolor: 'action.hover' },
-                          },
-                          '& .MuiToggleButton-root.Mui-selected': {
-                            bgcolor: 'primary.main',
-                            color: 'white',
-                            borderColor: 'primary.main',
-                            fontWeight: 600,
-                            '&:hover': { bgcolor: 'primary.dark' },
-                          },
-                        }}
-                      >
-                        <ToggleButton value="today" aria-label="today">
-                          Today
-                        </ToggleButton>
-                        <ToggleButton value="wtd" aria-label="week to date">
-                          WTD
-                        </ToggleButton>
-                        <ToggleButton value="mtd" aria-label="month to date">
-                          MTD
-                        </ToggleButton>
-                      </ToggleButtonGroup>
-                    )}
-                  </Stack>
+                  {/* On mobile the controls live here (on desktop they are in the header card). */}
+                  {!isDesktop && headerControls && (
+                    <Box sx={{ mb: 2 }}>{headerControls}</Box>
+                  )}
 
                   {/* KPI Cards */}
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2 }}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                     {isKpiLoading ? (
                       <>
                         <Skeleton variant="rounded" height={100} sx={{ flex: 1, borderRadius: 2 }} />

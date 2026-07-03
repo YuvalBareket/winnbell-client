@@ -28,7 +28,7 @@ import MapBusinessPopup from '../components/MapBusinessPopup';
 import { useNearbyWithZoom } from '../hooks/useNearbyWithZoom';
 import { useBusinessSearch } from '../hooks/useBusinessSearch';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
-import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import { useMenuDrawer } from '../../../shared/context/MenuDrawerContext';
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { getUserInitials } from '../../../shared/utils/string';
@@ -64,7 +64,7 @@ const NearbyPage = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   const [focusTarget, setFocusTarget] = useState<{ lat: number; lng: number } | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { openMenu } = useMenuDrawer();
 
   // Debounce the search box so global search fires at most once per 400ms of typing.
   useEffect(() => {
@@ -187,9 +187,9 @@ const NearbyPage = () => {
             />
           </Paper>
 
-          {/* Avatar menu button - mobile only */}
+          {/* Avatar menu button - mobile only. Opens the shared app menu drawer. */}
           <IconButton
-            onClick={() => setMenuOpen(true)}
+            onClick={openMenu}
             sx={{
               display: { xs: 'flex', md: 'none' },
               p: 0,
@@ -487,9 +487,6 @@ const NearbyPage = () => {
         onClose={() => setSelectedLocationId(null)}
         userLocation={userLocation}
       />
-
-      {/* Mobile menu drawer */}
-      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
     </Box>
   );
 };

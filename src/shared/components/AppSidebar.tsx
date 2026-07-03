@@ -1,6 +1,6 @@
 import {
   Box, Typography, Avatar, List, ListItemButton,
-  ListItemIcon, ListItemText, Stack, Divider, Chip,
+  ListItemIcon, ListItemText, Stack, Divider, Menu,
 } from '@mui/material';
 import { Logout, UnfoldMore } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -9,18 +9,18 @@ import { useAppSelector } from '../../store/hook';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectIsAdmin, selectBusinessIsActive, selectBusinessLogoUrl, selectAccounts, selectCanAddAccount } from '../../store/selectors/authSelectors';
 import { useLogout } from '../hooks/useLogout';
 import {
-  userNavItems, managerNavItems, adminNavItems, legalNavItems, businessLegalNavItems, type NavItem,
+  managerNavItems, adminNavItems, legalNavItems, businessLegalNavItems, userNavItems, type NavItem,
 } from '../constants/navItems';
 import {
-  BusinessOutlined,
-  BarChartOutlined, ReceiptLongOutlined,
+  BusinessOutlined, BarChartOutlined, ReceiptLongOutlined,
   SettingsOutlined, CampaignOutlined, EmojiEventsOutlined,
 } from '@mui/icons-material';
 import {
-  GRADIENT_PRIMARY, PRIMARY_MAIN, BORDER_LIGHT, TEXT_SECONDARY, TEXT_HEADING, ALPHA_PRIMARY_04, ALPHA_PRIMARY_06, GRADIENT_SIDEBAR,
-  TEXT_TERTIARY,
+  GRADIENT_SIDEBAR,
+  ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, ALPHA_WHITE_70, ALPHA_WHITE_80,
+  BORDER_LIGHT,
 } from '../colors';
-import { getUserInitials, getRoleLabel, getRoleColor } from '../utils/string';
+import { getUserInitials, getRoleLabel } from '../utils/string';
 import AccountSwitcher from './AccountSwitcher';
 
 const AppSidebar = () => {
@@ -37,12 +37,9 @@ const AppSidebar = () => {
   const canAddAccount = useAppSelector(selectCanAddAccount);
   const initials = getUserInitials(user?.fullName);
   const roleLabel = getRoleLabel(isAdmin, isBusiness, isManager);
-  const roleColor = getRoleColor(isAdmin, isBusiness, isManager);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const switcherOpen = Boolean(anchorEl);
-  // The switcher is useful whenever the user can switch (2 accounts) OR add one (under the cap).
-  // With a single account that means it is always available so "Add account" is reachable.
-  const showSwitcher = accounts.length > 1 || canAddAccount;
+  const menuOpen = Boolean(anchorEl);
+  const canSwitch = accounts.length > 1 || canAddAccount;
 
   const businessNavItems: NavItem[] = [
     { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
@@ -62,210 +59,151 @@ const AppSidebar = () => {
         width: 260,
         height: '100dvh',
         position: 'fixed',
-        left: 0,
-        top: 0,
+        left: 0, top: 0,
+        pb:1,
         zIndex: 1100,
         display: { xs: 'none', md: 'flex' },
         flexDirection: 'column',
         background: GRADIENT_SIDEBAR,
-        borderRight: `1px solid ${BORDER_LIGHT}`,
+        color: 'white',
         overflow: 'hidden',
       }}
     >
-      {/* Brand */}
-      <Stack sx={{ px: 3, pt: 1.5, pb: 1.5, '@media (max-height: 700px)': { pt: 0.8, pb: 0.8 } }} direction='row' alignItems='center' spacing={-0.4}>
-        <Box component='img' src='/winnbell_app_name.png' alt='W' sx={{ height: 30, width: 'auto', objectFit: 'contain' }} />
-      
+      {/* Soft glow orb */}
+      <Box sx={{ position: 'absolute', top: -90, right: -70, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_10, filter: 'blur(55px)', pointerEvents: 'none' }} />
+
+      {/* Brand (white) */}
+      <Stack sx={{ px: 2, pt: 2, pb: 1.5, position: 'relative', '@media (max-height: 700px)': { pt: 1.2, pb: 1 } }} direction='row' alignItems='center'>
+        <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 40, width: 'auto', objectFit: 'contain' }} />
       </Stack>
 
-      {/* User identity card - opens the account switcher (switch or add another account) */}
-      <Box
-        onClick={(e: React.MouseEvent<HTMLElement>) => showSwitcher && setAnchorEl(e.currentTarget)}
-        sx={{
-          mx: 2, mb: 0.5, px: 1.5, py: 0.75, '@media (max-height: 700px)': { py: 0.8, mb: 0.6 },
-          bgcolor: ALPHA_PRIMARY_04,
-          borderRadius: 2,
-          border: `1px solid ${ALPHA_PRIMARY_06}`,
-          display: 'flex', alignItems: 'center', gap: 1.5,
-          transition: 'all 0.2s ease',
-          cursor: showSwitcher ? 'pointer' : 'default',
-          '&:hover': {
-            bgcolor: ALPHA_PRIMARY_06,
-          },
-        }}
-      >
-        <Avatar
-          src={businessLogoUrl ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${businessLogoUrl}` : undefined}
-          sx={{
-            width: 36, height: 36,
-            background: GRADIENT_PRIMARY,
-            color: 'white',
-            fontWeight: 800,
-            fontSize: 14,
-            borderRadius: '12px',
-            flexShrink: 0,
-            boxShadow: '0 2px 8px rgba(25,93,230,0.25)',
-          }}
-        >
-          {initials}
-        </Avatar>
-        <Box flex={1} minWidth={0}>
-          <Typography variant='body2' fontWeight={700} noWrap color={TEXT_HEADING} sx={{ lineHeight: 1.3 }}>
-            {user?.fullName || 'User'}
+      {/* Scrollable nav + support */}
+      <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
+        <Box sx={{ px: 1.5, pt: 1 }}>
+          <Typography variant='caption' fontWeight={700} sx={{ color: ALPHA_WHITE_70, textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.5, fontSize: '0.62rem' }}>
+            Navigation
           </Typography>
-          <Typography variant='caption' color={TEXT_SECONDARY} noWrap sx={{ display: 'block', lineHeight: 1.3 }}>
-            {user?.email || ''}
-          </Typography>
+          <List dense disablePadding>
+            {mainNavItems.map(({ label, Icon, path }) => {
+              const active = path === '/admin'
+                ? location.pathname === '/admin'
+                : location.pathname === path || location.pathname.startsWith(path + '/');
+              return (
+                <ListItemButton
+                  key={path}
+                  onClick={() => navigate(path)}
+                  sx={{
+                    borderRadius: 2.5, mb: 0.3, px: 1.5, py: 0.65, '@media (max-height: 700px)': { py: 0.5, mb: 0.15 },
+                    bgcolor: active ? ALPHA_WHITE_20 : 'transparent',
+                    boxShadow: active ? `inset 0 0 0 1px ${ALPHA_WHITE_15}` : 'none',
+                    '&:hover': { bgcolor: active ? ALPHA_WHITE_20 : ALPHA_WHITE_10, transform: active ? 'none' : 'translateX(2px)' },
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 34 }}>
+                    <Icon sx={{ fontSize: 20, color: active ? 'white' : ALPHA_WHITE_80 }} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={label}
+                    primaryTypographyProps={{ fontSize: '0.82rem', fontWeight: active ? 700 : 600, color: active ? 'white' : ALPHA_WHITE_80, letterSpacing: '-0.01em' }}
+                  />
+                  {active && <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: 'white', opacity: 0.9, mr: 0.5 }} />}
+                </ListItemButton>
+              );
+            })}
+          </List>
         </Box>
-        <Chip
-          label={roleLabel}
-          size='small'
-          sx={{
-            height: 20, fontSize: '0.6rem', fontWeight: 800,
-            bgcolor: `${roleColor}12`, color: roleColor,
-            border: `1px solid ${roleColor}20`,
-            flexShrink: 0,
-            borderRadius: '6px',
-          }}
-        />
-        {showSwitcher && (
-          <UnfoldMore
-            sx={{
-              fontSize: 16, color: TEXT_SECONDARY, flexShrink: 0,
-              transition: 'transform 0.2s ease',
-              transform: switcherOpen ? 'scaleY(-1)' : 'scaleY(1)',
-            }}
-          />
-        )}
-      </Box>
 
-      <Divider sx={{ mx: 2, mb: 0.5 }} />
+        <Divider sx={{ mx: 2.5, my: 1, borderColor: ALPHA_WHITE_15 }} />
 
-      {/* Scrollable nav + support section */}
-      <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-        {/* Nav section */}
-        <Box sx={{ px: 1.5, pt: 0 }}>
-        <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
-          sx={{ textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.25, fontSize: '0.62rem' }}>
-          Navigation
-        </Typography>
-        <List dense disablePadding>
-          {mainNavItems.map(({ label, Icon, path }) => {
-            const active = path === '/admin'
-              ? location.pathname === '/admin'
-              : location.pathname === path || location.pathname.startsWith(path + '/');
-            return (
+        <Box sx={{ px: 1.5 }}>
+          <Typography variant='caption' fontWeight={700} sx={{ color: ALPHA_WHITE_70, textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.5, fontSize: '0.62rem' }}>
+            Support
+          </Typography>
+          <List dense disablePadding>
+            {(isBusiness || isManager ? businessLegalNavItems : legalNavItems).map(({ label, Icon, path }) => (
               <ListItemButton
                 key={path}
                 onClick={() => navigate(path)}
                 sx={{
-                  borderRadius: 2.5, mb: 0.2, px: 1.5, py: 0.5, '@media (max-height: 700px)': { py: 0.5, mb: 0.1 },
-                  bgcolor: active ? PRIMARY_MAIN : 'transparent',
-                  boxShadow: active ? '0 2px 8px rgba(25,93,230,0.3)' : 'none',
-                  '&:hover': {
-                    bgcolor: active ? PRIMARY_MAIN : ALPHA_PRIMARY_06,
-                    transform: active ? 'none' : 'translateX(2px)',
-                  },
+                  borderRadius: 2.5, mb: 0.2, px: 1.5, '@media (max-height: 700px)': { py: 0.2, mb: 0.1 },
+                  '&:hover': { bgcolor: ALPHA_WHITE_10, transform: 'translateX(2px)' },
                   transition: 'all 0.15s ease',
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 34 }}>
-                  <Icon sx={{
-                    fontSize: 20,
-                    color: active ? 'white' : TEXT_SECONDARY,
-                    transition: 'color 0.15s ease',
-                  }} />
+                  <Icon sx={{ fontSize: 16, color: ALPHA_WHITE_70 }} />
                 </ListItemIcon>
                 <ListItemText
                   primary={label}
-                  primaryTypographyProps={{
-                    fontSize: '0.82rem', fontWeight: active ? 700 : 600,
-                    color: active ? 'white' : TEXT_HEADING,
-                    letterSpacing: '-0.01em',
-                  }}
+                  primaryTypographyProps={{ fontSize: '0.78rem', fontWeight: 500, color: ALPHA_WHITE_70 }}
                 />
-                {active && (
-                  <Box sx={{
-                    width: 4, height: 4,
-                    borderRadius: '50%',
-                    bgcolor: 'white',
-                    opacity: 0.7,
-                    mr: 0.5,
-                  }} />
-                )}
               </ListItemButton>
-            );
-          })}
-        </List>
-      </Box>
-
-        <Divider sx={{ mx: 2.5, my: 0.25 }} />
-
-        {/* Support section */}
-        <Box sx={{ px: 1.5 }}>
-        <Typography variant='caption' fontWeight={700} color={TEXT_TERTIARY}
-          sx={{ textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.25, fontSize: '0.62rem' }}>
-          Support
-        </Typography>
-        <List dense disablePadding>
-          {(isBusiness || isManager ? businessLegalNavItems : legalNavItems).map(({ label, Icon, path }) => (
-            <ListItemButton
-              key={path}
-              onClick={() => navigate(path)}
-              sx={{
-                borderRadius: 2.5, mb: 0.2, px: 1.5, '@media (max-height: 700px)': { py: 0.15, mb: 0.1 },
-                '&:hover': {
-                  bgcolor: ALPHA_PRIMARY_06,
-                  transform: 'translateX(2px)',
-                },
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 34 }}>
-                <Icon sx={{ fontSize: 16, color: TEXT_TERTIARY }} />
-              </ListItemIcon>
-              <ListItemText
-                primary={label}
-                primaryTypographyProps={{ fontSize: '0.78rem', fontWeight: 500, color: TEXT_SECONDARY }}
-              />
-            </ListItemButton>
-          ))}
-        </List>
+            ))}
+          </List>
         </Box>
       </Box>
 
-      <Divider sx={{ mx: 2.5 }} />
-
-      {/* Logout */}
-      <List dense disablePadding sx={{ px: 1.5, py: 1, '@media (max-height: 700px)': { py: 0.5 } }}>
-        <ListItemButton
-          onClick={handleLogout}
+      {/* Bottom user card - opens Switch / Add account + Log out */}
+      <Box sx={{ p: 1.5, position: 'relative' }}>
+        <Box
+          onClick={(e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget)}
           sx={{
-            borderRadius: 2.5, px: 1.5,
-            '&:hover': { bgcolor: 'rgba(211,47,47,0.06)' },
-            transition: 'all 0.15s ease',
+            px: 1.5, py: 1,
+            bgcolor: ALPHA_WHITE_15,
+            borderRadius: 2.5,
+            border: `1px solid ${ALPHA_WHITE_20}`,
+            display: 'flex', alignItems: 'center', gap: 1.25,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            '&:hover': { bgcolor: ALPHA_WHITE_20 },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 34 }}>
-            <Logout sx={{ fontSize: 18, color: 'error.main' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary='Log out'
-            primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 600, color: 'error.main' }}
-          />
-        </ListItemButton>
-      </List>
+          <Avatar
+            src={businessLogoUrl ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${businessLogoUrl}` : undefined}
+            sx={{ width: 38, height: 38, background: businessLogoUrl ? undefined : '#fff', color: 'primary.main', fontWeight: 800, fontSize: 14, borderRadius: '11px', flexShrink: 0 }}
+          >
+            {initials}
+          </Avatar>
+          <Box flex={1} minWidth={0}>
+            <Typography variant='body2' fontWeight={800} noWrap sx={{ color: 'white', lineHeight: 1.3 }}>
+              {user?.fullName || 'User'}
+            </Typography>
+            <Typography variant='caption' noWrap sx={{ color: ALPHA_WHITE_70, display: 'block', lineHeight: 1.3 }}>
+              {roleLabel}{user?.email ? ` · ${user.email}` : ''}
+            </Typography>
+          </Box>
+          <UnfoldMore sx={{ fontSize: 18, color: ALPHA_WHITE_70, flexShrink: 0, transition: 'transform 0.2s ease', transform: menuOpen ? 'scaleY(-1)' : 'scaleY(1)' }} />
+        </Box>
+      </Box>
 
-      <Typography variant='caption' color={TEXT_TERTIARY} sx={{ px: 3, pb: 1.5, display: 'block', fontSize: '0.68rem', '@media (max-height: 700px)': { pb: 0.75 } }}>
+      {/* Account + logout menu (sidebar is not a modal, so a Menu + inline switcher works here) */}
+      <Menu
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={() => setAnchorEl(null)}
+        PaperProps={{ sx: { minWidth: 264, borderRadius: 2, boxShadow: '0 8px 32px rgba(0,0,0,0.16)', border: `1px solid ${BORDER_LIGHT}`, overflow: 'hidden', mb: 1 } }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        {canSwitch && <AccountSwitcher variant='inline' onClose={() => setAnchorEl(null)} />}
+        {canSwitch && <Divider sx={{ mx: 1 }} />}
+        <Box sx={{ p: 1 }}>
+          <ListItemButton
+            onClick={() => { setAnchorEl(null); handleLogout(); }}
+            sx={{ borderRadius: 1.5, px: 1.5, '&:hover': { bgcolor: 'rgba(211,47,47,0.06)' } }}
+          >
+            <ListItemIcon sx={{ minWidth: 34 }}>
+              <Logout sx={{ fontSize: 18, color: 'error.main' }} />
+            </ListItemIcon>
+            <ListItemText primary='Log out' primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 700, color: 'error.main' }} />
+          </ListItemButton>
+        </Box>
+      </Menu>
+
+      <Typography variant='caption' sx={{ color: ALPHA_WHITE_30, px: 3, pb: 1.25, display: 'block', fontSize: '0.68rem', position: 'relative', '@media (max-height: 700px)': { pb: 0.6 } }}>
         Winnbell v1.0 · {new Date().getFullYear()}
       </Typography>
-
-      {/* Account switcher menu */}
-      <AccountSwitcher
-        anchorEl={anchorEl}
-        open={switcherOpen}
-        onClose={() => setAnchorEl(null)}
-      />
     </Box>
   );
 };

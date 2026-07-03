@@ -1,10 +1,11 @@
 import { Box, Button, Stack, Typography, CircularProgress, Snackbar, Alert, Container, Paper, useMediaQuery, useTheme } from '@mui/material';
-import { ContentCopyOutlined, CheckCircleOutlined, PersonAddOutlined, ShareOutlined, CardGiftcardOutlined } from '@mui/icons-material';
+import { ContentCopyOutlined, CheckCircleOutlined, PersonAddOutlined, ShareOutlined, CardGiftcardOutlined, GroupAddOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import { useReferralLink } from '../hooks/useReferralLink';
 import {
-  GRADIENT_HERO, PRIMARY_MAIN, PRIMARY_LIGHT, ALPHA_WHITE_15, ALPHA_WHITE_30,
+  PRIMARY_MAIN, PRIMARY_LIGHT,
   BORDER_LIGHT, SHADOW_CARD, SHADOW_CARD_HOVER, MOBILE_CONTENT_HEIGHT,
   TEXT_SECONDARY, TEXT_HEADING,
 } from '../../../shared/colors';
@@ -376,42 +377,13 @@ Know someone who could use a little extra luck this month? Share your link and i
   if (isDesktop) {
     return (
       <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 6 }}>
-        {/* Hero */}
-        <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3, color: 'white', borderRadius: '0 0 32px 32px' }}>
-          <Container maxWidth='lg'>
-            <Stack direction='row' alignItems='center' spacing={2}>
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4 }}
-              >
-                <Box sx={{
-                  width: 52, height: 52, borderRadius: 2,
-                  bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <CardGiftcardOutlined sx={{ color: 'white', fontSize: 28 }} />
-                </Box>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
-              >
-                <Box>
-                  <Typography variant='h5' fontWeight={800}>
-                    Invite Friends
-                  </Typography>
-                  <Typography variant='body2' sx={{ opacity: 0.75 }}>
-                    Share Winnbell and give them a free bonus entry
-                  </Typography>
-                </Box>
-              </motion.div>
-            </Stack>
-          </Container>
-        </Box>
+        <AppPageHero
+          title='Invite Friends'
+          subtitle='Share Winnbell and give them a free bonus entry'
+          icon={<GroupAddOutlined sx={{ fontSize: 28 }} />}
+        />
 
-        <Container maxWidth='lg' sx={{ mt: -5 }}>
+        <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.1fr)', gap: 3, alignItems: 'flex-start' }}>
             {/* Left column: How it works (sticky at top) */}
             <motion.div
@@ -549,43 +521,14 @@ Know someone who could use a little extra luck this month? Share your link and i
   // MOBILE LAYOUT
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, zoom: { xs: 0.9, md: 1 }, pb: 4 }}>
-      {/* Heading card on MainLayout gradient (no painted hero) */}
-      <Box sx={{ pt: 2, px: 2, pb: 2 }}>
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <Stack direction='row' alignItems='center' spacing={2}>
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: 2,
-          bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: SHADOW_CARD,
-                flexShrink: 0,
-              }}
-            >
-              <CardGiftcardOutlined sx={{ color: 'white', fontSize: 24 }} />
-            </Box>
-            <Box>
-              <Typography variant='h6' fontWeight={800} sx={{ fontSize: '1.1rem' ,color:'white'}}>
-                Invite Friends
-              </Typography>
-              <Typography variant='caption' sx={{ color: 'white' }}>
-                Share Winnbell with friends
-              </Typography>
-            </Box>
-          </Stack>
-        </motion.div>
-      </Box>
+      <AppPageHero
+        title='Invite Friends'
+        subtitle='Share Winnbell with friends'
+        icon={<GroupAddOutlined sx={{ fontSize: 28 }} />}
+      />
 
       {/* Main content */}
-      <Box sx={{ px: 2 }}>
+      <Box sx={{ px: 2, mt: { xs: 2, md: 1 } }}>
         <Stack spacing={3} sx={{ minWidth: 0 }}>
           {referralLinkCard}
 

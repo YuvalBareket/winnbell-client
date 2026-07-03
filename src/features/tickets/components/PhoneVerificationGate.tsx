@@ -9,7 +9,6 @@ import { api } from '../../../shared/api/client';
 import {
   PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
   BORDER_LIGHT, BG_DEFAULT, TEXT_PRIMARY, TEXT_SECONDARY, SHADOW_ELEVATED,
-  APP_HEADER_HEIGHT,
 } from '../../../shared/colors';
 import { ConfirmationNumber } from '@mui/icons-material';
 import AppHeader from '../../../shared/components/AppHeader';
@@ -262,8 +261,9 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
         }}
       />
 
-      {/* ── Mobile layout (hidden on md+) — pulled up to cover the app header ── */}
-      <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', mt: `-${APP_HEADER_HEIGHT}px`}}>
+      {/* ── Mobile layout (hidden on md+). This gate is self-contained: it renders its own
+          AppHeader inside the hero, so it does not use the shared layout header. ── */}
+      <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column' }}>
 
         {/* Hero Section */}
         <Box

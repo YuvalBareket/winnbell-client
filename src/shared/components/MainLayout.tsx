@@ -1,19 +1,18 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Paper, BottomNavigation, BottomNavigationAction } from '@mui/material';
 import { ConfirmationNumber, Storefront } from '@mui/icons-material';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AppMenuDrawer from './AppMenuDrawer';
-import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
 import { InstallPromptProvider } from '../../features/install/InstallPrompt';
-import { usePageHeader } from '../context/PageHeaderContext';
+import { MenuDrawerContext, useMenuDrawer } from '../context/MenuDrawerContext';
 import { useTap } from '../hooks/useTap';
 import { useAppSelector } from '../../store/hook';
 import { selectIsBusiness, selectIsAdmin, selectIsLocationManager } from '../../store/selectors/authSelectors';
 import {
-  BG_APP_GRADIENT,
+  BG_SUBTLE,
   GRADIENT_PRIMARY,
   NEUTRAL_INACTIVE_BG,
   NEUTRAL_INACTIVE_ICON,
@@ -24,59 +23,44 @@ import {
 
 const SIDEBAR_WIDTH = 260;
 
-const MainLayout = () => {
+// Inner shell: consumes the menu-drawer context so a single AppMenuDrawer is mounted for the
+// whole app. Every AppPageHero opens it via useMenuDrawer().openMenu().
+const LayoutShell = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { isOpen, closeMenu } = useMenuDrawer();
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
   const isAdmin = useAppSelector(selectIsAdmin);
   const isBusinessOrManager = isBusinessAdmin || isManager;
-  // Business/manager users use /campaign (Campaign Dashboard) as their mobile home; regular users use /scan
+  // Business/manager users use /campaign as their mobile home; regular users use /scan.
   const mobileMainPath = isBusinessOrManager ? '/campaign' : '/scan';
   const isNearby = location.pathname === '/nearby';
-  const isActivity = location.pathname === '/activity';
-  const isCampaign = location.pathname === '/campaign';
-  const isStats = location.pathname === '/stats';
-  const isMarketing = location.pathname === '/marketing';
-  const isSettings = location.pathname === '/settings';
-  const isDrawsHistory = location.pathname === '/draws/history';
-  const isSubscribe = location.pathname === '/subscribe';
-  const isSubscriptionManage = location.pathname.startsWith('/subscription/');
-  const { hasOwnHeader } = usePageHeader();
-  const topPadding = { xs: 0, md: 0 };
   const scanActive = location.pathname === mobileMainPath;
 
   // Reliable bottom-nav taps: the native click is cancelled by tiny finger movement on
   // mobile, so we navigate on pointer-up instead (see useTap).
   const tapNearby = useTap(() => navigate('/nearby'));
   const tapMain = useTap(() => navigate(mobileMainPath));
-  // Third bottom-nav slot: business/manager get Analytics; regular users keep My Entries.
   const thirdNavPath = isBusinessOrManager ? '/stats' : '/tickets';
   const tapThird = useTap(() => navigate(thirdNavPath));
 
   return (
-    <InstallPromptProvider>
     <Box
       sx={{
         width: '100%',
         minHeight: '100dvh',
-        bgcolor: 'background.default',
-        background: BG_APP_GRADIENT,
+        // Single flat app background (matches the design handoff) instead of the blue gradient.
+        bgcolor: BG_SUBTLE,
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      {/* Desktop persistent sidebar */}
+      {/* Desktop persistent sidebar (gradient) */}
       <AppSidebar />
 
-      {/* Mobile header - hidden on desktop, hidden on pages with their own hero */}
-      {!hasOwnHeader && !isNearby && !isActivity && !isCampaign && !isStats && !isMarketing && !isSettings && !isDrawsHistory && !isSubscribe && !isSubscriptionManage && (
-        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-      )}
-
-      {/* Mobile drawer */}
-      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+      {/* Single app menu drawer, opened by any AppPageHero via context */}
+      <AppMenuDrawer open={isOpen} onClose={closeMenu} />
 
       <Box
         component='main'
@@ -84,7 +68,6 @@ const MainLayout = () => {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          pt: topPadding,
           pb: { xs: isNearby ? 0 : '76px', md: isNearby ? 0 : 4 },
           ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
           width: { xs: '100%', md: `calc(100% - ${SIDEBAR_WIDTH}px)` },
@@ -96,14 +79,12 @@ const MainLayout = () => {
         </Box>
       </Box>
 
-      {/* Mobile bottom nav - hidden on desktop, hidden for admin */}
+      {/* Mobile bottom nav - hidden on desktop and for admin */}
       {!isAdmin && (
         <Paper
           sx={{
             position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
+            bottom: 0, left: 0, right: 0,
             zIndex: 1000,
             display: { xs: 'block', md: 'none' },
             overflow: 'visible',
@@ -123,18 +104,11 @@ const MainLayout = () => {
                 color: 'text.secondary',
                 transition: 'color 180ms ease-out',
                 minWidth: 64,
-                '&.Mui-selected': {
-                  color: 'primary.main',
-                },
+                '&.Mui-selected': { color: 'primary.main' },
               },
             }}
           >
-            <BottomNavigationAction
-              {...tapNearby}
-              value='/nearby'
-              showLabel={false}
-              icon={<Storefront />}
-            />
+            <BottomNavigationAction {...tapNearby} value='/nearby' showLabel={false} icon={<Storefront />} />
 
             <BottomNavigationAction
               {...tapMain}
@@ -154,25 +128,30 @@ const MainLayout = () => {
                     transform: scanActive ? 'scale(1.05)' : 'scale(1)',
                   }}
                 >
-                  <ReceiptLongIcon sx={{
-                    color: scanActive ? 'white' : NEUTRAL_INACTIVE_ICON,
-                    fontSize: 26,
-                    transition: 'color 0.2s ease',
-                  }} />
+                  <ReceiptLongIcon sx={{ color: scanActive ? 'white' : NEUTRAL_INACTIVE_ICON, fontSize: 26, transition: 'color 0.2s ease' }} />
                 </Box>
               }
             />
 
-            <BottomNavigationAction
-              {...tapThird}
-              value={thirdNavPath}
-              showLabel={false}
-              icon={isBusinessOrManager ? <EqualizerIcon /> : <ConfirmationNumber />}
-            />
+            <BottomNavigationAction {...tapThird} value={thirdNavPath} showLabel={false} icon={isBusinessOrManager ? <EqualizerIcon /> : <ConfirmationNumber />} />
           </BottomNavigation>
         </Paper>
       )}
     </Box>
+  );
+};
+
+const MainLayout = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuCtx = useMemo(
+    () => ({ isOpen: menuOpen, openMenu: () => setMenuOpen(true), closeMenu: () => setMenuOpen(false) }),
+    [menuOpen],
+  );
+  return (
+    <InstallPromptProvider>
+      <MenuDrawerContext.Provider value={menuCtx}>
+        <LayoutShell />
+      </MenuDrawerContext.Provider>
     </InstallPromptProvider>
   );
 };

@@ -11,9 +11,7 @@ import {
   useTheme,
 } from '@mui/material';
 import {
-  AddCircleOutline,
   CardGiftcard,
-  ConfirmationNumber,
 } from '@mui/icons-material';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
@@ -32,11 +30,9 @@ import { useSubscription } from '../../subscription/hooks/useSubscription';
 import { useEntryMode } from '../hooks/useEntryMode';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import PhoneVerificationGate from '../components/PhoneVerificationGate';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import {
   PRIMARY_MAIN,
-  GRADIENT_HERO,
-  ALPHA_WHITE_15,
-  ALPHA_WHITE_30,
 } from '../../../shared/colors';
 import BusinessVisual from '../components/BusinessVisual';
 import UserVisual from '../components/UserVisual';
@@ -241,47 +237,16 @@ const didAutoActivate = useRef(false);
 
     return (
       <Box sx={{ minHeight: '100dvh', pb: 6, zoom: { xs: 0.9, md: 1 } }}>
-        {/* Hero */}
-        <Box
-          sx={{
-            background: GRADIENT_HERO,
-            pt: 3,
-            pb: 9,
-            px: 3,
-            color: 'white',
-            borderRadius: '0 0 32px 32px',
-          }}
-        >
-          <Container maxWidth='lg'>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Box
-                sx={{
-                  width: 52, height: 52, borderRadius: 2,
-                  bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_30}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
-              >
-                {isBusiness
-                  ? <AddCircleOutline sx={{ color: 'white', fontSize: 26 }} />
-                  : <ConfirmationNumber sx={{ color: 'white', fontSize: 26 }} />}
-              </Box>
-              <Box >
-                <Typography variant='h5' fontWeight={800}>
-                  {isBusiness ? 'Generate Entry' : entryMode === 'receipt' ? 'Submit Receipt' : 'Activate Entry'}
-                </Typography>
-                <Typography variant='body2' sx={{ opacity: 0.75, mt: 0.25 }}>
-                  {isBusiness
-                    ? 'Create a unique code for your customer to enter the campaign'
-                    : entryMode === 'receipt'
-                      ? 'Submit your receipt details to enter the campaign'
-                      : 'Enter your code from the receipt to join the campaign'}
-                </Typography>
-              </Box>
-            </Box>
-          </Container>
-        </Box>
+        <AppPageHero
+        title={isBusiness ? 'Generate Entry' : entryMode === 'receipt' ? 'Submit Receipt' : 'Activate Entry'}
+        subtitle={isBusiness
+          ? 'Create a code for your customer'
+          : entryMode === 'receipt'
+            ? 'Submit your receipt to enter the campaign'
+            : 'Enter your code to join the campaign'}
+      />
 
-        <Container maxWidth='lg' sx={{ mt: -5 }}>
+        <Container maxWidth='lg' sx={{ mt: 1, }}>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -441,8 +406,16 @@ const didAutoActivate = useRef(false);
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', px: 1, pb: 2 }}>
-      <Container maxWidth='sm' sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', pb: 2 }}>
+      <AppPageHero
+        title={isBusiness ? 'Generate Entry' : entryMode === 'receipt' ? 'Submit Receipt' : 'Activate Entry'}
+        subtitle={isBusiness
+          ? 'Create a code for your customer'
+          : entryMode === 'receipt'
+            ? 'Submit your receipt to enter the campaign'
+            : 'Enter your code to join the campaign'}
+      />
+      <Container maxWidth='sm' sx={{ flex: 1, display: 'flex', flexDirection: 'column', px: 2, mt: 2 }}>
         {isBusiness ? (
           // Business mobile layout: keep original full layout
           <>

@@ -5,14 +5,13 @@ import {
   IconButton, Container, Skeleton,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
-import AppHeader from '../../../shared/components/AppHeader';
-import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import {
-  ReceiptLong, CheckCircle, Cancel, EmojiEvents, ArrowBackIosNew,
+  ReceiptLong, CheckCircle, Cancel, EmojiEvents,
   Lock, LockOpen, WorkspacePremium, Edit, Add as AddIcon, Remove as RemoveIcon, SwapHoriz,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
+import { PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices } from '../hooks/useSubscription';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
@@ -27,7 +26,6 @@ const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
 
 export default function SubscriptionManagementPage() {
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelError, setCancelError] = useState('');
   const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'prorated' | 'none'; refundAmount: number } | null>(null);
@@ -111,52 +109,13 @@ export default function SubscriptionManagementPage() {
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 10, md: 6 } }}>
-      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <AppPageHero
+        title='Campaign Management'
+        subtitle='Manage your subscription and campaigns'
+        icon={<ReceiptLong sx={{ fontSize: 28 }} />}
+      />
 
-      {/* Hero Header */}
-      <Box
-        sx={{
-          background: GRADIENT_HERO,
-          pt: { xs: 0, md: 3 },
-          pb: 6,
-          color: 'white',
-          borderRadius: '0 0 32px 32px',
-        }}
-      >
-        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-        <Container maxWidth='lg' sx={{ px: 3, pt: { xs: 1, md: 0 } }}>
-          <Stack direction='row' alignItems='center' spacing={2}>
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-            >
-              <IconButton
-                onClick={() => navigate(-1)}
-                size='small'
-                sx={{ color: 'white', '&:hover': { bgcolor: ALPHA_WHITE_15 }, borderRadius: 2, width: 44, height: 44 }}
-              >
-                <ArrowBackIosNew fontSize='small' />
-              </IconButton>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <Box>
-                <Typography variant='caption' fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, opacity: 0.9 }}>
-                  Manage Account
-                </Typography>
-                <Typography variant='h5' fontWeight={800}>Campaign Management</Typography>
-              </Box>
-            </motion.div>
-          </Stack>
-        </Container>
-
-      </Box>
-
-      <Container maxWidth='lg' sx={{ mt: -3 }}>
+      <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>
         {/* Alerts */}
 
         {cancelResult && (

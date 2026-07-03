@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Typography,
   Snackbar,
   Alert,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
 import { useLocation } from 'react-router-dom';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import {
   useAllDraws,
   useAdminOverview,
@@ -97,27 +97,24 @@ const BusinessDashboard: React.FC = () => {
   };
 
   return (
-    <Box p={3}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant='h5' fontWeight={800}>
-          {sectionTitle[path] ?? 'Admin'}
-        </Typography>
-        <Typography variant='body2' color='text.secondary'>
-          Admin Dashboard
-        </Typography>
+    <Box sx={{ minHeight: { xs: 'calc(100dvh - 60px)', md: '100dvh' } }}>
+      <AppPageHero
+        title={sectionTitle[path] ?? 'Admin'}
+      />
+
+      <Box p={3}>
+        {renderContent()}
+
+        <CreateBusinessModal open={isBizModalOpen} onClose={() => setIsBizModalOpen(false)} />
+        <CreateDrawModal open={isDrawModalOpen} onClose={() => setIsDrawModalOpen(false)} />
+
+        <Snackbar open={!!snackError} autoHideDuration={4000} onClose={() => setSnackError('')}>
+          <Alert severity='error' onClose={() => setSnackError('')}>{snackError}</Alert>
+        </Snackbar>
+        <Snackbar open={!!snackSuccess} autoHideDuration={4000} onClose={() => setSnackSuccess('')}>
+          <Alert severity='success' onClose={() => setSnackSuccess('')}>{snackSuccess}</Alert>
+        </Snackbar>
       </Box>
-
-      {renderContent()}
-
-      <CreateBusinessModal open={isBizModalOpen} onClose={() => setIsBizModalOpen(false)} />
-      <CreateDrawModal open={isDrawModalOpen} onClose={() => setIsDrawModalOpen(false)} />
-
-      <Snackbar open={!!snackError} autoHideDuration={4000} onClose={() => setSnackError('')}>
-        <Alert severity='error' onClose={() => setSnackError('')}>{snackError}</Alert>
-      </Snackbar>
-      <Snackbar open={!!snackSuccess} autoHideDuration={4000} onClose={() => setSnackSuccess('')}>
-        <Alert severity='success' onClose={() => setSnackSuccess('')}>{snackSuccess}</Alert>
-      </Snackbar>
     </Box>
   );
 };

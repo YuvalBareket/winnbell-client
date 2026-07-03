@@ -7,15 +7,13 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
-import AppHeader from '../../../shared/components/AppHeader';
-import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import {
   EmojiEvents, EmojiEventsOutlined, ConfirmationNumberOutlined, ArticleOutlined, HourglassEmptyOutlined,
 } from '@mui/icons-material';
 import EmptyState from '../../../shared/components/EmptyState';
 import { useGetDrawHistory } from '../hooks/useGetDraws';
 import {
-  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30,
   TEXT_SECONDARY, MOBILE_CONTENT_HEIGHT_NO_HEADER, BG_SURFACE, PRIMARY_MAIN, ACCENT_GOLD, ACCENT_GOLD_DARK, SHADOW_CARD, SHADOW_CARD_HOVER, SHADOW_FLOAT, SHADOW_PRIMARY_GLOW, ALPHA_PRIMARY_10, BORDER_SUBTLE,
   SUCCESS_GREEN, ALPHA_SUCCESS_04, ALPHA_SUCCESS_08, ALPHA_SUCCESS_12, ALPHA_SUCCESS_25,
   ALPHA_AMBER_04, ALPHA_AMBER_08, ALPHA_AMBER_12, ALPHA_AMBER_25,
@@ -25,7 +23,6 @@ import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
 import type { IDrawResult } from '../types';
 
 const DrawHistoryPage = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [selectedDrawIndex, setSelectedDrawIndex] = useState(0);
   const [profileLocationId, setProfileLocationId] = useState<number | null>(null);
   const { data: history, isLoading, isError } = useGetDrawHistory();
@@ -69,59 +66,18 @@ const DrawHistoryPage = () => {
   const isClosed = selectedDraw?.status?.toLowerCase() === 'closed';
 
   return (
-    // xs: AppHeader renders inside this box, so only the 76px bottom nav is external; / 0.9 cancels the xs zoom so the fixed page fills the viewport exactly
+    // xs: AppPageHero renders inside this box, so only the 76px bottom nav is external; / 0.9 cancels the xs zoom so the fixed page fills the viewport exactly
     // overflow-x: clip (not hidden) contains the coverflow deck's horizontal peek WITHOUT turning
     // this box into a vertical scroll container. 'hidden' forces overflow-y to compute to 'auto'
     // (CSS spec), which created a second, inner scrollbar competing with the document.
     <Box sx={{  overflowX: 'clip', display: 'flex', flexDirection: 'column', zoom: { xs: 0.9, md: 1 } }}>
-      <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <AppPageHero
+        title='Campaigns Hub'
+        subtitle='Track active campaigns and winner history'
+        icon={<EmojiEvents sx={{ fontSize: 28 }} />}
+      />
 
-      {/* Hero Header. position + zIndex lift it above the coverflow deck (a later DOM sibling whose
-          overflow-visible neighbour cards would otherwise paint over and steal clicks from the
-          header's notification / menu buttons). */}
-      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 4, color: 'white', flexShrink: 0, borderRadius: '0 0 32px 32px', position: 'relative', zIndex: 5 }}>
-        <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
-        <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
-          <Stack direction='row' alignItems='center' spacing={2}>
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-            >
-              <Box
-                sx={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 2,
-                  bgcolor: ALPHA_WHITE_15,
-                  border: `1px solid ${ALPHA_WHITE_30}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <EmojiEvents sx={{ color: 'white', fontSize: 28 }} />
-              </Box>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <Box>
-                <Typography variant='h5' fontWeight={800}>
-                  Campaigns Hub
-                </Typography>
-                <Typography variant='body2' sx={{ opacity: 0.75 }}>
-                  Track active campaigns and winner history
-                </Typography>
-              </Box>
-            </motion.div>
-          </Stack>
-        </Container>
-      </Box>
-
-      <Container maxWidth='lg' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: { xs: 1.5, md: 4.75 }, pb: 1.5, px: 3, position: 'relative', zIndex: 1 }}>
+      <Container maxWidth='lg' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: { xs: 3.5, md: 4.75 }, pb: 1.5, px: 3, position: 'relative', zIndex: 1 }}>
         {/* Error state */}
         {isError && (
           <motion.div

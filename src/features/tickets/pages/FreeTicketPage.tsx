@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import {
   Box,
+  Container,
   Typography,
   Button,
-  IconButton,
   CircularProgress,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowBackIosNew from '@mui/icons-material/ArrowBackIosNew';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LockIcon from '@mui/icons-material/Lock';
 import BoltIcon from '@mui/icons-material/Bolt';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CardGiftcardOutlined from '@mui/icons-material/CardGiftcardOutlined';
 import { useNavigate } from 'react-router-dom';
+import AppPageHero from '../../../shared/components/AppPageHero';
 import { useFreeTicket } from '../hooks/useFreeTicket';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import PhoneVerificationGate from '../components/PhoneVerificationGate';
-import { AMBER_HOURGLASS, SHADOW_PRIMARY_MEDIUM, GRADIENT_HERO, ALPHA_WHITE_20, ALPHA_WHITE_10, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
+import { AMBER_HOURGLASS, SHADOW_PRIMARY_MEDIUM, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import FreeEntrySuccessDialog from '../components/FreeEntrySuccessDialog';
 
 const getNextSunday = (): Date => {
@@ -88,12 +88,14 @@ const FreeTicketPage: React.FC = () => {
           minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' },
           maxWidth: '480px',
           mx: 'auto',
-          pt: 1,
-          overflowY: 'auto',
           zoom: { xs: 0.9, md: 1 },
         }}
       >
-
+        <AppPageHero
+          title='One Free Entry'
+          subtitle='Every week. No purchase needed.'
+          icon={<CardGiftcardOutlined sx={{ fontSize: 28 }} />}
+        />
 
         {/* Main content - flex:1 pushes footer down naturally */}
         <Box
@@ -222,108 +224,38 @@ const FreeTicketPage: React.FC = () => {
     );
   }
 
-  // Desktop layout (md and up) - two-column premium design
+  // Desktop layout (md and up)
   return (
     <Box
       sx={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
         minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' },
+        pb: 4,
       }}
     >
-      {/* Left Column - Hero/Brand side */}
-      <Box
-        sx={{
-          background: GRADIENT_HERO,
-          position: 'relative',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          p: 4,
-        }}
-      >
-        {/* Decorative background icon */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -60,
-            right: -60,
-            fontSize: '400px',
-            color: ALPHA_WHITE_10,
-            zIndex: 1,
-            pointerEvents: 'none',
-          }}
+      <AppPageHero
+        title='One Free Entry'
+        subtitle='Every week. No purchase needed.'
+        icon={<CardGiftcardOutlined sx={{ fontSize: 28 }} />}
+      />
+
+      <Container maxWidth='lg' sx={{ mt: { xs: 1.5, md: 1 } }}>
+        <Button
+          onClick={() => navigate(-1)}
+          startIcon={<ArrowBackIosNew sx={{ fontSize: 14 }} />}
+          sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 600 }}
         >
-          <EmojiEventsIcon sx={{ fontSize: 'inherit' }} />
-        </Box>
+          Back
+        </Button>
+      </Container>
 
-        {/* Back button */}
-        <Box sx={{ position: 'relative', zIndex: 2 }}>
-          <IconButton onClick={() => navigate(-1)} sx={{ color: 'white' }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-
-        {/* Hero content */}
-        <Box sx={{ position: 'relative', zIndex: 2, color: 'white' }}>
-          <Typography
-            sx={{
-              fontSize: '3.5rem',
-              fontWeight: 900,
-              mb: 2,
-              lineHeight: 1.1,
-            }}
-          >
-            One Free Entry.
-            <br />
-            Every Week.
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: '1.1rem',
-              lineHeight: 1.7,
-              color: ALPHA_WHITE_20,
-              mb: 3,
-              maxWidth: '90%',
-            }}
-          >
-            Winnbell gives every member one free campaign entry every week. No purchase needed.
-          </Typography>
-
-          {/* Info bullets */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <CheckCircleIcon sx={{ fontSize: 24, color: ALPHA_WHITE_20 }} />
-              <Typography sx={{ color: ALPHA_WHITE_20, fontSize: '0.95rem' }}>
-                Resets every Sunday
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <CheckCircleIcon sx={{ fontSize: 24, color: ALPHA_WHITE_20 }} />
-              <Typography sx={{ color: ALPHA_WHITE_20, fontSize: '0.95rem' }}>
-                No purchase required
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <CheckCircleIcon sx={{ fontSize: 24, color: ALPHA_WHITE_20 }} />
-              <Typography sx={{ color: ALPHA_WHITE_20, fontSize: '0.95rem' }}>
-                Stacks with receipt entries
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Right Column - Action side */}
       <Box
         sx={{
-          backgroundColor: 'background.paper',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
           p: 4,
+          mt: { xs: 1, md: 0 },
         }}
       >
         {/* Status icon */}
