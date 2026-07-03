@@ -1,8 +1,7 @@
-import { Box, Typography, Stack, Chip, Skeleton, Avatar, LinearProgress, CircularProgress } from '@mui/material';
+import { Box, Typography, Stack, Chip, Skeleton, Avatar, CircularProgress } from '@mui/material';
 import { Circle, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRef, useCallback, useEffect, useState } from 'react';
-import EmptyState from '../../../shared/components/EmptyState';
 import { useNavigate } from 'react-router-dom';
 import {
   STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
@@ -16,24 +15,20 @@ import { selectIsBusiness, selectIsLocationManager } from '../../../store/select
 import { useAppSelector } from '../../../store/hook';
 import type { BusinessTicket, UserTicket } from '../types/myTicket.types';
 import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
+import { popIn, riseIn, staggerContainer, heroPop, breathe, SPRING_JUMP } from '../../../shared/motion';
 
-// --- Animation variants ---
-const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.22, ease: [0.23, 1, 0.32, 1] as [number, number, number, number], delay: (i % 50) * 0.05 },
-  }),
-};
+// No count-up: the number shows its real value immediately and announces itself with a
+// physical grow-and-settle jump (scale spring). The digits never tick - counting looked
+// robotic no matter the easing.
 
 // --- Shared ticket row wrapper ---
 const TicketRowWrapper = ({ children, index, isClickable = false, onClick }: { children: React.ReactNode; index: number; isClickable?: boolean; onClick?: () => void }) => (
   <motion.div
     custom={index}
-    variants={itemVariants}
+    variants={popIn}
     initial="hidden"
     animate="visible"
+    {...(isClickable ? pressureCardMotion : {})}
   >
     <Box
       onClick={isClickable ? onClick : undefined}
@@ -63,6 +58,12 @@ const TicketRowWrapper = ({ children, index, isClickable = false, onClick }: { c
     </Box>
   </motion.div>
 );
+
+// Motion props for clickable cards
+const pressureCardMotion = {
+  whileTap: { scale: 0.97 },
+  transition: { type: 'spring', stiffness: 500, damping: 30, mass: 0.8 },
+} as const;
 
 // --- 1. USER TICKET COMPONENT ---
 const UserTicketRow = ({ ticket, index, onLocationClick }: { ticket: UserTicket; index: number; onLocationClick?: (locationId: number) => void }) => {
@@ -201,7 +202,6 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
     return () => observerRef.current?.disconnect();
   }, [setupObserver]);
 
-  const displayCount = totalCount;
   const CAP = MAX_ENTRIES_PER_DRAW;
   const progress = Math.min((totalCount / CAP) * 100, 100);
   const isMaxed = totalCount >= CAP;
@@ -219,8 +219,10 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
   return (
     <>
-      {/* Entry count + progress */}
-      <Box sx={{ px: 3, pt: 0, pb: 2 }}>
+      {/* Entry count + progress. riseIn (no scale): a scale overshoot on this full-width
+          block briefly widens the page and the mobile browser rescales it (zoom flash). */}
+      <motion.div variants={riseIn} initial="hidden" animate="visible">
+        <Box sx={{ px: 3, pt: 0, pb: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: isBusiness ? 0 : 1.5 }}>
           <Box>
             <Typography
@@ -236,9 +238,20 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
                 <Skeleton width={60} height={44} />
               ) : (
                 <>
-                  <Typography variant='h3' sx={{ fontWeight: 900, color: progressColor, lineHeight: 1, letterSpacing: '-0.03em', transition: 'color 0.3s' }}>
-                    {displayCount}
-                  </Typography>
+                  {/* The jump: grows in past full size and springs back down to rest, with the
+                      SAME physics as the bar below so they land as one event.
+                      Keyed by the value so switching draws re-triggers the jump. */}
+                  <motion.span
+                    key={totalCount}
+                    style={{ display: 'inline-block', transformOrigin: 'left bottom' }}
+                    initial={{ scale: 0.4, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={SPRING_JUMP}
+                  >
+                    <Typography variant='h3' sx={{ fontWeight: 900, color: progressColor, lineHeight: 1, letterSpacing: '-0.03em', transition: 'color 0.3s' }}>
+                      {totalCount}
+                    </Typography>
+                  </motion.span>
                   {!isBusiness && (
                     <Typography variant='body1' sx={{ fontWeight: 700, color: 'text.secondary' }}>
                       / {CAP}
@@ -251,7 +264,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
                   )}
                   {isBusiness && cap === null && (
                     <Typography variant='body1' sx={{ fontWeight: 700, color: 'text.secondary' }}>
-                      {displayCount !== 1 ? 'entries' : 'entry'}
+                      {totalCount !== 1 ? 'entries' : 'entry'}
                     </Typography>
                   )}
                 </>
@@ -281,20 +294,25 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
             {isLoading ? (
               <Skeleton variant='rounded' height={8} sx={{ borderRadius: 4 }} />
             ) : (
-              <LinearProgress
-                variant='determinate'
-                value={progress}
-                sx={{
-                  height: 8,
-                  borderRadius: 4,
-                  bgcolor: 'rgba(0,0,0,0.06)',
-                  '& .MuiLinearProgress-bar': {
-                    borderRadius: 4,
-                    bgcolor: progressColor,
-                    transition: 'background-color 0.3s, transform 0.6s ease',
-                  },
-                }}
-              />
+              // Same look as LinearProgress, but the fill is a motion.div so it can grow
+              // from 0 to the target on mount - slowly, with an ease-out glide.
+              <Box
+                role='progressbar'
+                aria-valuenow={Math.round(progress)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                sx={{ height: 8, borderRadius: 4, bgcolor: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}
+              >
+                {/* Underdamped spring: the fill overshoots past its target (~120% of the
+                    distance), dips back under, and settles - same jumpy landing as the number.
+                    Starts a beat after the number so it reads as cause and effect. */}
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ ...SPRING_JUMP, delay: 0.12 }}
+                  style={{ height: '100%', borderRadius: 4, backgroundColor: progressColor }}
+                />
+              </Box>
             )}
             {!isLoading && (
               <Typography variant='caption' color='text.disabled' sx={{ mt: 0.75, display: 'block', fontWeight: 500 }}>
@@ -307,47 +325,64 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
             )}
           </Box>
         )}
-      </Box>
+        </Box>
+      </motion.div>
 
       {/* Ticket list */}
-      <Stack spacing={1.5} px={2} pb={3}>
-        {isLoading ? (
-          [...Array(3)].map((_, index) => <TicketSkeleton key={index} />)
-        ) : allTickets.length > 0 ? (
-          allTickets.map((ticket: BusinessTicket | UserTicket, index: number) =>
-            isBusiness ? (
-              <BusinessTicketRow key={ticket.id} ticket={ticket as BusinessTicket} index={index} />
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+      >
+        <Stack spacing={1.5} px={2} pb={3}>
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <motion.div key="loading" variants={popIn}>
+                <Stack spacing={1.5}>
+                  {[...Array(3)].map((_, index) => <TicketSkeleton key={index} />)}
+                </Stack>
+              </motion.div>
+            ) : allTickets.length > 0 ? (
+              <motion.div key="list" variants={staggerContainer}>
+                <Stack spacing={1.5}>
+                  {allTickets.map((ticket: BusinessTicket | UserTicket, index: number) =>
+                    isBusiness ? (
+                      <BusinessTicketRow key={ticket.id} ticket={ticket as BusinessTicket} index={index} />
+                    ) : (
+                      <UserTicketRow
+                        key={ticket.id}
+                        ticket={ticket as UserTicket}
+                        index={index}
+                        onLocationClick={(locId) => setSelectedLocationId(locId)}
+                      />
+                    ),
+                  )}
+                </Stack>
+              </motion.div>
+            ) : isBusiness ? (
+              <motion.div key="empty-business" variants={popIn}>
+                <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
+                  <motion.div variants={heroPop} initial="hidden" animate="visible">
+                    <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+                      <StorefrontOutlined sx={{ fontSize: 32, color: 'text.disabled' }} />
+                    </Box>
+                  </motion.div>
+                  <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
+                    No entries distributed yet
+                  </Typography>
+                  <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
+                    Entries will appear here once customers activate them at your location.
+                  </Typography>
+                </Box>
+              </motion.div>
             ) : (
-              <UserTicketRow
-                key={ticket.id}
-                ticket={ticket as UserTicket}
-                index={index}
-                onLocationClick={(locId) => setSelectedLocationId(locId)}
-              />
-            ),
-          )
-        ) : isBusiness ? (
-          <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
-            <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
-              <StorefrontOutlined sx={{ fontSize: 32, color: 'text.disabled' }} />
-            </Box>
-            <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
-              No entries distributed yet
-            </Typography>
-            <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
-              Entries will appear here once customers activate them at your location.
-            </Typography>
-          </Box>
-        ) : (
-          <EmptyState
-            icon={<ConfirmationNumberOutlined />}
-            title='No entries yet'
-            description='Claim your free weekly entry or submit a receipt at a partner business'
-            actionLabel='Scan a receipt'
-            onAction={() => navigate('/scan')}
-          />
-        )}
-      </Stack>
+              <motion.div key="empty-user" variants={popIn}>
+                <EmptyStateAnimated onAction={() => navigate('/scan')} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Stack>
+      </motion.div>
 
       {/* Infinite scroll sentinel */}
       <Box ref={sentinelRef} sx={{ pb: 2, display: 'flex', justifyContent: 'center' }}>
@@ -442,5 +477,40 @@ const TicketSkeleton = () => (
       <Skeleton width={80} height={22} sx={{ mb: 1 }} />
       <Skeleton width={70} height={24} sx={{ borderRadius: '12px' }} />
     </Box>
+  </Box>
+);
+
+// Empty state with animated icon and breathing button
+const EmptyStateAnimated = ({ onAction }: { onAction: () => void }) => (
+  <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
+    <motion.div variants={heroPop} initial="hidden" animate="visible">
+      <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'rgba(2,146,183,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+        <ConfirmationNumberOutlined sx={{ fontSize: 32, color: 'primary.main' }} />
+      </Box>
+    </motion.div>
+    <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
+      No entries yet
+    </Typography>
+    <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
+      Claim your free weekly entry or submit a receipt at a partner business
+    </Typography>
+    <motion.button
+      {...breathe}
+      onClick={onAction}
+      style={{
+        marginTop: '1.5rem',
+        padding: '0.75rem 1.5rem',
+        borderRadius: '0.5rem',
+        border: 'none',
+        backgroundColor: PRIMARY_MAIN,
+        color: 'white',
+        fontWeight: 700,
+        fontSize: '0.875rem',
+        cursor: 'pointer',
+        textTransform: 'none',
+      }}
+    >
+      Scan a receipt
+    </motion.button>
   </Box>
 );

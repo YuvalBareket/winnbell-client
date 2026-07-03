@@ -1,5 +1,6 @@
 import { Box, Container, Paper, Stack, Typography, useMediaQuery, useTheme, Autocomplete, TextField, CircularProgress } from '@mui/material';
 import { ConfirmationNumber } from '@mui/icons-material';
+import { motion } from 'framer-motion';
 import { ActiveTicketsList } from '../components/ActiveTicketsList';
 import { DrawSwiper } from '../../draw/components/DrawSwiper';
 import { useState } from 'react';
@@ -14,6 +15,7 @@ import {
   ALPHA_WHITE_30,
   MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
+import { riseIn, staggerContainer } from '../../../shared/motion';
 
 const MyTicketsPage = () => {
   const [activeDrawId, setActiveDrawId] = useState<number | null>(null);
@@ -152,34 +154,49 @@ const MyTicketsPage = () => {
 
   // Mobile
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, zoom: { xs: 0.9, md: 1 } }}>
-      {/* Hero */}
-
-      <Box sx={{ pt:2}}>
-        <DrawSwiper
-          draw_id={activeDrawId}
-          onDrawChange={(id) => setActiveDrawId(id)}
-        />
-      </Box>
-
-      {isBusiness && !isManager && locations.length > 1 && (
-        <Box sx={{ px: 2, pt: 1.5, position: 'relative',pr:2.5 }}>
-          <Autocomplete
-            size='small'
-            fullWidth
-            disablePortal
-            options={locations}
-            getOptionLabel={(opt) => opt.name}
-            value={locations.find(l => l.id === selectedLocationId) ?? null}
-            onChange={(_, val) => setSelectedLocationId(val?.id ?? undefined)}
-            isOptionEqualToValue={(a, b) => a.id === b.id}
-            renderInput={(params) => <TextField {...params} label='All locations' sx={{}} />}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
+      {/* overflowX clip: entrance translations must never widen the document, or the mobile
+          browser rescales the page (zoom flash). clip, not hidden, so no scroll container. */}
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, zoom: { xs: 0.9, md: 1 }, overflowX: 'clip' }}>
+      {/* Draw deck - rises in */}
+      <motion.div variants={riseIn}>
+        <Box sx={{ pt: 2 }}>
+          <DrawSwiper
+            draw_id={activeDrawId}
+            onDrawChange={(id) => setActiveDrawId(id)}
           />
         </Box>
+      </motion.div>
+
+      {/* Location selector - pops in */}
+      {isBusiness && !isManager && locations.length > 1 && (
+        <motion.div variants={riseIn}>
+          <Box sx={{ px: 2, pt: 1.5, position: 'relative', pr: 2.5 }}>
+            <Autocomplete
+              size='small'
+              fullWidth
+              disablePortal
+              options={locations}
+              getOptionLabel={(opt) => opt.name}
+              value={locations.find(l => l.id === selectedLocationId) ?? null}
+              onChange={(_, val) => setSelectedLocationId(val?.id ?? undefined)}
+              isOptionEqualToValue={(a, b) => a.id === b.id}
+              renderInput={(params) => <TextField {...params} label='All locations' sx={{}} />}
+            />
+          </Box>
+        </motion.div>
       )}
 
-      <ActiveTicketsList draw_id={activeDrawId} locationId={selectedLocationId} />
-    </Box>
+      {/* Ticket list - pops in with stagger */}
+      <motion.div variants={riseIn}>
+        <ActiveTicketsList draw_id={activeDrawId} locationId={selectedLocationId} />
+      </motion.div>
+      </Box>
+    </motion.div>
   );
 };
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Drawer, Box, Typography, Avatar, Button, Stack, Chip, IconButton, Divider,
   useMediaQuery, useTheme, Skeleton,
@@ -17,6 +18,7 @@ import { PRIMARY_MAIN } from '../../../shared/colors';
 import { MAX_ENTRIES_PER_RECEIPT } from '../../../shared/constants/entries';
 import { formatDistanceMiles } from '../../../shared/utils/distance';
 import { safeHttpUrl } from '../../../shared/utils/url';
+import { pressable, breathe } from '../../../shared/motion';
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -246,20 +248,26 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
       )}
 
       {/* Hero, body, and actions -- shows real content when location is available */}
-      {location && (
-        <>
-          {/* Real hero banner */}
-          <Box
-            sx={{
-              flexShrink: 0,
-              px: 2.5,
-              pt: isDesktop ? 2.5 : 1.5,
-              pb: 2.5,
-              background: `linear-gradient(145deg, ${sectorInfo.bgColor} 0%, ${sectorInfo.color}14 100%)`,
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-            }}
-          >
+      <AnimatePresence>
+        {location && (
+          <>
+            {/* Real hero banner */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 14, mass: 1 }}
+            >
+              <Box
+                sx={{
+                  flexShrink: 0,
+                  px: 2.5,
+                  pt: isDesktop ? 2.5 : 1.5,
+                  pb: 2.5,
+                  background: `linear-gradient(145deg, ${sectorInfo.bgColor} 0%, ${sectorInfo.color}14 100%)`,
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
             <Stack direction='row' spacing={2} alignItems='flex-start'>
               <Avatar
                 src={location.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${location.logo_url}` : undefined}
@@ -314,7 +322,8 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                 </Stack>
               </Box>
             </Stack>
-          </Box>
+              </Box>
+            </motion.div>
 
           {/* Scrollable body */}
           <Box
@@ -518,48 +527,54 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                     This location has reached its entry limit for the current campaign.
                   </Typography>
                 )}
-                <Button
-                  fullWidth
-                  variant='contained'
-                  size='large'
-                  startIcon={<ReceiptLong />}
-                  onClick={detail?.cap_reached || preview ? undefined : handleSubmitReceipt}
-                  sx={{
-                    py: 1.6,
-                    fontWeight: 800,
-                    fontSize: '0.95rem',
-                    bgcolor: detail?.cap_reached ? '#e5e7eb' : PRIMARY_MAIN,
-                    boxShadow: detail?.cap_reached ? 'none' : `0 6px 20px ${PRIMARY_MAIN}40`,
-                    cursor: detail?.cap_reached ? 'not-allowed' : 'pointer',
-                    transition: 'transform 160ms ease-out, box-shadow 160ms ease-out',
-                    '&:hover': detail?.cap_reached ? { bgcolor: '#e5e7eb' } : { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.92)' },
-                    '&:active': detail?.cap_reached ? {} : { transform: 'scale(0.97)' },
-                  }}
+                <motion.div
+                  {...pressable}
+                  {...(detail?.cap_reached || preview ? {} : breathe)}
                 >
-                  Submit a Receipt
-                </Button>
+                  <Button
+                    fullWidth
+                    variant='contained'
+                    size='large'
+                    startIcon={<ReceiptLong />}
+                    onClick={detail?.cap_reached || preview ? undefined : handleSubmitReceipt}
+                    sx={{
+                      py: 1.6,
+                      fontWeight: 800,
+                      fontSize: '0.95rem',
+                      bgcolor: detail?.cap_reached ? '#e5e7eb' : PRIMARY_MAIN,
+                      boxShadow: detail?.cap_reached ? 'none' : `0 6px 20px ${PRIMARY_MAIN}40`,
+                      cursor: detail?.cap_reached ? 'not-allowed' : 'pointer',
+                      '&:hover': detail?.cap_reached ? { bgcolor: '#e5e7eb' } : { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.92)' },
+                    }}
+                  >
+                    Submit a Receipt
+                  </Button>
+                </motion.div>
               </>
             )}
-            <Button
-              fullWidth
-              variant='outlined'
-              size='large'
-              startIcon={<Directions />}
-              onClick={handleDirections}
-              sx={{
-                py: 1.4,
-                fontWeight: 700,
-                fontSize: '0.9rem',
-                borderColor: 'divider',
-                color: 'text.secondary',
-                '&:hover': { borderColor: PRIMARY_MAIN, color: PRIMARY_MAIN, bgcolor: `${PRIMARY_MAIN}06` },
-              }}
-            >
-              Get Directions
-            </Button>
+            <motion.div {...pressable}>
+              <Button
+                fullWidth
+                variant='outlined'
+                size='large'
+                startIcon={<Directions />}
+                onClick={handleDirections}
+                sx={{
+                  py: 1.4,
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  borderColor: 'divider',
+                  color: 'text.secondary',
+                  '&:hover': { borderColor: PRIMARY_MAIN, color: PRIMARY_MAIN, bgcolor: `${PRIMARY_MAIN}06` },
+                }}
+              >
+                Get Directions
+              </Button>
+            </motion.div>
           </Box>
         </>
-      )}
+        )}
+      </AnimatePresence>
     </Drawer>
   );
 };

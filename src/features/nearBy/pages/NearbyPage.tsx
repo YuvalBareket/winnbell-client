@@ -35,6 +35,7 @@ import { getUserInitials } from '../../../shared/utils/string';
 import { formatDistanceMiles } from '../../../shared/utils/distance';
 import { GRADIENT_PRIMARY } from '../../../shared/colors';
 import TapButton from '../../../shared/components/TapButton';
+import { staggerContainer, pressable, pressableCard, pressableIcon, SPRING_POP } from '../../../shared/motion';
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -46,12 +47,14 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Cascade list items with springy pop entrance - overrides popIn with per-item stagger delay
 const listItemVariants = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0, y: 24, scale: 0.92 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.22, ease: [0.23, 1, 0.32, 1] as [number, number, number, number], delay: i * 0.05 },
+    scale: 1,
+    transition: { ...SPRING_POP, delay: i * 0.07 },
   }),
 };
 
@@ -212,7 +215,12 @@ const NearbyPage = () => {
 
         {/* Recenter Button */}
         <IconButton
+          component={motion.button}
           onClick={() => refreshLocation()}
+          {...pressableIcon}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.3 }}
           sx={{
             position: 'absolute',
             bottom: { xs: 34, md: 25 },
@@ -221,7 +229,6 @@ const NearbyPage = () => {
             boxShadow: 3,
             zIndex: 11,
             '&:hover': { bgcolor: 'background.paper' },
-            '&:active': { transform: 'scale(0.93)', transition: 'transform 160ms ease-out' },
           }}
         >
           <MyLocation color='primary' />
@@ -278,27 +285,31 @@ const NearbyPage = () => {
             {[{ key: null, label: 'All', icon: null }, ...Object.entries(BUSINESS_SECTORS).filter(([k]) => k !== 'Free').map(([k, v]) => ({ key: k, label: v.label, icon: v.icon }))].map(({ key, label, icon }) => {
               const active = key === null ? !selectedSector : selectedSector === key;
               return (
-                <TapButton
+                <motion.div
                   key={String(key)}
-                  size='small'
-                  onTap={() => setSelectedSector(key as string | null)}
-                  startIcon={icon ? <Box sx={{ display: 'flex', '& svg': { fontSize: '13px !important' } }}>{icon as React.ReactElement}</Box> : undefined}
-                  sx={{
-                    flexShrink: 0,
-                    height: 26,
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    px: 1.25,
-                    minWidth: 'unset',
-                    bgcolor: active ? 'primary.main' : 'transparent',
-                    color: active ? 'white' : 'text.secondary',
-                    border: '1px solid',
-                    borderColor: active ? 'primary.main' : 'divider',
-                    '& .MuiButton-startIcon': { mr: icon ? '4px' : 0, ml: 0 },
-                  }}
+                  {...pressableCard}
+                  style={{ flexShrink: 0 }}
                 >
-                  {label}
-                </TapButton>
+                  <TapButton
+                    size='small'
+                    onTap={() => setSelectedSector(key as string | null)}
+                    startIcon={icon ? <Box sx={{ display: 'flex', '& svg': { fontSize: '13px !important' } }}>{icon as React.ReactElement}</Box> : undefined}
+                    sx={{
+                      height: 26,
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      px: 1.25,
+                      minWidth: 'unset',
+                      bgcolor: active ? 'primary.main' : 'transparent',
+                      color: active ? 'white' : 'text.secondary',
+                      border: '1px solid',
+                      borderColor: active ? 'primary.main' : 'divider',
+                      '& .MuiButton-startIcon': { mr: icon ? '4px' : 0, ml: 0 },
+                    }}
+                  >
+                    {label}
+                  </TapButton>
+                </motion.div>
               );
             })}
           </Box>
@@ -306,6 +317,10 @@ const NearbyPage = () => {
         </Box>
 
         <Stack
+          component={motion.div}
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
           spacing={1.5}
           sx={{
             px: 2,
@@ -339,9 +354,16 @@ const NearbyPage = () => {
               <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5, mb: 2 }}>
                 Try adjusting your search or sector filter.
               </Typography>
-              <Button variant='outlined' size='small' sx={{ fontWeight: 700 }} onClick={() => { setSearchTerm(''); setSelectedSector(null); }}>
-                Clear Filters
-              </Button>
+              <motion.div {...pressable}>
+                <Button
+                  variant='outlined'
+                  size='small'
+                  sx={{ fontWeight: 700 }}
+                  onClick={() => { setSearchTerm(''); setSelectedSector(null); }}
+                >
+                  Clear Filters
+                </Button>
+              </motion.div>
             </Box>
           )}
 
@@ -362,7 +384,14 @@ const NearbyPage = () => {
               const sectorInfo = BUSINESS_SECTORS[partner.sector] || UNKNOWN_SECTOR;
 
               return (
-                <motion.div key={partner.location_id} custom={index} variants={listItemVariants} initial="hidden" animate="visible">
+                <motion.div
+                  key={partner.location_id}
+                  custom={index}
+                  variants={listItemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  {...pressableCard}
+                >
                   <Paper
                     elevation={0}
                     onClick={() => {
@@ -382,8 +411,7 @@ const NearbyPage = () => {
                       justifyContent: 'space-between',
                       cursor: 'pointer',
                       opacity: 1,
-                      transition: 'transform 160ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out',
-                      '&:active': { transform: 'scale(0.97)' },
+                      transition: 'background-color 150ms ease-out, box-shadow 150ms ease-out',
                       '&:hover': { bgcolor: 'rgba(0,0,0,0.01)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
                     }}
                   >
