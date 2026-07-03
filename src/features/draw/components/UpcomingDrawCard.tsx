@@ -10,6 +10,9 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
   // Now draw refers to the actual IDrawSummary object
   const daysLeft = calculateDaysLeft(draw?.draw_date);
   const formattedAmount = formatCurrency(draw?.prize_amount ?? 0);
+  // A closed campaign is in the past, so a days-left countdown would wrongly read
+  // "Campaign Ends Today". Show that it has ended instead.
+  const isClosed = draw?.status?.toLowerCase() === 'closed';
 
   return (
     <Paper
@@ -87,7 +90,11 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
         >
           <Schedule sx={{ fontSize: 18 }} />
           <Typography variant='body2' sx={{ fontWeight: 600 }}>
-            {daysLeft <= 0 ? 'Campaign Ends Today' : `Campaign ends in: ${daysLeft} days`}
+            {isClosed
+              ? 'Campaign ended'
+              : daysLeft <= 0
+                ? 'Campaign Ends Today'
+                : `Campaign ends in: ${daysLeft} days`}
           </Typography>
         </Box>
       </Box>

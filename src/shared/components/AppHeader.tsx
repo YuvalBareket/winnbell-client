@@ -32,7 +32,7 @@ const AppHeader = ({ onMenuOpen, onGradient = false }: Props) => {
         display: { xs: 'flex', md: 'none' },
       }}
     >
-      <Toolbar sx={{ justifyContent: 'space-between', px: 2.5, minHeight: '60px !important' }}>
+      <Toolbar sx={{ justifyContent: 'space-between', px: 1.5, minHeight: '60px !important' }}>
 
         {/* Brand */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

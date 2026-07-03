@@ -90,9 +90,9 @@ api.interceptors.response.use(
           await refreshPromise;
           // Mutations (POST/PUT/PATCH/DELETE) are NOT retried by React Query, so re-issue
           // them here with the fresh token (this is why this path exists). GET requests are
-          // left to React Query's own retry (retry: 3) — re-issuing a GET response from the
-          // axios 1.x error interceptor is the brittle pattern that broke query recovery
-          // (e.g. the risk-level screen), so for GETs we reject and let the query retry.
+          // left to React Query's own retry (retry: 1 in main.tsx) — re-issuing a GET response
+          // from the axios 1.x error interceptor is the brittle pattern that broke query
+          // recovery (e.g. the risk-level screen), so for GETs we reject and let the query retry.
           const method = (error.config.method ?? 'get').toLowerCase();
           const isMutation = method !== 'get' && method !== 'head' && method !== 'options';
           // Retry with the refreshed token of the SAME account the request was fired as.
@@ -105,8 +105,17 @@ api.interceptors.response.use(
             return api(error.config);
           }
           return Promise.reject(error);
-        } catch {
-          // Refresh failed — fall through to dropping the account
+        } catch (refreshErr) {
+          // Drop the account ONLY when the server definitively rejected the refresh token
+          // (401/403). A transient failure - network blip, server restart, 5xx, 429 - says
+          // nothing about the token's validity; dropping on those logged users out
+          // mid-session over a single hiccup. Reject this one request instead: the next
+          // 401 retries the refresh with the same still-valid token.
+          const refreshStatus = (refreshErr as { response?: { status?: number } })?.response?.status;
+          if (refreshStatus !== 401 && refreshStatus !== 403) {
+            return Promise.reject(error);
+          }
+          // Definitive rejection — fall through to dropping the account
         }
       }
 
