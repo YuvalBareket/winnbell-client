@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -69,7 +69,7 @@ const CampaignDashboardPage = () => {
   const [selectedLocation, setSelectedLocation] = useState<number | ''>('');
   const [dateRange, setDateRange] = useState<'today' | 'wtd' | 'mtd'>('today');
   const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const { data: bizData } = useBusinessData(true);
   const locations = (bizData?.locations ?? []).filter((l) => l.is_active) as BusinessLocation[];
@@ -103,20 +103,29 @@ const CampaignDashboardPage = () => {
     fetchNextPage,
   } = useCampaignEntries(locationIdForQuery, campaignIdForQuery);
 
-  // Infinite scroll observer
+  // Latest paging state, read by the observer callback so it never uses stale closure values.
+  const pagingState = useRef({ hasNextPage, isFetchingNextPage, isEntriesLoading, fetchNextPage });
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    pagingState.current = { hasNextPage, isFetchingNextPage, isEntriesLoading, fetchNextPage };
+  });
+
+  // Infinite scroll via a CALLBACK REF so the IntersectionObserver attaches EXACTLY when the
+  // sentinel mounts. The previous useRef + useEffect version ran before the conditionally-rendered
+  // sentinel existed, so observe() was never called and only the first page ever loaded.
+  const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    if (!node) return;
+    observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage && !isEntriesLoading) {
-          fetchNextPage();
+        const s = pagingState.current;
+        if (entries[0]?.isIntersecting && s.hasNextPage && !s.isFetchingNextPage && !s.isEntriesLoading) {
+          s.fetchNextPage();
         }
       },
-      { threshold: 0.1 },
+      { rootMargin: '250px', threshold: 0 },
     );
-
-    if (observerTarget.current) observer.observe(observerTarget.current);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, isEntriesLoading, fetchNextPage]);
+    observerRef.current.observe(node);
+  }, []);
 
   const displayEntries = entriesData?.pages.flatMap((p) => p.items) ?? [];
 
@@ -710,7 +719,7 @@ const CampaignDashboardPage = () => {
                   )}
 
                   {/* Load more observer target */}
-                  {hasNextPage && <Box ref={observerTarget} sx={{ py: 2, textAlign: 'center' }}>
+                  {hasNextPage && <Box ref={loadMoreRef} sx={{ py: 2, textAlign: 'center' }}>
                     {isFetchingNextPage && <CircularProgress size={32} />}
                   </Box>}
                 </Paper>

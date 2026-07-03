@@ -512,7 +512,10 @@ const BusinessAnalyticsPage = () => {
               value={formatNum(o?.total_entries)}
               tint={ALPHA_GREEN_10}
               iconColor={STATUS_ACTIVATED_TEXT}
-              caption="All draw entries collected"
+              // These overview tiles are scoped to the selected period, so the caption must not
+              // claim "all" unless the period actually is All - that mislabel made the number look
+              // like it disagreed with the all-time Entry Capacity bar.
+              caption={duration === 'all' ? 'All entries collected' : 'Entries in the selected period'}
             />
             <StatTile
               icon={<AutorenewOutlined sx={{ fontSize: 22 }} />}
@@ -612,7 +615,10 @@ const BusinessAnalyticsPage = () => {
             <ChartCard title="Draw Capacity Used" subtitle="Entries issued against your cap">
               <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: CHART_HEIGHT }}>
                 {(() => {
-                  const showPerDraw = spanMonths >= 3 && (o?.draw_capacity?.length ?? 0) > 1;
+                  // Capacity is a per-draw concept, so always list every draw active in the window with
+                  // its own cap - never a single blended gauge that mixes an all-time cap with a
+                  // period-scoped count. The window only decides WHICH draws appear.
+                  const showPerDraw = (o?.draw_capacity?.length ?? 0) >= 1;
                   const drawsToShow = showPerDraw ? [...(o?.draw_capacity ?? [])].reverse() : null;
 
                   if (showPerDraw && drawsToShow && drawsToShow.length > 0) {
@@ -653,7 +659,7 @@ const BusinessAnalyticsPage = () => {
                             flexGrow: 1,
                             display: 'flex',
                             flexDirection: 'column',
-                            justifyContent: 'space-between',
+                            justifyContent: drawsToShow.length === 1 ? 'center' : 'space-around',
                             gap: 16,
                           }}
                         >
