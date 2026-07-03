@@ -134,17 +134,14 @@ const MyTicketsPage = () => {
     // overflowX clip: entrance translations must never widen the document, or the mobile
     // browser rescales the page (zoom flash). clip, not hidden, so no scroll container.
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, overflowX: 'clip' }}>
-      {/* Generic hero renders full-size, OUTSIDE the zoom box below. */}
-      <AppPageHero
-        title={isBusinessUser ? 'Distributed Entries' : 'My Entries'}
-        subtitle={isBusinessUser ? 'Track your distributed entries' : 'Your entries for this campaign'}
-      />
+      {/* Generic hero (title only, no subtitle) renders full-size, OUTSIDE the zoom box below. */}
+      <AppPageHero title={isBusinessUser ? 'Distributed Entries' : 'My Entries'} />
 
       <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
         <Box sx={{ zoom: { xs: 0.9, md: 1 } }}>
           {/* Draw deck - rises in */}
           <motion.div variants={riseIn}>
-            <Box sx={{ pt: 3 }}>
+            <Box sx={{ pt: 4 }}>
               <DrawSwiper
                 draw_id={activeDrawId}
                 onDrawChange={(id) => setActiveDrawId(id)}

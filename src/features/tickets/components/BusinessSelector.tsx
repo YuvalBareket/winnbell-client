@@ -33,24 +33,20 @@ const BusinessSelector: React.FC<Props> = ({
   onLocationSelect,
 }) => {
   return (
-    <Box sx={{ mb: 2 }}>
-      {/* Step label */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-        <Box sx={{
-          width: 28, height: 28, borderRadius: '50%',
-          bgcolor: primaryColor || PRIMARY_MAIN,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        }}>
-          <Typography sx={{ color: '#fff', fontSize: '0.75rem', fontWeight: 800 }}>1</Typography>
-        </Box>
-        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-          Select a business
+    <Box sx={{ mb: 3 }}>
+      {/* Heading (the numbered step lives in the page step bar) */}
+      <Box sx={{ mb: 2 }}>
+        <Typography sx={{ fontWeight: 800, color: 'text.primary', fontSize: '1rem', lineHeight: 1.3 }}>
+          Where did you shop?
+        </Typography>
+        <Typography sx={{ color: 'text.secondary', fontSize: '0.8125rem', mt: 0.25 }}>
+          Pick the business from your receipt.
         </Typography>
       </Box>
 
       <TextField
         fullWidth
-        placeholder="Search by name or address…"
+        placeholder="Search by name or address"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         InputProps={{
@@ -61,13 +57,15 @@ const BusinessSelector: React.FC<Props> = ({
           ),
         }}
         sx={{
-          mb: 2,
+          mb: 2.5,
           '& .MuiOutlinedInput-root': {
             bgcolor: 'background.paper',
+            borderRadius: '12px',
             '& fieldset': { borderColor: 'divider' },
             '&:hover fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
             '&.Mui-focused fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
           },
+          '& .MuiOutlinedInput-input': { fontSize: '0.875rem' },
         }}
       />
 
@@ -102,7 +100,7 @@ const BusinessSelector: React.FC<Props> = ({
           <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: 'text.disabled', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', fontSize: '0.68rem' }}>
             📍 Nearest to you
           </Typography>
-          {nearbyLocations.map((loc) => (
+          {nearbyLocations.slice(0, 3).map((loc) => (
             <NearbyLocationCard key={loc.location_id} location={loc} primaryColor={primaryColor} onSelect={onLocationSelect} />
           ))}
         </>

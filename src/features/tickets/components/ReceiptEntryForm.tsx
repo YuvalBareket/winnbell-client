@@ -19,10 +19,13 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { AccessTime, Close, EmojiEvents, ReceiptOutlined, EventBusy, GppGood } from '@mui/icons-material';
+import { AccessTime, Close, EmojiEvents, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
-import { PRIMARY_MAIN, GRADIENT_PRIMARY } from '../../../shared/colors';
+import {
+  PRIMARY_MAIN, GRADIENT_PRIMARY, ACCENT_GOLD, ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
+  GRADIENT_GOLD_CTA, SUCCESS_GREEN, TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT,
+} from '../../../shared/colors';
 import EntrySuccessDialog from './EntrySuccessDialog';
 import ReceiptImageUploadField from './ReceiptImageUploadField';
 import BusinessSelector from './BusinessSelector';
@@ -58,6 +61,86 @@ const toParticipating = (n: NearbyLocation): ParticipatingLocation => ({
   receipt_example_image_url: 'receipt_example_image_url' in n ? (n as any).receipt_example_image_url : null,
   min_transaction_amount: 'min_transaction_amount' in n ? (n as any).min_transaction_amount : null,
 });
+
+// ── Step indicator: (1) Business ——— (2) Receipt ────────────────────────────
+// Exported so RedeemPage can place it in the desktop header-card actions.
+export const StepIndicator: React.FC<{ step: 1 | 2 }> = ({ step }) => {
+  const dot = (active: boolean, done: boolean, label: string, num: string) => (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+      <Box sx={{
+        width: 26, height: 26, borderRadius: '50%',
+        bgcolor: done ? SUCCESS_GREEN : active ? PRIMARY_MAIN : 'action.hover',
+        color: done || active ? '#fff' : TEXT_SECONDARY,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '0.78rem', fontWeight: 800,
+      }}>
+        {done ? <CheckCircle sx={{ fontSize: 18 }} /> : num}
+      </Box>
+      <Typography variant='body2' sx={{ fontWeight: 800, color: active || done ? TEXT_HEADING : TEXT_SECONDARY }}>
+        {label}
+      </Typography>
+    </Box>
+  );
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: { md: 220 } }}>
+      {dot(step === 1, step === 2, 'Business', '1')}
+      <Box sx={{ flex: 1, height: 2, borderRadius: 1, bgcolor: step === 2 ? PRIMARY_MAIN : BORDER_LIGHT }} />
+      {dot(step === 2, false, 'Receipt', '2')}
+    </Box>
+  );
+};
+
+// ── Gold free-weekly-entry card. Two shapes to match the design frames:
+//    'full'    = desktop right-rail card with a Claim button (frame-0)
+//    'compact' = mobile single tappable row with an arrow (frame-2)
+const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact' }> = ({ onClaim, variant = 'full' }) => {
+  const gold = {
+    background: `linear-gradient(155deg, ${ACCENT_GOLD_LIGHT} 0%, #f4e6c4 100%)`,
+    border: `1px solid ${ACCENT_GOLD}55`,
+  };
+  const iconChip = (
+    <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: `${ACCENT_GOLD}22`, color: ACCENT_GOLD_DARK, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <CardGiftcardOutlined sx={{ fontSize: 22 }} />
+    </Box>
+  );
+
+  if (variant === 'compact') {
+    return (
+      <Box onClick={onClaim} sx={{ ...gold, display: 'flex', alignItems: 'center', gap: 1.5, p: 1.75, borderRadius: 3, cursor: 'pointer', transition: 'transform 120ms ease-out', '&:active': { transform: 'scale(0.99)' } }}>
+        {iconChip}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant='body2' sx={{ fontWeight: 800, color: ACCENT_GOLD_DARK, lineHeight: 1.2 }}>Claim free weekly entry</Typography>
+          <Typography variant='caption' sx={{ color: ACCENT_GOLD_DARK, opacity: 0.85, display: 'block', lineHeight: 1.3 }}>No purchase needed. Resets Sunday.</Typography>
+        </Box>
+        <ArrowForwardRounded sx={{ color: ACCENT_GOLD_DARK, flexShrink: 0 }} />
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ ...gold, borderRadius: 3, px: 3, py: 3.5, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {/* Large prize icon on top so the card sits taller */}
+      <Box sx={{ width: 68, height: 68, borderRadius: '50%', bgcolor: 'white', color: ACCENT_GOLD_DARK, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+        <CardGiftcardOutlined sx={{ fontSize: 36 }} />
+      </Box>
+      <Typography sx={{ fontWeight: 800, color: ACCENT_GOLD_DARK, fontSize: '1rem' }}>No receipt today?</Typography>
+      <Typography sx={{ color: ACCENT_GOLD_DARK, opacity: 0.9, lineHeight: 1.5, mt: 1, fontSize: '0.8125rem' }}>
+        Claim your free weekly entry. One on us, every week, no purchase needed.
+      </Typography>
+      <Button
+        fullWidth
+        onClick={onClaim}
+        startIcon={<StarRounded sx={{ fontSize: 18 }} />}
+        sx={{ mt: 2.5, height: 44, borderRadius: 2, fontWeight: 800, textTransform: 'none', color: '#fff', background: GRADIENT_GOLD_CTA, '&:hover': { background: GRADIENT_GOLD_CTA, filter: 'brightness(0.96)' } }}
+      >
+        Claim free entry
+      </Button>
+      <Typography sx={{ mt: 1.25, color: ACCENT_GOLD_DARK, opacity: 0.75, fontSize: '0.72rem' }}>
+        Resets Sunday.
+      </Typography>
+    </Box>
+  );
+};
 
 const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   primaryColor,
@@ -287,6 +370,44 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // Render
   // ──────────────────────────────────────────────────
 
+  // Entries this receipt would earn (for the desktop summary rail + preview).
+  const previewMin = selectedLocation?.min_transaction_amount ?? null;
+  const previewAmt = parseFloat(transactionAmount);
+  const previewCount = selectedLocation && previewAmt > 0
+    ? (previewMin && previewMin > 0 ? Math.min(Math.floor(previewAmt / previewMin), MAX_ENTRIES_PER_RECEIPT) : 1)
+    : 0;
+
+  const renderSubmit = () => (
+    <Button
+      variant="contained"
+      fullWidth
+      onClick={handleSubmitClick}
+      disabled={!isFormValid || submitReceiptEntry.isPending || riskLevel.isThrottled || riskLevel.isDailyLimitReached}
+      endIcon={submitReceiptEntry.isPending ? undefined : <ArrowForwardRounded />}
+      sx={{
+        height: 52, borderRadius: 2.5, fontWeight: 800, fontSize: '1rem', letterSpacing: 0.3, textTransform: 'none',
+        bgcolor: primaryColor || PRIMARY_MAIN, boxShadow: `0 4px 20px ${primaryColor || PRIMARY_MAIN}45`,
+        transition: 'transform 160ms ease-out, box-shadow 160ms ease-out, filter 160ms ease-out',
+        '&:hover': { bgcolor: primaryColor || PRIMARY_MAIN, filter: 'brightness(0.9)', boxShadow: `0 6px 24px ${primaryColor || PRIMARY_MAIN}55`, transform: 'translateY(-1px)' },
+        '&:active': { transform: 'scale(0.97)' },
+        '&:disabled': { opacity: 0.45, boxShadow: 'none', transform: 'none' },
+      }}
+    >
+      {submitReceiptEntry.isPending ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <CircularProgress size={18} color="inherit" />
+          <span>Submitting...</span>
+        </Box>
+      ) : 'Submit & get my entries'}
+    </Button>
+  );
+
+  const renderFooterNote = () => (
+    <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 1.25, color: TEXT_SECONDARY, opacity: 0.8, fontSize: '0.72rem' }}>
+      Free to play. No purchase necessary.
+    </Typography>
+  );
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
@@ -364,52 +485,77 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </Box>
       )}
 
+      {/* Mobile step bar (desktop shows it in the page header actions) */}
+      {!riskLevel.isDrawCapped && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached && !successDialogOpen && (
+        <Box sx={{ display: { xs: 'block', md: 'none' }, pb: 3.5 }}>
+          <StepIndicator step={selectedLocation ? 2 : 1} />
+        </Box>
+      )}
+
       {!riskLevel.isDrawCapped && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached && <>
 
       {/* ── Step 1: Select Business ─────────────────── */}
-      {!selectedLocation && isLocationFetching && (
-        <Box sx={{ mb: 2 }}>
-          <Skeleton variant='rounded' height={48} sx={{ borderRadius: 2.5, mb: 1 }} />
-          <Skeleton variant='rounded' height={56} sx={{ borderRadius: 2.5 }} />
-        </Box>
-      )}
-      {!selectedLocation && !isLocationFetching && (
-        <BusinessSelector
-          primaryColor={primaryColor}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          debouncedTerm={debouncedTerm}
-          isSearching={isSearching}
-          searchResults={searchResults}
-          nearbyLocations={nearbyLocations}
-          onLocationSelect={handleLocationSelect}
-        />
-      )}
+      {!selectedLocation && (
+        <Box>
+          {/* Mobile: compact free-entry row above the search (frame-2) */}
+          <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
+            <FreeEntryCard variant='compact' onClaim={() => navigate('/freeTicket')} />
+          </Box>
 
-      {/* ── Selected location pill ───────────────────── */}
-      {selectedLocation && !successDialogOpen && (
-        <SelectedLocationPill
-          primaryColor={primaryColor}
-          location={selectedLocation}
-          onChangeLocation={handleChangeLocation}
-        />
+          {/* Mobile: "or pick where you shopped" divider (frame-2) */}
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1.5, mb: 2 }}>
+            <Box sx={{ flex: 1, height: '1px', bgcolor: BORDER_LIGHT }} />
+            <Typography sx={{ color: TEXT_SECONDARY, fontWeight: 700, fontSize: '0.7rem', letterSpacing: 0.6, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+              Or pick where you shopped
+            </Typography>
+            <Box sx={{ flex: 1, height: '1px', bgcolor: BORDER_LIGHT }} />
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'flex-start' }}>
+            <Box sx={{ flex: 1, width: '100%', minWidth: 0 }}>
+              {isLocationFetching ? (
+                <Box sx={{ mb: 2 }}>
+                  <Skeleton variant='rounded' height={48} sx={{ borderRadius: 2.5, mb: 1 }} />
+                  <Skeleton variant='rounded' height={56} sx={{ borderRadius: 2.5 }} />
+                </Box>
+              ) : (
+                <BusinessSelector
+                  primaryColor={primaryColor}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  debouncedTerm={debouncedTerm}
+                  isSearching={isSearching}
+                  searchResults={searchResults}
+                  nearbyLocations={nearbyLocations}
+                  onLocationSelect={handleLocationSelect}
+                />
+              )}
+            </Box>
+            {/* Desktop: full free-entry card in the right rail (frame-0) */}
+            <Box sx={{ display: { xs: 'none', md: 'block' }, width: 300, flexShrink: 0 }}>
+              <FreeEntryCard variant='full' onClaim={() => navigate('/freeTicket')} />
+            </Box>
+          </Box>
+        </Box>
       )}
 
       {/* ── Cap reached notice — replaces the entire form ── */}
       {selectedLocation && selectedLocationCapReached && !successDialogOpen && (
-        <Box sx={{
-          p: 3, borderRadius: 2.5, textAlign: 'center',
-          bgcolor: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
-        }}>
-          <EventBusy sx={{ fontSize: 32, color: 'rgba(245,158,11,0.8)' }} />
-          <Typography variant='subtitle2' fontWeight={800} color='text.primary'>
-            This location is full
-          </Typography>
-          <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
-            This location has reached its entry limit for the current campaign. This is not your fault - try visiting another participating location.
-          </Typography>
-        </Box>
+        <>
+          <SelectedLocationPill primaryColor={primaryColor} location={selectedLocation} onChangeLocation={handleChangeLocation} />
+          <Box sx={{
+            p: 3, borderRadius: 2.5, textAlign: 'center',
+            bgcolor: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+          }}>
+            <EventBusy sx={{ fontSize: 32, color: 'rgba(245,158,11,0.8)' }} />
+            <Typography variant='subtitle2' fontWeight={800} color='text.primary'>
+              This location is full
+            </Typography>
+            <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
+              This location has reached its entry limit for the current campaign. This is not your fault - try visiting another participating location.
+            </Typography>
+          </Box>
+        </>
       )}
 
       {/* ── Receipt example dialog ──────────────────── */}
@@ -441,23 +587,14 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* ── Receipt fields ───────────────────────────── */}
+      {/* ── Step 2: Receipt details ─────────────────── */}
       <Collapse in={Boolean(selectedLocation) && !successDialogOpen && !selectedLocationCapReached}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-
-          {/* Step 2 label */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{
-              width: 28, height: 28, borderRadius: '50%',
-              bgcolor: primaryColor || PRIMARY_MAIN,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <Typography sx={{ color: '#fff', fontSize: '0.75rem', fontWeight: 800 }}>2</Typography>
-            </Box>
-            <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-              Enter receipt details
-            </Typography>
-          </Box>
+        {selectedLocation && (
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'flex-start' }}>
+          {/* LEFT: selected location + fields */}
+          <Box sx={{ flex: 1, width: '100%', minWidth: 0 }}>
+            <SelectedLocationPill primaryColor={primaryColor} location={selectedLocation} onChangeLocation={handleChangeLocation} />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 
           {/* Receipt ID */}
           <TextField
@@ -536,26 +673,22 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             }}
           />
 
-          {/* Entry count preview */}
-          {selectedLocation && parseFloat(transactionAmount) > 0 && (() => {
-            const min = selectedLocation.min_transaction_amount;
-            if (min == null || min <= 0) return null;
-            const rawCount = Math.floor(parseFloat(transactionAmount) / min);
-            const count = Math.min(rawCount, MAX_ENTRIES_PER_RECEIPT);
-            if (count <= 0) return null;
-            const capped = rawCount > MAX_ENTRIES_PER_RECEIPT;
-            return (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 0.5 }}>
-                <Typography variant="caption" color="text.secondary">
-                  {count === 1
-                    ? `Earns 1 entry (min $${min})`
-                    : capped
-                    ? `Earns ${count} entries (maximum per receipt)`
-                    : `Earns ${count} entries ($${min} each)`}
+          {/* You'll earn N entries (design amber note) */}
+          {previewCount > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.5, borderRadius: 2.5, bgcolor: `${ACCENT_GOLD}14`, border: `1px solid ${ACCENT_GOLD}40` }}>
+              <StarRounded sx={{ fontSize: 20, color: ACCENT_GOLD_DARK, flexShrink: 0 }} />
+              <Box>
+                <Typography sx={{ color: ACCENT_GOLD_DARK, fontWeight: 800, fontSize: '0.875rem', lineHeight: 1.3 }}>
+                  You'll earn {previewCount} {previewCount === 1 ? 'entry' : 'entries'}
                 </Typography>
+                {previewMin != null && previewMin > 0 && (
+                  <Typography sx={{ color: ACCENT_GOLD_DARK, opacity: 0.85, fontSize: '0.75rem', lineHeight: 1.3 }}>
+                    ${previewMin} per entry
+                  </Typography>
+                )}
               </Box>
-            );
-          })()}
+            </Box>
+          )}
 
           {/* Purchase Date */}
           <TextField
@@ -603,43 +736,38 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             </Box>
           )}
 
-          {/* Submit */}
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={handleSubmitClick}
-            disabled={!isFormValid || submitReceiptEntry.isPending || riskLevel.isThrottled || riskLevel.isDailyLimitReached}
-            sx={{
-              mt: 0.5,
-              height: 52,
-              borderRadius: 2.5,
-              fontWeight: 800,
-              fontSize: '1rem',
-              letterSpacing: 0.3,
-              textTransform: 'none',
-              bgcolor: primaryColor || PRIMARY_MAIN,
-              boxShadow: `0 4px 20px ${primaryColor || PRIMARY_MAIN}45`,
-              transition: 'transform 160ms ease-out, box-shadow 160ms ease-out, filter 160ms ease-out',
-              '&:hover': {
-                bgcolor: primaryColor || PRIMARY_MAIN,
-                filter: 'brightness(0.9)',
-                boxShadow: `0 6px 24px ${primaryColor || PRIMARY_MAIN}55`,
-                transform: 'translateY(-1px)',
-              },
-              '&:active': { transform: 'scale(0.97)' },
-              '&:disabled': { opacity: 0.45, boxShadow: 'none', transform: 'none' },
-            }}
-          >
-            {submitReceiptEntry.isPending ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <CircularProgress size={18} color="inherit" />
-                <span>Submitting…</span>
+              {/* Mobile submit (desktop submit lives in the summary rail) */}
+              <Box sx={{ display: { xs: 'block', md: 'none' }, mt: 1 }}>
+                {renderSubmit()}
+                {renderFooterNote()}
               </Box>
-            ) : (
-              'Submit Entry'
-            )}
-          </Button>
+            </Box>
+          </Box>
+
+          {/* RIGHT: summary + submit (desktop only) */}
+          <Box sx={{ display: { xs: 'none', md: 'block' }, width: 300, flexShrink: 0, position: 'sticky', top: 16 }}>
+            <Box sx={{ borderRadius: 3, border: `1px solid ${BORDER_LIGHT}`, bgcolor: 'background.paper', p: 2.5, mb: 2 }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: TEXT_SECONDARY, fontSize: '0.75rem', display: 'block', mb: 1.5 }}>
+                Summary
+              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1 }}>
+                <Typography variant="body2" sx={{ color: TEXT_SECONDARY }}>Business</Typography>
+                <Typography variant="body2" noWrap sx={{ fontWeight: 700, color: TEXT_HEADING, textAlign: 'right', maxWidth: 170 }}>{selectedLocation.business_name}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1 }}>
+                <Typography variant="body2" sx={{ color: TEXT_SECONDARY }}>Amount</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: TEXT_HEADING }}>{previewAmt > 0 ? `$${previewAmt.toFixed(2)}` : '-'}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <Typography variant="body2" sx={{ color: TEXT_SECONDARY }}>Entries earned</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 800, color: previewCount > 0 ? SUCCESS_GREEN : TEXT_SECONDARY }}>{previewCount > 0 ? `+${previewCount}` : '-'}</Typography>
+              </Box>
+            </Box>
+            {renderSubmit()}
+            {renderFooterNote()}
+          </Box>
         </Box>
+        )}
       </Collapse>
 
       </>}
