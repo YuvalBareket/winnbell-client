@@ -70,11 +70,16 @@ const DrawHistoryPage = () => {
 
   return (
     // xs: AppHeader renders inside this box, so only the 76px bottom nav is external; / 0.9 cancels the xs zoom so the fixed page fills the viewport exactly
-    <Box sx={{  overflowX: 'hidden', display: 'flex', flexDirection: 'column', zoom: { xs: 0.9, md: 1 } }}>
+    // overflow-x: clip (not hidden) contains the coverflow deck's horizontal peek WITHOUT turning
+    // this box into a vertical scroll container. 'hidden' forces overflow-y to compute to 'auto'
+    // (CSS spec), which created a second, inner scrollbar competing with the document.
+    <Box sx={{  overflowX: 'clip', display: 'flex', flexDirection: 'column', zoom: { xs: 0.9, md: 1 } }}>
       <AppMenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-      {/* Hero Header */}
-      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 4, color: 'white', flexShrink: 0, borderRadius: '0 0 32px 32px' }}>
+      {/* Hero Header. position + zIndex lift it above the coverflow deck (a later DOM sibling whose
+          overflow-visible neighbour cards would otherwise paint over and steal clicks from the
+          header's notification / menu buttons). */}
+      <Box sx={{ background: GRADIENT_HERO, pt: { xs: 0, md: 3 }, pb: 4, color: 'white', flexShrink: 0, borderRadius: '0 0 32px 32px', position: 'relative', zIndex: 5 }}>
         <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
         <Container maxWidth='lg' sx={{ pt: { xs: 1, md: 0 }, px: 3 }}>
           <Stack direction='row' alignItems='center' spacing={2}>
@@ -116,7 +121,7 @@ const DrawHistoryPage = () => {
         </Container>
       </Box>
 
-      <Container maxWidth='lg' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: { xs: 1.5, md: 4.75 }, pb: 1.5, px: 3 }}>
+      <Container maxWidth='lg' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: { xs: 1.5, md: 4.75 }, pb: 1.5, px: 3, position: 'relative', zIndex: 1 }}>
         {/* Error state */}
         {isError && (
           <motion.div
