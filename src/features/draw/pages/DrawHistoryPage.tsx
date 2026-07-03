@@ -243,12 +243,50 @@ const DrawHistoryPage = () => {
                   '& .swiper-slide-active > div': {
                     boxShadow: `${SHADOW_PRIMARY_GLOW}, ${SHADOW_FLOAT}`,
                     filter: 'brightness(1.04)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'filter 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
                   },
                   '& .swiper-slide-next > div, & .swiper-slide-prev > div': {
                     boxShadow: SHADOW_CARD,
-                    filter: 'brightness(0.92) saturate(0.95)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'filter 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+                  },
+                  // The "flashlight" shade. Applied as an overlay ON the card, which has overflow:hidden,
+                  // so it is clipped exactly to the card and ALWAYS covers the whole card (Swiper's own
+                  // slide-shadow is sized to the slide, which the taller card overflows, leaving a gap).
+                  // Lit on the active card, a light shade on the neighbours; the opacity eases as cards
+                  // cross the centre, so it responds to the swipe.
+                  '& .swiper-slide > div::after': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: 0,
+                    opacity: 0,
+                    pointerEvents: 'none',
+                    zIndex: 3,
+                    transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  },
+                  // Contact shadow: darkest on the edge where the active card overlaps the neighbour
+                  // (the INNER edge), fading out toward the outer edge, like a shadow the raised main
+                  // card casts onto the card behind it. Prev sits above the active card so its inner
+                  // (covered) edge is its bottom; next sits below so its inner edge is its top.
+                  '& .swiper-slide-prev > div::after': {
+                    opacity: 1,
+                    // Contact edge differs by axis: mobile is vertical (prev = top card, edge = bottom),
+                    // desktop is horizontal (prev = left card, edge = right). Fades out by ~52% so the
+                    // shadow stays near the contact edge and ends early.
+                    background: {
+                      xs: 'linear-gradient(to top, rgba(6,20,44,0.46) 0%, rgba(6,20,44,0.27) 26%, rgba(6,20,44,0.1) 50%, rgba(6,20,44,0) 80%)',
+                      md: 'linear-gradient(to left, rgba(6,20,44,0.46) 0%, rgba(6,20,44,0.27) 26%, rgba(6,20,44,0.1) 50%, rgba(6,20,44,0) 80%)',
+                    },
+                  },
+                  '& .swiper-slide-next > div::after': {
+                    opacity: 1,
+                    // Mobile: next = bottom card (edge = top). Desktop: next = right card (edge = left).
+                    background: {
+                      xs: 'linear-gradient(to bottom, rgba(6,20,44,0.46) 0%, rgba(6,20,44,0.27) 26%, rgba(6,20,44,0.1) 50%, rgba(6,20,44,0) 80%)',
+                      md: 'linear-gradient(to right, rgba(6,20,44,0.46) 0%, rgba(6,20,44,0.27) 26%, rgba(6,20,44,0.1) 50%, rgba(6,20,44,0) 80%)',
+                    },
+                  },
+                  '& .swiper-slide-active > div::after': {
+                    opacity: 0,
                   },
                 }}
               >
@@ -261,6 +299,7 @@ const DrawHistoryPage = () => {
                     stretch,
                     depth: 120,
                     modifier: 1,
+                    // Off: the card-level overlay above handles the shading (full, reliable coverage).
                     slideShadows: false,
                   }}
                   grabCursor
