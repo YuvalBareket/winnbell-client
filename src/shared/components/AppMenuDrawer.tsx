@@ -10,6 +10,7 @@ import {
   Divider,
   Chip,
   Collapse,
+  useMediaQuery,
 } from '@mui/material';
 import TapListItemButton from './TapListItemButton';
 import {
@@ -142,10 +143,12 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     ...((isBusiness || isManager) ? [{ label: 'Business Agreement', icon: <ArticleOutlined />, path: '/business-agreement' }] : []),
   ];
 
-  // Responsive item padding - compact on mobile so everything fits without scrolling
-  const itemPy = { xs: 0.65, sm: 1.1 };
-  const sectionMy = { xs: 0.75, sm: 1.5 };
-  const labelMb = { xs: 0.4, sm: 0.75 };
+  // Short viewports (small phones, or a phone with the browser chrome visible) get tighter spacing
+  // so the whole menu fits. The nav area also scrolls as a fallback so nothing is ever clipped.
+  const isShort = useMediaQuery('(max-height:720px)');
+  const itemPy = { xs: isShort ? 0.35 : 0.65, sm: 1.1 };
+  const sectionMy = { xs: isShort ? 0.4 : 0.75, sm: 1.5 };
+  const labelMb = { xs: isShort ? 0.25 : 0.4, sm: 0.75 };
 
   return (
     <Fragment>
@@ -169,9 +172,10 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         {/* Hero header */}
         <Box sx={{
           background: GRADIENT_HERO,
+          flexShrink: 0,
           px: 3,
-          pt: { xs: 2.5, sm: 5.5 },
-          pb: { xs: 2, sm: 4 },
+          pt: { xs: isShort ? 1.5 : 2.5, sm: 5.5 },
+          pb: { xs: isShort ? 1.25 : 2, sm: 4 },
           position: 'relative', overflow: 'hidden',
         }}>
           {/* Decorative orbs */}
@@ -261,6 +265,10 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
             )}
           </Stack>
         </Box>
+
+        {/* Scrollable middle: guarantees the nav + support are always reachable on short phones
+            instead of being clipped by the drawer's fixed-height column. */}
+        <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain' }}>
 
         {/* Inline account switcher (expands under the hero). Its onClose fires on an actual
             action (switch / remove / add) - close the WHOLE drawer then, not just the section,
@@ -388,11 +396,10 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
           </List>
         </Box>
 
-        {/* Spacer */}
-        <Box sx={{ flex: 1 }} />
+        </Box>
 
-        {/* App version + logout */}
-        <Box sx={{ px: 2, pb: { xs: 2, sm: 3.5 } }}>
+        {/* App version + logout (pinned below the scroll area) */}
+        <Box sx={{ px: 2, pb: { xs: isShort ? 1 : 2, sm: 3.5 }, flexShrink: 0 }}>
           <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
           <TapListItemButton
             onTap={handleLogout}
