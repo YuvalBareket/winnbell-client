@@ -8,6 +8,8 @@ export interface AnalyticsSeriesPoint {
   entries: number;
   participants: number;
   revenue: number;
+  new_participants: number;
+  returning_participants: number;
 }
 
 export interface AnalyticsAcquisitionSeriesPoint {

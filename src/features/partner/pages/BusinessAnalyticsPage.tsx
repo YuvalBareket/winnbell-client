@@ -482,17 +482,20 @@ const BusinessAnalyticsPage = () => {
     const cap = o?.entry_cap;
     const capPct = Math.min(Math.max(cap?.pct ?? 0, 0), 100);
     const capNearFull = capPct >= 90;
-    const usePie = spanMonths < 1;
+    const usePie = spanMonths < 3;
     const hasSplit = newVal + returningVal > 0;
 
     const pieData = [
       { name: 'First-Time', value: newVal, color: PRIMARY_MAIN },
       { name: 'Returning', value: returningVal, color: ACCENT_GOLD_DARK },
     ];
-    const barData = [
-      { name: 'First-Time', value: newVal, color: PRIMARY_MAIN },
-      { name: 'Returning', value: returningVal, color: ACCENT_GOLD_DARK },
-    ];
+    // For multi-month ranges we break the split out per month instead of summing it into one pair,
+    // so owners can see how First-Time vs Returning moved over time.
+    const monthlySplitData = seriesData.map((s) => ({
+      name: s.label,
+      firstTime: s.new_participants ?? 0,
+      returning: s.returning_participants ?? 0,
+    }));
 
     return (
       <Stack spacing={{ xs: 2, sm: 3 }}>
@@ -576,16 +579,14 @@ const BusinessAnalyticsPage = () => {
                 </ResponsiveContainer>
               ) : (
                 <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-                  <BarChart data={barData} margin={{ left: -12, right: 8 }}>
+                  <BarChart data={monthlySplitData} margin={{ left: -12, right: 8 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                     <XAxis dataKey="name" tick={AXIS_TICK} axisLine={false} tickLine={false} />
                     <YAxis tick={AXIS_TICK} allowDecimals={false} axisLine={false} tickLine={false} />
                     <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }} content={<ChartTooltip />} />
-                    <Bar dataKey="value" name="Customers" radius={[6, 6, 0, 0]} maxBarSize={90}>
-                      {barData.map((d) => (
-                        <Cell key={d.name} fill={d.color} />
-                      ))}
-                    </Bar>
+                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                    <Bar dataKey="firstTime" name="First-Time" fill={PRIMARY_MAIN} radius={[6, 6, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="returning" name="Returning" fill={ACCENT_GOLD_DARK} radius={[6, 6, 0, 0]} maxBarSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
