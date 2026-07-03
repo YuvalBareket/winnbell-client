@@ -95,6 +95,9 @@ export const GRADIENT_SIDEBAR     = `linear-gradient(195deg, #f8fafa 0%, #ffffff
 export const GRADIENT_HERO_WARM   = `linear-gradient(135deg, #1565c0 0%, #0f3a6b 60%, #081f3a 100%)`;
 export const GRADIENT_GOLD_CTA    = `linear-gradient(135deg, #c5a047 0%, #a0822f 100%)`;
 export const GRADIENT_LOADING     = `linear-gradient(150deg, #3a86de 0%, #1a68c2 52%, #134d8a 100%)`;
+// Positive "you're filling up" green - used as entries approach / reach the draw max.
+// Maxing out is a good thing, so it reads celebratory (emerald to forest), never a warning.
+export const GRADIENT_SUCCESS_GREEN = `linear-gradient(135deg, #34d399 0%, #10b981 55%, #2e7d32 100%)`;
 
 // ── Shadows ───────────────────────────────────
 export const SHADOW_PRIMARY_INTENSE = `0 4px 16px rgba(21,101,192,0.4)`;

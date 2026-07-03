@@ -1,15 +1,17 @@
-import { Box, Typography, Stack, Chip, Skeleton, Avatar, CircularProgress } from '@mui/material';
-import { Circle, ConfirmationNumberOutlined, StorefrontOutlined } from '@mui/icons-material';
+import { Box, Typography, Stack, Chip, Skeleton, Avatar, CircularProgress, Button } from '@mui/material';
+import { Circle, ConfirmationNumberOutlined, StorefrontOutlined, ReceiptLong } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRef, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
   STATUS_PENDING_BG, STATUS_PENDING_TEXT, PRIMARY_MAIN,
+  GRADIENT_PRIMARY, GRADIENT_SUCCESS_GREEN,
 } from '../../../shared/colors';
 import { formatTicketDate } from '../../../shared/utils/date';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import { useMyTickets } from '../hooks/useMyTickets';
+import { useGetDrawHistory } from '../../draw/hooks/useGetDraws';
 import { MAX_ENTRIES_PER_DRAW } from '../../../shared/constants/entries';
 import { selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
@@ -184,6 +186,12 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
   const { tickets: allTickets, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, totalCount, cap, perLocationCap, activeLocationCount } = useMyTickets(draw_id ?? 0, locationId);
 
+  // Is the selected draw a past (closed) campaign? Reuses the cached draw-history query the
+  // deck already loaded, so no extra request. A closed draw can't be entered anymore, so the
+  // empty state must not tell the user to "claim an entry" for it.
+  const { data: drawHistory } = useGetDrawHistory();
+  const isClosedDraw = (drawHistory ?? []).find((d) => d.id === draw_id)?.status?.toLowerCase() === 'closed';
+
   // Intersection observer sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -205,7 +213,11 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
   const CAP = MAX_ENTRIES_PER_DRAW;
   const progress = Math.min((totalCount / CAP) * 100, 100);
   const isMaxed = totalCount >= CAP;
-  const progressColor = isMaxed ? STATUS_ACTIVATED_TEXT : totalCount >= 20 ? STATUS_PENDING_TEXT : PRIMARY_MAIN;
+  // Filling up is a WIN, not a warning: once you get close to the max the accent turns green
+  // (positive) rather than the old amber, and the bar fills with a celebratory green gradient.
+  const isNearMax = totalCount >= Math.ceil(CAP * 0.8); // 80%+ of the draw cap (includes maxed)
+  const progressColor = isNearMax ? STATUS_ACTIVATED_TEXT : PRIMARY_MAIN;
+  const progressFill = isNearMax ? GRADIENT_SUCCESS_GREEN : PRIMARY_MAIN;
 
   if (!draw_id) return (
     <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
@@ -283,7 +295,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
           {!isBusiness && !isLoading && (
             <Typography variant='caption' sx={{ fontWeight: 700, color: progressColor, pb: 0.5, transition: 'color 0.3s' }}>
-              {isMaxed ? ' Maxed out!' : `${CAP - totalCount} slots left`}
+              {isClosedDraw ? 'Campaign ended' : isMaxed ? ' Maxed out!' : `${CAP - totalCount} slots left`}
             </Typography>
           )}
         </Box>
@@ -310,17 +322,21 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
                   transition={{ ...SPRING_JUMP, delay: 0.12 }}
-                  style={{ height: '100%', borderRadius: 4, backgroundColor: progressColor }}
+                  style={{ height: '100%', borderRadius: 4, background: progressFill }}
                 />
               </Box>
             )}
-            {!isLoading && (
+            {!isLoading && (isClosedDraw ? totalCount > 0 : true) && (
               <Typography variant='caption' color='text.disabled' sx={{ mt: 0.75, display: 'block', fontWeight: 500 }}>
-                {isMaxed
-                  ? 'You have the maximum entries for this campaign. Good luck!'
-                  : totalCount === 0
-                    ? 'Submit receipts, use promo codes, or claim your free weekly entry.'
-                    : `You have ${CAP - totalCount} more entries available - don't leave them unclaimed!`}
+                {isClosedDraw
+                  ? totalCount === 1
+                    ? 'Your final entry in this campaign. Good luck!'
+                    : 'Your final entries in this campaign. Good luck!'
+                  : isMaxed
+                    ? 'You have the maximum entries for this campaign. Good luck!'
+                    : totalCount === 0
+                      ? 'Submit receipts, use promo codes, or claim your free weekly entry.'
+                      : `You have ${CAP - totalCount} more entries available - don't leave them unclaimed!`}
               </Typography>
             )}
           </Box>
@@ -368,16 +384,18 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
                     </Box>
                   </motion.div>
                   <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
-                    No entries distributed yet
+                    {isClosedDraw ? 'No entries this campaign' : 'No entries distributed yet'}
                   </Typography>
                   <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
-                    Entries will appear here once customers activate them at your location.
+                    {isClosedDraw
+                      ? 'This campaign has ended. No entries were distributed at your location during it.'
+                      : 'Entries will appear here once customers activate them at your location.'}
                   </Typography>
                 </Box>
               </motion.div>
             ) : (
               <motion.div key="empty-user" variants={popIn}>
-                <EmptyStateAnimated onAction={() => navigate('/scan')} />
+                <EmptyStateAnimated isClosed={isClosedDraw} onAction={() => navigate('/scan')} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -481,7 +499,7 @@ const TicketSkeleton = () => (
 );
 
 // Empty state with animated icon and breathing button
-const EmptyStateAnimated = ({ onAction }: { onAction: () => void }) => (
+const EmptyStateAnimated = ({ isClosed, onAction }: { isClosed: boolean; onAction: () => void }) => (
   <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
     <motion.div variants={heroPop} initial="hidden" animate="visible">
       <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'rgba(2,146,183,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
@@ -489,28 +507,32 @@ const EmptyStateAnimated = ({ onAction }: { onAction: () => void }) => (
       </Box>
     </motion.div>
     <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
-      No entries yet
+      {isClosed ? 'No entries this campaign' : 'No entries yet'}
     </Typography>
     <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
-      Claim your free weekly entry or submit a receipt at a partner business
+      {isClosed
+        ? 'This campaign has ended and you were not entered in it.'
+        : 'Claim your free weekly entry or submit a receipt at a partner business'}
     </Typography>
-    <motion.button
-      {...breathe}
-      onClick={onAction}
-      style={{
-        marginTop: '1.5rem',
-        padding: '0.75rem 1.5rem',
-        borderRadius: '0.5rem',
-        border: 'none',
-        backgroundColor: PRIMARY_MAIN,
-        color: 'white',
-        fontWeight: 700,
-        fontSize: '0.875rem',
-        cursor: 'pointer',
-        textTransform: 'none',
-      }}
-    >
-      Scan a receipt
-    </motion.button>
+    {/* CTA only makes sense for the CURRENT campaign - a closed draw can't be entered. */}
+    {!isClosed && (
+      <motion.div {...breathe} style={{ display: 'inline-block', marginTop: 24 }}>
+        <Button
+          variant='contained'
+          onClick={onAction}
+          startIcon={<ReceiptLong />}
+          sx={{
+            background: GRADIENT_PRIMARY,
+            borderRadius: 2,
+            height: 48,
+            px: 3,
+            fontWeight: 700,
+            textTransform: 'none',
+          }}
+        >
+          Submit a receipt
+        </Button>
+      </motion.div>
+    )}
   </Box>
 );
