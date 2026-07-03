@@ -194,11 +194,9 @@ export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwipe
           },
           // No CSS filter here: a filter rasterizes the card into its own buffer, and the 3D
           // coverflow transform then resamples that buffer, which softens the text. The glow
-          // shadow alone marks the active card. backface-visibility hidden keeps the composited
-          // layer crisp through the rotation.
-          '& .swiper-slide > div': {
-            backfaceVisibility: 'hidden',
-          },
+          // shadow alone marks the active card. Crispness is handled by the Swiper roundLengths
+          // prop (whole-pixel positions); backface-visibility is intentionally NOT set - on mobile
+          // it made the card text flicker/vanish mid-swipe inside Swiper's preserve-3d context.
           '& .swiper-slide-active > div': {
             boxShadow: `${SHADOW_PRIMARY_GLOW}, ${SHADOW_FLOAT}`,
             transition: 'box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
