@@ -273,16 +273,16 @@ const DrawHistoryPage = () => {
                     // desktop is horizontal (prev = left card, edge = right). Fades out by ~52% so the
                     // shadow stays near the contact edge and ends early.
                     background: {
-                      xs: 'linear-gradient(to top, rgba(6,20,44,0.46) 0%, rgba(6,20,44,0.27) 26%, rgba(6,20,44,0.1) 50%, rgba(6,20,44,0) 80%)',
-                      md: 'linear-gradient(to left, rgba(6,20,44,0.46) 0%, rgba(6,20,44,0.27) 26%, rgba(6,20,44,0.1) 50%, rgba(6,20,44,0) 80%)',
+                      xs: 'linear-gradient(to top, rgba(6,20,44,0.32) 0%, rgba(6,20,44,0.18) 26%, rgba(6,20,44,0.07) 50%, rgba(6,20,44,0) 80%)',
+                      md: 'linear-gradient(to left, rgba(6,20,44,0.32) 0%, rgba(6,20,44,0.18) 26%, rgba(6,20,44,0.07) 50%, rgba(6,20,44,0) 80%)',
                     },
                   },
                   '& .swiper-slide-next > div::after': {
                     opacity: 1,
                     // Mobile: next = bottom card (edge = top). Desktop: next = right card (edge = left).
                     background: {
-                      xs: 'linear-gradient(to bottom, rgba(6,20,44,0.46) 0%, rgba(6,20,44,0.27) 26%, rgba(6,20,44,0.1) 50%, rgba(6,20,44,0) 80%)',
-                      md: 'linear-gradient(to right, rgba(6,20,44,0.46) 0%, rgba(6,20,44,0.27) 26%, rgba(6,20,44,0.1) 50%, rgba(6,20,44,0) 80%)',
+                      xs: 'linear-gradient(to bottom, rgba(6,20,44,0.32) 0%, rgba(6,20,44,0.18) 26%, rgba(6,20,44,0.07) 50%, rgba(6,20,44,0) 80%)',
+                      md: 'linear-gradient(to right, rgba(6,20,44,0.32) 0%, rgba(6,20,44,0.18) 26%, rgba(6,20,44,0.07) 50%, rgba(6,20,44,0) 80%)',
                     },
                   },
                   '& .swiper-slide-active > div::after': {
