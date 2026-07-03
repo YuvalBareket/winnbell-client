@@ -65,7 +65,8 @@ const BusinessSelector: React.FC<Props> = ({
             '&:hover fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
             '&.Mui-focused fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
           },
-          '& .MuiOutlinedInput-input': { fontSize: '0.875rem' },
+          // 16px on mobile prevents Safari's focus zoom; smaller only on desktop.
+          '& .MuiOutlinedInput-input': { fontSize: { xs: '16px', md: '0.875rem' } },
         }}
       />
 

@@ -485,6 +485,14 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </Box>
       )}
 
+      {/* A daily receipt limit / throttle never blocks the separate free WEEKLY entry,
+          so surface it here so the user always has a way to keep playing. */}
+      {!riskLevel.isDrawCapped && (riskLevel.isDailyLimitReached || riskLevel.isThrottled) && !successDialogOpen && (
+        <Box sx={{ mt: 2 }}>
+          <FreeEntryCard variant='compact' onClaim={() => navigate('/freeTicket')} />
+        </Box>
+      )}
+
       {/* Mobile step bar (desktop shows it in the page header actions) */}
       {!riskLevel.isDrawCapped && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached && !successDialogOpen && (
         <Box sx={{ display: { xs: 'block', md: 'none' }, pb: 3.5 }}>
@@ -646,6 +654,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 borderRadius: 2.5,
                 '&.Mui-focused fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
               },
+              // 16px keeps mobile Safari from auto-zooming the viewport on focus.
+              '& .MuiOutlinedInput-input': { fontSize: '16px' },
               '& .MuiInputLabel-root.Mui-focused': { color: primaryColor || PRIMARY_MAIN },
             }}
           />
@@ -669,6 +679,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 borderRadius: 2.5,
                 '&.Mui-focused fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
               },
+              // 16px keeps mobile Safari from auto-zooming the viewport on focus.
+              '& .MuiOutlinedInput-input': { fontSize: '16px' },
               '& .MuiInputLabel-root.Mui-focused': { color: primaryColor || PRIMARY_MAIN },
             }}
           />
@@ -706,6 +718,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 borderRadius: 2.5,
                 '&.Mui-focused fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
               },
+              // 16px keeps mobile Safari from auto-zooming the viewport on focus.
+              '& .MuiOutlinedInput-input': { fontSize: '16px' },
               '& .MuiInputLabel-root.Mui-focused': { color: primaryColor || PRIMARY_MAIN },
             }}
           />

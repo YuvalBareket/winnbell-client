@@ -8,23 +8,30 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import ArrowBackIosNew from '@mui/icons-material/ArrowBackIosNew';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import LockIcon from '@mui/icons-material/Lock';
-import BoltIcon from '@mui/icons-material/Bolt';
 import CardGiftcardOutlined from '@mui/icons-material/CardGiftcardOutlined';
+import StarRounded from '@mui/icons-material/StarRounded';
+import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
+import EventAvailableRounded from '@mui/icons-material/EventAvailableRounded';
 import { useNavigate } from 'react-router-dom';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import { useFreeTicket } from '../hooks/useFreeTicket';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import PhoneVerificationGate from '../components/PhoneVerificationGate';
-import { AMBER_HOURGLASS, SHADOW_PRIMARY_MEDIUM, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
+import {
+  PRIMARY_MAIN, PRIMARY_DEEP, SUCCESS_GREEN,
+  ALPHA_WHITE_15, ALPHA_WHITE_80,
+  TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT, MOBILE_CONTENT_HEIGHT, SHADOW_PRIMARY_MEDIUM,
+} from '../../../shared/colors';
 import FreeEntrySuccessDialog from '../components/FreeEntrySuccessDialog';
+
+const GRADIENT_FREE = `linear-gradient(155deg, ${PRIMARY_MAIN} 0%, ${PRIMARY_DEEP} 100%)`;
+
+const FREE_ENTRY_INFO =
+  'Winnbell gives every member one free entry each week. It resets every Sunday, so claim yours before the week is up. No receipt, no spend, ever.';
 
 const getNextSunday = (): Date => {
   const now = new Date();
-  const daysUntilSunday = 7 - now.getDay(); // always 1–7 days ahead
+  const daysUntilSunday = 7 - now.getDay(); // always 1-7 days ahead
   const next = new Date(now);
   next.setDate(now.getDate() + daysUntilSunday);
   next.setHours(0, 0, 0, 0);
@@ -52,8 +59,9 @@ const FreeTicketPage: React.FC = () => {
       const result = await activateAsync(undefined);
       setClaimedCode(result?.code ?? '');
       setSuccessDialogOpen(true);
-    } catch (err: any) {
-      setClaimError(err?.response?.data?.message ?? 'Something went wrong. Please try again.');
+    } catch (err) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setClaimError(message ?? 'Something went wrong. Please try again.');
     }
   };
 
@@ -67,293 +75,188 @@ const FreeTicketPage: React.FC = () => {
 
   if (!isPhoneVerified) {
     const pendingCode = localStorage.getItem('pendingTicketCode');
-    return (
-      <PhoneVerificationGate
-        onVerified={() => refetchRiskLevel()}
-        pendingCode={pendingCode}
-      />
-    );
+    return <PhoneVerificationGate onVerified={() => refetchRiskLevel()} pendingCode={pendingCode} />;
   }
 
-  const canActivate = status?.canActivate;
+  const canActivate = !!status?.canActivate;
   const noCampaign = !canActivate && status?.reason === 'no_campaign';
+  const usedCount = canActivate || noCampaign ? 0 : 1;
+  const resetDate = formatNextDate(status?.nextAvailableDate);
 
-  // Mobile layout (xs/sm)
-  if (!isDesktop) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' },
-          maxWidth: '480px',
-          mx: 'auto',
-          zoom: { xs: 0.9, md: 1 },
-        }}
-      >
-        <AppPageHero
-          title='One Free Entry'
-          subtitle='Every week. No purchase needed.'
-          icon={<CardGiftcardOutlined sx={{ fontSize: 28 }} />}
-        />
+  const claimLabel = isActivating ? 'Claiming...' : canActivate ? 'Claim my free entry' : noCampaign ? 'No active campaign' : 'Claimed this week';
 
-        {/* Main content - flex:1 pushes footer down naturally */}
-        <Box
-          sx={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            px: 3,
-            pt: 1,
-            textAlign: 'center',
-          }}
-        >
-          {/* Icon */}
-          <Box sx={{ position: 'relative', mb: 4 }}>
-            <Box
-              sx={{
-                display: 'flex',
-                p: 3,
-                borderRadius: '50%',
-                bgcolor: canActivate ? 'primary.main' : 'action.hover',
-                color: canActivate ? 'white' : 'text.disabled',
-                transition: 'background 0.3s',
-              }}
-            >
-              <ConfirmationNumberIcon sx={{ fontSize: 60 }} />
-            </Box>
-            {!canActivate && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: -4,
-                  right: -4,
-                  bgcolor: 'background.paper',
-                  p: 0.5,
-                  borderRadius: '50%',
-                  display: 'flex',
-                }}
-              >
-                <CalendarMonthIcon sx={{ color: AMBER_HOURGLASS }} />
-              </Box>
-            )}
-          </Box>
-
-          {/* Status / Next date */}
-          <Box sx={{ mb: 4 }}>
-            <Typography
-              variant='caption'
-              sx={{ fontWeight: 700, textTransform: 'uppercase', color: 'text.secondary', letterSpacing: 1.5 }}
-            >
-              {canActivate ? 'Entry Status' : 'Next Available'}
-            </Typography>
-            {canActivate ? (
-              <Typography
-                variant='h2'
-                sx={{ fontWeight: 900, color: 'success.main', fontFamily: 'monospace', mt: 1, fontSize: { xs: '2.5rem', sm: '3.75rem' } }}
-              >
-                READY
-              </Typography>
-            ) : (
-              <Typography
-                variant='h5'
-                sx={{ fontWeight: 800, color: 'primary.main', mt: 1 }}
-              >
-                {formatNextDate(status?.nextAvailableDate)}
-              </Typography>
-            )}
-          </Box>
-
-          {/* Description */}
-          <Box sx={{ maxWidth: '320px' }}>
-            <Typography variant='h5' sx={{ fontWeight: 700, mb: 1.5 }}>
-              {canActivate ? 'Your Entry is Waiting!' : noCampaign ? 'No Active Campaign' : 'Already Claimed This Week'}
-            </Typography>
-            <Typography variant='body1' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-              Winnbell gives you one free entry every week, from Sunday to Sunday.
-              {canActivate
-                ? ' Click below to claim your entry and join the campaign!'
-                : noCampaign
-                  ? ' There is no active campaign right now. Check back soon!'
-                  : ' Your next free entry will be available on Sunday.'}
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Footer - in normal flow, pushed to bottom by flex:1 above */}
-        <Box sx={{ p: 3, pb: 4 }}>
-          <Button
-            fullWidth
-            variant='contained'
-            size='large'
-            disabled={!canActivate || isActivating}
-            onClick={handleActivateClick}
-            endIcon={canActivate ? <BoltIcon /> : <LockIcon />}
-            sx={{
-              py: 2,
-              fontSize: '1.1rem',
-              fontWeight: 700,
-              textTransform: 'none',
-              boxShadow: canActivate ? SHADOW_PRIMARY_MEDIUM : 'none',
-            }}
-          >
-            {isActivating ? 'Claiming...' : 'Get Your Entry'}
-          </Button>
-          {claimError && (
-            <Typography variant='body2' color='error' sx={{ mt: 1.5, textAlign: 'center', fontWeight: 600 }}>
-              {claimError}
-            </Typography>
-          )}
-          <Typography
-            variant='caption'
-            sx={{ display: 'block', textAlign: 'center', mt: 2, color: 'text.secondary', fontWeight: 500 }}
-          >
-            One free entry per week. Resets every Sunday.
-          </Typography>
-        </Box>
-
-        <FreeEntrySuccessDialog
-          open={successDialogOpen}
-          claimedCode={claimedCode}
-          onViewEntries={() => { setSuccessDialogOpen(false); navigate('/tickets'); }}
-          onClose={() => setSuccessDialogOpen(false)}
-        />
-      </Box>
-    );
-  }
-
-  // Desktop layout (md and up)
-  return (
-    <Box
+  const claimButton = (
+    <Button
+      fullWidth
+      variant='contained'
+      size='large'
+      disabled={!canActivate || isActivating}
+      onClick={handleActivateClick}
+      startIcon={canActivate && !isActivating ? <StarRounded /> : undefined}
       sx={{
-        minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' },
-        pb: 4,
+        py: 1.6, borderRadius: 2.5, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
+        boxShadow: canActivate ? SHADOW_PRIMARY_MEDIUM : 'none',
       }}
     >
-      <AppPageHero
-        title='One Free Entry'
-        subtitle='Every week. No purchase needed.'
-        icon={<CardGiftcardOutlined sx={{ fontSize: 28 }} />}
-      />
+      {claimLabel}
+    </Button>
+  );
 
-      <Container maxWidth='lg' sx={{ mt: { xs: 1.5, md: 1 } }}>
-        <Button
-          onClick={() => navigate(-1)}
-          startIcon={<ArrowBackIosNew sx={{ fontSize: 14 }} />}
-          sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 600 }}
-        >
-          Back
-        </Button>
-      </Container>
+  const footerNote = (
+    <Typography sx={{ display: 'block', textAlign: 'center', mt: 1.25, color: TEXT_SECONDARY, fontSize: '0.72rem' }}>
+      No purchase necessary. One per member per week.
+    </Typography>
+  );
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          p: 4,
-          mt: { xs: 1, md: 0 },
-        }}
-      >
-        {/* Status icon */}
-        <Box sx={{ mb: 4 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              p: 4,
-              borderRadius: '50%',
-              bgcolor: canActivate ? 'primary.main' : 'action.hover',
-              color: canActivate ? 'white' : 'text.disabled',
-              transition: 'background 0.3s',
-            }}
-          >
-            <ConfirmationNumberIcon sx={{ fontSize: 80 }} />
+  const claimError_ = claimError && (
+    <Typography variant='body2' color='error' sx={{ mt: 1.25, textAlign: 'center', fontWeight: 600 }}>
+      {claimError}
+    </Typography>
+  );
+
+  // "Same odds" reassurance line, used on both layouts.
+  const oddsNote = (
+    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+      <CheckCircleRounded sx={{ fontSize: 18, color: SUCCESS_GREEN, mt: 0.15, flexShrink: 0 }} />
+      <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.8rem', lineHeight: 1.5 }}>
+        Counts exactly like a paid entry. Same odds, same draw. You'll get an entry code the moment you claim.
+      </Typography>
+    </Box>
+  );
+
+  const successDialog = (
+    <FreeEntrySuccessDialog
+      open={successDialogOpen}
+      claimedCode={claimedCode}
+      nextDateLabel={resetDate}
+      onViewEntries={() => { setSuccessDialogOpen(false); navigate('/tickets'); }}
+      onSubmitReceipt={() => { setSuccessDialogOpen(false); navigate('/scan'); }}
+      onClose={() => setSuccessDialogOpen(false)}
+    />
+  );
+
+  // ── Desktop: two columns (gradient story card + white claim card) ──────────
+  if (isDesktop) {
+    const availabilityChip = (
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, px: 1.5, py: 0.6, borderRadius: 5, bgcolor: canActivate ? `${SUCCESS_GREEN}1f` : 'action.hover' }}>
+        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: canActivate ? SUCCESS_GREEN : TEXT_SECONDARY }} />
+        <Typography sx={{ fontWeight: 800, fontSize: '0.78rem', color: canActivate ? SUCCESS_GREEN : TEXT_SECONDARY }}>
+          {canActivate ? 'Available now' : noCampaign ? 'No campaign' : 'Claimed this week'}
+        </Typography>
+      </Box>
+    );
+
+    return (
+      <Box sx={{ minHeight: '100dvh', pb: 5 }}>
+        <AppPageHero title='Free weekly entry' subtitle='One free entry, every week. On us.' actions={availabilityChip} />
+
+        <Container maxWidth='lg' sx={{ mt: 1 }}>
+          <Box sx={{ display: 'flex', gap: 3, alignItems: 'stretch' }}>
+            {/* LEFT: gradient story card */}
+            <Box sx={{ flex: 1.4, borderRadius: 4, p: 4, background: GRADIENT_FREE, color: '#fff', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+              <Box sx={{ width: 56, height: 56, borderRadius: 3, bgcolor: ALPHA_WHITE_15, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, zIndex: 1 }}>
+                <CardGiftcardOutlined sx={{ fontSize: 30 }} />
+              </Box>
+              <Box sx={{ alignSelf: 'flex-start', px: 1.5, py: 0.5, borderRadius: 5, bgcolor: ALPHA_WHITE_15, mb: 2, zIndex: 1 }}>
+                <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase' }}>Free . no purchase</Typography>
+              </Box>
+              <Typography sx={{ fontWeight: 900, fontSize: '2.4rem', lineHeight: 1.1, mb: 2, maxWidth: 420, zIndex: 1 }}>
+                {canActivate ? 'Your free entry is ready to claim' : noCampaign ? 'No active campaign right now' : "This week's free entry is claimed"}
+              </Typography>
+              <Typography sx={{ color: ALPHA_WHITE_80, fontSize: '0.95rem', lineHeight: 1.6, maxWidth: 440, zIndex: 1 }}>
+                {FREE_ENTRY_INFO}
+              </Typography>
+              <Box sx={{ flexGrow: 1, minHeight: 28 }} />
+            </Box>
+
+            {/* RIGHT: claim card */}
+            <Box sx={{ flex: 1, borderRadius: 4, p: 3.5, bgcolor: '#fff', border: `1px solid ${BORDER_LIGHT}`, display: 'flex', flexDirection: 'column' }}>
+              <Typography sx={{ fontWeight: 800, color: TEXT_HEADING, fontSize: '1.05rem', mb: 2 }}>This week's free entry</Typography>
+
+              {/* Availability by date (no countdown clock) */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, bgcolor: `${PRIMARY_MAIN}0f`, color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <EventAvailableRounded />
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: TEXT_SECONDARY }}>
+                    {canActivate ? 'Availability' : 'Next free entry'}
+                  </Typography>
+                  <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: canActivate ? SUCCESS_GREEN : TEXT_HEADING }}>
+                    {canActivate ? 'Available now' : noCampaign ? 'Check back soon' : resetDate}
+                  </Typography>
+                  {canActivate && (
+                    <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.78rem' }}>Resets {resetDate}</Typography>
+                  )}
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.75, borderTop: `1px solid ${BORDER_LIGHT}`, borderBottom: `1px solid ${BORDER_LIGHT}` }}>
+                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', fontWeight: 600 }}>Free entries used this week</Typography>
+                <Typography sx={{ fontWeight: 800, color: TEXT_HEADING }}>{usedCount} / 1</Typography>
+              </Box>
+
+              <Box sx={{ my: 2 }}>{oddsNote}</Box>
+
+              <Box sx={{ flexGrow: 1, minHeight: 8 }} />
+              {claimButton}
+              {claimError_}
+              {footerNote}
+            </Box>
+          </Box>
+        </Container>
+
+        {successDialog}
+      </Box>
+    );
+  }
+
+  // ── Mobile: gradient hero + stacked info cards ─────────────────────────────
+  const cardSx = { bgcolor: '#fff', border: `1px solid ${BORDER_LIGHT}`, borderRadius: 3, p: 2 } as const;
+
+  return (
+    <Box sx={{ minHeight: MOBILE_CONTENT_HEIGHT, pb: 12 }}>
+      <AppPageHero title='Free weekly entry' subtitle='One free entry, every week. On us.' />
+
+      <Container maxWidth='sm' sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        {/* Intro card: info text */}
+        <Box sx={{ ...cardSx, py: 2.5, textAlign: 'center' }}>
+          <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', lineHeight: 1.6 }}>
+            {FREE_ENTRY_INFO}
+          </Typography>
+        </Box>
+
+        {/* Availability by date */}
+        <Box sx={{ ...cardSx, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: `${PRIMARY_MAIN}0f`, color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <EventAvailableRounded />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography sx={{ fontSize: '0.66rem', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: TEXT_SECONDARY }}>
+              {canActivate ? 'Availability' : 'Next free entry'}
+            </Typography>
+            <Typography sx={{ fontWeight: 800, color: canActivate ? SUCCESS_GREEN : TEXT_HEADING }}>
+              {canActivate ? 'Available now' : noCampaign ? 'Check back soon' : resetDate}
+            </Typography>
           </Box>
         </Box>
 
-        {/* Status / Next date */}
-        <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <Typography
-            variant='caption'
-            sx={{ fontWeight: 700, textTransform: 'uppercase', color: 'text.secondary', letterSpacing: 1.5 }}
-          >
-            {canActivate ? 'Entry Status' : 'Next Available'}
-          </Typography>
-          {canActivate ? (
-            <Typography
-              variant='h2'
-              sx={{ fontWeight: 900, color: 'success.main', fontFamily: 'monospace', mt: 1, fontSize: '4rem' }}
-            >
-              READY
-            </Typography>
-          ) : (
-            <Typography
-              variant='h4'
-              sx={{ fontWeight: 800, color: 'primary.main', mt: 1 }}
-            >
-              {formatNextDate(status?.nextAvailableDate)}
-            </Typography>
-          )}
+        {/* Used this week */}
+        <Box sx={{ ...cardSx, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', fontWeight: 600 }}>Free entries this week</Typography>
+          <Typography sx={{ fontWeight: 800, color: TEXT_HEADING }}>{usedCount} / 1</Typography>
         </Box>
 
-        {/* Description */}
-        <Box sx={{ maxWidth: '380px', mb: 4, textAlign: 'center' }}>
-          <Typography variant='h5' sx={{ fontWeight: 700, mb: 1.5 }}>
-            {canActivate ? 'Your Entry is Waiting!' : noCampaign ? 'No Active Campaign' : 'Entry Request Pending'}
-          </Typography>
-          <Typography variant='body1' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-            Winnbell gives you one free entry every week, from Sunday to Sunday.
-            {canActivate
-              ? ' Click below to claim your entry and join the campaign!'
-              : ' Your next free entry will be available on Sunday.'}
-          </Typography>
+        <Box sx={{ px: 0.5, py: 1 }}>{oddsNote}</Box>
+
+        <Box>
+          {claimButton}
+          {claimError_}
+          {footerNote}
         </Box>
+      </Container>
 
-        {/* Button */}
-        <Button
-          variant='contained'
-          size='large'
-          disabled={!canActivate || isActivating}
-          onClick={handleActivateClick}
-          endIcon={canActivate ? <BoltIcon /> : <LockIcon />}
-          sx={{
-            py: 2,
-            px: 5,
-            fontSize: '1rem',
-            fontWeight: 700,
-            textTransform: 'none',
-            boxShadow: canActivate ? SHADOW_PRIMARY_MEDIUM : 'none',
-            mb: 2,
-          }}
-        >
-          {isActivating ? 'Claiming...' : 'Get Your Entry'}
-        </Button>
-
-        {claimError && (
-          <Typography variant='body2' color='error' sx={{ mt: 1, textAlign: 'center', fontWeight: 600 }}>
-            {claimError}
-          </Typography>
-        )}
-
-        {/* Caption */}
-        <Typography
-          variant='caption'
-          sx={{ textAlign: 'center', color: 'text.secondary', fontWeight: 500, mt: 1 }}
-        >
-          One free entry per week. Resets every Sunday.
-        </Typography>
-
-      </Box>
-
-      <FreeEntrySuccessDialog
-        open={successDialogOpen}
-        claimedCode={claimedCode}
-        onViewEntries={() => { setSuccessDialogOpen(false); navigate('/tickets'); }}
-        onClose={() => setSuccessDialogOpen(false)}
-      />
+      {successDialog}
     </Box>
   );
 };
