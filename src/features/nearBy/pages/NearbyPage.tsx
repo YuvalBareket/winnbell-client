@@ -403,7 +403,7 @@ const NearbyPage = () => {
                     }}
                     sx={{
                       p: 1.25,
-                      borderRadius: 6,
+                      borderRadius: '16px',
                       border: '1px solid',
                       borderColor: 'divider',
                       display: 'flex',
