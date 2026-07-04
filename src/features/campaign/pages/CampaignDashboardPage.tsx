@@ -348,39 +348,13 @@ const CampaignDashboardPage = () => {
                   }}
                 >
                   <Stack spacing={2.5}>
-                    {/* Top row: Campaign name + Status pill */}
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography
-                        variant="h6"
-                        sx={{ fontWeight: 700, color: 'text.primary' }}
-                      >
-                        {headerData?.campaign_name || 'Campaign'}
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 0.75,
-                          bgcolor: headerData?.status === 'Open' ? 'primary.main' : 'action.disabledBackground',
-                          color: headerData?.status === 'Open' ? 'white' : 'text.secondary',
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: 12,
-                          fontSize: '0.85rem',
-                          fontWeight: 600,
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: '50%',
-                            bgcolor: headerData?.status === 'Open' ? 'white' : 'text.disabled',
-                          }}
-                        />
-                        {headerData?.status === 'Open' ? 'Active' : 'Ended'}
-                      </Box>
-                    </Stack>
+                    {/* Campaign name */}
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 700, color: 'text.primary' }}
+                    >
+                      {headerData?.campaign_name || 'Campaign'}
+                    </Typography>
 
                     {/* Prize row */}
                     <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between" spacing={1}>

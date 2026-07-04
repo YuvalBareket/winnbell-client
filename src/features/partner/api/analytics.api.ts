@@ -1,6 +1,6 @@
 import { api } from '../../../shared/api/client';
 
-export type AnalyticsBucket = 'day' | 'month';
+export type AnalyticsBucket = 'day' | 'week' | 'month';
 export type AnalyticsCategory = 'overview' | 'acquisition' | 'engagement' | 'revenue';
 
 export interface AnalyticsSeriesPoint {
@@ -30,6 +30,8 @@ export interface OverviewResponse {
   entry_cap: { used: number; cap: number | null; pct: number };
   draw_capacity: { draw_id: number; label: string; status: string; used: number; cap: number | null; pct: number }[];
   series: AnalyticsSeriesPoint[];
+  // Auto-chosen time granularity for `series`, based on the actual data span (not the window).
+  bucket: AnalyticsBucket;
 }
 
 export interface AcquisitionResponse {
@@ -38,6 +40,7 @@ export interface AcquisitionResponse {
   profile_views: number;
   conversion_pct: number;
   acquisitionSeries: AnalyticsAcquisitionSeriesPoint[];
+  bucket: AnalyticsBucket;
 }
 
 export interface EngagementResponse {
@@ -46,6 +49,15 @@ export interface EngagementResponse {
   returning_participant_count: number;
   loyal_customers: number;
   series: AnalyticsSeriesPoint[];
+  bucket: AnalyticsBucket;
+}
+
+export interface RevenueDrawPoint {
+  draw_id: number;
+  label: string;
+  avg_purchase: number;
+  threshold: number;
+  avg_above_threshold: number;
 }
 
 export interface RevenueResponse {
@@ -54,6 +66,9 @@ export interface RevenueResponse {
   avg_purchase_amount: number;
   qualifying_receipts: number;
   series: AnalyticsSeriesPoint[];
+  bucket: AnalyticsBucket;
+  // Per-draw averages vs each draw's own threshold snapshot (used by the 3M+ view).
+  drawBreakdown: RevenueDrawPoint[];
 }
 
 export interface AnalyticsResponseMap {

@@ -33,7 +33,6 @@ import {
   AttachMoneyOutlined,
   SellOutlined,
   ShoppingBagOutlined,
-  ReceiptLongOutlined,
   WarningAmberOutlined,
   ShowChartOutlined,
   PieChartOutlineOutlined,
@@ -487,8 +486,10 @@ const BusinessAnalyticsPage = () => {
   const { isLoading, isError, refetch, isPlaceholderData } = activeQuery;
 
   // Plain (non-hook) label mapper — safe to call inside the per-category renderers.
-  const withLabels = <T extends { bucket: string }>(rows: T[]) =>
-    rows.map((s) => ({ ...s, label: formatBucketLabel(s.bucket, bucket) }));
+  // gran defaults to the window bucket, but each response now carries its own auto-chosen
+  // granularity (day/week/month based on the real data span), so labels match the actual buckets.
+  const withLabels = <T extends { bucket: string }>(rows: T[], gran: AnalyticsBucket = bucket) =>
+    rows.map((s) => ({ ...s, label: formatBucketLabel(s.bucket, gran) }));
 
   const rangeChipLabel = DURATION_TABS.find((d) => d.key === duration)?.label ?? '';
 
@@ -496,7 +497,7 @@ const BusinessAnalyticsPage = () => {
 
   const renderOverview = () => {
     const o = overviewQ.data;
-    const seriesData = withLabels(o?.series ?? []);
+    const seriesData = withLabels(o?.series ?? [], o?.bucket);
     const avgSeriesData = seriesData.map((s) => ({
       ...s,
       avg_per_customer: s.participants > 0 ? Math.round((s.entries / s.participants) * 10) / 10 : 0,
@@ -867,7 +868,7 @@ const BusinessAnalyticsPage = () => {
 
   const renderAcquisition = () => {
     const a = acquisitionQ.data;
-    const acqData = withLabels(a?.acquisitionSeries ?? []);
+    const acqData = withLabels(a?.acquisitionSeries ?? [], a?.bucket);
     return (
       <Stack spacing={{ xs: 2, sm: 3 }}>
         <motion.div variants={itemVariants}>
@@ -936,11 +937,11 @@ const BusinessAnalyticsPage = () => {
 
   const renderEngagement = () => {
     const e = engagementQ.data;
-    const seriesData = withLabels(e?.series ?? []);
+    const seriesData = withLabels(e?.series ?? [], e?.bucket);
     return (
       <Stack spacing={{ xs: 2, sm: 3 }}>
         <motion.div variants={itemVariants}>
-          <StatGrid cols={4}>
+          <StatGrid cols={3}>
             <StatTile
               icon={<AutorenewOutlined sx={{ fontSize: 22 }} />}
               label="Repeat Rate"
@@ -948,14 +949,6 @@ const BusinessAnalyticsPage = () => {
               tint={ALPHA_PRIMARY_10}
               iconColor={PRIMARY_MAIN}
               caption="Customers who made a purchase before"
-            />
-            <StatTile
-              icon={<ConfirmationNumberOutlined sx={{ fontSize: 22 }} />}
-              label="Entries per Customer"
-              value={Number(e?.avg_entries_per_user ?? 0).toFixed(1)}
-              tint={ALPHA_GREEN_10}
-              iconColor={STATUS_ACTIVATED_TEXT}
-              caption="Average entries per person"
             />
             <StatTile
               icon={<GroupsOutlined sx={{ fontSize: 22 }} />}
@@ -1017,7 +1010,8 @@ const BusinessAnalyticsPage = () => {
 
   const renderRevenue = () => {
     const r = revenueQ.data;
-    const seriesData = withLabels(r?.series ?? []);
+    const seriesData = withLabels(r?.series ?? [], r?.bucket);
+    const avgAboveMinimum = Math.max(0, (r?.avg_purchase_amount ?? 0) - (r?.threshold ?? 0));
     return (
       <Stack spacing={{ xs: 2, sm: 3 }}>
         <motion.div variants={itemVariants}>
@@ -1047,12 +1041,12 @@ const BusinessAnalyticsPage = () => {
               caption="Average qualifying purchase"
             />
             <StatTile
-              icon={<ReceiptLongOutlined sx={{ fontSize: 22 }} />}
-              label="Qualifying Receipts"
-              value={formatNum(r?.qualifying_receipts ?? 0)}
+              icon={<TrendingUpOutlined sx={{ fontSize: 22 }} />}
+              label="Above Minimum"
+              value={formatCurrency(avgAboveMinimum)}
               tint={ALPHA_PRIMARY_10}
               iconColor={PRIMARY_MAIN}
-              caption="Purchases that earned an entry"
+              caption="Average spent above the entry minimum"
             />
           </StatGrid>
         </motion.div>
@@ -1060,10 +1054,37 @@ const BusinessAnalyticsPage = () => {
         <motion.div variants={itemVariants}>
           <ChartCard
             title="Draw Sales Over Time"
-            subtitle="Revenue from purchases that qualified for entries"
+            subtitle={spanMonths >= 3
+              ? 'Average spend against each draw’s entry minimum'
+              : 'Revenue from purchases that qualified for entries'}
             chip={<Chip label={rangeChipLabel} size="small" sx={{ fontWeight: 700 }} />}
           >
-            {seriesData.length === 0 ? (
+            {spanMonths >= 3 ? (
+              (r?.drawBreakdown ?? []).length === 0 ? (
+                <EmptyChart message="No qualifying revenue in this period" />
+              ) : (
+                <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+                  <BarChart data={r?.drawBreakdown ?? []} margin={{ left: -4, right: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                    <XAxis dataKey="label" tick={AXIS_TICK} axisLine={false} tickLine={false} interval={0} minTickGap={4} />
+                    <YAxis
+                      tick={AXIS_TICK}
+                      axisLine={false}
+                      tickLine={false}
+                      width={64}
+                      tickFormatter={(v: number) => formatCurrency(v)}
+                    />
+                    <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }} content={<ChartTooltip money />} />
+                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                    {/* Three values side by side per draw. Entry minimum is that draw's own threshold
+                        snapshot, so it steps as the threshold changed between draws. */}
+                    <Bar dataKey="avg_purchase" name="Avg purchase" fill={STATUS_ACTIVATED_TEXT} radius={[4, 4, 0, 0]} maxBarSize={26} />
+                    <Bar dataKey="avg_above_threshold" name="Above minimum" fill={ACCENT_GOLD_DARK} radius={[4, 4, 0, 0]} maxBarSize={26} />
+                    <Bar dataKey="threshold" name="Entry minimum" fill={PRIMARY_MAIN} radius={[4, 4, 0, 0]} maxBarSize={26} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )
+            ) : seriesData.length === 0 ? (
               <EmptyChart message="No qualifying revenue in this period" />
             ) : (
               <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
