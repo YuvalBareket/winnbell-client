@@ -24,6 +24,7 @@ const CampaignSwiperCard = ({ draw }: CampaignSwiperCardProps) => {
         position: 'relative',
         height: '100%',
         width: '100%',
+        
         borderRadius: '20px',
         overflow: 'hidden',
         p: { xs: 1.75, md: 2 },

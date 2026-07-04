@@ -13,6 +13,7 @@ import StarRounded from '@mui/icons-material/StarRounded';
 import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
 import EventAvailableRounded from '@mui/icons-material/EventAvailableRounded';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import { useFreeTicket } from '../hooks/useFreeTicket';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
@@ -23,6 +24,7 @@ import {
   TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT, MOBILE_CONTENT_HEIGHT, SHADOW_PRIMARY_MEDIUM,
 } from '../../../shared/colors';
 import FreeEntrySuccessDialog from '../components/FreeEntrySuccessDialog';
+import { breathe, pressable } from '../../../shared/motion';
 
 const GRADIENT_FREE = `linear-gradient(155deg, ${PRIMARY_MAIN} 0%, ${PRIMARY_DEEP} 100%)`;
 
@@ -85,21 +87,25 @@ const FreeTicketPage: React.FC = () => {
 
   const claimLabel = isActivating ? 'Claiming...' : canActivate ? 'Claim my free entry' : noCampaign ? 'No active campaign' : 'Claimed this week';
 
+  // The page's one attractor: while claimable the CTA breathes (same pull as the
+  // Submit-a-receipt button on the location profile card), plus press gestures.
   const claimButton = (
-    <Button
-      fullWidth
-      variant='contained'
-      size='large'
-      disabled={!canActivate || isActivating}
-      onClick={handleActivateClick}
-      startIcon={canActivate && !isActivating ? <StarRounded /> : undefined}
-      sx={{
-        py: 1.6, borderRadius: 2.5, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
-        boxShadow: canActivate ? SHADOW_PRIMARY_MEDIUM : 'none',
-      }}
-    >
-      {claimLabel}
-    </Button>
+    <motion.div {...(canActivate && !isActivating ? { ...breathe, ...pressable } : {})}>
+      <Button
+        fullWidth
+        variant='contained'
+        size='large'
+        disabled={!canActivate || isActivating}
+        onClick={handleActivateClick}
+        startIcon={canActivate && !isActivating ? <StarRounded /> : undefined}
+        sx={{
+          py: 1.6, borderRadius: 2.5, fontWeight: 800, fontSize: '1rem', textTransform: 'none',
+          boxShadow: canActivate ? SHADOW_PRIMARY_MEDIUM : 'none',
+        }}
+      >
+        {claimLabel}
+      </Button>
+    </motion.div>
   );
 
   const footerNote = (

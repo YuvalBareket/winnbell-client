@@ -6,6 +6,7 @@ import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import AccessTimeRounded from '@mui/icons-material/AccessTimeRounded';
 import { GRADIENT_SUCCESS, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_70 } from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
+import GoldConfetti from '../../../shared/components/GoldConfetti';
 
 interface Props {
   open: boolean;
@@ -33,7 +34,9 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, drawLabel,
       height: '100%', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       background: GRADIENT_SUCCESS, px: 4, textAlign: 'center',
+      position: 'relative', overflow: 'hidden',
     }}>
+      <GoldConfetti />
       <Zoom in={open} timeout={400}>
         <Box sx={{
           width: 96, height: 96, borderRadius: '50%',

@@ -3,6 +3,7 @@ import { Box, Button, Dialog, Fade, Stack, Typography, Zoom } from '@mui/materia
 import { ConfirmationNumber, EmojiEvents, AddCircleOutline } from '@mui/icons-material';
 import { GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
+import GoldConfetti from '../../../shared/components/GoldConfetti';
 
 interface Props {
   open: boolean;
@@ -34,7 +35,9 @@ const EntrySuccessDialog: React.FC<Props> = ({
       height: '100%', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       background: GRADIENT_SUCCESS, px: 4, textAlign: 'center',
+      position: 'relative', overflow: 'hidden',
     }}>
+      <GoldConfetti />
       <Zoom in={open} timeout={400}>
         <Box sx={{
           width: 100, height: 100, borderRadius: '50%',

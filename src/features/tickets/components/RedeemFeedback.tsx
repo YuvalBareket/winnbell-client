@@ -17,6 +17,7 @@ import {
 import QRScannerModal from './QRScannerModal';
 import { GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
+import GoldConfetti from '../../../shared/components/GoldConfetti';
 
 interface RedeemFeedbackProps {
   scannerOpen: boolean;
@@ -68,8 +69,11 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
           background: GRADIENT_SUCCESS,
           px: 4,
           textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
+        <GoldConfetti />
         <Zoom in={successDialogOpen} timeout={400}>
           <Box
             sx={{
