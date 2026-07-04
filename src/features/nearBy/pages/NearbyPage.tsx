@@ -403,7 +403,8 @@ const NearbyPage = () => {
                     }}
                     sx={{
                       p: 1.25,
-                      borderRadius: '16px',
+                      // Rounded on mobile (as before); tighter 16px on desktop.
+                      borderRadius: { xs: 6, md: '16px' },
                       border: '1px solid',
                       borderColor: 'divider',
                       display: 'flex',

@@ -48,7 +48,8 @@ const TicketRowWrapper = ({ children, index, isClickable = false, onClick }: { c
       sx={{
         border: '1px solid',
         borderColor: BORDER_SUBTLE,
-        borderRadius: '16px',
+        // Rounded on mobile (the look before the desktop redesign); tighter 16px on desktop.
+        borderRadius: { xs: 6, md: '16px' },
         py: 1.75,
         px: 2.25,
         bgcolor: 'background.paper',

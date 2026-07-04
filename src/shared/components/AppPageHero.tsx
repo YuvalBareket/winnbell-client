@@ -13,7 +13,6 @@ import {
   GRADIENT_HERO, GRADIENT_PRIMARY, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
   TEXT_HEADING, TEXT_SECONDARY, BG_SURFACE, BORDER_LIGHT, SHADOW_CARD,
 } from '../colors';
-import { SPRING_POP } from '../motion';
 
 interface AppPageHeroProps {
   /** Optional. When omitted (and no subtitle), the mobile hero shows only the brand row
@@ -136,10 +135,11 @@ const AppPageHero = ({ title, subtitle, chip, actions, variant = 'hero' }: AppPa
         </Stack>
 
         {/* Title block - optional. Omitted when the page passes no title/subtitle (e.g. Submit /
-            My Entries), leaving just the brand row. Translate-only entrance (no scale: a scale
-            overshoot on a full-width band momentarily widens the page and zoom-flashes). */}
+            My Entries), leaving just the brand row. Plain fade (no spring/translate): the header
+            re-mounts on every navigation, and a bouncy y-spring made the text jump and ghost
+            against the gradient as titles swapped. */}
         {(title || subtitle) && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={SPRING_POP}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.22, ease: 'easeOut' }}>
             <Stack direction='row' alignItems='flex-end' justifyContent='space-between' spacing={1.5} sx={{ position: 'relative', mt: 1.5, px: 1 }}>
               <Box sx={{ minWidth: 0 }}>
                 {title && <Typography variant='h5' fontWeight={700} noWrap sx={{ letterSpacing: '-0.02em' }}>{title}</Typography>}
