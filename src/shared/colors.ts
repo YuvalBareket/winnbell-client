@@ -97,6 +97,11 @@ export const GRADIENT_LOADING     = `linear-gradient(150deg, #3a86de 0%, #1a68c2
 // Positive "you're filling up" green - used as entries approach / reach the draw max.
 // Maxing out is a good thing, so it reads celebratory (emerald to forest), never a warning.
 export const GRADIENT_SUCCESS_GREEN = `linear-gradient(135deg, #34d399 0%, #10b981 55%, #2e7d32 100%)`;
+// Marketing "Ready to share" social post backgrounds (business-facing downloads).
+export const GRADIENT_POST_NAVY    = `linear-gradient(150deg, #0f3a6b 0%, #0a2747 100%)`;
+export const GRADIENT_POST_LIGHT   = `linear-gradient(160deg, #f4f8ff 0%, #e6eefb 100%)`;
+export const GRADIENT_POST_ORANGE  = `linear-gradient(150deg, #fb923c 0%, #ea580c 55%, #c2410c 100%)`;
+export const GRADIENT_POST_PURPLE  = `linear-gradient(150deg, #7c3aed 0%, #5b21b6 55%, #4c1d95 100%)`;
 
 // ── Shadows ───────────────────────────────────
 export const SHADOW_PRIMARY_INTENSE = `0 4px 16px rgba(21,101,192,0.4)`;

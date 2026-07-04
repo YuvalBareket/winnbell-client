@@ -8,17 +8,22 @@ import {
 } from '@mui/material';
 import {
   ContentCopy, FileDownload, Print,
-  CheckCircleOutline, Check, RecordVoiceOverOutlined,
+  CheckCircleOutline, Check, RecordVoiceOverOutlined, StarRounded, QrCode2,
 } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import QRCodePlain from 'react-qr-code';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager, selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import {
    PRIMARY_MAIN, PRIMARY_DEEP, BRAND_ICON_BLUE, MOBILE_CONTENT_HEIGHT,
-   SHADOW_CARD,
+   SHADOW_CARD, GOLD_TROPHY, ACCENT_GOLD_LIGHT, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_80, TEXT_HEADING,
 } from '../../../shared/colors';
+import { ReadyToShare } from '../components/ShareCards';
+import { svgToPngDataUrl, downloadNodeAsPng } from '../utils/capture';
+import { useGetDraws } from '../../draw/hooks/useGetDraws';
+import { formatCurrency } from '../../../shared/utils/date';
 import {
   POSTER_W, POSTER_H,
   THUMB_SCALE, THUMB_W, THUMB_H,
@@ -28,27 +33,6 @@ import {
 import iconMain from '../assets/winnbell_icon_main.svg';
 import iconNavy from '../assets/winnbell_icon_navy.svg';
 import iconBrand from '../assets/winnbell_icon_brand.svg';
-
-// ── SVG → PNG helper (ensures QR renders in html2canvas) ─────────────────────
-async function svgToPngDataUrl(svgEl: SVGSVGElement, scale = 3): Promise<string> {
-  const w = svgEl.clientWidth || Number(svgEl.getAttribute('width') ?? 150);
-  const h = svgEl.clientHeight || Number(svgEl.getAttribute('height') ?? 150);
-  const svgStr = new XMLSerializer().serializeToString(svgEl);
-  const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = w * scale;
-      canvas.height = h * scale;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.onerror = reject;
-    img.src = dataUrl;
-  });
-}
 
 // Sticker color themes: one solid color per swatch used for the background, the QR, and the icon.
 const STICKER_THEMES = [
@@ -65,6 +49,10 @@ const MarketingPage = () => {
   const isManager = useAppSelector(selectIsLocationManager);
   const currentUser = useAppSelector(selectCurrentUser);
   const { data: businessData } = useBusinessData(isBusiness);
+  // Live draw prize for the "Prize post" share card (card hidden when no open draw).
+  const { data: activeDraws } = useGetDraws();
+  const openDraw = activeDraws?.find((d) => d.status?.toLowerCase() === 'open') ?? activeDraws?.[0];
+  const prizeLabel = openDraw?.prize_amount != null ? formatCurrency(openDraw.prize_amount) : null;
 
   // State
   const [selectedId, setSelectedId] = useState('classic');
@@ -85,6 +73,8 @@ const MarketingPage = () => {
   const postersRef = useRef<HTMLDivElement>(null);
   const posterRef = useRef<HTMLDivElement>(null);
   const stickerRef = useRef<HTMLDivElement>(null);
+  const heroQrRef = useRef<HTMLDivElement>(null);
+  const [downloadingQr, setDownloadingQr] = useState(false);
 
   // Load playbook from localStorage
   useEffect(() => {
@@ -139,6 +129,21 @@ const MarketingPage = () => {
   const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>) => {
     if (ref.current) {
       ref.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Download just the hero QR (white panel) as a PNG.
+  const handleDownloadQr = async () => {
+    if (!heroQrRef.current) return;
+    setDownloadingQr(true);
+    try {
+      await downloadNodeAsPng(heroQrRef.current, 'winnbell-scan-qr.png', 3);
+      setSnackbar('QR downloaded!');
+    } catch (err) {
+      console.error(err);
+      setSnackbar('Download failed. Please try again.');
+    } finally {
+      setDownloadingQr(false);
     }
   };
 
@@ -353,6 +358,90 @@ const MarketingPage = () => {
         >
 
           {/* ════════════════════════════════════════════════════════════════════════
+              SECTION A: NEW CUSTOMER WELCOME (hero banner)
+          ════════════════════════════════════════════════════════════════════════ */}
+          <Box sx={{ gridColumn: '1 / -1' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Paper
+                elevation={0}
+                sx={{
+                  position: 'relative', overflow: 'hidden',
+                  borderRadius: 3, p: { xs: 2.5, md: 4 },
+                  background: `linear-gradient(135deg, ${PRIMARY_MAIN} 0%, ${PRIMARY_DEEP} 100%)`,
+                  color: '#fff',
+                }}
+              >
+                <Box sx={{ position: 'absolute', top: '-45%', right: '-8%', width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, transparent 70%)', pointerEvents: 'none' }} />
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 2.5, md: 4 }} alignItems={{ md: 'center' }} sx={{ position: 'relative' }}>
+                  {/* Copy + actions */}
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, borderRadius: '999px', px: 1.5, py: 0.5, mb: 2 }}>
+                      <StarRounded sx={{ fontSize: 14, color: GOLD_TROPHY }} />
+                      <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACCENT_GOLD_LIGHT }}>
+                        New customer welcome
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontWeight: 800, fontSize: { xs: '1.45rem', md: '1.9rem' }, lineHeight: 1.2, letterSpacing: '-0.01em' }}>
+                      Customers new to Winnbell get a{' '}
+                      <Box component='span' sx={{ color: GOLD_TROPHY }}>free entry</Box>{' '}
+                      when they scan
+                    </Typography>
+                    <Typography sx={{ color: ALPHA_WHITE_80, mt: 1.25, lineHeight: 1.6, fontSize: '0.9rem', maxWidth: 520 }}>
+                      A lucky start on the house. Anyone joining Winnbell for the first time at your counter scans your code, gets a free entry into this month's draw, and remembers you for it.
+                    </Typography>
+                    <Stack direction='row' spacing={1.5} sx={{ mt: 2.5, flexWrap: 'wrap', gap: 1 }}>
+                      {effectiveLocationId ? (
+                        <>
+                          <Button
+                            variant='contained'
+                            startIcon={<ContentCopy sx={{ fontSize: 18 }} />}
+                            onClick={handleCopyScanUrl}
+                            sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 2, px: 2.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                          >
+                            {copied ? 'Copied!' : 'Copy scan link'}
+                          </Button>
+                          <Button
+                            variant='outlined'
+                            startIcon={downloadingQr ? <CircularProgress size={16} color='inherit' /> : <QrCode2 sx={{ fontSize: 18 }} />}
+                            onClick={handleDownloadQr}
+                            disabled={downloadingQr}
+                            sx={{ color: '#fff', borderColor: ALPHA_WHITE_20, fontWeight: 700, textTransform: 'none', borderRadius: 2, px: 2.5, '&:hover': { borderColor: '#fff', bgcolor: ALPHA_WHITE_15 } }}
+                          >
+                            Download QR
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant='contained'
+                          onClick={() => scrollToSection(topRef)}
+                          sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 2, px: 2.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                        >
+                          Choose a location to start
+                        </Button>
+                      )}
+                    </Stack>
+                  </Box>
+                  {/* QR panel. Shown on desktop; on mobile it stays rendered OFF-SCREEN (not
+                      display:none) so the Download QR capture still has a painted node. */}
+                  {effectiveLocationId && (
+                    <Box sx={{ position: { xs: 'absolute', md: 'static' }, left: { xs: -9999, md: 'auto' }, top: { xs: 0, md: 'auto' }, flexShrink: 0, textAlign: 'center' }}>
+                      <Box ref={heroQrRef} sx={{ bgcolor: '#fff', borderRadius: '18px', p: 2, display: 'flex' }}>
+                        {/* Plain QR (no brand icon) - scans more reliably and matches the posts. */}
+                        <QRCodePlain value={scanUrl} size={128} level='H' fgColor={TEXT_HEADING} />
+                      </Box>
+                      <Typography sx={{ color: ALPHA_WHITE_80, fontSize: '0.68rem', mt: 1 }}>No purchase necessary</Typography>
+                    </Box>
+                  )}
+                </Stack>
+              </Paper>
+            </motion.div>
+          </Box>
+
+          {/* ════════════════════════════════════════════════════════════════════════
               LOCATION SELECTOR (mobile only - on desktop it lives in the header card)
           ════════════════════════════════════════════════════════════════════════ */}
           {!isDesktop && showLocationSelector && (
@@ -493,6 +582,27 @@ const MarketingPage = () => {
                 </Box>
               </Stack>
             </Paper>
+            </motion.div>
+          </Box>
+
+          {/* ════════════════════════════════════════════════════════════════════════
+              SECTION B2: READY TO SHARE (social images)
+          ════════════════════════════════════════════════════════════════════════ */}
+          <Box sx={{ gridColumn: '1 / -1' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.28 }}
+            >
+              <ReadyToShare
+                businessName={businessName}
+                locationLabel={locations.find(l => l.id === effectiveLocationId)?.name ?? ''}
+                scanUrl={scanUrl}
+                prizeLabel={prizeLabel}
+                canDownload={!!effectiveLocationId}
+                onRequireLocation={() => scrollToSection(topRef)}
+                onToast={(msg) => setSnackbar(msg)}
+              />
             </motion.div>
           </Box>
 
