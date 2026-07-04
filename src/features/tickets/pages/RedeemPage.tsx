@@ -7,6 +7,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 import { selectIsAuthenticated } from '../../../store/selectors/authSelectors';
@@ -18,6 +19,7 @@ import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import PhoneVerificationGate from '../components/PhoneVerificationGate';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import { PRIMARY_MAIN } from '../../../shared/colors';
+import { riseIn } from '../../../shared/motion';
 import UserActions from '../components/UserActions';
 import RedeemFeedback from '../components/RedeemFeedback';
 import ReceiptEntryForm, { StepIndicator } from '../components/ReceiptEntryForm';
@@ -134,7 +136,9 @@ const RedeemPage = () => {
   const isReceiptMode = entryMode === 'receipt';
 
   return (
-    <Box sx={{ minHeight: '100dvh', pb: { xs: 12, md: 6 } }}>
+    // overflowX clip: entrance springs overshoot; the page must never grow wider than the
+    // viewport or mobile browsers rescale it (zoom flash). clip, not hidden - no scroll box.
+    <Box sx={{ minHeight: '100dvh', pb: { xs: 12, md: 6 }, overflowX: 'clip' }}>
       <AppPageHero
         title={isReceiptMode ? 'Submit a receipt' : 'Activate an entry'}
         subtitle={isReceiptMode ? 'Pick the store, then submit your receipt' : 'Enter your code from the receipt to join the draw'}
@@ -151,7 +155,7 @@ const RedeemPage = () => {
             onLocationSelect={setReceiptStep2}
           />
         ) : (
-          <Box sx={{ maxWidth: 480, mx: 'auto' }}>
+          <Box component={motion.div} variants={riseIn} initial='hidden' animate='visible' sx={{ maxWidth: 480, mx: 'auto' }}>
             <UserActions
               code={code}
               setCode={setCode}

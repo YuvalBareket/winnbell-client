@@ -19,6 +19,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AccessTime, Close, EmojiEvents, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
@@ -26,6 +27,7 @@ import {
   PRIMARY_MAIN, GRADIENT_PRIMARY, ACCENT_GOLD, ACCENT_GOLD_LIGHT, ACCENT_GOLD_CREAM, ACCENT_GOLD_DARK,
   GRADIENT_GOLD_CTA, SUCCESS_GREEN, TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT,
 } from '../../../shared/colors';
+import { staggerContainer, riseIn, popIn, pressable, pressableCard, breathe, wiggle, SPRING_SNAPPY } from '../../../shared/motion';
 import EntrySuccessDialog from './EntrySuccessDialog';
 import ReceiptImageUploadField from './ReceiptImageUploadField';
 import BusinessSelector from './BusinessSelector';
@@ -67,15 +69,23 @@ const toParticipating = (n: NearbyLocation): ParticipatingLocation => ({
 export const StepIndicator: React.FC<{ step: 1 | 2 }> = ({ step }) => {
   const dot = (active: boolean, done: boolean, label: string, num: string) => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-      <Box sx={{
-        width: 26, height: 26, borderRadius: '50%',
-        bgcolor: done ? SUCCESS_GREEN : active ? PRIMARY_MAIN : 'action.hover',
-        color: done || active ? '#fff' : TEXT_SECONDARY,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '0.78rem', fontWeight: 800,
-      }}>
-        {done ? <CheckCircle sx={{ fontSize: 18 }} /> : num}
-      </Box>
+      {/* Keyed by state so flipping 1 -> check (or back) pops the dot. */}
+      <motion.div
+        key={`${done}-${active}`}
+        initial={{ scale: 0.5 }}
+        animate={{ scale: 1 }}
+        transition={SPRING_SNAPPY}
+      >
+        <Box sx={{
+          width: 26, height: 26, borderRadius: '50%',
+          bgcolor: done ? SUCCESS_GREEN : active ? PRIMARY_MAIN : 'action.hover',
+          color: done || active ? '#fff' : TEXT_SECONDARY,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '0.78rem', fontWeight: 800,
+        }}>
+          {done ? <CheckCircle sx={{ fontSize: 18 }} /> : num}
+        </Box>
+      </motion.div>
       <Typography variant='body2' sx={{ fontWeight: 800, color: active || done ? TEXT_HEADING : TEXT_SECONDARY }}>
         {label}
       </Typography>
@@ -84,7 +94,15 @@ export const StepIndicator: React.FC<{ step: 1 | 2 }> = ({ step }) => {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: { md: 220 } }}>
       {dot(step === 1, step === 2, 'Business', '1')}
-      <Box sx={{ flex: 1, height: 2, borderRadius: 1, bgcolor: step === 2 ? PRIMARY_MAIN : BORDER_LIGHT }} />
+      {/* Connector sweeps left-to-right as step 1 completes (scaleX = compositor-only). */}
+      <Box sx={{ flex: 1, height: 2, borderRadius: 1, bgcolor: BORDER_LIGHT, overflow: 'hidden' }}>
+        <motion.div
+          initial={false}
+          animate={{ scaleX: step === 2 ? 1 : 0 }}
+          transition={SPRING_SNAPPY}
+          style={{ height: '100%', background: PRIMARY_MAIN, transformOrigin: 'left' }}
+        />
+      </Box>
       {dot(step === 2, false, 'Receipt', '2')}
     </Box>
   );
@@ -106,14 +124,19 @@ const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact
 
   if (variant === 'compact') {
     return (
-      <Box onClick={onClaim} sx={{ ...gold, display: 'flex', alignItems: 'center', gap: 1.5, p: 1.75, borderRadius: 3, cursor: 'pointer', transition: 'transform 120ms ease-out', '&:active': { transform: 'scale(0.99)' } }}>
-        {iconChip}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant='body2' sx={{ fontWeight: 800, color: ACCENT_GOLD_DARK, lineHeight: 1.2 }}>Claim free weekly entry</Typography>
-          <Typography variant='caption' sx={{ color: ACCENT_GOLD_DARK, opacity: 0.85, display: 'block', lineHeight: 1.3 }}>No purchase needed. Resets Sunday.</Typography>
+      <motion.div {...pressableCard}>
+        <Box onClick={onClaim} sx={{ ...gold, display: 'flex', alignItems: 'center', gap: 1.5, p: 1.75, borderRadius: 3, cursor: 'pointer' }}>
+          {/* The mobile page's one attractor: an occasional wiggle on the gift icon. */}
+          <motion.div {...wiggle} style={{ flexShrink: 0 }}>
+            {iconChip}
+          </motion.div>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant='body2' sx={{ fontWeight: 800, color: ACCENT_GOLD_DARK, lineHeight: 1.2 }}>Claim free weekly entry</Typography>
+            <Typography variant='caption' sx={{ color: ACCENT_GOLD_DARK, opacity: 0.85, display: 'block', lineHeight: 1.3 }}>No purchase needed. Resets Sunday.</Typography>
+          </Box>
+          <ArrowForwardRounded sx={{ color: ACCENT_GOLD_DARK, flexShrink: 0 }} />
         </Box>
-        <ArrowForwardRounded sx={{ color: ACCENT_GOLD_DARK, flexShrink: 0 }} />
-      </Box>
+      </motion.div>
     );
   }
 
@@ -127,14 +150,18 @@ const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact
       <Typography sx={{ color: ACCENT_GOLD_DARK, opacity: 0.9, lineHeight: 1.5, mt: 1, fontSize: '0.8125rem' }}>
         Claim your free weekly entry. One on us, every week, no purchase needed.
       </Typography>
-      <Button
-        fullWidth
-        onClick={onClaim}
-        startIcon={<StarRounded sx={{ fontSize: 18 }} />}
-        sx={{ mt: 2.5, height: 44, borderRadius: 2, fontWeight: 800, textTransform: 'none', color: '#fff', background: GRADIENT_GOLD_CTA, '&:hover': { background: GRADIENT_GOLD_CTA, filter: 'brightness(0.96)' } }}
-      >
-        Claim free entry
-      </Button>
+      {/* The desktop page's one attractor: the gold CTA breathes. Pressable gestures are
+          inline in motion.ts, so spreading both never kills the loop. */}
+      <motion.div {...breathe} {...pressable} style={{ width: '100%' }}>
+        <Button
+          fullWidth
+          onClick={onClaim}
+          startIcon={<StarRounded sx={{ fontSize: 18 }} />}
+          sx={{ mt: 2.5, height: 44, borderRadius: 2, fontWeight: 800, textTransform: 'none', color: '#fff', background: GRADIENT_GOLD_CTA, '&:hover': { background: GRADIENT_GOLD_CTA, filter: 'brightness(0.96)' } }}
+        >
+          Claim free entry
+        </Button>
+      </motion.div>
       <Typography sx={{ mt: 1.25, color: ACCENT_GOLD_DARK, opacity: 0.75, fontSize: '0.72rem' }}>
         Resets Sunday.
       </Typography>
@@ -377,12 +404,16 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     ? (previewMin && previewMin > 0 ? Math.min(Math.floor(previewAmt / previewMin), MAX_ENTRIES_PER_RECEIPT) : 1)
     : 0;
 
+  const canSubmit = isFormValid && !submitReceiptEntry.isPending && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached;
+
+  // Once every field is valid the CTA becomes the page's attractor and starts breathing.
   const renderSubmit = () => (
+    <motion.div {...(canSubmit ? { ...breathe, ...pressable } : {})}>
     <Button
       variant="contained"
       fullWidth
       onClick={handleSubmitClick}
-      disabled={!isFormValid || submitReceiptEntry.isPending || riskLevel.isThrottled || riskLevel.isDailyLimitReached}
+      disabled={!canSubmit}
       endIcon={submitReceiptEntry.isPending ? undefined : <ArrowForwardRounded />}
       sx={{
         height: 52, borderRadius: 2.5, fontWeight: 800, fontSize: '1rem', letterSpacing: 0.3, textTransform: 'none',
@@ -400,6 +431,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </Box>
       ) : 'Submit & get my entries'}
     </Button>
+    </motion.div>
   );
 
   const renderFooterNote = () => (
@@ -495,7 +527,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
 
       {/* Mobile step bar (desktop shows it in the page header actions) */}
       {!riskLevel.isDrawCapped && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached && !successDialogOpen && (
-        <Box sx={{ display: { xs: 'block', md: 'none' }, pb: 3.5 }}>
+        <Box component={motion.div} variants={riseIn} initial='hidden' animate='visible' sx={{ display: { xs: 'block', md: 'none' }, pb: 2}}>
           <StepIndicator step={selectedLocation ? 2 : 1} />
         </Box>
       )}
@@ -503,15 +535,16 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       {!riskLevel.isDrawCapped && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached && <>
 
       {/* ── Step 1: Select Business ─────────────────── */}
+      {/* Stagger container remounts when the user returns from step 2, re-running the cascade. */}
       {!selectedLocation && (
-        <Box>
+        <Box component={motion.div} variants={staggerContainer} initial='hidden' animate='visible'>
           {/* Mobile: compact free-entry row above the search (frame-2) */}
-          <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
+          <Box component={motion.div} variants={riseIn} sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
             <FreeEntryCard variant='compact' onClaim={() => navigate('/freeTicket')} />
           </Box>
 
           {/* Mobile: "or pick where you shopped" divider (frame-2) */}
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1.5, mb: 2 }}>
+          <Box component={motion.div} variants={riseIn} sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1.5, mb: 2 }}>
             <Box sx={{ flex: 1, height: '1px', bgcolor: BORDER_LIGHT }} />
             <Typography sx={{ color: TEXT_SECONDARY, fontWeight: 700, fontSize: '0.7rem', letterSpacing: 0.6, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
               Or pick where you shopped
@@ -519,7 +552,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             <Box sx={{ flex: 1, height: '1px', bgcolor: BORDER_LIGHT }} />
           </Box>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'flex-start' }}>
-            <Box sx={{ flex: 1, width: '100%', minWidth: 0 }}>
+            <Box component={motion.div} variants={riseIn} sx={{ flex: 1, width: '100%', minWidth: 0 }}>
               {isLocationFetching ? (
                 <Box sx={{ mb: 2 }}>
                   <Skeleton variant='rounded' height={48} sx={{ borderRadius: 2.5, mb: 1 }} />
@@ -538,8 +571,9 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 />
               )}
             </Box>
-            {/* Desktop: full free-entry card in the right rail (frame-0) */}
-            <Box sx={{ display: { xs: 'none', md: 'block' }, width: 300, flexShrink: 0 }}>
+            {/* Desktop: full free-entry card in the right rail (frame-0). popIn is safe here -
+                the 300px card never spans the viewport, so its scale overshoot can't zoom-flash. */}
+            <Box component={motion.div} variants={popIn} sx={{ display: { xs: 'none', md: 'block' }, width: 300, flexShrink: 0 }}>
               <FreeEntryCard variant='full' onClaim={() => navigate('/freeTicket')} />
             </Box>
           </Box>
@@ -598,11 +632,20 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       {/* ── Step 2: Receipt details ─────────────────── */}
       <Collapse in={Boolean(selectedLocation) && !successDialogOpen && !selectedLocationCapReached}>
         {selectedLocation && (
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'flex-start' }}>
+        <Box
+          component={motion.div}
+          key={selectedLocation.location_id}
+          variants={staggerContainer}
+          initial='hidden'
+          animate='visible'
+          sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'flex-start' }}
+        >
           {/* LEFT: selected location + fields */}
           <Box sx={{ flex: 1, width: '100%', minWidth: 0 }}>
-            <SelectedLocationPill primaryColor={primaryColor} location={selectedLocation} onChangeLocation={handleChangeLocation} />
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box component={motion.div} variants={riseIn}>
+              <SelectedLocationPill primaryColor={primaryColor} location={selectedLocation} onChangeLocation={handleChangeLocation} />
+            </Box>
+            <Box component={motion.div} variants={riseIn} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 
           {/* Receipt ID */}
           <TextField
@@ -685,22 +728,41 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             }}
           />
 
-          {/* You'll earn N entries (design amber note) */}
-          {previewCount > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.5, borderRadius: 2.5, bgcolor: `${ACCENT_GOLD}14`, border: `1px solid ${ACCENT_GOLD}40` }}>
-              <StarRounded sx={{ fontSize: 20, color: ACCENT_GOLD_DARK, flexShrink: 0 }} />
-              <Box>
-                <Typography sx={{ color: ACCENT_GOLD_DARK, fontWeight: 800, fontSize: '0.875rem', lineHeight: 1.3 }}>
-                  You'll earn {previewCount} {previewCount === 1 ? 'entry' : 'entries'}
-                </Typography>
-                {previewMin != null && previewMin > 0 && (
-                  <Typography sx={{ color: ACCENT_GOLD_DARK, opacity: 0.85, fontSize: '0.75rem', lineHeight: 1.3 }}>
-                    ${previewMin} per entry
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-          )}
+          {/* You'll earn N entries (design amber note). Springs in when the amount first
+              crosses the minimum; the count itself pops on every change. */}
+          <AnimatePresence initial={false}>
+            {previewCount > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.97, transition: { duration: 0.15 } }}
+                transition={SPRING_SNAPPY}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.5, borderRadius: 2.5, bgcolor: `${ACCENT_GOLD}14`, border: `1px solid ${ACCENT_GOLD}40` }}>
+                  <StarRounded sx={{ fontSize: 20, color: ACCENT_GOLD_DARK, flexShrink: 0 }} />
+                  <Box>
+                    <Typography sx={{ color: ACCENT_GOLD_DARK, fontWeight: 800, fontSize: '0.875rem', lineHeight: 1.3 }}>
+                      You'll earn{' '}
+                      <motion.span
+                        key={previewCount}
+                        style={{ display: 'inline-block' }}
+                        initial={{ y: 8, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={SPRING_SNAPPY}
+                      >
+                        {previewCount} {previewCount === 1 ? 'entry' : 'entries'}
+                      </motion.span>
+                    </Typography>
+                    {previewMin != null && previewMin > 0 && (
+                      <Typography sx={{ color: ACCENT_GOLD_DARK, opacity: 0.85, fontSize: '0.75rem', lineHeight: 1.3 }}>
+                        ${previewMin} per entry
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Purchase Date */}
           <TextField
@@ -758,8 +820,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             </Box>
           </Box>
 
-          {/* RIGHT: summary + submit (desktop only) */}
-          <Box sx={{ display: { xs: 'none', md: 'block' }, width: 300, flexShrink: 0, position: 'sticky', top: 16 }}>
+          {/* RIGHT: summary + submit (desktop only). popIn: 300px rail, scale-safe. */}
+          <Box component={motion.div} variants={popIn} sx={{ display: { xs: 'none', md: 'block' }, width: 300, flexShrink: 0, position: 'sticky', top: 16 }}>
             <Box sx={{ borderRadius: 3, border: `1px solid ${BORDER_LIGHT}`, bgcolor: 'background.paper', p: 2.5, mb: 2 }}>
               <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: TEXT_SECONDARY, fontSize: '0.75rem', display: 'block', mb: 1.5 }}>
                 Summary
@@ -774,7 +836,16 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <Typography variant="body2" sx={{ color: TEXT_SECONDARY }}>Entries earned</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 800, color: previewCount > 0 ? SUCCESS_GREEN : TEXT_SECONDARY }}>{previewCount > 0 ? `+${previewCount}` : '-'}</Typography>
+                {/* Keyed by count so every change hops - same trick as the My Entries number. */}
+                <motion.span
+                  key={previewCount}
+                  style={{ display: 'inline-block' }}
+                  initial={{ y: 8, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={SPRING_SNAPPY}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 800, color: previewCount > 0 ? SUCCESS_GREEN : TEXT_SECONDARY }}>{previewCount > 0 ? `+${previewCount}` : '-'}</Typography>
+                </motion.span>
               </Box>
             </Box>
             {renderSubmit()}

@@ -5,9 +5,19 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import { StorefrontOutlined } from '@mui/icons-material';
 import { PRIMARY_MAIN } from '../../../shared/colors';
+import { SPRING_POP } from '../../../shared/motion';
 import { LocationCard, NearbyLocationCard } from './LocationCards';
+
+// Cards mount after their fetch resolves, so they animate themselves (explicit
+// initial/animate with a per-index delay) instead of joining the page stagger.
+const cardEntrance = (i: number) => ({
+  initial: { opacity: 0, y: 18 },
+  animate: { opacity: 1, y: 0 },
+  transition: { ...SPRING_POP, delay: i * 0.06 },
+});
 import type { ParticipatingLocation } from '../hooks/useAllParticipatingLocations';
 import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 
@@ -87,8 +97,10 @@ const BusinessSelector: React.FC<Props> = ({
               <Typography variant="caption" color="text.disabled">Try a different search term.</Typography>
             </Box>
           ) : (
-            searchResults.map((loc) => (
-              <LocationCard key={loc.location_id} location={loc} primaryColor={primaryColor} onSelect={onLocationSelect} />
+            searchResults.map((loc, i) => (
+              <motion.div key={loc.location_id} {...cardEntrance(i)}>
+                <LocationCard location={loc} primaryColor={primaryColor} onSelect={onLocationSelect} />
+              </motion.div>
             ))
           )}
         </>
@@ -101,8 +113,10 @@ const BusinessSelector: React.FC<Props> = ({
           <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: 'text.disabled', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', fontSize: '0.68rem' }}>
             📍 Nearest to you
           </Typography>
-          {nearbyLocations.slice(0, 3).map((loc) => (
-            <NearbyLocationCard key={loc.location_id} location={loc} primaryColor={primaryColor} onSelect={onLocationSelect} />
+          {nearbyLocations.slice(0, 3).map((loc, i) => (
+            <motion.div key={loc.location_id} {...cardEntrance(i)}>
+              <NearbyLocationCard location={loc} primaryColor={primaryColor} onSelect={onLocationSelect} />
+            </motion.div>
           ))}
         </>
       ) : (
