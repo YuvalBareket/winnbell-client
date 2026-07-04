@@ -124,12 +124,13 @@ const FreeTicketPage: React.FC = () => {
     </Typography>
   );
 
-  // "Same odds" reassurance line, used on both layouts.
-  const oddsNote = (
+  // Equal-treatment reassurance line, used on both layouts. Never mention entry
+  // "kinds" (paid/free) - every entry is just an entry, all treated the same.
+  const equalNote = (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
       <CheckCircleRounded sx={{ fontSize: 18, color: SUCCESS_GREEN, mt: 0.15, flexShrink: 0 }} />
       <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.8rem', lineHeight: 1.5 }}>
-        Counts exactly like a paid entry. Same odds, same draw. You'll get an entry code the moment you claim.
+        Counts exactly like any other entry, in the same draw. You'll get an entry code the moment you claim.
       </Typography>
     </Box>
   );
@@ -206,7 +207,7 @@ const FreeTicketPage: React.FC = () => {
                 <Typography sx={{ fontWeight: 800, color: TEXT_HEADING }}>{usedCount} / 1</Typography>
               </Box>
 
-              <Box sx={{ my: 2 }}>{oddsNote}</Box>
+              <Box sx={{ my: 2 }}>{equalNote}</Box>
 
               <Box sx={{ flexGrow: 1, minHeight: 8 }} />
               {claimButton}
@@ -257,7 +258,7 @@ const FreeTicketPage: React.FC = () => {
           <Typography sx={{ fontWeight: 800, color: TEXT_HEADING }}>{usedCount} / 1</Typography>
         </Box>
 
-        <Box sx={{ px: 0.5, py: 1 }}>{oddsNote}</Box>
+        <Box sx={{ px: 0.5, py: 1 }}>{equalNote}</Box>
 
         <Box>
           {claimButton}

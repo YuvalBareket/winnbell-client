@@ -94,7 +94,7 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, drawLabel,
               onClick={onSubmitReceipt ?? onClose}
               sx={{ color: ALPHA_WHITE_70, fontWeight: 700, textTransform: 'none' }}
             >
-              {onSubmitReceipt ? 'Submit a receipt for more' : 'Close'}
+              {onSubmitReceipt ? 'Submit a receipt' : 'Close'}
             </Button>
           </Stack>
         </Box>

@@ -18,11 +18,8 @@ import { selectIsBusiness, selectIsLocationManager } from '../../../store/select
 import { useAppSelector } from '../../../store/hook';
 import type { BusinessTicket, UserTicket } from '../types/myTicket.types';
 import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
-import { popIn, riseIn, staggerContainer, heroPop, breathe, pressableCard, SPRING_JUMP } from '../../../shared/motion';
+import { popIn, riseIn, staggerContainer, heroPop, breathe, SPRING_JUMP } from '../../../shared/motion';
 
-// A free weekly entry has no partnering business - that's how we split Receipts vs Free.
-const isFreeEntry = (t: UserTicket) => !t.business_name || t.business_sector === 'Free';
-type EntryFilter = 'all' | 'receipts' | 'free';
 
 // No count-up: the number shows its real value immediately and announces itself with a
 // physical jump-and-settle (y spring). The digits never tick - counting looked
@@ -225,24 +222,6 @@ const RingHero = ({ count, cap, color, isClosed, isMaxed, isLoading }: {
   );
 };
 
-// --- Source filter pill (All / Receipts / Free) -----------------------------
-const FilterChip = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
-  <Box
-    component={motion.button}
-    {...pressableCard}
-    onClick={onClick}
-    sx={{
-      border: 'none', cursor: 'pointer', px: 1.5, py: 0.6, borderRadius: '999px',
-      fontWeight: 700, fontSize: '0.78rem', fontFamily: 'inherit',
-      bgcolor: active ? PRIMARY_MAIN : ALPHA_PRIMARY_06,
-      color: active ? '#fff' : TEXT_SECONDARY,
-      transition: 'background-color 150ms ease-out, color 150ms ease-out',
-    }}
-  >
-    {label}
-  </Box>
-);
-
 // --- MAIN LIST COMPONENT ---
 export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { draw_id: number | null; locationId?: number; desktop?: boolean }) => {
   const navigate = useNavigate();
@@ -259,15 +238,6 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
   const { data: drawHistory } = useGetDrawHistory();
   const isClosedDraw = (drawHistory ?? []).find((d) => d.id === draw_id)?.status?.toLowerCase() === 'closed';
 
-  // Source filter (user view only - a user's entries all fit in the first page, so this
-  // filters the complete set, never a partial page).
-  const [filter, setFilter] = useState<EntryFilter>('all');
-  const visibleTickets = isBusiness
-    ? allTickets
-    : (allTickets as UserTicket[]).filter((t) => {
-        if (filter === 'all') return true;
-        return filter === 'free' ? isFreeEntry(t) : !isFreeEntry(t);
-      });
 
   // Intersection observer sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -430,20 +400,6 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
       </motion.div>
       )}
 
-      {/* Entry count + source filter (user view; all entries fit one page) */}
-      {!isBusiness && !isLoading && allTickets.length > 0 && (
-        <Box sx={{ px: 3, pb: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, flexWrap: 'wrap' }}>
-          <Typography sx={{ fontWeight: 800, color: TEXT_HEADING, fontSize: '0.95rem' }}>
-            {allTickets.length} {allTickets.length === 1 ? 'entry' : 'entries'}
-          </Typography>
-          <Stack direction='row' spacing={0.75}>
-            <FilterChip label='All' active={filter === 'all'} onClick={() => setFilter('all')} />
-            <FilterChip label='Receipts' active={filter === 'receipts'} onClick={() => setFilter('receipts')} />
-            <FilterChip label='Free' active={filter === 'free'} onClick={() => setFilter('free')} />
-          </Stack>
-        </Box>
-      )}
-
       {/* Ticket list */}
       <motion.div
         initial="hidden"
@@ -459,18 +415,9 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
                 </Stack>
               </motion.div>
             ) : allTickets.length > 0 ? (
-              visibleTickets.length === 0 ? (
-                <motion.div key={`empty-${filter}`} variants={popIn}>
-                  <Box sx={{ textAlign: 'center', py: 5 }}>
-                    <Typography variant='body2' color='text.disabled'>
-                      No {filter === 'free' ? 'free' : 'receipt'} entries in this campaign yet.
-                    </Typography>
-                  </Box>
-                </motion.div>
-              ) : (
-              <motion.div key={`list-${filter}`} variants={staggerContainer}>
+              <motion.div key="list" variants={staggerContainer}>
                 <Stack spacing={1.5}>
-                  {visibleTickets.map((ticket: BusinessTicket | UserTicket, index: number) =>
+                  {allTickets.map((ticket: BusinessTicket | UserTicket, index: number) =>
                     isBusiness ? (
                       <BusinessTicketRow key={ticket.id} ticket={ticket as BusinessTicket} index={index} />
                     ) : (
@@ -484,7 +431,6 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
                   )}
                 </Stack>
               </motion.div>
-              )
             ) : isBusiness ? (
               <motion.div key="empty-business" variants={popIn}>
                 <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
