@@ -69,8 +69,12 @@ const FreeTicketPage: React.FC = () => {
 
   if (isLoading || !isPhoneVerifiedLoaded) {
     return (
-      <Box display='flex' justifyContent='center' alignItems='center' minHeight={{ xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }}>
-        <CircularProgress color='primary' />
+      // Header renders during loading too, so it never pops in after the spinner.
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', flexDirection: 'column' }}>
+        <AppPageHero title='Free weekly entry' subtitle='One free entry, every week. On us.' />
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', pb: 12 }}>
+          <CircularProgress color='primary' />
+        </Box>
       </Box>
     );
   }

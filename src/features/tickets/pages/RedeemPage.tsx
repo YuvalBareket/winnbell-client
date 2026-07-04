@@ -103,19 +103,23 @@ const RedeemPage = () => {
   };
 
   // ─── Gates ──────────────────────────────────────────────────────────────────
+  // The header renders in every gate state too, so it never pops in after the fact.
   if (!isPhoneVerifiedLoaded) {
     return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        {riskLevelError ? (
-          <>
-            <Box component='p' sx={{ color: 'text.secondary' }}>Something went wrong. Please try again.</Box>
-            <Button variant='contained' onClick={() => refetchRiskLevel()} sx={{ fontWeight: 700, textTransform: 'none' }}>
-              Retry
-            </Button>
-          </>
-        ) : (
-          <CircularProgress size={40} sx={{ color: PRIMARY_MAIN }} />
-        )}
+      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
+        <AppPageHero title='Submit a receipt' subtitle='Pick the store, then submit your receipt' />
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, pb: 12 }}>
+          {riskLevelError ? (
+            <>
+              <Box component='p' sx={{ color: 'text.secondary' }}>Something went wrong. Please try again.</Box>
+              <Button variant='contained' onClick={() => refetchRiskLevel()} sx={{ fontWeight: 700, textTransform: 'none' }}>
+                Retry
+              </Button>
+            </>
+          ) : (
+            <CircularProgress size={40} sx={{ color: PRIMARY_MAIN }} />
+          )}
+        </Box>
       </Box>
     );
   }
@@ -127,8 +131,11 @@ const RedeemPage = () => {
 
   if (isAutoActivating) {
     return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <CircularProgress size={40} sx={{ color: PRIMARY_MAIN }} />
+      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
+        <AppPageHero title='Activate an entry' subtitle='Enter your code from the receipt to join the draw' />
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', pb: 12 }}>
+          <CircularProgress size={40} sx={{ color: PRIMARY_MAIN }} />
+        </Box>
       </Box>
     );
   }
