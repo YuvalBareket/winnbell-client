@@ -112,6 +112,7 @@ export interface AdminAnalytics {
     receipt: number;
     free: number;
     promo: number;
+    referral: number;
     total: number;
   };
   fraud: {

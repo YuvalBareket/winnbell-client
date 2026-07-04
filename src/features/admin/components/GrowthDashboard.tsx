@@ -50,6 +50,7 @@ import {
   CHART_TEAL,
   CHART_TEAL_TINT,
 } from '../../../shared/colors';
+import { formatShortDay } from '../../../shared/utils/date';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -238,10 +239,7 @@ const GrowthDashboard: React.FC = () => {
   // Revenue trend chart data
   const revenueTrendData = (data.revenue.trend || []).map((item) => ({
     ...item,
-    drawDate: new Date(item.draw_date).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-    }),
+    drawDate: formatShortDay(item.draw_date),
   }));
 
   // Acquisition sources for chart
@@ -384,7 +382,7 @@ const GrowthDashboard: React.FC = () => {
                         <YAxis
                           yAxisId='left'
                           tick={{ fontSize: 11 }}
-                          tickFormatter={(v) => `$${(v / 1000).toFixed(0)}K`}
+                          tickFormatter={formatCurrency}
                         />
                         <YAxis
                           yAxisId='right'
@@ -898,44 +896,45 @@ const GrowthDashboard: React.FC = () => {
                       label: 'Quarantined Entries',
                       value: data.fraud.quarantined_entries,
                       tooltip: 'Entries held for review by the anti-fraud system.',
+                      concern: true,
                     },
                     {
                       label: 'Rejected Winners',
                       value: data.fraud.rejected_winners,
                       tooltip: 'Drawn winners disqualified during verification.',
+                      concern: true,
                     },
                     {
                       label: 'Suspended Users',
                       value: data.fraud.suspended_users,
                       tooltip: 'Accounts blocked for abuse.',
+                      concern: true,
                     },
                     {
                       label: 'High Risk Users',
                       value: data.fraud.high_risk_users,
                       tooltip: 'Accounts the risk engine flags as suspicious.',
+                      concern: true,
                     },
                     {
                       label: 'Threshold Probes',
                       value: data.fraud.threshold_probes,
                       tooltip: 'Suspected attempts to game the receipt-amount threshold.',
+                      concern: true,
                     },
                     {
                       label: 'Verifications (Mo.)',
                       value: data.fraud.verifications_this_month,
                       tooltip: 'Winner verifications completed this month.',
+                      concern: false,
                     },
                     {
                       label: 'Entries (Mo.)',
                       value: data.fraud.entries_this_month,
                       tooltip: 'Total tickets issued this month.',
+                      concern: false,
                     },
                   ].map((item) => {
-                    const allZero = data.fraud.quarantined_entries === 0
-                      && data.fraud.rejected_winners === 0
-                      && data.fraud.suspended_users === 0
-                      && data.fraud.high_risk_users === 0
-                      && data.fraud.threshold_probes === 0;
-
                     return (
                       <Grid key={item.label} size={{ xs: 6, md: 4, lg: 2 }}>
                         <Box>
@@ -944,7 +943,7 @@ const GrowthDashboard: React.FC = () => {
                               {item.label}
                             </Typography>
                           </Tooltip>
-                          <Typography variant='h6' fontWeight={700} sx={{ color: allZero && item.value === 0 ? METRIC_NEUTRAL : METRIC_NEUTRAL }}>
+                          <Typography variant='h6' fontWeight={700} sx={{ color: item.concern && item.value > 0 ? METRIC_WARN : METRIC_NEUTRAL }}>
                             {item.value}
                           </Typography>
                         </Box>

@@ -30,7 +30,8 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts';
 import { useAdminAnalytics, useAdminBusinesses, useAllDraws, useCampaignComparison, useEntryVolume, useLocationBreakdown } from '../../hooks/useAdmin';
-import { BG_PAGE } from '../../../../shared/colors';
+import { BG_PAGE, CHART_TEAL } from '../../../../shared/colors';
+import { formatShortDay } from '../../../../shared/utils/date';
 import GrowthDashboard from '../../components/GrowthDashboard';
 
 interface Props {
@@ -206,6 +207,7 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                       { label: 'Code (QR)', key: 'code' as const, color: '#1976d2' },
                       { label: 'Free / AMOE', key: 'free' as const, color: '#f57c00' },
                       { label: 'Promo', key: 'promo' as const, color: '#7b1fa2' },
+                      { label: 'Referral', key: 'referral' as const, color: CHART_TEAL },
                     ].map((source) => {
                       const count = analytics?.entrySourceMix?.[source.key] ?? 0;
                       const total = analytics?.entrySourceMix?.total ?? 0;
@@ -420,9 +422,9 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
-                    <XAxis dataKey='date' tick={{ fontSize: 11 }} tickFormatter={(v) => new Date(v).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} />
+                    <XAxis dataKey='date' tick={{ fontSize: 11 }} tickFormatter={(v) => formatShortDay(v)} />
                     <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                    <RTooltip formatter={(v) => [Number(v).toLocaleString(), 'Entries']} labelFormatter={(l) => new Date(l).toLocaleDateString()} />
+                    <RTooltip formatter={(v) => [Number(v).toLocaleString(), 'Entries']} labelFormatter={(l) => formatShortDay(String(l))} />
                     <Area type='monotone' dataKey='count' stroke='#1976d2' strokeWidth={2} fill='url(#entryGrad)' dot={false} />
                   </AreaChart>
                 </ResponsiveContainer>

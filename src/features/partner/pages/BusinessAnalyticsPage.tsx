@@ -152,9 +152,11 @@ const computeRange = (key: DurationKey, monthValue: string): ComputedRange => {
 const formatBucketLabel = (b: string, granularity: AnalyticsBucket): string => {
   if (!b) return '';
   if (granularity === 'month') return formatMonth(b.slice(0, 7));
-  const dt = new Date(b);
-  if (Number.isNaN(dt.getTime())) return b;
-  return `${dt.getMonth() + 1}/${dt.getDate()}`;
+  // Buckets are UTC day starts ("2026-06-07T00:00:00.000Z"). Read the calendar date straight from
+  // the string so the label isn't shifted a day back for US (UTC-negative) owners.
+  const m = b.slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return b;
+  return `${Number(m[2])}/${Number(m[3])}`;
 };
 
 const formatPct = (v: number | null | undefined): string => {
@@ -195,10 +197,13 @@ interface StatTileProps {
   tint: string;
   iconColor: string;
   caption?: string;
+  // Small pill shown beside the label, e.g. "Last 60 days", to flag a tile whose value is not
+  // scoped to the selected date range.
+  badge?: string;
   sx?: object;
 }
 
-const StatTile = ({ icon, label, value, tint, iconColor, caption, sx }: StatTileProps) => (
+const StatTile = ({ icon, label, value, tint, iconColor, caption, badge, sx }: StatTileProps) => (
   <Paper
     elevation={0}
     sx={{
@@ -230,14 +235,35 @@ const StatTile = ({ icon, label, value, tint, iconColor, caption, sx }: StatTile
       {icon}
     </Box>
     <Box>
-      <Typography
-        variant="caption"
-        fontWeight={700}
-        color="text.secondary"
-        sx={{ textTransform: 'uppercase', letterSpacing: 0.4, fontSize: { xs: '0.62rem', sm: '0.68rem' }, display: 'block', lineHeight: 1.3 }}
-      >
-        {label}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+        <Typography
+          variant="caption"
+          fontWeight={700}
+          color="text.secondary"
+          sx={{ textTransform: 'uppercase', letterSpacing: 0.4, fontSize: { xs: '0.62rem', sm: '0.68rem' }, lineHeight: 1.3 }}
+        >
+          {label}
+        </Typography>
+        {badge && (
+          <Box
+            component="span"
+            sx={{
+              px: 0.75,
+              py: 0.15,
+              borderRadius: 1,
+              bgcolor: tint,
+              color: iconColor,
+              fontSize: '0.56rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: 0.3,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {badge}
+          </Box>
+        )}
+      </Box>
       <Typography fontWeight={800} sx={{ fontSize: { xs: '1.35rem', sm: '1.6rem' }, lineHeight: 1.2, letterSpacing: '-0.5px' }}>
         {value}
       </Typography>
@@ -484,11 +510,11 @@ const BusinessAnalyticsPage = () => {
     const hasSplit = newVal + returningVal > 0;
 
     const pieData = [
-      { name: 'First-Time', value: newVal, color: PRIMARY_MAIN },
-      { name: 'Returning', value: returningVal, color: ACCENT_GOLD_DARK },
+      { name: 'One-time', value: newVal, color: PRIMARY_MAIN },
+      { name: 'Repeat', value: returningVal, color: ACCENT_GOLD_DARK },
     ];
-    // For multi-month ranges we break the split out per month instead of summing it into one pair,
-    // so owners can see how First-Time vs Returning moved over time.
+    // Split is by lifetime entry count (1 entry ever = one-time, 2+ = repeat), not by acquisition date.
+    // For multi-month ranges we break it out per month so owners can see how the mix moved over time.
     const monthlySplitData = seriesData.map((s) => ({
       name: s.label,
       firstTime: s.new_participants ?? 0,
@@ -540,8 +566,8 @@ const BusinessAnalyticsPage = () => {
           {/* New vs Returning */}
           <motion.div variants={itemVariants}>
             <ChartCard
-              title="First-Time vs Returning"
-              subtitle="New faces vs customers coming back"
+              title="One-time vs Repeat"
+              subtitle="Entered once vs came back for more"
               chip={
                 <Chip
                   icon={usePie ? <PieChartOutlineOutlined sx={{ fontSize: 16 }} /> : <ShowChartOutlined sx={{ fontSize: 16 }} />}
@@ -583,8 +609,8 @@ const BusinessAnalyticsPage = () => {
                     <YAxis tick={AXIS_TICK} allowDecimals={false} axisLine={false} tickLine={false} />
                     <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }} content={<ChartTooltip />} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Bar dataKey="firstTime" name="First-Time" fill={PRIMARY_MAIN} radius={[6, 6, 0, 0]} maxBarSize={40} />
-                    <Bar dataKey="returning" name="Returning" fill={ACCENT_GOLD_DARK} radius={[6, 6, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="firstTime" name="One-time" fill={PRIMARY_MAIN} radius={[6, 6, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="returning" name="Repeat" fill={ACCENT_GOLD_DARK} radius={[6, 6, 0, 0]} maxBarSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -594,7 +620,7 @@ const BusinessAnalyticsPage = () => {
                     {formatPct(o?.new_pct)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    First-Time
+                    One-time
                   </Typography>
                 </Box>
                 <Box sx={{ textAlign: 'center' }}>
@@ -602,7 +628,7 @@ const BusinessAnalyticsPage = () => {
                     {formatPct(o?.returning_pct)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Returning
+                    Repeat
                   </Typography>
                 </Box>
               </Stack>
@@ -933,7 +959,7 @@ const BusinessAnalyticsPage = () => {
             />
             <StatTile
               icon={<GroupsOutlined sx={{ fontSize: 22 }} />}
-              label="Returning Customers"
+              label="Repeat Customers"
               value={formatNum(e?.returning_participant_count)}
               tint={ACCENT_GOLD_LIGHT}
               iconColor={ACCENT_GOLD_DARK}
@@ -945,7 +971,8 @@ const BusinessAnalyticsPage = () => {
               value={formatNum(e?.loyal_customers)}
               tint={ALPHA_PRIMARY_10}
               iconColor={PRIMARY_MAIN}
-              caption="Made 2+ purchases in 60 days"
+              badge="Last 60 days"
+              caption="2+ visits in the last 60 days, regardless of the range above"
             />
           </StatGrid>
         </motion.div>
@@ -1215,7 +1242,11 @@ const BusinessAnalyticsPage = () => {
             </Paper>
           </motion.div>
 
-          {/* Error state */}
+          {/* Error state.
+              - First load fails (no data yet): replace the page with a full error + Retry.
+              - A background refresh fails but we still hold the last data: keep showing those
+                numbers and surface a non-blocking banner, so a network blip never silently
+                leaves stale figures on screen with no indication. */}
           {isError && !activeQuery.data ? (
             <Alert
               severity="error"
@@ -1240,7 +1271,35 @@ const BusinessAnalyticsPage = () => {
               We could not load your analytics. Please try again.
             </Alert>
           ) : (
-            renderContent()
+            <>
+              {isError && (
+                <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
+                  <Alert
+                    severity="warning"
+                    sx={{ borderRadius: 2, mb: 2 }}
+                    action={
+                      <Typography
+                        component="button"
+                        onClick={() => refetch()}
+                        sx={{
+                          border: 'none',
+                          bgcolor: 'transparent',
+                          color: 'inherit',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        Retry
+                      </Typography>
+                    }
+                  >
+                    Could not refresh. Showing your last loaded numbers.
+                  </Alert>
+                </motion.div>
+              )}
+              {renderContent()}
+            </>
           )}
         </Stack>
       </Container>

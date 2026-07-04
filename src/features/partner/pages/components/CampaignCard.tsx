@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BusinessData } from '../../types/business.types';
 import { PRIMARY_MAIN, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10 } from '../../../../shared/colors';
+import { formatCurrency } from '../../../../shared/utils/date';
 import { getUploadUrl } from '../../api/business.api';
 
 // ────────────────────────────────────────────────────────────
@@ -23,12 +24,6 @@ interface CampaignCardProps {
   updateCampaignSettings?: (data: { min_transaction_amount: number; receipt_example_image_url?: string | null }) => void;
   isUpdatingSettings?: boolean;
 }
-
-// ────────────────────────────────────────────────────────────
-// Helpers
-// ────────────────────────────────────────────────────────────
-
-const formatCurrency = (v: number): string => `$${v}`;
 
 // ────────────────────────────────────────────────────────────
 // Animation wrappers

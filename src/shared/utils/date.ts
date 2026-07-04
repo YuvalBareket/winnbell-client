@@ -31,6 +31,19 @@ export const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
+const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/**
+ * Formats a date string ("YYYY-MM-DD" or a longer ISO string) as "Mon D" using the calendar date
+ * in the string itself. Avoids the day-off-by-one that new Date(iso).toLocaleDateString() causes:
+ * a UTC-midnight bucket parsed and rendered in a UTC-negative timezone shows the previous day.
+ */
+export const formatShortDay = (iso: string): string => {
+  const m = String(iso).slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return String(iso);
+  return `${SHORT_MONTHS[Number(m[2]) - 1]} ${Number(m[3])}`;
+};
+
 /**
  * Formats ISO date strings into readable formats used in the Ticket List
  */
