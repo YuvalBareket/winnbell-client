@@ -7,6 +7,7 @@ import {
   STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
   STATUS_PENDING_BG, STATUS_PENDING_TEXT, PRIMARY_MAIN,
   GRADIENT_PRIMARY, GRADIENT_SUCCESS_GREEN, ALPHA_PRIMARY_06,
+  TEXT_HEADING, TEXT_SECONDARY, CHART_GRID, BORDER_SUBTLE, SHADOW_CARD,
 } from '../../../shared/colors';
 import { formatTicketDate } from '../../../shared/utils/date';
 import { BUSINESS_SECTORS } from '../../admin/data';
@@ -17,7 +18,11 @@ import { selectIsBusiness, selectIsLocationManager } from '../../../store/select
 import { useAppSelector } from '../../../store/hook';
 import type { BusinessTicket, UserTicket } from '../types/myTicket.types';
 import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
-import { popIn, riseIn, staggerContainer, heroPop, breathe, SPRING_JUMP } from '../../../shared/motion';
+import { popIn, riseIn, staggerContainer, heroPop, breathe, pressableCard, SPRING_JUMP } from '../../../shared/motion';
+
+// A free weekly entry has no partnering business - that's how we split Receipts vs Free.
+const isFreeEntry = (t: UserTicket) => !t.business_name || t.business_sector === 'Free';
+type EntryFilter = 'all' | 'receipts' | 'free';
 
 // No count-up: the number shows its real value immediately and announces itself with a
 // physical jump-and-settle (y spring). The digits never tick - counting looked
@@ -42,12 +47,12 @@ const TicketRowWrapper = ({ children, index, isClickable = false, onClick }: { c
       onClick={isClickable ? onClick : undefined}
       sx={{
         border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 6,
-        p: 2,
-        pl: 2.5,
-        pr: 2.5,
+        borderColor: BORDER_SUBTLE,
+        borderRadius: '16px',
+        py: 1.75,
+        px: 2.25,
         bgcolor: 'background.paper',
+        boxShadow: SHADOW_CARD,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -89,30 +94,18 @@ const UserTicketRow = ({ ticket, index, onLocationClick }: { ticket: UserTicket;
         </Avatar>
         <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
           <Typography
-            variant='subtitle1'
             noWrap
-            sx={{ fontWeight: 700, lineHeight: 1.2 }}
+            sx={{ fontWeight: 700, lineHeight: 1.25, fontSize: '0.95rem', color: TEXT_HEADING }}
           >
-            {ticket.business_name ?? 'Free weekly entry'}
+            {ticket.business_name || 'Free weekly entry'}
           </Typography>
-          {ticket.location_name && (
-            <Typography variant='caption' sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', lineHeight: 1.4 }}>
-              {ticket.location_name}
-            </Typography>
-          )}
+          {/* One muted line: location . date . time (location omitted for free entries). */}
           <Typography
             variant='caption'
-            sx={{
-              color: 'text.secondary',
-              fontWeight: 500,
-              mt: 0.25,
-              display: 'block',
-            }}
+            noWrap
+            sx={{ color: 'text.secondary', fontWeight: 500, mt: 0.25, display: 'block', fontSize: '0.78rem' }}
           >
-            {date} •{' '}
-            <Box component='span' sx={{ color: 'text.disabled' }}>
-              {time}
-            </Box>
+            {ticket.location_name ? `${ticket.location_name} · ` : ''}{date} · {time}
           </Typography>
         </Box>
       </Box>
@@ -176,8 +169,81 @@ const BusinessTicketRow = ({ ticket, index }: { ticket: BusinessTicket; index: n
   );
 };
 
+// --- Circular entry ring (desktop hero) -------------------------------------
+const RING_R = 44;
+const RING_C = 2 * Math.PI * RING_R; // circumference ≈ 276.46
+const EntryRing = ({ count, cap, color }: { count: number; cap: number; color: string }) => {
+  const pct = Math.min(count / cap, 1);
+  return (
+    <Box sx={{ position: 'relative', width: 104, height: 104, flexShrink: 0 }}>
+      <svg width={104} height={104} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={52} cy={52} r={RING_R} fill='none' stroke={CHART_GRID} strokeWidth={10} />
+        {/* Arc fills to the current fraction with the signature jump-and-settle. */}
+        <motion.circle
+          cx={52} cy={52} r={RING_R} fill='none' stroke={color} strokeWidth={10} strokeLinecap='round'
+          strokeDasharray={RING_C}
+          initial={{ strokeDashoffset: RING_C }}
+          animate={{ strokeDashoffset: RING_C * (1 - pct) }}
+          transition={{ ...SPRING_JUMP, delay: 0.1 }}
+        />
+      </svg>
+      <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <motion.span key={count} style={{ display: 'inline-block' }} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={SPRING_JUMP}>
+          <Typography sx={{ fontWeight: 900, fontSize: '1.9rem', lineHeight: 1, color }}>{count}</Typography>
+        </motion.span>
+        <Typography sx={{ fontSize: '0.7rem', color: 'text.disabled', fontWeight: 700, mt: 0.25 }}>of {cap}</Typography>
+      </Box>
+    </Box>
+  );
+};
+
+// Desktop hero: ring + "You're in with N entries" + a compliant one-liner (never implies
+// that spending or extra entries improves the odds - just states slots remaining).
+const RingHero = ({ count, cap, color, isClosed, isMaxed, isLoading }: {
+  count: number; cap: number; color: string; isClosed: boolean; isMaxed: boolean; isLoading: boolean;
+}) => {
+  const remaining = cap - count;
+  const headline = isClosed
+    ? `You had ${count} ${count === 1 ? 'entry' : 'entries'}`
+    : count === 0 ? "You're not in yet" : `You're in with ${count} ${count === 1 ? 'entry' : 'entries'}`;
+  const sub = isClosed
+    ? 'This campaign has ended. Good luck!'
+    : isMaxed ? 'You have the maximum entries for this campaign. Good luck!'
+    : count === 0 ? 'Submit a receipt or claim your free weekly entry to get in.'
+    : `You have ${remaining} more ${remaining === 1 ? 'entry' : 'entries'} available - don't leave them unclaimed!`;
+  return (
+    <motion.div variants={riseIn} initial='hidden' animate='visible'>
+      <Box sx={{ px: 3, pt: 1, pb: 2.5, display: 'flex', alignItems: 'center', gap: 3 }}>
+        {isLoading ? <Skeleton variant='circular' width={104} height={104} sx={{ flexShrink: 0 }} /> : <EntryRing count={count} cap={cap} color={color} />}
+        <Box sx={{ minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '1.15rem', color: TEXT_HEADING, lineHeight: 1.25 }}>{headline}</Typography>
+          <Typography variant='body2' sx={{ color: TEXT_SECONDARY, mt: 0.5, lineHeight: 1.5 }}>{sub}</Typography>
+        </Box>
+      </Box>
+    </motion.div>
+  );
+};
+
+// --- Source filter pill (All / Receipts / Free) -----------------------------
+const FilterChip = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
+  <Box
+    component={motion.button}
+    {...pressableCard}
+    onClick={onClick}
+    sx={{
+      border: 'none', cursor: 'pointer', px: 1.5, py: 0.6, borderRadius: '999px',
+      fontWeight: 700, fontSize: '0.78rem', fontFamily: 'inherit',
+      bgcolor: active ? PRIMARY_MAIN : ALPHA_PRIMARY_06,
+      color: active ? '#fff' : TEXT_SECONDARY,
+      transition: 'background-color 150ms ease-out, color 150ms ease-out',
+    }}
+  >
+    {label}
+  </Box>
+);
+
 // --- MAIN LIST COMPONENT ---
-export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | null; locationId?: number }) => {
+export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { draw_id: number | null; locationId?: number; desktop?: boolean }) => {
   const navigate = useNavigate();
   const isBusinessOwner = useAppSelector(selectIsBusiness);
   const isLocation = useAppSelector(selectIsLocationManager);
@@ -191,6 +257,16 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
   // empty state must not tell the user to "claim an entry" for it.
   const { data: drawHistory } = useGetDrawHistory();
   const isClosedDraw = (drawHistory ?? []).find((d) => d.id === draw_id)?.status?.toLowerCase() === 'closed';
+
+  // Source filter (user view only - a user's entries all fit in the first page, so this
+  // filters the complete set, never a partial page).
+  const [filter, setFilter] = useState<EntryFilter>('all');
+  const visibleTickets = isBusiness
+    ? allTickets
+    : (allTickets as UserTicket[]).filter((t) => {
+        if (filter === 'all') return true;
+        return filter === 'free' ? isFreeEntry(t) : !isFreeEntry(t);
+      });
 
   // Intersection observer sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -231,8 +307,12 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
   return (
     <>
-      {/* Entry count + progress. riseIn (no scale): a scale overshoot on this full-width
-          block briefly widens the page and the mobile browser rescales it (zoom flash). */}
+      {/* Desktop (user): circular ring hero. Everything else keeps the number + linear bar. */}
+      {desktop && !isBusiness ? (
+        <RingHero count={totalCount} cap={CAP} color={progressColor} isClosed={isClosedDraw} isMaxed={isMaxed} isLoading={isLoading} />
+      ) : (
+      /* Entry count + progress. riseIn (no scale): a scale overshoot on this full-width
+         block briefly widens the page and the mobile browser rescales it (zoom flash). */
       <motion.div variants={riseIn} initial="hidden" animate="visible">
         <Box sx={{ px: 3, pt: 0, pb: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: isBusiness ? 0 : 1.5 }}>
@@ -347,6 +427,21 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
         )}
         </Box>
       </motion.div>
+      )}
+
+      {/* Entry count + source filter (user view; all entries fit one page) */}
+      {!isBusiness && !isLoading && allTickets.length > 0 && (
+        <Box sx={{ px: 3, pb: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, flexWrap: 'wrap' }}>
+          <Typography sx={{ fontWeight: 800, color: TEXT_HEADING, fontSize: '0.95rem' }}>
+            {allTickets.length} {allTickets.length === 1 ? 'entry' : 'entries'}
+          </Typography>
+          <Stack direction='row' spacing={0.75}>
+            <FilterChip label='All' active={filter === 'all'} onClick={() => setFilter('all')} />
+            <FilterChip label='Receipts' active={filter === 'receipts'} onClick={() => setFilter('receipts')} />
+            <FilterChip label='Free' active={filter === 'free'} onClick={() => setFilter('free')} />
+          </Stack>
+        </Box>
+      )}
 
       {/* Ticket list */}
       <motion.div
@@ -363,9 +458,18 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
                 </Stack>
               </motion.div>
             ) : allTickets.length > 0 ? (
-              <motion.div key="list" variants={staggerContainer}>
+              visibleTickets.length === 0 ? (
+                <motion.div key={`empty-${filter}`} variants={popIn}>
+                  <Box sx={{ textAlign: 'center', py: 5 }}>
+                    <Typography variant='body2' color='text.disabled'>
+                      No {filter === 'free' ? 'free' : 'receipt'} entries in this campaign yet.
+                    </Typography>
+                  </Box>
+                </motion.div>
+              ) : (
+              <motion.div key={`list-${filter}`} variants={staggerContainer}>
                 <Stack spacing={1.5}>
-                  {allTickets.map((ticket: BusinessTicket | UserTicket, index: number) =>
+                  {visibleTickets.map((ticket: BusinessTicket | UserTicket, index: number) =>
                     isBusiness ? (
                       <BusinessTicketRow key={ticket.id} ticket={ticket as BusinessTicket} index={index} />
                     ) : (
@@ -379,6 +483,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
                   )}
                 </Stack>
               </motion.div>
+              )
             ) : isBusiness ? (
               <motion.div key="empty-business" variants={popIn}>
                 <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
@@ -426,8 +531,8 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
 // --- SHARED UI HELPERS ---
 const iconBoxStyle = {
-  width: 48,
-  height: 48,
+  width: 46,
+  height: 46,
   borderRadius: '50%',
   bgcolor: 'action.hover',
   display: 'flex',

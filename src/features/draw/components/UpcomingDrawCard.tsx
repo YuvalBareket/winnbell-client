@@ -3,7 +3,11 @@ import { Box, Typography, Paper } from '@mui/material';
 import { Schedule, ConfirmationNumber } from '@mui/icons-material';
 import type { IDrawSummary } from '../types';
 import { calculateDaysLeft, formatCurrency } from '../../../shared/utils/date';
-import { GRADIENT_HERO, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, SHADOW_CARD } from '../../../shared/colors';
+import {
+  GRADIENT_HERO, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_70, SHADOW_CARD,
+  GOLD_TROPHY, ACCENT_GOLD_LIGHT,
+} from '../../../shared/colors';
+import { goldShineSx } from './goldShine';
 
 // Use destructuring here to get the 'draw' property from props
 export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
@@ -55,6 +59,29 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
         }}
       />
 
+      {/* LIVE NOW / ENDED badge - top-right corner */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 20,
+          right: 20,
+          zIndex: 11,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.75,
+          px: 1.25,
+          py: 0.5,
+          borderRadius: 50,
+          bgcolor: ALPHA_WHITE_15,
+          border: `1px solid ${ALPHA_WHITE_20}`,
+        }}
+      >
+        {!isClosed && <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: GOLD_TROPHY }} />}
+        <Typography sx={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: isClosed ? ALPHA_WHITE_70 : ACCENT_GOLD_LIGHT }}>
+          {isClosed ? 'Ended' : 'Live now'}
+        </Typography>
+      </Box>
+
       <Box sx={{ position: 'relative', zIndex: 10 }}>
         <Typography
           variant='subtitle2'
@@ -69,9 +96,16 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
           {draw?.name || 'Upcoming Campaign Prize'}
         </Typography>
 
+        {/* Prize - shimmering gold for the live campaign, plain white once it has ended. */}
         <Typography
           variant='h2'
-          sx={{ fontWeight: 900, mb: 3, fontSize: { xs: '2.2rem', sm: '3rem', md: '3.5rem' } }}
+          sx={{
+            fontWeight: 900,
+            mb: 3,
+            lineHeight: 1,
+            fontSize: { xs: '2.2rem', sm: '3rem', md: '3.5rem' },
+            ...(isClosed ? { color: 'white' } : goldShineSx),
+          }}
         >
           {formattedAmount}
         </Typography>

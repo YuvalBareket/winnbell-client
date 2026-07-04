@@ -112,6 +112,8 @@ export const SHADOW_FLOAT          = `0 8px 28px rgba(0,0,0,0.12), 0 2px 4px rgb
 export const SHADOW_CARD_DEEP      = `0 18px 40px rgba(0,0,0,0.34), 0 8px 16px rgba(0,0,0,0.24), 0 2px 4px rgba(0,0,0,0.18)`;
 export const SHADOW_PRIMARY_GLOW   = `0 4px 20px rgba(21,101,192,0.35), 0 0px 40px rgba(21,101,192,0.15)`;
 export const SHADOW_BOTTOM_NAV     = `0 -2px 12px rgba(0,0,0,0.06), 0 -1px 4px rgba(0,0,0,0.03)`;
+// Warm glow behind the gold prize amount on the live campaign card.
+export const SHADOW_GOLD_GLOW      = `0 0 18px rgba(251,191,36,0.55), 0 1px 2px rgba(0,0,0,0.25)`;
 
 // ── Alpha / Overlay utilities ─────────────────
 export const ALPHA_BLACK_04    = 'rgba(0,0,0,0.04)';
