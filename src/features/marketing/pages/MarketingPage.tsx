@@ -5,7 +5,9 @@ import {
   Box, Container, Typography, Stack, Paper, Button, Chip,
   useMediaQuery, useTheme, Snackbar, Alert,
   CircularProgress, Autocomplete, TextField,
+  Dialog, DialogTitle, List, ListItemButton, ListItemIcon, ListItemText,
 } from '@mui/material';
+import { LocationOnOutlined } from '@mui/icons-material';
 import {
   ContentCopy, FileDownload, Print,
   CheckCircleOutline, Check, RecordVoiceOverOutlined, StarRounded, QrCode2,
@@ -75,6 +77,8 @@ const MarketingPage = () => {
   const stickerRef = useRef<HTMLDivElement>(null);
   const heroQrRef = useRef<HTMLDivElement>(null);
   const [downloadingQr, setDownloadingQr] = useState(false);
+  // "Choose a location" buttons open this picker directly (no scroll-to-top hunting).
+  const [locPickerOpen, setLocPickerOpen] = useState(false);
 
   // Load playbook from localStorage
   useEffect(() => {
@@ -417,7 +421,7 @@ const MarketingPage = () => {
                       ) : (
                         <Button
                           variant='contained'
-                          onClick={() => scrollToSection(topRef)}
+                          onClick={() => setLocPickerOpen(true)}
                           sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 2, px: 2.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
                         >
                           Choose a location to start
@@ -600,7 +604,7 @@ const MarketingPage = () => {
                 scanUrl={scanUrl}
                 prizeLabel={prizeLabel}
                 canDownload={!!effectiveLocationId}
-                onRequireLocation={() => scrollToSection(topRef)}
+                onRequireLocation={() => setLocPickerOpen(true)}
                 onToast={(msg) => setSnackbar(msg)}
               />
             </motion.div>
@@ -789,7 +793,7 @@ const MarketingPage = () => {
                             fullWidth
                             variant='outlined'
                             size='large'
-                            onClick={() => scrollToSection(topRef)}
+                            onClick={() => setLocPickerOpen(true)}
                             sx={{
                               py: 1.2,
                               fontWeight: 700,
@@ -1012,7 +1016,7 @@ const MarketingPage = () => {
                           fullWidth
                           variant='outlined'
                           size='large'
-                          onClick={() => scrollToSection(topRef)}
+                          onClick={() => setLocPickerOpen(true)}
                           sx={{
                             py: 1.4,
                             fontWeight: 700,
@@ -1033,6 +1037,34 @@ const MarketingPage = () => {
 
         </Box>
       </Container>
+
+      {/* Location picker - opened by every "Choose a location" button so the pick
+          happens right where you clicked, no scrolling back to the top. */}
+      <Dialog open={locPickerOpen} onClose={() => setLocPickerOpen(false)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ fontWeight: 800, pb: 1 }}>Choose a location</DialogTitle>
+        <Typography variant='body2' color='text.secondary' sx={{ px: 3, pb: 1 }}>
+          Your QR codes and materials are unique to each location.
+        </Typography>
+        <List sx={{ pb: 2, px: 1.5 }}>
+          {locations.map((loc) => (
+            <ListItemButton
+              key={loc.id}
+              onClick={() => { setSelectedLocationId(loc.id); setLocPickerOpen(false); }}
+              sx={{ borderRadius: 2, mb: 0.5 }}
+            >
+              <ListItemIcon sx={{ minWidth: 38 }}>
+                <LocationOnOutlined sx={{ color: PRIMARY_MAIN }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={loc.name}
+                secondary={loc.address}
+                primaryTypographyProps={{ fontWeight: 700 }}
+                secondaryTypographyProps={{ noWrap: true }}
+              />
+            </ListItemButton>
+          ))}
+        </List>
+      </Dialog>
 
       <Snackbar
         open={!!snackbar}
