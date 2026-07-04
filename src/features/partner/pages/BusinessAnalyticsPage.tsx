@@ -22,7 +22,6 @@ import {
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  BarChartOutlined,
   GroupsOutlined,
   ConfirmationNumberOutlined,
   AutorenewOutlined,
@@ -1167,7 +1166,6 @@ const BusinessAnalyticsPage = () => {
       <AppPageHero
         title='Analytics'
         subtitle={isBusiness ? 'Understand your customers and growth' : 'Branch performance insights'}
-        icon={<BarChartOutlined sx={{ fontSize: 28 }} />}
         actions={isDesktop ? analyticsControls : undefined}
       />
 

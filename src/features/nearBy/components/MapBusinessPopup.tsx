@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Drawer, Box, Typography, Avatar, Button, Stack, Chip, IconButton, Divider,
   useMediaQuery, useTheme, Skeleton,
@@ -247,8 +247,9 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
         </Box>
       )}
 
-      {/* Hero, body, and actions -- shows real content when location is available */}
-      <AnimatePresence>
+      {/* Hero, body, and actions -- shows real content when location is available.
+          No AnimatePresence: the Drawer's own slide transition covers the close; the
+          entrance spring below covers the open. */}
         {location && (
           <>
             {/* Real hero banner */}
@@ -574,7 +575,6 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
           </Box>
         </>
         )}
-      </AnimatePresence>
     </Drawer>
   );
 };

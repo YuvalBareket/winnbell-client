@@ -18,7 +18,7 @@ import { useFreeTicket } from '../hooks/useFreeTicket';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import PhoneVerificationGate from '../components/PhoneVerificationGate';
 import {
-  PRIMARY_MAIN, PRIMARY_DEEP, SUCCESS_GREEN,
+  PRIMARY_MAIN, PRIMARY_DEEP, SUCCESS_GREEN, BG_SURFACE,
   ALPHA_WHITE_15, ALPHA_WHITE_80,
   TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT, MOBILE_CONTENT_HEIGHT, SHADOW_PRIMARY_MEDIUM,
 } from '../../../shared/colors';
@@ -170,7 +170,7 @@ const FreeTicketPage: React.FC = () => {
             </Box>
 
             {/* RIGHT: claim card */}
-            <Box sx={{ flex: 1, borderRadius: 4, p: 3.5, bgcolor: '#fff', border: `1px solid ${BORDER_LIGHT}`, display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ flex: 1, borderRadius: 4, p: 3.5, bgcolor: BG_SURFACE, border: `1px solid ${BORDER_LIGHT}`, display: 'flex', flexDirection: 'column' }}>
               <Typography sx={{ fontWeight: 800, color: TEXT_HEADING, fontSize: '1.05rem', mb: 2 }}>This week's free entry</Typography>
 
               {/* Availability by date (no countdown clock) */}
@@ -212,7 +212,7 @@ const FreeTicketPage: React.FC = () => {
   }
 
   // ── Mobile: gradient hero + stacked info cards ─────────────────────────────
-  const cardSx = { bgcolor: '#fff', border: `1px solid ${BORDER_LIGHT}`, borderRadius: 3, p: 2 } as const;
+  const cardSx = { bgcolor: BG_SURFACE, border: `1px solid ${BORDER_LIGHT}`, borderRadius: 3, p: 2 } as const;
 
   return (
     <Box sx={{ minHeight: MOBILE_CONTENT_HEIGHT, pb: 12 }}>

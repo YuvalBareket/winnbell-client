@@ -63,7 +63,6 @@ const DrawPreparationView = ({
         subtitle={isSubscribed
           ? "You're registered - your business goes live when the campaign opens"
           : 'A few quick steps to get your business live on Winnbell'}
-        icon={<EmojiEvents sx={{ fontSize: 26 }} />}
       />
 
       <Container maxWidth='lg' sx={{ mt: 1 }}>

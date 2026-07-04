@@ -15,13 +15,12 @@ export const BRAND_ICON_BLUE    = '#195DE2';   // Winnbell icon blue (matches wi
 // ── Accent - warm gold for rewards/wins ──────
 export const ACCENT_GOLD        = '#c5a047';   // warm amber-gold accent (Golden Bronze)
 export const ACCENT_GOLD_LIGHT  = '#fdf5dc';   // gold tint background (warm tint of bronze)
+export const ACCENT_GOLD_CREAM  = '#f4e6c4';   // deeper cream, gold gradient end (free-entry card)
 export const ACCENT_GOLD_DARK   = '#a0822f';   // darker gold for contrast (darker bronze)
 
 // ── Backgrounds ──────────────────────────────
 export const BG_PAGE            = '#ffffff';   // auth pages, legal pages, hub page (Floral White)
 export const BG_DEFAULT         = '#ffffff';   // MUI background.default (Floral White)
-// Fixed-px dark band at the top (never stretches on tall/scrolling pages) fading into the light base gradient.
-export const BG_APP_GRADIENT    = `linear-gradient(167deg, #4278b5 0px, #4d8ccb 38px, #66a3df 72px, #88bcef 106px, #a9d0f4 140px, #c6e0f7 174px, #ddebfb 208px, #e8f1fc 240px, rgba(232,241,252,0) 290px) no-repeat, linear-gradient(167deg, #e8f1fc 0%, #f4f8fd 50%, #f7fafe 100%)`;
 export const BG_SURFACE         = '#FFFFFF';   // card surfaces
 export const BG_SUBTLE          = '#f1f5f9';   // subtle section backgrounds (warmer subtle)
 
@@ -149,7 +148,6 @@ export const GLASS_BACKDROP    = 'blur(16px) saturate(180%)';
 // ── Layout ────────────────────────────────────────────────────────────────────
 export const APP_HEADER_HEIGHT           = 60;  // AppHeader Toolbar height (mobile, static)
 export const BOTTOM_NAV_HEIGHT           = 76;  // BottomNavigation + safe area
-// Use MOBILE_CONTENT_HEIGHT for pages that show the AppHeader (most pages)
-export const MOBILE_CONTENT_HEIGHT       = 'calc(100dvh - 136px)'; // 60px header + 76px nav
-// Use MOBILE_CONTENT_HEIGHT_NO_HEADER for pages that hide the AppHeader (NearbyPage, ActivityPage)
-export const MOBILE_CONTENT_HEIGHT_NO_HEADER = 'calc(100dvh - 76px)';
+// Viewport minus the bottom nav. Since the app-shell refactor every page renders its own
+// AppPageHero inside the content flow, so no external header is subtracted anymore.
+export const MOBILE_CONTENT_HEIGHT       = 'calc(100dvh - 76px)';

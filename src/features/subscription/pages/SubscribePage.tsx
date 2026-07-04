@@ -4,7 +4,7 @@ import {
   IconButton, Container,
 } from '@mui/material';
 import {
-  ArrowBack, WorkspacePremiumOutlined,
+  ArrowBack,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -147,7 +147,6 @@ const SubscribePage = () => {
       <AppPageHero
         title='Grow Your Business'
         subtitle='A simple monthly subscription that brings customers back'
-        icon={<WorkspacePremiumOutlined sx={{ fontSize: 28 }} />}
       />
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>

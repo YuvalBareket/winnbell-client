@@ -27,7 +27,6 @@ const SettingsPage = () => {
       <AppPageHero
         title='Settings'
         subtitle='Manage your account and preferences'
-        icon={<SettingsOutlined sx={{ fontSize: 28 }} />}
       />
 
       {/* Main Content Grid */}

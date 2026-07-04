@@ -34,7 +34,7 @@ import { useCampaignHeader, useCampaignKpis, useCampaignEntries, useCampaigns } 
 import { useSubscription } from '../../subscription/hooks/useSubscription';
 import DrawPreparationView from '../../tickets/components/DrawPreparationView';
 import {
-  MOBILE_CONTENT_HEIGHT_NO_HEADER,
+  MOBILE_CONTENT_HEIGHT,
   TEXT_SECONDARY,
   SHADOW_CARD,
 } from '../../../shared/colors';
@@ -211,11 +211,10 @@ const CampaignDashboardPage = () => {
   );
 
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT_NO_HEADER, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
       <AppPageHero
         title='Campaign Dashboard'
         subtitle='Monitor your active campaign and entries'
-        icon={<CampaignOutlined sx={{ fontSize: 28 }} />}
         actions={isDesktop ? headerControls : undefined}
       />
 

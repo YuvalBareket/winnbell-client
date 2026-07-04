@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
   STATUS_PENDING_BG, STATUS_PENDING_TEXT, PRIMARY_MAIN,
-  GRADIENT_PRIMARY, GRADIENT_SUCCESS_GREEN,
+  GRADIENT_PRIMARY, GRADIENT_SUCCESS_GREEN, ALPHA_PRIMARY_06,
 } from '../../../shared/colors';
 import { formatTicketDate } from '../../../shared/utils/date';
 import { BUSINESS_SECTORS } from '../../admin/data';
@@ -20,8 +20,14 @@ import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
 import { popIn, riseIn, staggerContainer, heroPop, breathe, SPRING_JUMP } from '../../../shared/motion';
 
 // No count-up: the number shows its real value immediately and announces itself with a
-// physical grow-and-settle jump (scale spring). The digits never tick - counting looked
+// physical jump-and-settle (y spring). The digits never tick - counting looked
 // robotic no matter the easing.
+
+// Motion props for clickable cards
+const pressureCardMotion = {
+  whileTap: { scale: 0.97 },
+  transition: { type: 'spring', stiffness: 500, damping: 30, mass: 0.8 },
+} as const;
 
 // --- Shared ticket row wrapper ---
 const TicketRowWrapper = ({ children, index, isClickable = false, onClick }: { children: React.ReactNode; index: number; isClickable?: boolean; onClick?: () => void }) => (
@@ -60,12 +66,6 @@ const TicketRowWrapper = ({ children, index, isClickable = false, onClick }: { c
     </Box>
   </motion.div>
 );
-
-// Motion props for clickable cards
-const pressureCardMotion = {
-  whileTap: { scale: 0.97 },
-  transition: { type: 'spring', stiffness: 500, damping: 30, mass: 0.8 },
-} as const;
 
 // --- 1. USER TICKET COMPONENT ---
 const UserTicketRow = ({ ticket, index, onLocationClick }: { ticket: UserTicket; index: number; onLocationClick?: (locationId: number) => void }) => {
@@ -221,7 +221,7 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
 
   if (!draw_id) return (
     <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
-      <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'rgba(2,146,183,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+      <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_PRIMARY_06, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
         <ConfirmationNumberOutlined sx={{ fontSize: 32, color: 'primary.main' }} />
       </Box>
       <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>Select a campaign</Typography>
@@ -250,14 +250,16 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
                 <Skeleton width={60} height={44} />
               ) : (
                 <>
-                  {/* The jump: grows in past full size and springs back down to rest, with the
+                  {/* The jump: springs up past its resting spot and settles back down, with the
                       SAME physics as the bar below so they land as one event.
-                      Keyed by the value so switching draws re-triggers the jump. */}
+                      Keyed by the value so switching draws re-triggers the jump.
+                      y-only (no scale): this sits inside the mobile zoom:0.9 box, and text at
+                      fractional scale shimmers in WebKit; vertical translation is zoom-safe. */}
                   <motion.span
                     key={totalCount}
-                    style={{ display: 'inline-block', transformOrigin: 'left bottom' }}
-                    initial={{ scale: 0.4, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
+                    style={{ display: 'inline-block' }}
+                    initial={{ y: 18, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
                     transition={SPRING_JUMP}
                   >
                     <Typography variant='h3' sx={{ fontWeight: 900, color: progressColor, lineHeight: 1, letterSpacing: '-0.03em', transition: 'color 0.3s' }}>
@@ -317,12 +319,14 @@ export const ActiveTicketsList = ({ draw_id, locationId }: { draw_id: number | n
               >
                 {/* Underdamped spring: the fill overshoots past its target (~120% of the
                     distance), dips back under, and settles - same jumpy landing as the number.
-                    Starts a beat after the number so it reads as cause and effect. */}
+                    Starts a beat after the number so it reads as cause and effect.
+                    scaleX (not width) so the spring runs on the compositor, no layout per frame;
+                    the parent's overflow:hidden + radius clips the fill. */}
                 <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: progress / 100 }}
                   transition={{ ...SPRING_JUMP, delay: 0.12 }}
-                  style={{ height: '100%', borderRadius: 4, background: progressFill }}
+                  style={{ height: '100%', width: '100%', transformOrigin: 'left', background: progressFill }}
                 />
               </Box>
             )}
@@ -502,7 +506,7 @@ const TicketSkeleton = () => (
 const EmptyStateAnimated = ({ isClosed, onAction }: { isClosed: boolean; onAction: () => void }) => (
   <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
     <motion.div variants={heroPop} initial="hidden" animate="visible">
-      <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: 'rgba(2,146,183,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+      <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_PRIMARY_06, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
         <ConfirmationNumberOutlined sx={{ fontSize: 32, color: 'primary.main' }} />
       </Box>
     </motion.div>

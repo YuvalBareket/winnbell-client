@@ -9,12 +9,12 @@ import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import {
-  EmojiEvents, EmojiEventsOutlined, ConfirmationNumberOutlined, ArticleOutlined, HourglassEmptyOutlined,
+  EmojiEventsOutlined, ConfirmationNumberOutlined, ArticleOutlined, HourglassEmptyOutlined,
 } from '@mui/icons-material';
 import EmptyState from '../../../shared/components/EmptyState';
 import { useGetDrawHistory } from '../hooks/useGetDraws';
 import {
-  TEXT_SECONDARY, MOBILE_CONTENT_HEIGHT_NO_HEADER, BG_SURFACE, PRIMARY_MAIN, ACCENT_GOLD, ACCENT_GOLD_DARK, SHADOW_CARD, SHADOW_CARD_HOVER, SHADOW_FLOAT, SHADOW_PRIMARY_GLOW, ALPHA_PRIMARY_10, BORDER_SUBTLE,
+  TEXT_SECONDARY, MOBILE_CONTENT_HEIGHT, BG_SURFACE, PRIMARY_MAIN, ACCENT_GOLD, ACCENT_GOLD_DARK, SHADOW_CARD, SHADOW_CARD_HOVER, SHADOW_FLOAT, SHADOW_PRIMARY_GLOW, ALPHA_PRIMARY_10, BORDER_SUBTLE,
   SUCCESS_GREEN, ALPHA_SUCCESS_04, ALPHA_SUCCESS_08, ALPHA_SUCCESS_12, ALPHA_SUCCESS_25,
   ALPHA_AMBER_04, ALPHA_AMBER_08, ALPHA_AMBER_12, ALPHA_AMBER_25,
 } from '../../../shared/colors';
@@ -74,7 +74,6 @@ const DrawHistoryPage = () => {
       <AppPageHero
         title='Campaigns Hub'
         subtitle='Track active campaigns and winner history'
-        icon={<EmojiEvents sx={{ fontSize: 28 }} />}
       />
 
       <Container maxWidth='lg' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: { xs: 3.5, md: 4.75 }, pb: 1.5, px: 3, position: 'relative', zIndex: 1 }}>
@@ -175,7 +174,7 @@ const DrawHistoryPage = () => {
                   flexShrink: 0,
                   // xs: 60% of the visual content area, derived from the viewport (not parents) so the
                   // measured card sizing can't feed back into the deck height; 180px ~= hero + page padding
-                  height: { xs: `calc((${MOBILE_CONTENT_HEIGHT_NO_HEADER} / 0.9 - 180px) * 0.6)`, md: '200px' },
+                  height: { xs: `calc((${MOBILE_CONTENT_HEIGHT} / 0.9 - 180px) * 0.6)`, md: '200px' },
                   overflow: 'visible',
                   '& .swiper': {
                     width: '100%',

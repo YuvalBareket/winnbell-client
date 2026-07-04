@@ -36,7 +36,6 @@ const RedeemPage = () => {
 
   // State
   const [code, setCode] = useState('');
-  const [successOpen, setSuccessOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -161,6 +160,7 @@ const RedeemPage = () => {
               setScannerOpen={setScannerOpen}
               navigate={navigate}
               primaryColor={primaryColor}
+              hideScan={isDesktop}
             />
           </Box>
         )}
@@ -170,8 +170,6 @@ const RedeemPage = () => {
         scannerOpen={scannerOpen}
         setScannerOpen={setScannerOpen}
         handleScanSuccess={handleScanSuccess}
-        successOpen={successOpen}
-        setSuccessOpen={setSuccessOpen}
         errorOpen={errorOpen}
         setErrorOpen={setErrorOpen}
         errorMessage={errorMessage}

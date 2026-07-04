@@ -112,7 +112,6 @@ export default function SubscriptionManagementPage() {
       <AppPageHero
         title='Campaign Management'
         subtitle='Manage your subscription and campaigns'
-        icon={<ReceiptLong sx={{ fontSize: 28 }} />}
       />
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>

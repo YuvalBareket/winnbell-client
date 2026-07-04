@@ -22,8 +22,6 @@ interface RedeemFeedbackProps {
   scannerOpen: boolean;
   setScannerOpen: (open: boolean) => void;
   handleScanSuccess: (code: string) => void;
-  successOpen: boolean;
-  setSuccessOpen: (open: boolean) => void;
   errorOpen: boolean;
   setErrorOpen: (open: boolean) => void;
   errorMessage: string;
@@ -37,8 +35,6 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
   scannerOpen,
   setScannerOpen,
   handleScanSuccess,
-  successOpen,
-  setSuccessOpen,
   errorOpen,
   setErrorOpen,
   errorMessage,
@@ -52,9 +48,6 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
   return (
   <>
     <QRScannerModal open={scannerOpen} onScan={handleScanSuccess} onClose={() => setScannerOpen(false)} />
-    <Snackbar open={successOpen} autoHideDuration={4000} onClose={() => setSuccessOpen(false)}>
-      <Alert severity='success' variant='filled'>Entry Generated Successfully!</Alert>
-    </Snackbar>
     <Snackbar open={errorOpen} autoHideDuration={5000} onClose={() => setErrorOpen(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
       <Alert severity='error' variant='filled' onClose={() => setErrorOpen(false)}>{errorMessage}</Alert>
     </Snackbar>

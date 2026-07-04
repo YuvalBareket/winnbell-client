@@ -20,8 +20,6 @@ interface AppPageHeroProps {
    *  (app name + notification + menu) and the desktop topbar is not rendered at all. */
   title?: string;
   subtitle?: string;
-  /** Accepted for backwards-compat but no longer rendered (headers are text-only now). */
-  icon?: ReactNode;
   /** Optional right-aligned status chip beside the title. */
   chip?: ReactNode;
   /** Optional controls rendered below the title (rare - most controls stay in body cards). */

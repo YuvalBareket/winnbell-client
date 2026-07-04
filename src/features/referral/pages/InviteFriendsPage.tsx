@@ -1,5 +1,5 @@
 import { Box, Button, Stack, Typography, CircularProgress, Snackbar, Alert, Container, Paper, useMediaQuery, useTheme } from '@mui/material';
-import { ContentCopyOutlined, CheckCircleOutlined, PersonAddOutlined, ShareOutlined, CardGiftcardOutlined, GroupAddOutlined } from '@mui/icons-material';
+import { ContentCopyOutlined, CheckCircleOutlined, PersonAddOutlined, ShareOutlined, CardGiftcardOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import AppPageHero from '../../../shared/components/AppPageHero';
@@ -380,7 +380,6 @@ Know someone who could use a little extra luck this month? Share your link and i
         <AppPageHero
           title='Invite Friends'
           subtitle='Share Winnbell and give them a free bonus entry'
-          icon={<GroupAddOutlined sx={{ fontSize: 28 }} />}
         />
 
         <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>
@@ -524,7 +523,6 @@ Know someone who could use a little extra luck this month? Share your link and i
       <AppPageHero
         title='Invite Friends'
         subtitle='Share Winnbell with friends'
-        icon={<GroupAddOutlined sx={{ fontSize: 28 }} />}
       />
 
       {/* Main content */}

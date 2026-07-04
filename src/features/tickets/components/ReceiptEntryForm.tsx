@@ -23,7 +23,7 @@ import { AccessTime, Close, EmojiEvents, ReceiptOutlined, EventBusy, GppGood, Ch
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import {
-  PRIMARY_MAIN, GRADIENT_PRIMARY, ACCENT_GOLD, ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
+  PRIMARY_MAIN, GRADIENT_PRIMARY, ACCENT_GOLD, ACCENT_GOLD_LIGHT, ACCENT_GOLD_CREAM, ACCENT_GOLD_DARK,
   GRADIENT_GOLD_CTA, SUCCESS_GREEN, TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT,
 } from '../../../shared/colors';
 import EntrySuccessDialog from './EntrySuccessDialog';
@@ -95,7 +95,7 @@ export const StepIndicator: React.FC<{ step: 1 | 2 }> = ({ step }) => {
 //    'compact' = mobile single tappable row with an arrow (frame-2)
 const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact' }> = ({ onClaim, variant = 'full' }) => {
   const gold = {
-    background: `linear-gradient(155deg, ${ACCENT_GOLD_LIGHT} 0%, #f4e6c4 100%)`,
+    background: `linear-gradient(155deg, ${ACCENT_GOLD_LIGHT} 0%, ${ACCENT_GOLD_CREAM} 100%)`,
     border: `1px solid ${ACCENT_GOLD}55`,
   };
   const iconChip = (

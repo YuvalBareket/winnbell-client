@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import {
   ContentCopy, FileDownload, Print,
-  CheckCircleOutline, Check, RecordVoiceOverOutlined, CampaignOutlined,
+  CheckCircleOutline, Check, RecordVoiceOverOutlined,
 } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -339,7 +339,6 @@ const MarketingPage = () => {
       <AppPageHero
         title='Grow Engagement'
         subtitle='Turn more customers into scans and see what is working'
-        icon={<CampaignOutlined sx={{ fontSize: 28 }} />}
         actions={isDesktop ? headerLocationControl : undefined}
       />
 
