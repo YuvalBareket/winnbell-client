@@ -141,9 +141,8 @@ export const useSupabaseSync = (retryCount = 0) => {
           } else if (data.user.role === 'Admin') {
             navigate('/admin');
           } else if (data.user.role === 'Business') {
-            navigate(data.user.requiresBusinessSetup ? '/partner/setup-business' : '/activity');
-          } else if (data.user.role === 'Manager' || data.user.location_id != null) {
-            navigate('/activity');
+            // Managers are role='Business' with a location_id; both owners and managers land on /campaign.
+            navigate(data.user.requiresBusinessSetup ? '/partner/setup-business' : '/campaign');
           } else {
             navigate(pendingLocationId ? `/scan?l=${pendingLocationId}` : '/scan');
           }

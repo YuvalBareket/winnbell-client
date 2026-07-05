@@ -413,7 +413,7 @@ const RegisterPage = () => {
   // In add-account mode an authenticated user MUST stay to create the second account, so only
   // redirect away when NOT adding.
   if (syncLoaded && isAuth && !addMode) {
-    const dest = isAdminUser ? '/admin' : (isBusinessUser || isManagerUser) ? '/activity' : '/scan';
+    const dest = isAdminUser ? '/admin' : (isBusinessUser || isManagerUser) ? '/campaign' : '/scan';
     return <Navigate to={dest} replace />;
   }
 

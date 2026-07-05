@@ -169,7 +169,7 @@ const LoginPage = () => {
         if (isAuthenticated && !addMode) {
           // Redux already has a valid session — useSupabaseSync will early-return because
           // nothing changed server-side. Navigate directly using the role we already know.
-          const dest = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan';
+          const dest = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/campaign' : '/scan';
           navigate(dest, { replace: true });
         }
         // If not yet authenticated (or adding an account): keep loading=true — useSupabaseSync
@@ -352,7 +352,7 @@ const LoginPage = () => {
   // In add-account mode an authenticated user MUST stay on this page to sign in the second
   // account, so only redirect away when NOT adding.
   if (isLoaded && isAuthenticated && !addMode) {
-    const dest = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/activity' : '/scan';
+    const dest = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/campaign' : '/scan';
     return <Navigate to={dest} replace />;
   }
 

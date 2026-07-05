@@ -118,7 +118,7 @@ const SubscriptionSuccessPage = () => {
                 <Box>
                   <Typography variant='h4' fontWeight={900} mb={1}>Welcome, Founding Partner!</Typography>
                   <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
-                    Your business is live on the Winnbell map and enrolled in every campaign for the full year.
+                    You're a Founding Partner for the full year. Your business joins each monthly campaign and appears on the Winnbell map as soon as the next campaign opens.
                   </Typography>
                 </Box>
               </motion.div>
@@ -131,9 +131,9 @@ const SubscriptionSuccessPage = () => {
                 transition={{ duration: 0.32, ease: 'easeOut' }}
               >
                 <Box>
-                  <Typography variant='h4' fontWeight={900} mb={1}>You're live!</Typography>
+                  <Typography variant='h4' fontWeight={900} mb={1}>You're all set!</Typography>
                   <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
-                    Your campaign is active and your business is now visible on the Winnbell map.
+                    Your subscription is active. Your business joins the next campaign and appears on the Winnbell map as soon as it opens.
                   </Typography>
                 </Box>
               </motion.div>
