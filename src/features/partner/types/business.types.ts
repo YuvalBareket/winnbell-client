@@ -3,12 +3,16 @@ export interface LocationInput {
   address: string;
   lat: number | null;
   lon: number | null;
+  suite?: string;
+  phone?: string;
 }
 
 export interface BusinessSetupInput {
   businessName: string;
   businessSector: string;
   description: string;
+  website_url?: string;
+  logo_url?: string;
   min_transaction_amount?: number;
   locations: LocationInput[];
 }
@@ -18,13 +22,14 @@ export interface UpdateLocationInput {
   address: string;
   lat: number;
   lon: number;
+  suite?: string | null;
+  phone?: string | null;
 }
 
 export interface UpdateBusinessInput {
   businessSector: string;
   description: string;
   terms_text: string;
-  phone?: string;
   website_url?: string;
 }
 
@@ -37,6 +42,8 @@ export interface BusinessLocation {
   manager_id: number | null;
   manager_name: string | null;
   is_active: boolean;
+  suite?: string | null;
+  phone?: string | null;
 }
 
 // 'code' = MVP: business generates codes, customers activate them
@@ -52,7 +59,6 @@ export interface BusinessData {
   logo_url: string | null;
   receipt_example_image_url: string | null;
   website_url?: string | null;
-  phone?: string | null;
   is_subscribed: boolean;
   is_participating: boolean;
   entry_mode: EntryMode;

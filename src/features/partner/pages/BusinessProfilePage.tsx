@@ -1,29 +1,37 @@
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { alpha } from '@mui/material/styles';
 import {
   Box,
   Typography,
   TextField,
   Button,
   Stack,
-  
   IconButton,
-  Paper,
-  LinearProgress,
   InputAdornment,
   Alert,
+  Dialog,
+  Drawer,
 } from '@mui/material';
 import {
-  AddLocation,
   ArrowForward,
   ArrowBack,
-  Close,
   Storefront,
   LocationOn,
   CheckCircle,
+  ImageOutlined,
+  PhoneOutlined,
+  PublicOutlined,
+  ExpandMore,
+  InfoOutlined,
+  SearchRounded,
+  CheckRounded,
+  Close,
+  AddLocationAltOutlined,
+  EditOutlined,
 } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useForm, useFieldArray } from 'react-hook-form';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import type { BusinessSetupInput } from '../types/business.types';
 import { useAppSelector } from '../../../store/hook';
@@ -31,20 +39,59 @@ import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import AddressAutoComplete from '../../../shared/components/AddressAutoComplete';
 import { useBusinessSetup } from '../hooks/useBusinessSetup';
 import {
-  GRADIENT_HERO,
+  GRADIENT_SIDEBAR,
+  GRADIENT_DRAW_CARD,
+  ALPHA_WHITE_10,
   ALPHA_WHITE_15,
   ALPHA_WHITE_20,
-  ALPHA_WHITE_30,
-  ALPHA_WHITE_10,
+  ALPHA_WHITE_70,
+  ALPHA_PRIMARY_06,
+  ALPHA_PRIMARY_10,
   BORDER_LIGHT,
   PRIMARY_MAIN,
+  PRIMARY_LIGHT,
+  BG_SUBTLE,
+  TEXT_HEADING,
+  TEXT_SECONDARY,
+  TEXT_TERTIARY,
 } from '../../../shared/colors';
+import { staggerContainer, popIn, SPRING_POP } from '../../../shared/motion';
+import LogoCropDialog from './components/LogoCropDialog';
+import LocationMapPicker from './components/LocationMapPicker';
 
-const STEPS = ['Business Info', 'Locations'];
+const STEPS = ['Business Info', 'Location'];
+const logoBase = import.meta.env.VITE_R2_PUBLIC_URL;
+
+const fieldSx = {
+  '& .MuiOutlinedInput-root': {
+    bgcolor: 'white',
+    borderRadius: '12px',
+    fontSize: '0.95rem',
+    fontWeight: 500,
+    transition: 'box-shadow 0.15s ease',
+    '& fieldset': { borderColor: BORDER_LIGHT, borderWidth: '1px' },
+    '&:hover fieldset': { borderColor: BORDER_LIGHT },
+    '&.Mui-focused fieldset': { borderColor: PRIMARY_MAIN, borderWidth: '1.5px' },
+    '&.Mui-focused': { boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}` },
+  },
+} as const;
+
+const FieldLabel = ({ children, hint }: { children: React.ReactNode; hint?: string }) => (
+  <Stack direction='row' justifyContent='space-between' alignItems='baseline' sx={{ mb: 0.9 }}>
+    <Typography component='span' sx={{ fontSize: '0.8rem', fontWeight: 700, color: TEXT_SECONDARY }}>{children}</Typography>
+    {hint && <Typography component='span' sx={{ fontSize: '0.72rem', fontWeight: 600, color: TEXT_TERTIARY }}>{hint}</Typography>}
+  </Stack>
+);
 
 const BusinessProfilePage = () => {
   const user = useAppSelector(selectCurrentUser);
   const [step, setStep] = useState(0);
+  const [logoDialogOpen, setLogoDialogOpen] = useState(false);
+  const [logoImageSrc, setLogoImageSrc] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadedLogoKey, setUploadedLogoKey] = useState('');
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
 
   const registrationSectors = Object.keys(BUSINESS_SECTORS).filter((k) => k !== 'Free');
 
@@ -53,474 +100,451 @@ const BusinessProfilePage = () => {
       businessName: user?.fullName || '',
       businessSector: '',
       description: '',
-      locations: [{ name: 'Main Branch', address: '', lat: null as number | null, lon: null as number | null }],
+      website_url: '',
+      logo_url: '',
+      locations: [{ name: 'Main Branch', address: '', lat: null as number | null, lon: null as number | null, suite: '', phone: '' }],
     },
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: 'locations' });
+  const [expandedIndex, setExpandedIndex] = useState(0);
+
   const { mutate: setupBusiness, isPending } = useBusinessSetup();
   const [setupError, setSetupError] = useState('');
 
   const selectedSector = watch('businessSector');
+  const businessName = watch('businessName');
+  const description = watch('description');
+  const watchedLocations = watch('locations');
+  const descLen = (description || '').length;
+  const sector = selectedSector ? BUSINESS_SECTORS[selectedSector] : null;
 
-  const onSubmit = (data: BusinessSetupInput) => {
+  const submit = (data: BusinessSetupInput) => {
     setSetupError('');
     setupBusiness(data, {
-      onError: (err: unknown) => {
-        const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
-        setSetupError(msg);
-      },
+      onError: (err: unknown) => setSetupError(err instanceof Error ? err.message : 'Something went wrong. Please try again.'),
     });
   };
 
   const goNext = async () => {
-    const valid = await trigger(['businessName', 'businessSector', 'description']);
-    if (valid) setStep(1);
+    if (await trigger(['businessName', 'businessSector'])) setStep(1);
   };
 
-  return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
+  // Collapse the location being edited into a summary card and open a fresh one below.
+  const addAnother = async () => {
+    if (!(await trigger(`locations.${expandedIndex}.address` as const))) return;
+    const next = fields.length;
+    append({ name: '', address: '', lat: null, lon: null, suite: '', phone: '' });
+    setExpandedIndex(next);
+  };
 
-      {/* ── Left panel (branding) ── */}
+  const removeLocationAt = (index: number) => {
+    remove(index);
+    setExpandedIndex((prev) => (prev >= index ? Math.max(0, prev - 1) : prev));
+  };
+
+  const handleLogoUploadComplete = useCallback((key: string) => {
+    setUploadedLogoKey(key);
+    setValue('logo_url', key);
+    setLogoDialogOpen(false);
+    setLogoImageSrc(null);
+  }, [setValue]);
+
+  // "Add logo" opens the OS file picker straight away; once a file is chosen we jump to the cropper.
+  const handleLogoFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => { setLogoImageSrc(reader.result as string); setLogoDialogOpen(true); };
+    reader.readAsDataURL(file);
+  };
+
+  const primaryBtnSx = {
+    py: 1.75, borderRadius: '13px', fontWeight: 800, fontSize: '0.95rem', color: 'white',
+    background: GRADIENT_DRAW_CARD, boxShadow: `0 12px 24px -8px ${alpha(PRIMARY_MAIN, 0.5)}`,
+    '&:hover': { background: GRADIENT_DRAW_CARD, filter: 'brightness(0.96)' },
+  } as const;
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, minHeight: '100dvh', height: { md: '100dvh' }, overflow: { md: 'hidden' }, bgcolor: 'white' }}>
+
+      {/* ══ Brand panel (fixed 100dvh on desktop, top header on mobile) ══ */}
       <Box
         sx={{
-          width: { xs: '100%', md: '42%' },
-          background: GRADIENT_HERO,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          p: { xs: '16px 24px', md: 6 },
-          color: 'white',
-          position: 'relative',
-          overflow: 'hidden',
-          minHeight: { xs: 'unset', md: 'auto' },
+          width: { xs: '100%', md: '40%' }, flexShrink: 0,
+          height: { xs: 'auto', md: '100dvh' },
+          background: GRADIENT_SIDEBAR, color: 'white', position: 'relative', overflow: 'hidden',
+          display: 'flex', flexDirection: 'column',
+          px: { xs: 1.5, md: '44px' },
+          pt: { xs: 'calc(env(safe-area-inset-top, 0px) + 10px)', md: '48px' },
+          pb: { xs: '26px', md: '48px' },
+          borderRadius: { xs: '0 0 26px 26px', md: 0 },
         }}
       >
-        {/* Decorative blobs — desktop only */}
-        <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(60px)', pointerEvents: 'none' }} />
-        <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: 'rgba(66,165,245,0.2)', filter: 'blur(50px)', pointerEvents: 'none' }} />
+        <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_10, filter: 'blur(60px)', pointerEvents: 'none' }} />
+        <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: alpha(PRIMARY_LIGHT, 0.24), filter: 'blur(50px)', pointerEvents: 'none' }} />
+        <Box sx={{ display: { xs: 'block', md: 'none' }, position: 'absolute', top: -70, right: -50, width: 200, height: 200, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(46px)', pointerEvents: 'none' }} />
 
-        {/* Logo */}
-        <Box sx={{ mb: { xs: 0, md: 5 } }}>
-          <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 40, width: 'auto', objectFit: 'contain' }} />
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: { xs: 36, md: 26 }, width: 'auto', objectFit: 'contain' }} />
         </Box>
 
-        <Typography variant='h3' fontWeight={900} lineHeight={1.15} mb={2} sx={{ display: { xs: 'none', md: 'block' } }}>
-          Set Up Your<br />Business
-        </Typography>
-        <Typography variant='body1' sx={{ opacity: 0.85, lineHeight: 1.7, maxWidth: 320, display: { xs: 'none', md: 'block' } }}>
-          You are just a few steps away from appearing on the Winnbell map and issuing entries to your customers.
-        </Typography>
+        <Box sx={{ position: 'relative', zIndex: 1, mt: { xs: 2, md: 'auto' } }}>
+          <AnimatePresence mode='wait'>
+            {step === 0 ? (
+              <motion.div key='b1' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.28 }}>
+                <Typography sx={{ fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.12, fontSize: { xs: '1.4rem', md: '2.35rem' }, mb: { xs: 0.5, md: 2 } }}>Tell us about your brand.</Typography>
+                <Typography sx={{ fontSize: { xs: '0.8rem', md: '0.95rem' }, color: ALPHA_WHITE_70, lineHeight: 1.7, maxWidth: 340, mb: { xs: 0, md: 4 } }}>
+                  Your name, logo and category are how customers recognize you on the map and in the app. You can change any of this later.
+                </Typography>
+                <Box sx={{ display: { xs: 'none', md: 'block' }, maxWidth: 320 }}>
+                  <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={SPRING_POP}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.6, p: 2, borderRadius: '16px', bgcolor: ALPHA_WHITE_10, border: `1px solid ${ALPHA_WHITE_20}`, backdropFilter: 'blur(4px)' }}>
+                      <Box sx={{ width: 52, height: 52, borderRadius: '14px', bgcolor: 'white', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, lineHeight: 1, color: sector ? sector.color : TEXT_TERTIARY }}>
+                        {uploadedLogoKey
+                          ? <Box component='img' src={`${logoBase}/business-logos/${uploadedLogoKey}`} alt='' sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : sector ? sector.icon : <Storefront sx={{ fontSize: 26 }} />}
+                      </Box>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography sx={{ fontWeight: 800, color: 'white', fontSize: '0.95rem', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{businessName || 'Your business'}</Typography>
+                        <Typography sx={{ mt: 0.3, fontSize: '0.75rem', fontWeight: 500, color: ALPHA_WHITE_70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sector ? sector.label : 'Add your details'}</Typography>
+                      </Box>
+                    </Box>
+                    <Stack direction='row' alignItems='center' spacing={0.8} sx={{ mt: 1.25 }}>
+                      <InfoOutlined sx={{ fontSize: 14, color: ALPHA_WHITE_70 }} />
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: ALPHA_WHITE_70 }}>This is how your listing will look to customers.</Typography>
+                    </Stack>
+                  </motion.div>
+                </Box>
+              </motion.div>
+            ) : (
+              <motion.div key='b2' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.28 }}>
+                <Typography sx={{ fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.12, fontSize: { xs: '1.4rem', md: '2.35rem' }, mb: { xs: 0.5, md: 2 } }}>Put yourself on the map.</Typography>
+                <Typography sx={{ fontSize: { xs: '0.8rem', md: '0.95rem' }, color: ALPHA_WHITE_70, lineHeight: 1.7, maxWidth: 340, mb: { xs: 0, md: 4 } }}>
+                  Customers discover partner businesses by location. Drop your pin so nearby members can find you and earn entries.
+                </Typography>
+                <Stack spacing={2} sx={{ display: { xs: 'none', md: 'flex' } }}>
+                  {[
+                    { icon: <LocationOn sx={{ fontSize: 18 }} />, label: 'Shown on the nearby map with your pin' },
+                    { icon: <CheckRounded sx={{ fontSize: 18 }} />, label: 'Members get directions in one tap' },
+                  ].map((f, i) => (
+                    <Stack key={i} direction='row' spacing={1.6} alignItems='center'>
+                      <Box sx={{ width: 36, height: 36, borderRadius: '11px', bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{f.icon}</Box>
+                      <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: 'white' }}>{f.label}</Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Box>
 
-        {/* Step indicators */}
-        <Stack spacing={1.5} sx={{ mt: { xs: 0, md: 5 }, display: { xs: 'none', md: 'flex' } }}>
+        <Stack spacing={1.5} sx={{ mt: 6, display: { xs: 'none', md: 'flex' }, position: 'relative', zIndex: 1 }}>
           {STEPS.map((label, i) => (
             <Stack key={i} direction='row' alignItems='center' spacing={1.5}>
-              <Box
-                sx={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  bgcolor: i < step ? 'rgba(255,255,255,0.9)' : i === step ? ALPHA_WHITE_30 : ALPHA_WHITE_10,
-                  border: `2px solid ${i <= step ? 'rgba(255,255,255,0.9)' : ALPHA_WHITE_20}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                }}
-              >
-                {i < step
-                  ? <CheckCircle sx={{ fontSize: 18, color: PRIMARY_MAIN }} />
-                  : <Typography variant='caption' fontWeight={800} sx={{ color: i === step ? 'white' : 'rgba(255,255,255,0.5)' }}>{i + 1}</Typography>
-                }
+              <Box sx={{ width: 30, height: 30, borderRadius: '50%', bgcolor: i < step ? 'white' : i === step ? ALPHA_WHITE_20 : ALPHA_WHITE_10, border: `2px solid ${i <= step ? 'white' : ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {i < step ? <CheckCircle sx={{ fontSize: 17, color: PRIMARY_MAIN }} /> : <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: i === step ? 'white' : ALPHA_WHITE_70 }}>{i + 1}</Typography>}
               </Box>
-              <Typography variant='body2' fontWeight={i === step ? 800 : 500} sx={{ opacity: i === step ? 1 : 0.6 }}>
-                {label}
-              </Typography>
+              <Typography sx={{ fontSize: '0.9rem', fontWeight: i === step ? 800 : 500, opacity: i === step ? 1 : 0.65 }}>{label}</Typography>
             </Stack>
           ))}
         </Stack>
       </Box>
 
-      {/* ── Right panel (form) ── */}
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: { xs: 'flex-start', md: 'center' },
-          p: { xs: 3, sm: 4, md: 6 },
-          overflowY: 'auto',
-        }}
-      >
-        <Stack>
+      {/* ══ Form panel (scrolls independently) ══ */}
+      <Box sx={{ flex: 1, height: { md: '100dvh' }, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <form onSubmit={handleSubmit(submit)} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ maxWidth: 620, width: '100%', mx: { xs: 0, md: 'auto' }, my: { md: 'auto' }, px: { xs: 2.5, sm: 4, md: 6 }, py: { xs: 2.5, md: 6 } }}>
 
-          {/* Mobile progress */}
-          <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 3 }}>
-            <Stack direction='row' justifyContent='space-between' mb={1}>
-              <Typography variant='caption' fontWeight={700} color='text.secondary'>
-                Step {step + 1} of {STEPS.length}
-              </Typography>
-              <Typography variant='caption' fontWeight={700} color='primary.main'>
-                {STEPS[step]}
-              </Typography>
-            </Stack>
-            <LinearProgress
-              variant='determinate'
-              value={(step / (STEPS.length - 1)) * 100}
-              sx={{ borderRadius: 2, height: 4 }}
-            />
+              {step === 0 ? (
+                <motion.div initial='hidden' animate='visible' variants={staggerContainer}>
+                  <Stack spacing={3}>
+                    <motion.div variants={popIn}>
+                      <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>Set up your business</Typography>
+                      <Typography sx={{ fontSize: '0.9rem', color: TEXT_TERTIARY, fontWeight: 500, mt: 0.5 }}>A few details and you'll be live on Winnbell.</Typography>
+                    </motion.div>
+
+                    {/* logo + name */}
+                    <motion.div variants={popIn}>
+                      <Stack direction='row' spacing={2.25} alignItems='flex-start'>
+                        <Box onClick={() => logoInputRef.current?.click()} sx={{ width: 96, height: 96, flexShrink: 0, borderRadius: '18px', cursor: 'pointer', overflow: 'hidden', border: uploadedLogoKey ? `1px solid ${BORDER_LIGHT}` : `2px dashed ${BORDER_LIGHT}`, bgcolor: BG_SUBTLE, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, transition: 'border-color 0.15s ease', '&:hover': { borderColor: PRIMARY_MAIN } }}>
+                          {uploadedLogoKey
+                            ? <Box component='img' src={`${logoBase}/business-logos/${uploadedLogoKey}`} alt='logo' sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            : (<><ImageOutlined sx={{ fontSize: 24, color: TEXT_TERTIARY }} /><Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: TEXT_TERTIARY }}>Add logo</Typography></>)}
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <FieldLabel>Business name</FieldLabel>
+                          <Controller name='businessName' control={control} rules={{ required: 'Business name is required' }} render={({ field, fieldState: { error } }) => (
+                            <TextField {...field} fullWidth size='small' placeholder="e.g. Joe's Coffee" error={!!error} helperText={error?.message}
+                              InputProps={{ startAdornment: (<InputAdornment position='start'><Storefront sx={{ color: PRIMARY_MAIN, fontSize: 19 }} /></InputAdornment>) }} sx={fieldSx} />
+                          )} />
+                          <Typography sx={{ fontSize: '0.72rem', color: TEXT_TERTIARY, fontWeight: 500, mt: 1 }}>PNG or SVG, at least 256x256px. Shown on your map pin.</Typography>
+                        </Box>
+                      </Stack>
+                    </motion.div>
+
+                    {/* description */}
+                    <motion.div variants={popIn}>
+                      <FieldLabel hint={`${descLen} / 60`}>Short description <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
+                      <Controller name='description' control={control} render={({ field }) => (
+                        <TextField {...field} fullWidth size='small' placeholder='Neighborhood espresso and fresh pastries' inputProps={{ maxLength: 60 }} sx={fieldSx} />
+                      )} />
+                    </motion.div>
+
+                    {/* website */}
+                    <motion.div variants={popIn}>
+                      <FieldLabel>Website <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
+                      <Controller name='website_url' control={control} render={({ field }) => (
+                        <TextField {...field} fullWidth size='small' placeholder='bellascoffee.com'
+                          InputProps={{ startAdornment: (<InputAdornment position='start'><PublicOutlined sx={{ color: TEXT_TERTIARY, fontSize: 19 }} /></InputAdornment>) }} sx={fieldSx} />
+                      )} />
+                    </motion.div>
+
+                    {/* category */}
+                    <motion.div variants={popIn}>
+                      <Controller name='businessSector' control={control} rules={{ required: 'Please select a category' }} render={({ fieldState: { error } }) => (
+                        <Box>
+                          <FieldLabel>Category</FieldLabel>
+                          <Box onClick={() => setCategoryPickerOpen(true)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, bgcolor: 'white', borderRadius: '12px', px: 1.75, py: sector ? 1.25 : 1.5, cursor: 'pointer', border: `${sector ? 1.5 : 1}px solid ${sector ? PRIMARY_MAIN : BORDER_LIGHT}`, boxShadow: sector ? `0 0 0 3px ${ALPHA_PRIMARY_10}` : 'none', transition: 'all 0.15s ease', '&:hover': { borderColor: PRIMARY_MAIN } }}>
+                            {sector ? (
+                              <Stack direction='row' alignItems='center' spacing={1.4} sx={{ minWidth: 0 }}>
+                                <Box sx={{ width: 34, height: 34, borderRadius: '10px', flexShrink: 0, bgcolor: alpha(sector.color, 0.14), color: sector.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19 }}>{sector.icon}</Box>
+                                <Typography sx={{ fontSize: '0.95rem', fontWeight: 800, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sector.label}</Typography>
+                              </Stack>
+                            ) : <Typography sx={{ fontSize: '0.95rem', fontWeight: 500, color: TEXT_TERTIARY }}>Choose a category</Typography>}
+                            <ExpandMore sx={{ fontSize: 22, color: sector ? PRIMARY_MAIN : TEXT_TERTIARY, flexShrink: 0 }} />
+                          </Box>
+                          {error && <Typography sx={{ fontSize: '0.72rem', color: 'error.main', mt: 0.5, ml: 0.5 }}>{error.message}</Typography>}
+                        </Box>
+                      )} />
+                    </motion.div>
+
+                    {/* desktop actions */}
+                    <motion.div variants={popIn}>
+                      <Box sx={{ display: { xs: 'none', md: 'flex' }, mt: 1 }}>
+                        <Button fullWidth onClick={goNext} endIcon={<ArrowForward />} sx={primaryBtnSx}>Continue</Button>
+                      </Box>
+                    </motion.div>
+                  </Stack>
+                </motion.div>
+              ) : (
+                <motion.div initial='hidden' animate='visible' variants={staggerContainer}>
+                  <Stack spacing={2.5}>
+                    <motion.div variants={popIn}>
+                      <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>Where can customers find you?</Typography>
+                      <Typography sx={{ fontSize: '0.9rem', color: TEXT_TERTIARY, fontWeight: 500, mt: 0.5 }}>Add every place customers can visit. Each one shows up as a pin on the Winnbell map.</Typography>
+                    </motion.div>
+
+                    <Stack spacing={1.5}>
+                      {fields.map((f, index) => {
+                        const isExpanded = expandedIndex === index;
+                        const locName = watchedLocations?.[index]?.name;
+                        const locAddr = watchedLocations?.[index]?.address;
+                        const locLat = watchedLocations?.[index]?.lat ?? null;
+                        const locLon = watchedLocations?.[index]?.lon ?? null;
+                        return (
+                          <motion.div key={f.id} layout transition={{ layout: { duration: 0.34, ease: [0.22, 1, 0.36, 1] } }}>
+                            <AnimatePresence mode='wait' initial={false}>
+                              {isExpanded ? (
+                                <motion.div key='exp' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.2 }}>
+                                  <Box sx={{ p: 2.25, borderRadius: '16px', border: `1.5px solid ${PRIMARY_MAIN}`, boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}`, bgcolor: 'white' }}>
+                                    <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 2 }}>
+                                      <Stack direction='row' alignItems='center' spacing={1}>
+                                        <Box sx={{ width: 26, height: 26, borderRadius: '8px', bgcolor: ALPHA_PRIMARY_10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LocationOn sx={{ fontSize: 15, color: PRIMARY_MAIN }} /></Box>
+                                        <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: TEXT_SECONDARY, letterSpacing: '-0.01em' }}>Location {index + 1}</Typography>
+                                      </Stack>
+                                      {fields.length > 1 && (
+                                        <IconButton size='small' onClick={() => removeLocationAt(index)} sx={{ color: TEXT_TERTIARY }}><Close fontSize='small' /></IconButton>
+                                      )}
+                                    </Stack>
+                                    <Stack spacing={2}>
+                                      <Box>
+                                        <FieldLabel>Branch name</FieldLabel>
+                                        <Controller name={`locations.${index}.name`} control={control} render={({ field }) => (
+                                          <TextField {...field} fullWidth size='small' placeholder='e.g. Downtown, Main Branch' sx={fieldSx} />
+                                        )} />
+                                      </Box>
+                                      <Box>
+                                        <FieldLabel>Street address</FieldLabel>
+                                        <Controller name={`locations.${index}.address`} control={control} rules={{ required: 'Address is required' }} render={({ field: { onChange, value }, fieldState: { error } }) => {
+                                          const addressValue = value && locLat && locLon ? { label: value, lat: locLat as number, lon: locLon as number } : null;
+                                          return (
+                                            <>
+                                              <AddressAutoComplete
+                                                label=''
+                                                placeholder='Start typing your address...'
+                                                value={addressValue}
+                                                onSelect={(sel) => {
+                                                  onChange(sel?.label || '');
+                                                  setValue(`locations.${index}.lat`, sel?.lat ?? null);
+                                                  setValue(`locations.${index}.lon`, sel?.lon ?? null);
+                                                }}
+                                              />
+                                              {error && <Typography sx={{ fontSize: '0.72rem', color: 'error.main', mt: 0.5, ml: 0.5 }}>{error.message}</Typography>}
+                                            </>
+                                          );
+                                        }} />
+                                      </Box>
+                                      <LocationMapPicker
+                                        key={f.id}
+                                        lat={locLat}
+                                        lng={locLon}
+                                        onChange={(newLat, newLng) => {
+                                          setValue(`locations.${index}.lat`, newLat);
+                                          setValue(`locations.${index}.lon`, newLng);
+                                        }}
+                                      />
+                                      <Stack direction='row' spacing={1.75}>
+                                        <Box sx={{ flex: 1 }}>
+                                          <FieldLabel>Suite / unit <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
+                                          <Controller name={`locations.${index}.suite`} control={control} render={({ field }) => (
+                                            <TextField {...field} fullWidth size='small' placeholder='e.g. Unit 4' sx={fieldSx} />
+                                          )} />
+                                        </Box>
+                                        <Box sx={{ flex: 1 }}>
+                                          <FieldLabel>Phone</FieldLabel>
+                                          <Controller name={`locations.${index}.phone`} control={control} render={({ field }) => (
+                                            <TextField {...field} fullWidth size='small' placeholder='(302) 555-0142'
+                                              InputProps={{ startAdornment: (<InputAdornment position='start'><PhoneOutlined sx={{ color: TEXT_TERTIARY, fontSize: 18 }} /></InputAdornment>) }} sx={fieldSx} />
+                                          )} />
+                                        </Box>
+                                      </Stack>
+                                    </Stack>
+                                  </Box>
+                                </motion.div>
+                              ) : (
+                                <motion.div key='col' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                                  <Stack direction='row' alignItems='center' spacing={1.5} onClick={() => setExpandedIndex(index)} sx={{ p: 1.75, borderRadius: '14px', border: `1px solid ${BORDER_LIGHT}`, bgcolor: 'white', cursor: 'pointer', transition: 'border-color 0.15s ease', '&:hover': { borderColor: PRIMARY_MAIN } }}>
+                                    <Box sx={{ width: 34, height: 34, borderRadius: '10px', flexShrink: 0, bgcolor: ALPHA_PRIMARY_10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LocationOn sx={{ fontSize: 18, color: PRIMARY_MAIN }} /></Box>
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                      <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{locName || `Location ${index + 1}`}</Typography>
+                                      <Typography sx={{ fontSize: '0.78rem', color: TEXT_TERTIARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{locAddr || 'No address yet'}</Typography>
+                                    </Box>
+                                    <EditOutlined sx={{ fontSize: 18, color: TEXT_TERTIARY, flexShrink: 0 }} />
+                                    {fields.length > 1 && (
+                                      <IconButton size='small' onClick={(e) => { e.stopPropagation(); removeLocationAt(index); }} sx={{ color: TEXT_TERTIARY, flexShrink: 0 }}><Close fontSize='small' /></IconButton>
+                                    )}
+                                  </Stack>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </motion.div>
+                        );
+                      })}
+                    </Stack>
+
+                    <Box>
+                      <Button variant='outlined' startIcon={<AddLocationAltOutlined />} onClick={addAnother}
+                        sx={{ fontWeight: 700, borderRadius: '12px', color: PRIMARY_MAIN, borderColor: alpha(PRIMARY_MAIN, 0.4), px: 2.25, py: 1.15, '&:hover': { borderColor: PRIMARY_MAIN, bgcolor: ALPHA_PRIMARY_10 } }}>
+                        Add another location
+                      </Button>
+                    </Box>
+
+                    {setupError && <motion.div variants={popIn}><Alert severity='error' sx={{ borderRadius: 2 }}>{setupError}</Alert></motion.div>}
+
+                    {/* desktop actions */}
+                    <motion.div variants={popIn}>
+                      <Stack direction='row' spacing={1.75} sx={{ display: { xs: 'none', md: 'flex' }, mt: 1 }}>
+                        <Button variant='outlined' startIcon={<ArrowBack />} onClick={() => setStep(0)} sx={{ borderRadius: '13px', px: 2.75, py: 1.75, fontWeight: 800, color: TEXT_SECONDARY, borderColor: BORDER_LIGHT }}>Back</Button>
+                        <Button type='submit' fullWidth disabled={isPending} endIcon={isPending ? undefined : <CheckCircle />} sx={{ flex: 1, ...primaryBtnSx }}>
+                          {isPending ? <CircularProgress size={20} color='inherit' /> : 'Complete setup'}
+                        </Button>
+                      </Stack>
+                    </motion.div>
+                  </Stack>
+                </motion.div>
+              )}
+            </Box>
           </Box>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-
-            {/* ── STEP 1: Business Info ── */}
-            {step === 0 && (
-              <Stack spacing={3}>
-                <Box>
-                  <Typography variant='h5' fontWeight={800} color='text.primary' mb={0.5}>
-                    Tell us about your business
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    This information will be visible to customers on the map.
-                  </Typography>
-                </Box>
-
-                {/* Business Name */}
-                <Controller
-                  name='businessName'
-                  control={control}
-                  rules={{ required: 'Business name is required' }}
-                  render={({ field, fieldState: { error } }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label='Business Name'
-                      error={!!error}
-                      helperText={error?.message}
-                      placeholder="e.g. Joe's Coffee"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position='start'>
-                            <Storefront sx={{ color: 'text.disabled', fontSize: 20 }} />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
-                    />
-                  )}
-                />
-
-                {/* Sector picker */}
-                <Controller
-                  name='businessSector'
-                  control={control}
-                  rules={{ required: 'Please select a sector' }}
-                  render={({ fieldState: { error } }) => (
-                    <Box>
-                      <Typography variant='body2' fontWeight={700} color='text.secondary' mb={1.5} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>
-                        Industry
-                      </Typography>
-                      <AnimatePresence mode='wait'>
-                        {selectedSector ? (
-                          <motion.div
-                            key='selected'
-                            initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                            transition={{ duration: 0.22, ease: 'easeOut' }}
-                          >
-                            <Paper
-                              elevation={0}
-                              sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                border: '2px solid',
-                                borderColor: PRIMARY_MAIN,
-                                bgcolor: 'rgba(25,93,230,0.04)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <motion.div
-                                  initial={{ scale: 0.5, rotate: -15 }}
-                                  animate={{ scale: 1, rotate: 0 }}
-                                  transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 18 }}
-                                  style={{ fontSize: 26, color: PRIMARY_MAIN, lineHeight: 1 }}
-                                >
-                                  {BUSINESS_SECTORS[selectedSector].icon}
-                                </motion.div>
-                                <Box>
-                                  <Typography variant='body2' fontWeight={700} color='primary.main'>
-                                    {BUSINESS_SECTORS[selectedSector].label}
-                                  </Typography>
-                                  <Typography variant='caption' color='text.secondary'>
-                                    Selected industry
-                                  </Typography>
-                                </Box>
-                              </Box>
-                              <Typography
-                                variant='caption'
-                                fontWeight={600}
-                                color='primary.main'
-                                onClick={() => setValue('businessSector', '', { shouldValidate: false })}
-                                sx={{ cursor: 'pointer', textDecoration: 'underline', flexShrink: 0 }}
-                              >
-                                Change
-                              </Typography>
-                            </Paper>
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            key='grid'
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 8 }}
-                            transition={{ duration: 0.2, ease: 'easeOut' }}
-                          >
-                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
-                              {registrationSectors.map((key, i) => {
-                                const s = BUSINESS_SECTORS[key];
-                                return (
-                                  <motion.div
-                                    key={key}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: i * 0.03, duration: 0.18, ease: 'easeOut' }}
-                                    whileHover={{ scale: 1.04 }}
-                                    whileTap={{ scale: 0.96 }}
-                                  >
-                                    <Paper
-                                      elevation={0}
-                                      onClick={() => setValue('businessSector', key, { shouldValidate: true })}
-                                      sx={{
-                                        p: 2,
-                                        borderRadius: 2,
-                                        border: '2px solid',
-                                        borderColor: BORDER_LIGHT,
-                                        bgcolor: 'white',
-                                        cursor: 'pointer',
-                                        textAlign: 'center',
-                                        height: '100%',
-                                      }}
-                                    >
-                                      <Box sx={{ fontSize: 28, color: s.color, mb: 0.5 }}>
-                                        {s.icon}
-                                      </Box>
-                                      <Typography variant='caption' fontWeight={600} color='text.secondary'>
-                                        {s.label}
-                                      </Typography>
-                                    </Paper>
-                                  </motion.div>
-                                );
-                              })}
-                            </Box>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      {error && (
-                        <Typography variant='caption' color='error' sx={{ mt: 0.5, display: 'block' }}>
-                          {error.message}
-                        </Typography>
-                      )}
-                    </Box>
-                  )}
-                />
-
-                {/* Description */}
-                <Controller
-                  name='description'
-                  control={control}
-                  rules={{ required: 'Description is required' }}
-                  render={({ field, fieldState: { error } }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      multiline
-                      rows={3}
-                      label='About your business'
-                      error={!!error}
-                      helperText={error?.message}
-                      placeholder='Describe what you offer and what makes you special...'
-                      sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
-                    />
-                  )}
-                />
-
-                <Button
-                  fullWidth
-                  size='large'
-                  variant='contained'
-                  endIcon={<ArrowForward />}
-                  onClick={goNext}
-                  sx={{ py: 1.75, fontWeight: 800, fontSize: '1rem' }}
-                >
-                  Continue to Locations
+          {/* mobile sticky CTA */}
+          <Box sx={{ display: { xs: 'block', md: 'none' }, position: 'sticky', bottom: 0, bgcolor: 'white', borderTop: `1px solid ${BORDER_LIGHT}`, px: 2.5, pt: 1.75, pb: 2.75 }}>
+            {step === 0 ? (
+              <>
+                <Button fullWidth onClick={goNext} endIcon={<ArrowForward />} sx={{ ...primaryBtnSx, py: 1.6, borderRadius: '14px' }}>Continue</Button>
+                <Typography sx={{ textAlign: 'center', fontSize: '0.75rem', color: TEXT_TERTIARY, fontWeight: 600, mt: 1 }}>You can edit all of this later</Typography>
+              </>
+            ) : (
+              <Stack direction='row' spacing={1.25} alignItems='center'>
+                <Button variant='outlined' onClick={() => setStep(0)} sx={{ minWidth: 52, width: 52, height: 50, p: 0, flexShrink: 0, borderRadius: '14px', color: TEXT_SECONDARY, borderColor: BORDER_LIGHT }}><ArrowBack /></Button>
+                <Button type='submit' fullWidth disabled={isPending} endIcon={isPending ? undefined : <CheckCircle />} sx={{ flex: 1, ...primaryBtnSx, py: 1.6, borderRadius: '14px' }}>
+                  {isPending ? <CircularProgress size={20} color='inherit' /> : 'Complete setup'}
                 </Button>
               </Stack>
             )}
-
-            {/* ── STEP 2: Locations ── */}
-            {step === 1 && (
-              <Stack spacing={3}>
-                <Box>
-                  <Typography variant='h5' fontWeight={800} color='text.primary' mb={0.5}>
-                    Add your locations
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    Each location will appear as a pin on the Winnbell map.
-                  </Typography>
-                </Box>
-
-                <Stack spacing={2}>
-                  {fields.map((item, index) => (
-                    <Paper
-                      key={item.id}
-                      elevation={0}
-                      sx={{
-                        p: 2.5,
-                        borderRadius: 2,
-                        border: '1px solid',
-                        borderColor: BORDER_LIGHT,
-                        bgcolor: 'white',
-                        position: 'relative',
-                      }}
-                    >
-                      <Stack direction='row' alignItems='center' justifyContent='space-between' mb={2}>
-                        <Stack direction='row' alignItems='center' spacing={1}>
-                          <Box sx={{ width: 28, height: 28, borderRadius: 2, bgcolor: 'rgba(25,93,230,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <LocationOn sx={{ fontSize: 16, color: 'primary.main' }} />
-                          </Box>
-                          <Typography variant='body2' fontWeight={700} color='text.secondary'>
-                            Location {index + 1}
-                          </Typography>
-                        </Stack>
-                        {fields.length > 1 && (
-                          <IconButton size='small' onClick={() => remove(index)} sx={{ color: 'error.main' }}>
-                            <Close fontSize='small' />
-                          </IconButton>
-                        )}
-                      </Stack>
-
-                      <Stack spacing={2}>
-                        <Controller
-                          name={`locations.${index}.name` as const}
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              size='small'
-                              fullWidth
-                              label='Branch name'
-                              placeholder='e.g. Downtown, Main Branch'
-                              sx={{}}
-                            />
-                          )}
-                        />
-                        <Controller
-                          name={`locations.${index}.address` as const}
-                          control={control}
-                          rules={{ required: 'Address is required' }}
-                          render={({ field: { onChange, value }, fieldState: { error } }) => {
-                            const lat = watch(`locations.${index}.lat`);
-                            const lon = watch(`locations.${index}.lon`);
-                            const addressValue = value && lat && lon
-                              ? { label: value, lat: lat as number, lon: lon as number }
-                              : null;
-                            return (
-                              <Box>
-                                <AddressAutoComplete
-                                  label='Full address'
-                                  placeholder='Start typing your address...'
-                                  value={addressValue}
-                                  onSelect={(selected) => {
-                                    onChange(selected?.label || '');
-                                    setValue(`locations.${index}.lat`, selected?.lat ?? null);
-                                    setValue(`locations.${index}.lon`, selected?.lon ?? null);
-                                  }}
-                                />
-                                {error && (
-                                  <Typography variant='caption' color='error' sx={{ mt: 0.5, ml: 1.5, display: 'block' }}>
-                                    {error.message}
-                                  </Typography>
-                                )}
-                              </Box>
-                            );
-                          }}
-                        />
-                      </Stack>
-                    </Paper>
-                  ))}
-                </Stack>
-
-                <Button
-                  variant='outlined'
-                  startIcon={<AddLocation />}
-                  onClick={() => append({ name: '', address: '', lat: null, lon: null })}
-                  sx={{ fontWeight: 700, alignSelf: 'flex-start' }}
-                >
-                  Add Another Location
-                </Button>
-
-                <Stack
-                  direction='row'
-                  spacing={{ xs: 1, sm: 2 }}
-                  sx={{ '& button': { whiteSpace: 'nowrap' } }}
-                >
-                  <Button
-                    variant='outlined'
-                    startIcon={<ArrowBack />}
-                    onClick={() => setStep(0)}
-                    sx={{
-                      fontWeight: 700,
-                      flex: 1,
-                      fontSize: { xs: '0.8rem', sm: '1rem' },
-                      px: { xs: 1, sm: 1.5 },
-                      py: { xs: 1, sm: 1.75 },
-                      '& .MuiButton-startIcon': {
-                        marginRight: { xs: '0.3rem', sm: '0.5rem' },
-                        fontSize: { xs: '1rem', sm: '1.25rem' },
-                      },
-                    }}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    variant='contained'
-                    type='submit'
-                    disabled={isPending}
-                    endIcon={isPending ? undefined : <CheckCircle />}
-                    sx={{
-                      fontWeight: 800,
-                      flex: 2,
-                      fontSize: { xs: '0.8rem', sm: '1rem' },
-                      px: { xs: 1, sm: 1.5 },
-                      py: { xs: 1, sm: 1.75 },
-                      '& .MuiButton-endIcon': {
-                        marginLeft: { xs: '0.3rem', sm: '0.5rem' },
-                        fontSize: { xs: '1rem', sm: '1.25rem' },
-                        '& svg': {
-                          width: { xs: '1em', sm: '1.25em' },
-                          height: { xs: '1em', sm: '1.25em' },
-                        },
-                      },
-                    }}
-                  >
-                    {isPending ? <CircularProgress size={20} color='inherit' /> : 'Complete Setup'}
-                  </Button>
-                </Stack>
-
-                {setupError && (
-                  <Alert severity='error' sx={{ borderRadius: 2 }}>{setupError}</Alert>
-                )}
-
-                <Typography variant='caption' color='text.disabled' textAlign='center'>
-                  You can add or edit locations later from your business hub.
-                </Typography>
-              </Stack>
-            )}
-
-          </form>
-        </Stack>
+          </Box>
+        </form>
       </Box>
+
+      <input ref={logoInputRef} type='file' accept='image/*' onChange={handleLogoFile} style={{ display: 'none' }} />
+      <LogoCropDialog open={logoDialogOpen} imageSrc={logoImageSrc ?? undefined} onClose={() => { setLogoDialogOpen(false); setLogoImageSrc(null); }} onUploadComplete={handleLogoUploadComplete} />
+
+      <CategoryPicker
+        open={categoryPickerOpen}
+        onClose={() => setCategoryPickerOpen(false)}
+        sectors={registrationSectors}
+        selectedSector={selectedSector}
+        searchValue={categorySearch}
+        onSearchChange={setCategorySearch}
+        onSelectSector={(key) => { setValue('businessSector', key, { shouldValidate: true }); setCategoryPickerOpen(false); setCategorySearch(''); }}
+      />
     </Box>
+  );
+};
+
+interface CategoryPickerProps {
+  open: boolean;
+  onClose: () => void;
+  sectors: string[];
+  selectedSector: string;
+  searchValue: string;
+  onSearchChange: (v: string) => void;
+  onSelectSector: (key: string) => void;
+}
+
+const CategoryPicker = ({ open, onClose, sectors, selectedSector, searchValue, onSearchChange, onSelectSector }: CategoryPickerProps) => {
+  const filtered = sectors.filter((k) => BUSINESS_SECTORS[k].label.toLowerCase().includes(searchValue.toLowerCase()));
+
+  const list = (
+    <Box sx={{ px: 1.25, pb: 1.25 }}>
+      <Box sx={{ py: 1.25 }}>
+        <TextField fullWidth size='small' placeholder={`Search ${sectors.length} categories...`} value={searchValue} onChange={(e) => onSearchChange(e.target.value)}
+          InputProps={{ startAdornment: (<InputAdornment position='start'><SearchRounded sx={{ fontSize: 18, color: TEXT_TERTIARY }} /></InputAdornment>) }}
+          sx={{ '& .MuiOutlinedInput-root': { bgcolor: BG_SUBTLE, borderRadius: '10px', '& fieldset': { borderColor: BORDER_LIGHT } } }} />
+      </Box>
+      <Stack spacing={0.5} sx={{ maxHeight: 320, overflowY: 'auto' }}>
+        {filtered.map((key) => {
+          const s = BUSINESS_SECTORS[key];
+          const isSel = key === selectedSector;
+          return (
+            <motion.div key={key} whileTap={{ scale: 0.98 }}>
+              <Box onClick={() => onSelectSector(key)} sx={{ display: 'flex', alignItems: 'center', gap: 1.4, px: 1.4, py: 1.1, borderRadius: '10px', cursor: 'pointer', bgcolor: isSel ? ALPHA_PRIMARY_06 : 'transparent', transition: 'background 0.12s ease', '&:hover': { bgcolor: isSel ? ALPHA_PRIMARY_06 : BG_SUBTLE } }}>
+                <Box sx={{ width: 34, height: 34, borderRadius: '10px', flexShrink: 0, bgcolor: alpha(s.color, 0.14), color: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19 }}>{s.icon}</Box>
+                <Typography sx={{ flex: 1, fontSize: '0.92rem', fontWeight: isSel ? 800 : 600, color: isSel ? TEXT_HEADING : TEXT_SECONDARY }}>{s.label}</Typography>
+                {isSel && <CheckRounded sx={{ fontSize: 19, color: PRIMARY_MAIN }} />}
+              </Box>
+            </motion.div>
+          );
+        })}
+        {filtered.length === 0 && <Typography sx={{ textAlign: 'center', color: TEXT_TERTIARY, fontSize: '0.85rem', py: 3 }}>No categories match "{searchValue}".</Typography>}
+      </Stack>
+    </Box>
+  );
+
+  return (
+    <>
+      <Drawer anchor='bottom' open={open} onClose={onClose} sx={{ display: { xs: 'block', md: 'none' } }} PaperProps={{ sx: { borderRadius: '24px 24px 0 0', maxHeight: '80dvh' } }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1.5 }}><Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: BORDER_LIGHT }} /></Box>
+        <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: TEXT_HEADING, px: 2.25, pt: 1.5, pb: 0.5 }}>Choose a category</Typography>
+        {list}
+      </Drawer>
+      <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth sx={{ display: { xs: 'none', md: 'block' } }} PaperProps={{ sx: { borderRadius: '16px' } }}>
+        <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: TEXT_HEADING, px: 2.5, pt: 2.25 }}>Choose a category</Typography>
+        {list}
+      </Dialog>
+    </>
   );
 };
 

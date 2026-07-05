@@ -7,10 +7,11 @@ import {
   IconButton,
   Button,
   TextField,
+  InputAdornment,
   CircularProgress,
   FormHelperText,
 } from '@mui/material';
-import { AddBusiness, Close, TrendingUpOutlined, ArrowForwardOutlined } from '@mui/icons-material';
+import { AddBusiness, Close, TrendingUpOutlined, ArrowForwardOutlined, PhoneOutlined } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import AddressAutoComplete from '../../../../shared/components/AddressAutoComplete';
@@ -27,6 +28,8 @@ interface AddLocationFormValues {
   address: string;
   lat: number | null;
   lon: number | null;
+  suite: string;
+  phone: string;
 }
 
 interface PlanSummary {
@@ -39,7 +42,7 @@ interface PlanSummary {
 interface AddLocationDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { name: string; address: string; lat: number; lon: number }) => void;
+  onSubmit: (data: { name: string; address: string; lat: number; lon: number; suite: string; phone: string }) => void;
   isLoading: boolean;
   planSummary?: PlanSummary | null;
 }
@@ -79,7 +82,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
   planSummary,
 }) => {
   const form = useForm<AddLocationFormValues>({
-    defaultValues: { name: '', address: '', lat: null, lon: null },
+    defaultValues: { name: '', address: '', lat: null, lon: null, suite: '', phone: '' },
   });
   const addressError = form.formState.errors.address?.message;
 
@@ -93,6 +96,8 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
       address: values.address,
       lat: values.lat,
       lon: values.lon,
+      suite: values.suite,
+      phone: values.phone,
     });
     form.reset();
   };
@@ -142,20 +147,20 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 320, damping: 20 }}
               sx={{
-                width: 48, height: 48, borderRadius: 2.5, flexShrink: 0,
+                width: 40, height: 40, borderRadius: 2, flexShrink: 0,
                 background: `linear-gradient(135deg, ${ALPHA_WHITE_30} 0%, ${ALPHA_WHITE_10} 100%)`,
                 border: `1px solid ${ALPHA_WHITE_30}`,
                 boxShadow: `inset 0 1px 1px ${ALPHA_WHITE_30}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              <AddBusiness sx={{ fontSize: 24 }} />
+              <AddBusiness sx={{ fontSize: 20 }} />
             </MotionBox>
             <Box>
-              <Typography variant='h6' fontWeight={800} sx={{ letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+              <Typography fontWeight={800} sx={{ fontSize: '1.05rem', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
                 Add New Location
               </Typography>
-              <Typography variant='body2' sx={{ opacity: 0.82, mt: 0.25 }}>
+              <Typography sx={{ fontSize: '0.8rem', opacity: 0.82, mt: 0.25 }}>
                 Add a branch to your business
               </Typography>
             </Box>
@@ -176,47 +181,78 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
 
       {/* ── Form body ───────────────────────────────── */}
       <Stack
-        spacing={2.75}
+        spacing={2.25}
         component='form'
         id='add-location-form'
         onSubmit={form.handleSubmit(handleSubmit)}
-        sx={{ px: { xs: 2.5, sm: 3 }, pt: 3, pb: 3 }}
+        sx={{ px: { xs: 2.5, sm: 3 }, pt: 3.25, pb: 3.25 }}
       >
-        <Controller
-          name='name'
-          control={form.control}
-          rules={{ required: 'Branch name is required' }}
-          render={({ field, fieldState }) => (
-            <TextField
-              {...field}
-              label='Branch Name'
-              placeholder='e.g. Downtown Flagship'
-              fullWidth
-              error={!!fieldState.error}
-              helperText={fieldState.error?.message}
-              sx={fieldSx}
-            />
-          )}
-        />
+        {/* Location Details Group */}
+        <Stack spacing={2}>
+          <Controller
+            name='name'
+            control={form.control}
+            rules={{ required: 'Branch name is required' }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label='Branch Name'
+                placeholder='e.g. Downtown Flagship'
+                fullWidth
+                size='small'
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                sx={fieldSx}
+              />
+            )}
+          />
 
-        <Box>
-          <Box sx={fieldSx}>
-            <AddressAutoComplete
-              label='Address'
-              onSelect={(option) => {
-                form.setValue('address', option?.label ?? '');
-                form.setValue('lat', option?.lat ?? null);
-                form.setValue('lon', option?.lon ?? null);
-                if (option?.lat) form.clearErrors('address');
-              }}
-            />
+          <Box>
+            <Box sx={fieldSx}>
+              <AddressAutoComplete
+                label='Address'
+                size='small'
+                onSelect={(option) => {
+                  form.setValue('address', option?.label ?? '');
+                  form.setValue('lat', option?.lat ?? null);
+                  form.setValue('lon', option?.lon ?? null);
+                  if (option?.lat) form.clearErrors('address');
+                }}
+              />
+            </Box>
+            {addressError && (
+              <FormHelperText error sx={{ ml: 1.75, mt: 0.5, fontWeight: 600 }}>
+                {addressError}
+              </FormHelperText>
+            )}
           </Box>
-          {addressError && (
-            <FormHelperText error sx={{ ml: 1.75, mt: 0.5, fontWeight: 600 }}>
-              {addressError}
-            </FormHelperText>
-          )}
-        </Box>
+        </Stack>
+
+        {/* ── Suite + phone ───────────────────────────── */}
+        <Stack direction='row' spacing={1.5}>
+          <Controller
+            name='suite'
+            control={form.control}
+            render={({ field }) => (
+              <TextField {...field} label='Suite / unit (optional)' fullWidth size='small' sx={fieldSx} />
+            )}
+          />
+          <Controller
+            name='phone'
+            control={form.control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label='Phone'
+                placeholder='(302) 555-0142'
+                fullWidth
+                size='small'
+                InputProps={{ startAdornment: (<InputAdornment position='start'><PhoneOutlined sx={{ color: TEXT_TERTIARY, fontSize: 18 }} /></InputAdornment>) }}
+                sx={fieldSx}
+              />
+            )}
+          />
+        </Stack>
 
         {/* ── Cost comparison ───────────────────────── */}
         <AnimatePresence initial={false}>
@@ -227,7 +263,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
               animate={{ opacity: 1, y: 0, height: 'auto' }}
               exit={{ opacity: 0, y: -8, height: 0 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              sx={{ overflow: 'hidden' }}
+              sx={{ overflow: 'hidden', mt: 1 }}
             >
               <Box
                 sx={{
@@ -352,14 +388,15 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
         </AnimatePresence>
 
         {/* ── Actions ──────────────────────────────── */}
-        <Stack direction='row' spacing={1.5} pt={0.5}>
+        <Stack direction='row' spacing={1.5} pt={1.25}>
           <Button
             variant='outlined'
             onClick={onClose}
             sx={{
               flex: 1, fontWeight: 700, py: 1.4, textTransform: 'none', whiteSpace: 'nowrap',
               fontSize: { xs: '0.85rem', sm: '0.9rem' }, borderColor: BORDER_SUBTLE, color: TEXT_SECONDARY,
-              '&:hover': { borderColor: ALPHA_PRIMARY_20, bgcolor: ALPHA_PRIMARY_04 },
+              transition: 'all 0.2s ease',
+              '&:hover': { borderColor: PRIMARY_MAIN, color: PRIMARY_MAIN, bgcolor: ALPHA_PRIMARY_04 },
             }}
           >
             Cancel

@@ -11,7 +11,7 @@ import {
   IconButton,
   InputAdornment,
 } from '@mui/material';
-import { Close, LocalPhoneOutlined, LanguageOutlined } from '@mui/icons-material';
+import { Close, LanguageOutlined } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BUSINESS_SECTORS } from '../../../admin/data';
@@ -49,7 +49,6 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
       businessSector: '',
       description: '',
       terms_text: '',
-      phone: '',
       website_url: '',
     },
   });
@@ -60,7 +59,6 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
         businessSector: business.sector,
         description: business.description,
         terms_text: business.terms_text,
-        phone: business.phone ?? '',
         website_url: business.website_url ?? '',
       });
     }
@@ -247,28 +245,6 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                 placeholder='Describe what you offer...'
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
-                sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
-              />
-            )}
-          />
-
-          {/* Phone */}
-          <Controller
-            name='phone'
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                fullWidth
-                label='Phone number'
-                placeholder='(555) 123-4567'
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position='start'>
-                      <LocalPhoneOutlined sx={{ color: 'text.disabled', fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                }}
                 sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
               />
             )}

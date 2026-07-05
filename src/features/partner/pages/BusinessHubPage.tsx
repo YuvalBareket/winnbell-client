@@ -98,9 +98,9 @@ const BusinessHubPage = () => {
     severity: 'success',
   });
 
-  const handleAddLocation = (data: { name: string; address: string; lat: number; lon: number }) => {
+  const handleAddLocation = (data: { name: string; address: string; lat: number; lon: number; suite: string; phone: string }) => {
     doAddLocation(
-      { name: data.name, address: data.address, lat: data.lat, lon: data.lon },
+      { name: data.name, address: data.address, lat: data.lat, lon: data.lon, suite: data.suite || null, phone: data.phone || null },
       {
         onSuccess: () => {
           setAddLocationOpen(false);
@@ -520,7 +520,7 @@ const BusinessHubPage = () => {
           min_transaction_amount: business.min_transaction_amount,
           pending_min_transaction_amount: business.pending_min_transaction_amount,
           website_url: business.website_url,
-          phone: business.phone,
+          phone: activeLocations[0].phone ?? null,
           other_locations: activeLocations.slice(1).map((l) => ({ id: l.id, name: l.name, address: l.address })),
           cap_reached: false,
         } satisfies NearbyLocationDetail) : null}

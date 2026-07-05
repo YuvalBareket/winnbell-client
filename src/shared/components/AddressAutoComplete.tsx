@@ -16,6 +16,7 @@ type Props = {
   disabled?: boolean;
   value?: ResolvedAddress | null;
   defaultValue?: ResolvedAddress | null;
+  size?: 'small' | 'medium';
 };
 
 const AddressAutoComplete = ({
@@ -25,6 +26,7 @@ const AddressAutoComplete = ({
   disabled = false,
   value,
   defaultValue,
+  size = 'medium',
 }: Props) => {
   const {
     setInputValue: setQuery,
@@ -52,6 +54,7 @@ const AddressAutoComplete = ({
   return (
     <Autocomplete<AddressOption, false, false, false>
       sx={{ minWidth: '200px' }}
+      size={size}
       disabled={disabled}
       value={selectedOption}
       inputValue={input}
