@@ -55,6 +55,7 @@ export interface EngagementResponse {
 export interface RevenueDrawPoint {
   draw_id: number;
   label: string;
+  month: string; // "YYYY-MM" of the draw date, for compact axis labels
   avg_purchase: number;
   threshold: number;
   avg_above_threshold: number;

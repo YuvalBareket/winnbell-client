@@ -83,7 +83,7 @@ import {
 
 // ─── Duration + range helpers ──────────────────────────────────────────────────
 
-type DurationKey = 'month' | 'mtd' | '1m' | '3m' | '6m' | 'ytd' | '12m' | 'all';
+type DurationKey = 'month' | 'mtd' | '1m' | '3m' | '6m' | 'ytd';
 
 const DURATION_TABS: { key: DurationKey; label: string }[] = [
   { key: 'month', label: 'Month' },
@@ -92,8 +92,6 @@ const DURATION_TABS: { key: DurationKey; label: string }[] = [
   { key: '3m', label: '3M' },
   { key: '6m', label: '6M' },
   { key: 'ytd', label: 'YTD' },
-  { key: '12m', label: '12M' },
-  { key: 'all', label: 'All' },
 ];
 
 const monthsSpan = (from: Date, to: Date) =>
@@ -132,12 +130,6 @@ const computeRange = (key: DurationKey, monthValue: string): ComputedRange => {
       break;
     case 'ytd':
       from = new Date(now.getFullYear(), 0, 1);
-      break;
-    case '12m':
-      from = new Date(now.getFullYear(), now.getMonth() - 12, now.getDate());
-      break;
-    case 'all':
-      from = new Date(2020, 0, 1);
       break;
     default:
       from = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -540,10 +532,8 @@ const BusinessAnalyticsPage = () => {
               value={formatNum(o?.total_entries)}
               tint={ALPHA_GREEN_10}
               iconColor={STATUS_ACTIVATED_TEXT}
-              // These overview tiles are scoped to the selected period, so the caption must not
-              // claim "all" unless the period actually is All - that mislabel made the number look
-              // like it disagreed with the all-time Entry Capacity bar.
-              caption={duration === 'all' ? 'All entries collected' : 'Entries in the selected period'}
+              // These overview tiles are scoped to the selected period.
+              caption="Entries in the selected period"
             />
             <StatTile
               icon={<AutorenewOutlined sx={{ fontSize: 22 }} />}
@@ -1066,7 +1056,21 @@ const BusinessAnalyticsPage = () => {
                 <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
                   <BarChart data={r?.drawBreakdown ?? []} margin={{ left: -4, right: 8 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                    <XAxis dataKey="label" tick={AXIS_TICK} axisLine={false} tickLine={false} interval={0} minTickGap={4} />
+                    {/* Mobile has no room for "June 2026" - show a compact MM/YYYY from the draw month. */}
+                    <XAxis
+                      dataKey="label"
+                      tick={AXIS_TICK}
+                      axisLine={false}
+                      tickLine={false}
+                      interval={0}
+                      minTickGap={4}
+                      tickFormatter={isDesktop
+                        ? undefined
+                        : (_v: string, i: number) => {
+                            const m = (r?.drawBreakdown ?? [])[i]?.month;
+                            return m ? `${m.slice(5, 7)}/${m.slice(2, 4)}` : String(_v);
+                          }}
+                    />
                     <YAxis
                       tick={AXIS_TICK}
                       axisLine={false}

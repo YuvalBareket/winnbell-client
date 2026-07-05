@@ -93,6 +93,7 @@ export const GRADIENT_SUCCESS     = `linear-gradient(160deg, #0f3a6b 0%, #1565c0
 export const GRADIENT_SIDEBAR     = `linear-gradient(160deg, #42a5f5 0%, #1565c0 46%, #0f3a6b 100%)`;
 export const GRADIENT_HERO_WARM   = `linear-gradient(135deg, #1565c0 0%, #0f3a6b 60%, #081f3a 100%)`;
 export const GRADIENT_GOLD_CTA    = `linear-gradient(135deg, #c5a047 0%, #a0822f 100%)`;
+export const GRADIENT_FREE_CARD   = `linear-gradient(155deg, #eaf3fd 0%, #d6e6fb 100%)`;  // free-weekly-entry card (blue tint)
 export const GRADIENT_LOADING     = `linear-gradient(150deg, #3a86de 0%, #1a68c2 52%, #134d8a 100%)`;
 // Positive "you're filling up" green - used as entries approach / reach the draw max.
 // Maxing out is a good thing, so it reads celebratory (emerald to forest), never a warning.

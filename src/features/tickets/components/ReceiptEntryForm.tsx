@@ -24,10 +24,10 @@ import { AccessTime, Close, EmojiEvents, ReceiptOutlined, EventBusy, GppGood, Ch
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import {
-  PRIMARY_MAIN, GRADIENT_PRIMARY, ACCENT_GOLD, ACCENT_GOLD_LIGHT, ACCENT_GOLD_CREAM, ACCENT_GOLD_DARK,
-  GRADIENT_GOLD_CTA, SUCCESS_GREEN, TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT,
+  PRIMARY_MAIN, PRIMARY_LIGHT, PRIMARY_DEEP, GRADIENT_PRIMARY, GRADIENT_FREE_CARD,
+  ACCENT_GOLD, ACCENT_GOLD_DARK, SUCCESS_GREEN, TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT,
 } from '../../../shared/colors';
-import { staggerContainer, riseIn, popIn, pressable, pressableCard, breathe, wiggle, SPRING_SNAPPY } from '../../../shared/motion';
+import { staggerContainer, riseIn, popIn, pressable, pressableCard, breathe, SPRING_SNAPPY } from '../../../shared/motion';
 import EntrySuccessDialog from './EntrySuccessDialog';
 import ReceiptImageUploadField from './ReceiptImageUploadField';
 import BusinessSelector from './BusinessSelector';
@@ -108,61 +108,67 @@ export const StepIndicator: React.FC<{ step: 1 | 2 }> = ({ step }) => {
   );
 };
 
-// ── Gold free-weekly-entry card. Two shapes to match the design frames:
+// ── Blue free-weekly-entry card. Two shapes to match the design frames:
 //    'full'    = desktop right-rail card with a Claim button (frame-0)
 //    'compact' = mobile single tappable row with an arrow (frame-2)
+// The card itself is the page's single attractor: a soft blue glow pulses to pull the eye.
+// Transition stays inline so spreading a gesture ({...pressableCard}) never kills the loop.
+const attractGlow = {
+  animate: { boxShadow: [`0 1px 5px ${alpha(PRIMARY_MAIN, 0.06)}`, `0 5px 14px ${alpha(PRIMARY_MAIN, 0.20)}`, `0 1px 5px ${alpha(PRIMARY_MAIN, 0.06)}`] },
+  transition: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' as const },
+};
+
 const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact' }> = ({ onClaim, variant = 'full' }) => {
-  const gold = {
-    background: `linear-gradient(155deg, ${ACCENT_GOLD_LIGHT} 0%, ${ACCENT_GOLD_CREAM} 100%)`,
-    border: `1px solid ${ACCENT_GOLD}55`,
+  const blue = {
+    background: GRADIENT_FREE_CARD,
+    border: `1px solid ${PRIMARY_LIGHT}55`,
   };
   const iconChip = (
-    <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: `${ACCENT_GOLD}22`, color: ACCENT_GOLD_DARK, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+    <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: `${PRIMARY_MAIN}18`, color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
       <CardGiftcardOutlined sx={{ fontSize: 22 }} />
     </Box>
   );
 
   if (variant === 'compact') {
     return (
-      <motion.div {...pressableCard}>
-        <Box onClick={onClaim} sx={{ ...gold, display: 'flex', alignItems: 'center', gap: 1.5, p: 1.75, borderRadius: 3, cursor: 'pointer' }}>
-          {/* The mobile page's one attractor: an occasional wiggle on the gift icon. */}
-          <motion.div {...wiggle} style={{ flexShrink: 0 }}>
-            {iconChip}
-          </motion.div>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant='body2' sx={{ fontWeight: 800, color: ACCENT_GOLD_DARK, lineHeight: 1.2 }}>Claim free weekly entry</Typography>
-            <Typography variant='caption' sx={{ color: ACCENT_GOLD_DARK, opacity: 0.85, display: 'block', lineHeight: 1.3 }}>No purchase needed. Resets Sunday.</Typography>
-          </Box>
-          <ArrowForwardRounded sx={{ color: ACCENT_GOLD_DARK, flexShrink: 0 }} />
+      <Box
+        component={motion.div}
+        {...pressableCard}
+        {...attractGlow}
+        onClick={onClaim}
+        sx={{ ...blue, display: 'flex', alignItems: 'center', gap: 1.5, p: 1.75, borderRadius: 3, cursor: 'pointer' }}
+      >
+        {iconChip}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant='body2' sx={{ fontWeight: 800, color: PRIMARY_DEEP, lineHeight: 1.2 }}>Claim free weekly entry</Typography>
+          <Typography variant='caption' sx={{ color: PRIMARY_MAIN, opacity: 0.85, display: 'block', lineHeight: 1.3 }}>No purchase needed. Resets Sunday.</Typography>
         </Box>
-      </motion.div>
+        <ArrowForwardRounded sx={{ color: PRIMARY_MAIN, flexShrink: 0 }} />
+      </Box>
     );
   }
 
   return (
-    <Box sx={{ ...gold, borderRadius: 3, px: 3, py: 3.5, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <Box component={motion.div} {...attractGlow} sx={{ ...blue, borderRadius: 3, px: 3, py: 3.5, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {/* Large prize icon on top so the card sits taller */}
-      <Box sx={{ width: 68, height: 68, borderRadius: '50%', bgcolor: 'white', color: ACCENT_GOLD_DARK, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+      <Box sx={{ width: 68, height: 68, borderRadius: '50%', bgcolor: 'white', color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
         <CardGiftcardOutlined sx={{ fontSize: 36 }} />
       </Box>
-      <Typography sx={{ fontWeight: 800, color: ACCENT_GOLD_DARK, fontSize: '1rem' }}>No receipt today?</Typography>
-      <Typography sx={{ color: ACCENT_GOLD_DARK, opacity: 0.9, lineHeight: 1.5, mt: 1, fontSize: '0.8125rem' }}>
+      <Typography sx={{ fontWeight: 800, color: PRIMARY_DEEP, fontSize: '1rem' }}>No receipt today?</Typography>
+      <Typography sx={{ color: PRIMARY_MAIN, opacity: 0.9, lineHeight: 1.5, mt: 1, fontSize: '0.8125rem' }}>
         Claim your free weekly entry. One on us, every week, no purchase needed.
       </Typography>
-      {/* The desktop page's one attractor: the gold CTA breathes. Pressable gestures are
-          inline in motion.ts, so spreading both never kills the loop. */}
-      <motion.div {...breathe} {...pressable} style={{ width: '100%' }}>
+      <motion.div {...pressable} style={{ width: '100%' }}>
         <Button
           fullWidth
           onClick={onClaim}
           startIcon={<StarRounded sx={{ fontSize: 18 }} />}
-          sx={{ mt: 2.5, height: 44, borderRadius: 2, fontWeight: 800, textTransform: 'none', color: '#fff', background: GRADIENT_GOLD_CTA, '&:hover': { background: GRADIENT_GOLD_CTA, filter: 'brightness(0.96)' } }}
+          sx={{ mt: 2.5, height: 44, borderRadius: 2, fontWeight: 800, textTransform: 'none', color: '#fff', background: GRADIENT_PRIMARY, '&:hover': { background: GRADIENT_PRIMARY, filter: 'brightness(0.96)' } }}
         >
           Claim free entry
         </Button>
       </motion.div>
-      <Typography sx={{ mt: 1.25, color: ACCENT_GOLD_DARK, opacity: 0.75, fontSize: '0.72rem' }}>
+      <Typography sx={{ mt: 1.25, color: PRIMARY_MAIN, opacity: 0.7, fontSize: '0.72rem' }}>
         Resets Sunday.
       </Typography>
     </Box>
