@@ -35,6 +35,7 @@ export interface CampaignEntry {
   customer_masked: string;
   transaction_amount: number | null;
   entry_source: string;
+  entry_count: number; // entries this submission granted (receipt over threshold can earn several)
   status: 'active' | 'under_review';
   created_at: string;
 }
