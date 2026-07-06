@@ -95,7 +95,7 @@ const BusinessProfilePage = () => {
 
   const registrationSectors = Object.keys(BUSINESS_SECTORS).filter((k) => k !== 'Free');
 
-  const { control, handleSubmit, setValue, watch, trigger } = useForm({
+  const { control, handleSubmit, setValue, watch, trigger, setError } = useForm({
     defaultValues: {
       businessName: user?.fullName || '',
       businessSector: '',
@@ -133,6 +133,11 @@ const BusinessProfilePage = () => {
   // Collapse the location being edited into a summary card and open a fresh one below.
   const addAnother = async () => {
     if (!(await trigger(`locations.${expandedIndex}.address` as const))) return;
+    const current = watchedLocations?.[expandedIndex];
+    if (current?.lat == null || current?.lon == null) {
+      setError(`locations.${expandedIndex}.address` as const, { message: 'Please pick an address from the suggestions.' });
+      return;
+    }
     const next = fields.length;
     append({ name: '', address: '', lat: null, lon: null, suite: '', phone: '' });
     setExpandedIndex(next);
@@ -369,7 +374,7 @@ const BusinessProfilePage = () => {
                                       <Box>
                                         <FieldLabel>Street address</FieldLabel>
                                         <Controller name={`locations.${index}.address`} control={control} rules={{ required: 'Address is required' }} render={({ field: { onChange, value }, fieldState: { error } }) => {
-                                          const addressValue = value && locLat && locLon ? { label: value, lat: locLat as number, lon: locLon as number } : null;
+                                          const addressValue = value && locLat != null && locLon != null ? { label: value, lat: locLat, lon: locLon } : null;
                                           return (
                                             <>
                                               <AddressAutoComplete
@@ -404,7 +409,7 @@ const BusinessProfilePage = () => {
                                           )} />
                                         </Box>
                                         <Box sx={{ flex: 1 }}>
-                                          <FieldLabel>Phone</FieldLabel>
+                                          <FieldLabel>Phone <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
                                           <Controller name={`locations.${index}.phone`} control={control} render={({ field }) => (
                                             <TextField {...field} fullWidth size='small' placeholder='(302) 555-0142'
                                               InputProps={{ startAdornment: (<InputAdornment position='start'><PhoneOutlined sx={{ color: TEXT_TERTIARY, fontSize: 18 }} /></InputAdornment>) }} sx={fieldSx} />

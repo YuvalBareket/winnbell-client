@@ -29,7 +29,6 @@ interface BusinessSnapshot {
   sector: string;
   description: string;
   terms_text: string;
-  phone?: string | null;
   website_url?: string | null;
 }
 

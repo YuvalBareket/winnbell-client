@@ -82,6 +82,9 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
   });
 
   const addressError = form.formState.errors.address?.message;
+  const watchedAddress = form.watch('address');
+  const watchedLat = form.watch('lat');
+  const watchedLon = form.watch('lon');
 
   useEffect(() => {
     if (location) {
@@ -98,12 +101,16 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
 
   const onSubmit = (values: FormValues) => {
     if (!location) return;
+    if (values.lat === null || values.lon === null) {
+      form.setError('address', { message: 'Please select an address from the suggestions' });
+      return;
+    }
 
     const payload: UpdateLocationInput = {
       name: values.name,
       address: values.address,
-      lat: values.lat ?? 0,
-      lon: values.lon ?? 0,
+      lat: values.lat,
+      lon: values.lon,
       suite: values.suite || null,
       phone: values.phone || null,
     };
@@ -221,6 +228,9 @@ const EditLocationModal = ({ open, onClose, location }: Props) => {
               <AddressAutoComplete
                 label='Address'
                 size='small'
+                value={watchedAddress && watchedLat !== null && watchedLon !== null
+                  ? { label: watchedAddress, lat: watchedLat, lon: watchedLon }
+                  : null}
                 onSelect={(option) => {
                   form.setValue('address', option?.label ?? '');
                   form.setValue('lat', option?.lat ?? null);
