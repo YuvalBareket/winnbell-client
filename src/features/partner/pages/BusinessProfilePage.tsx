@@ -122,12 +122,19 @@ const BusinessProfilePage = () => {
   const submit = (data: BusinessSetupInput) => {
     setSetupError('');
     setupBusiness(data, {
-      onError: (err: unknown) => setSetupError(err instanceof Error ? err.message : 'Something went wrong. Please try again.'),
+      // Show the server's actual validation message (e.g. "Website URL is not a valid
+      // URL") - err.message on an HTTP error is just "Request failed with status 400".
+      onError: (err: unknown) => setSetupError(
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+          ?? (err instanceof Error ? err.message : 'Something went wrong. Please try again.'),
+      ),
     });
   };
 
   const goNext = async () => {
-    if (await trigger(['businessName', 'businessSector'])) setStep(1);
+    // Validate EVERY step-one field before advancing - including the optional website,
+    // whose format rule would otherwise only surface as a failed submit at the very end.
+    if (await trigger(['businessName', 'businessSector', 'website_url'])) setStep(1);
   };
 
   // Collapse the location being edited into a summary card and open a fresh one below.
@@ -301,10 +308,34 @@ const BusinessProfilePage = () => {
                     {/* website */}
                     <motion.div variants={popIn}>
                       <FieldLabel>Website <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
-                      <Controller name='website_url' control={control} render={({ field }) => (
-                        <TextField {...field} fullWidth size='small' placeholder='bellascoffee.com'
-                          InputProps={{ startAdornment: (<InputAdornment position='start'><PublicOutlined sx={{ color: TEXT_TERTIARY, fontSize: 19 }} /></InputAdornment>) }} sx={fieldSx} />
-                      )} />
+                      <Controller
+                        name='website_url'
+                        control={control}
+                        rules={{
+                          // Same rule the server enforces: empty is fine; otherwise it must
+                          // parse as a real http(s) URL. Telling the user at the field beats
+                          // a failed submit.
+                          validate: (value: string) => {
+                            const s = (value ?? '').trim();
+                            if (!s) return true;
+                            if (/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https?:\/\//i.test(s)) {
+                              return 'Website must start with http:// or https://';
+                            }
+                            try {
+                              const u = new URL(/^https?:\/\//i.test(s) ? s : `https://${s}`);
+                              return u.hostname.includes('.') || 'Please enter a valid website, e.g. bellascoffee.com';
+                            } catch {
+                              return 'Please enter a valid website, e.g. bellascoffee.com';
+                            }
+                          },
+                        }}
+                        render={({ field, fieldState }) => (
+                          <TextField {...field} fullWidth size='small' placeholder='bellascoffee.com'
+                            error={!!fieldState.error}
+                            helperText={fieldState.error?.message}
+                            InputProps={{ startAdornment: (<InputAdornment position='start'><PublicOutlined sx={{ color: TEXT_TERTIARY, fontSize: 19 }} /></InputAdornment>) }} sx={fieldSx} />
+                        )}
+                      />
                     </motion.div>
 
                     {/* category */}

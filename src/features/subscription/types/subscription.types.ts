@@ -12,7 +12,6 @@ export interface SubscriptionDetails {
   prize_amount: number | null;
   is_founding: boolean;
   founding_seat_number: number | null;
-  founding_draws_remaining: number | null;
   fee_at_entry: number | null;
   entries_per_location: number | null;
   // Staged plan change (tier or location count, incl. the founding hand-off): the new plan

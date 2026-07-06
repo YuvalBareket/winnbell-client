@@ -20,13 +20,15 @@ const SubscriptionSuccessPage = () => {
   // fixing a card), not a new subscription purchase.
   const isPaymentUpdate = searchParams.get('purpose') === 'upm';
 
-  const { isPending: verifying, isSuccess, isError } = useQuery({
+  const { isPending: verifying, isSuccess, isError, error: verifyError } = useQuery({
     queryKey: [...queryKeys.subscription.all, 'verify-session', sessionId],
     queryFn: () => api.post('/business/subscription/verify-session', { sessionId }).then(r => r.data),
     enabled: !!sessionId,
     retry: false,
     staleTime: Infinity,
   });
+  // Sold-out founding purchase: the payment was already refunded in full server-side.
+  const soldOutRefunded = (verifyError as any)?.response?.data?.code === 'FOUNDING_SOLD_OUT_REFUNDED';
 
   // Fetch subscription details after verification to get founding member info
   const { data: sub } = useQuery({
@@ -103,19 +105,30 @@ const SubscriptionSuccessPage = () => {
         <Paper elevation={0} sx={{ p: 5, borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 420, width: '100%' }}>
           <Stack spacing={3} alignItems='center'>
             <ErrorOutline sx={{ fontSize: 72, color: 'warning.main' }} />
-            <Box>
-              <Typography variant='h5' fontWeight={900} mb={1}>Payment received</Typography>
-              <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
-                Your payment was processed but we could not confirm your campaign enrollment automatically.
-                Please contact support and we will activate your account manually.
-              </Typography>
-            </Box>
+            {soldOutRefunded ? (
+              <Box>
+                <Typography variant='h5' fontWeight={900} mb={1}>Founding spots sold out</Typography>
+                <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
+                  The last founding partner spots were claimed while your payment was processing.
+                  Your payment has been <strong>refunded in full</strong> - there is nothing you need to do.
+                  You can still start a regular plan any time.
+                </Typography>
+              </Box>
+            ) : (
+              <Box>
+                <Typography variant='h5' fontWeight={900} mb={1}>Payment received</Typography>
+                <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
+                  Your payment was processed but we could not confirm your campaign enrollment automatically.
+                  Please contact support and we will activate your account manually.
+                </Typography>
+              </Box>
+            )}
             <Button
               variant='outlined' size='large'
-              onClick={() => navigate('/nearby')}
+              onClick={() => navigate(soldOutRefunded ? '/subscribe' : '/nearby')}
               sx={{ py: 1.75, px: 4, fontWeight: 800 }}
             >
-              Go to Dashboard
+              {soldOutRefunded ? 'See regular plans' : 'Go to Dashboard'}
             </Button>
           </Stack>
         </Paper>
