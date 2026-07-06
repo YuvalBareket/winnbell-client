@@ -95,6 +95,8 @@ export const GRADIENT_HERO_WARM   = `linear-gradient(135deg, #1565c0 0%, #0f3a6b
 export const GRADIENT_GOLD_CTA    = `linear-gradient(135deg, #c5a047 0%, #a0822f 100%)`;
 export const GRADIENT_FREE_CARD   = `linear-gradient(155deg, #eaf3fd 0%, #d6e6fb 100%)`;  // free-weekly-entry card (blue tint)
 export const GRADIENT_LOADING     = `linear-gradient(150deg, #3a86de 0%, #1a68c2 52%, #134d8a 100%)`;
+export const GRADIENT_GOLD_PRIZE  = `linear-gradient(90deg, #c5a047, #a0822f)`; // gold text for the campaign prize amount
+export const GRADIENT_PROGRESS_BAR = `linear-gradient(90deg, #42a5f5, #1565c0)`; // entry-capacity progress bar fill
 // Positive "you're filling up" green - used as entries approach / reach the draw max.
 // Maxing out is a good thing, so it reads celebratory (emerald to forest), never a warning.
 export const GRADIENT_SUCCESS_GREEN = `linear-gradient(135deg, #34d399 0%, #10b981 55%, #2e7d32 100%)`;
@@ -145,10 +147,19 @@ export const ALPHA_WHITE_30    = 'rgba(255,255,255,0.3)';
 export const ALPHA_WHITE_50    = 'rgba(255,255,255,0.5)';
 export const ALPHA_WHITE_70    = 'rgba(255,255,255,0.7)';
 export const ALPHA_WHITE_80    = 'rgba(255,255,255,0.8)';
+export const ALPHA_WHITE_85    = 'rgba(255,255,255,0.85)';
 export const ALPHA_WHITE_90    = 'rgba(255,255,255,0.9)';
 export const ALPHA_GREEN_10    = 'rgba(46,125,50,0.1)';
 export const ALPHA_GREEN_06    = 'rgba(46,125,50,0.06)';
 export const ALPHA_GREEN_15    = 'rgba(46,125,50,0.15)';
+export const ALPHA_ORANGE_12   = 'rgba(245,124,0,0.12)'; // customers KPI icon tint
+
+// Campaign dashboard entry-feed tints (light badge borders + avatar background)
+export const AVATAR_BLUE_BG    = '#e3eefc'; // entry avatar circle background
+export const BORDER_RECEIPT    = '#cfe0f7'; // Receipt source pill border (light blue)
+export const BORDER_APPROVED   = '#b6e0b9'; // Approved / Free pill border (light green)
+export const BORDER_REVIEW     = '#f5c99a'; // Under review pill border (light orange)
+export const BORDER_PROMO      = '#e6d09a'; // Promo source pill border (light gold)
 
 // ── Glassmorphism utilities ─────────────────
 export const GLASS_BG          = 'rgba(255,255,255,0.72)';
