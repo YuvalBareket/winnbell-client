@@ -121,13 +121,6 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
             },
       }}
     >
-      {/* Drag handle -- mobile only -- always visible */}
-      {!isDesktop && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1.5, pb: 0.5, flexShrink: 0 }}>
-          <Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: 'divider' }} />
-        </Box>
-      )}
-
       {/* Close button -- always visible */}
       <IconButton
         onClick={onClose}
@@ -145,7 +138,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
             sx={{
               flexShrink: 0,
               px: 2.5,
-              pt: isDesktop ? 2.5 : 1.5,
+              pt: 2.5,
               pb: 2.5,
               bgcolor: 'background.paper',
               borderBottom: '1px solid',
@@ -262,7 +255,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                 sx={{
                   flexShrink: 0,
                   px: 2.5,
-                  pt: isDesktop ? 2.5 : 1.5,
+                  pt: 2.5,
                   pb: 2.5,
                   background: `linear-gradient(145deg, ${sectorInfo.bgColor} 0%, ${sectorInfo.color}14 100%)`,
                   borderBottom: '1px solid',

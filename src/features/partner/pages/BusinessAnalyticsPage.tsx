@@ -503,7 +503,7 @@ const BusinessAnalyticsPage = () => {
     const hasSplit = newVal + returningVal > 0;
 
     const pieData = [
-      { name: 'One-time', value: newVal, color: PRIMARY_MAIN },
+      { name: 'New participations', value: newVal, color: PRIMARY_MAIN },
       { name: 'Repeat', value: returningVal, color: ACCENT_GOLD_DARK },
     ];
     // Split is by lifetime entry count (1 entry ever = one-time, 2+ = repeat), not by acquisition date.
@@ -557,7 +557,7 @@ const BusinessAnalyticsPage = () => {
           {/* New vs Returning */}
           <motion.div variants={itemVariants}>
             <ChartCard
-              title="One-time vs Repeat"
+              title="New participations vs Repeat"
               subtitle="Entered once vs came back for more"
               chip={
                 <Chip
@@ -600,7 +600,7 @@ const BusinessAnalyticsPage = () => {
                     <YAxis tick={AXIS_TICK} allowDecimals={false} axisLine={false} tickLine={false} />
                     <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }} content={<ChartTooltip />} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Bar dataKey="firstTime" name="One-time" fill={PRIMARY_MAIN} radius={[6, 6, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="firstTime" name="New participations" fill={PRIMARY_MAIN} radius={[6, 6, 0, 0]} maxBarSize={40} />
                     <Bar dataKey="returning" name="Repeat" fill={ACCENT_GOLD_DARK} radius={[6, 6, 0, 0]} maxBarSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -611,7 +611,7 @@ const BusinessAnalyticsPage = () => {
                     {formatPct(o?.new_pct)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    One-time
+                    New participations
                   </Typography>
                 </Box>
                 <Box sx={{ textAlign: 'center' }}>
