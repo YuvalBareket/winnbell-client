@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
   Paper, Box, Typography, Stack, Chip, IconButton, TextField, Button,
-  CircularProgress, Divider, InputAdornment, Dialog, DialogContent,
+  CircularProgress, Divider, InputAdornment, Dialog, DialogContent, Alert,
 } from '@mui/material';
 import {
   ReceiptLong, Edit, ChevronRight, Check, Close, TuneOutlined,
@@ -165,7 +165,13 @@ const CampaignCard = ({
         </Stack>
         <Stack direction='row' alignItems='center' spacing={1}>
           <Chip
-            label={business.subscription_status ?? 'Inactive'}
+            label={
+              business.subscription_status === 'Past_Due'
+                ? 'Past due'
+                : business.subscription_status === 'Incomplete'
+                ? 'Payment pending'
+                : business.subscription_status ?? 'Inactive'
+            }
             size='small'
             sx={{
               fontWeight: 700,
@@ -188,6 +194,21 @@ const CampaignCard = ({
           )}
         </Stack>
       </Stack>
+
+      {/* Payment issue banner: the owner's home page must surface a failed charge loudly. */}
+      {(business.subscription_status === 'Past_Due' || business.subscription_status === 'Incomplete') && (
+        <Alert
+          severity='error'
+          sx={{ mb: 2, borderRadius: 2 }}
+          action={
+            <Button color='inherit' size='small' onClick={() => navigate('/subscription/manage')} sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
+              Fix payment
+            </Button>
+          }
+        >
+          We could not process your payment. Update your payment method to stay in the next campaign.
+        </Alert>
+      )}
 
       <Divider sx={{ mb: 2 }} />
 

@@ -8,20 +8,31 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import {
   ReceiptLong, CheckCircle, Cancel, EmojiEvents,
-  Lock, LockOpen, WorkspacePremium, Edit, Add as AddIcon, Remove as RemoveIcon, SwapHoriz,
+  Lock, LockOpen, WorkspacePremium, Edit, Add as AddIcon, Remove as RemoveIcon, SwapHoriz, CreditCard,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSkipCampaign } from '../hooks/useSubscription';
+import { updatePaymentMethodApi } from '../api/subscription.api';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
 import { TIER_KEYS, TIER_MAP } from './components/subscribeTiers';
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
-  Active:    { bg: 'rgba(46,125,50,0.1)',   color: '#2e7d32' },
-  Trialing:  { bg: 'rgba(25,118,210,0.1)',  color: '#1976d2' },
-  Past_Due:  { bg: 'rgba(237,108,2,0.1)',   color: '#ed6c02' },
-  Cancelled: { bg: 'rgba(211,47,47,0.1)',   color: '#d32f2f' },
+  Active:     { bg: 'rgba(46,125,50,0.1)',   color: '#2e7d32' },
+  Trialing:   { bg: 'rgba(25,118,210,0.1)',  color: '#1976d2' },
+  Past_Due:   { bg: 'rgba(237,108,2,0.1)',   color: '#ed6c02' },
+  Incomplete: { bg: 'rgba(237,108,2,0.1)',   color: '#ed6c02' },
+  Cancelled:  { bg: 'rgba(211,47,47,0.1)',   color: '#d32f2f' },
+};
+
+// Business-friendly status labels (no raw enum values like "Past_Due" in the UI).
+const STATUS_LABEL: Record<string, string> = {
+  Active: 'Active',
+  Trialing: 'Trialing',
+  Past_Due: 'Past due',
+  Incomplete: 'Payment pending',
+  Cancelled: 'Cancelled',
 };
 
 export default function SubscriptionManagementPage() {
@@ -60,6 +71,20 @@ export default function SubscriptionManagementPage() {
   const { mutate: doSkipCampaign, isPending: skippingCampaign } = useSkipCampaign();
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false);
   const [skipError, setSkipError] = useState('');
+
+  const [pmLoading, setPmLoading] = useState(false);
+  const [pmError, setPmError] = useState('');
+  const handleUpdatePaymentMethod = async () => {
+    setPmLoading(true);
+    setPmError('');
+    try {
+      const { url } = await updatePaymentMethodApi();
+      window.location.href = url;
+    } catch (err: any) {
+      setPmError(err.response?.data?.error ?? 'Could not open the payment update page. Please try again.');
+      setPmLoading(false);
+    }
+  };
 
   const isDrawLocked = (() => {
     if (!sub?.draw_date) return false;
@@ -150,6 +175,36 @@ export default function SubscriptionManagementPage() {
         {cancelError && (
           <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }} onClose={() => setCancelError('')}>
             {cancelError}
+          </Alert>
+        )}
+
+        {/* Payment issue: the charge on the 24th did not go through. Fixing the card before
+            the month ends keeps the business in the next campaign; a late fix still recovers
+            it into the running campaign automatically. */}
+        {(sub.status === 'Past_Due' || sub.status === 'Incomplete') && (
+          <Alert
+            severity='error'
+            sx={{ mb: 3, borderRadius: 2 }}
+            action={
+              <Button
+                color='inherit'
+                size='small'
+                disabled={pmLoading}
+                onClick={handleUpdatePaymentMethod}
+                sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}
+              >
+                {pmLoading ? <CircularProgress size={16} color='inherit' /> : 'Update payment method'}
+              </Button>
+            }
+          >
+            We could not process your payment. We retry your card automatically, but updating your
+            payment method fixes it right away. Update by <strong>{lastDayOfMonthLabel}</strong> to
+            keep your spot in the next campaign.
+          </Alert>
+        )}
+        {pmError && (
+          <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }} onClose={() => setPmError('')}>
+            {pmError}
           </Alert>
         )}
 
@@ -301,7 +356,7 @@ export default function SubscriptionManagementPage() {
                       </Box>
                     </Stack>
                     <Chip
-                    label={sub.cancel_at_period_end ? 'Cancels Soon' : sub.status}
+                    label={sub.cancel_at_period_end ? 'Cancels Soon' : (STATUS_LABEL[sub.status] ?? sub.status)}
                     size='small'
                     sx={{
                       fontWeight: 700,
@@ -397,70 +452,139 @@ export default function SubscriptionManagementPage() {
                 </Paper>
               </motion.div>
 
-              {/* Action buttons */}
+              {/* Billing card with actions */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <Stack spacing={2}>
-                {canCancel && (
-                  <Button
-                    fullWidth
-                    variant='outlined'
-                    color='error'
-                    size='large'
-                    startIcon={<Cancel />}
-                    onClick={() => setConfirmOpen(true)}
-                    sx={{ borderRadius: 2, fontWeight: 700, py: 1.75 }}
+                <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+                  {/* Card header band */}
+                  <Box
+                    sx={{
+                      px: 3, py: 3,
+                      background: 'linear-gradient(135deg, rgba(25,93,230,0.08) 0%, rgba(127,166,255,0.1) 100%)',
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                    }}
                   >
-                    Cancel my subscription
-                  </Button>
-                )}
+                    <Stack direction='row' alignItems='center' spacing={2}>
+                      <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <CreditCard sx={{ color: 'white', fontSize: 24 }} />
+                      </Box>
+                      <Typography variant='h6' fontWeight={800}>Billing</Typography>
+                    </Stack>
+                  </Box>
 
-                {sub.cancel_at_period_end && sub.status !== 'Cancelled' && !sub.is_founding && (
-                  <Button
-                    fullWidth
-                    variant='contained'
-                    color='primary'
-                    size='large'
-                    startIcon={resuming ? undefined : <CheckCircle />}
-                    onClick={() => doResume()}
-                    disabled={resuming}
-                    sx={{ borderRadius: 2, fontWeight: 700, py: 1.75 }}
-                  >
-                    {resuming ? <CircularProgress size={22} color='inherit' /> : 'Resume Campaign'}
-                  </Button>
-                )}
+                  {/* Card body */}
+                  <Box sx={{ px: 3, py: 2.5 }}>
+                    <Stack spacing={2}>
+                      {/* Resume or Start New Plan - primary actions when applicable */}
+                      <AnimatePresence>
+                        {sub.cancel_at_period_end && sub.status !== 'Cancelled' && !sub.is_founding && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <Button
+                              fullWidth
+                              variant='contained'
+                              color='primary'
+                              size='large'
+                              startIcon={resuming ? undefined : <CheckCircle />}
+                              onClick={() => doResume()}
+                              disabled={resuming}
+                              sx={{ borderRadius: 2, fontWeight: 700, py: 1.75 }}
+                            >
+                              {resuming ? <CircularProgress size={22} color='inherit' /> : 'Resume Campaign'}
+                            </Button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
 
-                {sub.status === 'Cancelled' && (
-                  <Button
-                    fullWidth
-                    variant='contained'
-                    color='primary'
-                    size='large'
-                    onClick={() => navigate('/subscribe')}
-                    sx={{ borderRadius: 2, fontWeight: 700, py: 1.75 }}
-                  >
-                    Start a New Plan
-                  </Button>
-                )}
+                      <AnimatePresence>
+                        {sub.status === 'Cancelled' && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <Button
+                              fullWidth
+                              variant='contained'
+                              color='primary'
+                              size='large'
+                              onClick={() => navigate('/subscribe')}
+                              sx={{ borderRadius: 2, fontWeight: 700, py: 1.75 }}
+                            >
+                              Start a New Plan
+                            </Button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
 
-                {sub.in_charged_window && !sub.skip_next_campaign && sub.status !== 'Cancelled' && !sub.cancel_at_period_end && (
-                  <Button
-                    fullWidth
-                    variant='text'
-                    size='small'
-                    onClick={() => { setSkipError(''); setSkipConfirmOpen(true); }}
-                    sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}
-                  >
-                    Skip the next campaign
-                  </Button>
-                )}
-                {skipError && (
-                  <Alert severity='error' sx={{ borderRadius: 2 }} onClose={() => setSkipError('')}>{skipError}</Alert>
-                )}
-                </Stack>
+                      {/* Update payment method - primary utility action */}
+                      {sub.stripe_subscription_id && sub.status !== 'Cancelled' && (
+                        <Button
+                          fullWidth
+                          variant='outlined'
+                          size='large'
+                          startIcon={pmLoading ? undefined : <CreditCard />}
+                          onClick={handleUpdatePaymentMethod}
+                          disabled={pmLoading}
+                          sx={{ borderRadius: 2, fontWeight: 700, py: 1.75 }}
+                        >
+                          {pmLoading ? <CircularProgress size={22} color='inherit' /> : 'Update payment method'}
+                        </Button>
+                      )}
+
+                      {/* Cancel subscription - quieter destructive action */}
+                      {canCancel && (
+                        <Button
+                          fullWidth
+                          variant='outlined'
+                          color='error'
+                          size='medium'
+                          startIcon={<Cancel />}
+                          onClick={() => setConfirmOpen(true)}
+                          sx={{ borderRadius: 2, fontWeight: 700 }}
+                        >
+                          Cancel my subscription
+                        </Button>
+                      )}
+
+                      {/* Skip the next campaign - subtle optional action */}
+                      <AnimatePresence>
+                        {sub.in_charged_window && !sub.skip_next_campaign && sub.status !== 'Cancelled' && !sub.cancel_at_period_end && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <Button
+                              fullWidth
+                              variant='text'
+                              size='small'
+                              onClick={() => { setSkipError(''); setSkipConfirmOpen(true); }}
+                              sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none', justifyContent: 'center' }}
+                            >
+                              Skip the next campaign
+                            </Button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Skip error alert */}
+                      {skipError && (
+                        <Alert severity='error' sx={{ borderRadius: 2 }} onClose={() => setSkipError('')}>{skipError}</Alert>
+                      )}
+                    </Stack>
+                  </Box>
+                </Paper>
               </motion.div>
             </Stack>
 

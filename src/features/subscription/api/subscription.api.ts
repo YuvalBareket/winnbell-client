@@ -25,3 +25,7 @@ export const fetchSubscriptionInvoices = (): Promise<SubscriptionInvoice[]> =>
 // Opt out of (or back into) the campaign already paid for. No refund either way.
 export const skipCampaignApi = (skip: boolean): Promise<{ skipped: boolean }> =>
   api.post('/business/subscription/skip-campaign', { skip }).then(r => r.data);
+
+// Stripe setup session to save a new card; outstanding invoices are retried with it.
+export const updatePaymentMethodApi = (): Promise<{ url: string }> =>
+  api.post('/business/subscription/update-payment-method').then(r => r.data);

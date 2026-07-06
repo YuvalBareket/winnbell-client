@@ -16,6 +16,9 @@ const SubscriptionSuccessPage = () => {
   const dispatch = useAppDispatch();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
+  // 'upm' = returning from an update-payment-method setup session (existing subscriber
+  // fixing a card), not a new subscription purchase.
+  const isPaymentUpdate = searchParams.get('purpose') === 'upm';
 
   const { isPending: verifying, isSuccess, isError } = useQuery({
     queryKey: [...queryKeys.subscription.all, 'verify-session', sessionId],
@@ -60,8 +63,36 @@ const SubscriptionSuccessPage = () => {
       <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Stack alignItems='center' spacing={2}>
           <CircularProgress />
-          <Typography color='text.secondary' fontWeight={600}>Activating your business...</Typography>
+          <Typography color='text.secondary' fontWeight={600}>
+            {isPaymentUpdate ? 'Updating your payment method...' : 'Activating your business...'}
+          </Typography>
         </Stack>
+      </Box>
+    );
+  }
+
+  if (isPaymentUpdate && isSuccess) {
+    return (
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+        <Paper elevation={0} sx={{ p: 5, borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 440, width: '100%' }}>
+          <Stack spacing={3} alignItems='center'>
+            <CheckCircle sx={{ fontSize: 72, color: 'success.main' }} />
+            <Box>
+              <Typography variant='h4' fontWeight={900} mb={1}>Payment method updated</Typography>
+              <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
+                Your new card is saved and will be used for all future charges.
+                If you had an outstanding balance, we retried it with the new card right away.
+              </Typography>
+            </Box>
+            <Button
+              variant='contained' size='large'
+              onClick={() => navigate('/subscription/manage')}
+              sx={{ py: 1.75, px: 4, fontWeight: 800 }}
+            >
+              Back to Campaign Management
+            </Button>
+          </Stack>
+        </Paper>
       </Box>
     );
   }
