@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TIER_MAP, TIER_KEYS, MAX_TIER } from './subscribeTiers';
 import { useFoundingAvailability } from '../../hooks/useFoundingAvailability';
+import { useSubscription } from '../../hooks/useSubscription';
 import { GRADIENT_PRIMARY } from '../../../../shared/colors';
 
 interface Props {
@@ -30,10 +31,15 @@ const SubscribeStep3 = ({
   onSubscribe, onFoundingSubscribe, onSkip,
 }: Props) => {
   const { data: founding } = useFoundingAvailability();
+  const { data: existingSub } = useSubscription();
   const [foundingMode, setFoundingMode] = useState(false);
 
   const effectiveLocations  = locationCount || 1;
-  const foundingAvailable = founding && founding.active && founding.remaining > 0 && effectiveLocations <= 3;
+  // Hide the founding offer from a business that already holds a live subscription row -
+  // in particular a founding member in their transition window, who is here to start a
+  // REGULAR plan (the server rejects a second founding purchase for them anyway).
+  const hasLiveSubscription = !!existingSub && existingSub.status !== 'Cancelled';
+  const foundingAvailable = founding && founding.active && founding.remaining > 0 && effectiveLocations <= 3 && !hasLiveSubscription;
 
   // Regular plan values
   const pricePerLocation    = TIER_MAP[selectedTier] ?? 0;
@@ -392,7 +398,8 @@ const SubscribeStep3 = ({
                     This month's campaign is already running, so you'll be in the next one. Sign up now and you'll be all set the moment it opens.
                   </Typography>
                   <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.4, mt: 1.5, display: 'block' }}>
-                    No charge today. We bill on the last day of each month, and each payment covers the next campaign, so your first charge is at the end of this month.
+                    We bill on the 24th of each month, and each payment covers the next month's campaign.
+                    Sign up before the 24th and your first charge is on the 24th. Sign up after it and we charge your first campaign right away, so you still make the next one.
                   </Typography>
                 </Stack>
               </Box>

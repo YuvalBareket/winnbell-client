@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
-import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices } from '../hooks/useSubscription';
+import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSkipCampaign } from '../hooks/useSubscription';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
 import { TIER_KEYS, TIER_MAP } from './components/subscribeTiers';
@@ -57,6 +57,9 @@ export default function SubscriptionManagementPage() {
   });
 
   const { mutate: doUpdatePlan, isPending: updatingPlan } = useUpdateSubscriptionPlan();
+  const { mutate: doSkipCampaign, isPending: skippingCampaign } = useSkipCampaign();
+  const [skipConfirmOpen, setSkipConfirmOpen] = useState(false);
+  const [skipError, setSkipError] = useState('');
 
   const isDrawLocked = (() => {
     if (!sub?.draw_date) return false;
@@ -69,6 +72,18 @@ export default function SubscriptionManagementPage() {
   const periodEndLabel = sub?.current_period_end
     ? new Date(sub.current_period_end).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
+
+  // Subscribe-by deadline for the founding transition banner: the next campaign opens on
+  // the 1st, so the last day to start a plan and still be in it is the end of this month.
+  const lastDayOfMonthLabel = (() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  })();
+
+  // Staged plan (founding hand-off): the plan the business chose, waiting for the next
+  // campaign to open. While set, it is what Stripe will bill, so it leads the display.
+  const hasPendingPlan = sub?.pending_entries_per_location != null;
 
   const drawDateLabel = sub?.draw_date
     ? new Date(sub.draw_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -137,6 +152,44 @@ export default function SubscriptionManagementPage() {
             {cancelError}
           </Alert>
         )}
+
+        {/* Founding partner final included month: the year still runs, but it no longer covers
+            the next campaign. Subscribing before this month ends means no gap. */}
+        <AnimatePresence>
+          {sub?.is_founding && sub?.founding_transition_available && sub?.current_period_end && new Date(sub.current_period_end) >= new Date() && (
+            <motion.div
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Paper elevation={0} sx={{ mb: 3, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'rgba(245,158,11,0.04)' }}>
+                <Stack direction='row' alignItems='center' spacing={2} mb={2}>
+                  <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
+                  </Box>
+                  <Box flex={1}>
+                    <Typography variant='h6' fontWeight={800}>Your founding year is ending</Typography>
+                    <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
+                      Your Founding Partner term ends {periodEndLabel}. The current campaign is the last one included in your founding year.
+                      Start a plan by <strong>{lastDayOfMonthLabel}</strong> and you will be in the next campaign without missing a day.
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Box>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={() => navigate('/subscribe')}
+                    sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}
+                  >
+                    Choose a plan
+                  </Button>
+                </Box>
+              </Paper>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Expired founding member prompt */}
         <AnimatePresence>
@@ -215,10 +268,12 @@ export default function SubscriptionManagementPage() {
                             ? 'Founding Partner'
                             : `Partner ${sub.billing_interval === 'yearly' ? 'Yearly' : 'Monthly'} Plan`}
                         </Typography>
-                        {sub.fee_at_entry != null && (
+                        {(sub.fee_at_entry != null || hasPendingPlan) && (
                           <Typography variant='body2' fontWeight={700} sx={{ color: PRIMARY_MAIN, mt: 0.5 }}>
-                            {sub.is_founding
-                              ? `$${Number(sub.fee_at_entry * 12).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / year`
+                            {hasPendingPlan
+                              ? `$${Number(sub.pending_fee_at_entry ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month · starts with the next campaign`
+                              : sub.is_founding
+                              ? `$${Number((sub.fee_at_entry ?? 0) * 12).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / year`
                               : sub.billing_interval === 'yearly'
                                 ? `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month · billed yearly`
                                 : `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month`}
@@ -226,10 +281,21 @@ export default function SubscriptionManagementPage() {
                         )}
                         {(sub.active_location_count != null || sub.entries_per_location != null) && (
                           <Typography variant='caption' color='text.secondary' sx={{ mt: 0.25 }}>
-                            {[
-                              sub.active_location_count != null && `${sub.active_location_count} location${sub.active_location_count !== 1 ? 's' : ''}`,
-                              sub.entries_per_location != null && `${sub.entries_per_location} entries per location`,
-                            ].filter(Boolean).join(' · ')}
+                            {(() => {
+                              // With a staged plan, the price line above shows the NEXT
+                              // campaign's fee - so the counts must describe the same
+                              // configuration (staged tier + next campaign's locations).
+                              const locs = hasPendingPlan
+                                ? (sub.next_campaign_location_count ?? sub.active_location_count)
+                                : sub.active_location_count;
+                              const entries = hasPendingPlan
+                                ? sub.pending_entries_per_location
+                                : sub.entries_per_location;
+                              return [
+                                locs != null && `${locs} location${locs !== 1 ? 's' : ''}`,
+                                entries != null && `${entries} entries per location`,
+                              ].filter(Boolean).join(' · ');
+                            })()}
                           </Typography>
                         )}
                       </Box>
@@ -258,12 +324,57 @@ export default function SubscriptionManagementPage() {
                             {sub.is_founding
                               ? 'One-time payment. All 12 monthly campaigns included, no renewal.'
                               : sub.cancel_at_period_end
-                                ? 'Your access continues until this date - no further charges'
-                                : 'Your plan is billed on the last day of each month, so this is your next billing date.'}
+                                ? 'You stay in every campaign you have already paid for - no further charges'
+                                : 'Your plan is billed on the 24th of each month. Each payment covers the next month\'s campaign.'}
                           </Typography>
                         </Box>
                       )}
                     </Stack>
+
+                    {hasPendingPlan && (
+                      <Alert severity='info' sx={{ mt: 2.5, borderRadius: 2 }}>
+                        {(() => {
+                          const locs = sub.next_campaign_location_count ?? sub.active_location_count;
+                          const parts = [
+                            `${Number(sub.pending_entries_per_location).toLocaleString()} entries per location`,
+                            locs != null ? `${locs} location${locs !== 1 ? 's' : ''}` : null,
+                            sub.pending_fee_at_entry != null ? `$${Number(sub.pending_fee_at_entry).toLocaleString()}/month` : null,
+                          ].filter(Boolean).join(' · ');
+                          // Contrast the current tier only when it actually differs -
+                          // otherwise (e.g. a locations-only change) just say nothing changes yet.
+                          const tierChanged = sub.entries_per_location != null
+                            && sub.entries_per_location !== sub.pending_entries_per_location;
+                          return (
+                            <>
+                              Your updated plan ({parts}) begins with the next campaign.
+                              {tierChanged
+                                ? ` The current campaign keeps its plan of ${Number(sub.entries_per_location).toLocaleString()} entries per location.`
+                                : ' The current campaign is not affected.'}
+                            </>
+                          );
+                        })()}
+                      </Alert>
+                    )}
+
+                    {sub.skip_next_campaign && (
+                      <Alert
+                        severity='warning'
+                        sx={{ mt: 2.5, borderRadius: 2 }}
+                        action={
+                          <Button
+                            color='inherit'
+                            size='small'
+                            disabled={skippingCampaign}
+                            onClick={() => doSkipCampaign(false, { onError: (err: any) => setSkipError(err.response?.data?.error ?? 'Could not rejoin the campaign.') })}
+                            sx={{ fontWeight: 700 }}
+                          >
+                            Rejoin
+                          </Button>
+                        }
+                      >
+                        You have opted out of the next campaign. Your business will not participate in it and will rejoin from the campaign after.
+                      </Alert>
+                    )}
 
                     {sub.cancel_at_period_end && (
                       <Alert severity='warning' sx={{ mt: 2.5, borderRadius: 2 }}>
@@ -275,7 +386,7 @@ export default function SubscriptionManagementPage() {
                         size='small'
                         variant='outlined'
                         startIcon={<Edit />}
-                        onClick={() => { setNewTier(sub.entries_per_location ?? 750); setEditPlanOpen(true); setUpdateError(''); }}
+                        onClick={() => { setNewTier(sub.pending_entries_per_location ?? sub.entries_per_location ?? 750); setEditPlanOpen(true); setUpdateError(''); }}
                         disabled={sub.is_founding || sub.status === 'Cancelled'}
                         sx={{ fontWeight: 700, textTransform: 'none' }}
                       >
@@ -333,6 +444,21 @@ export default function SubscriptionManagementPage() {
                   >
                     Start a New Plan
                   </Button>
+                )}
+
+                {sub.in_charged_window && !sub.skip_next_campaign && sub.status !== 'Cancelled' && !sub.cancel_at_period_end && (
+                  <Button
+                    fullWidth
+                    variant='text'
+                    size='small'
+                    onClick={() => { setSkipError(''); setSkipConfirmOpen(true); }}
+                    sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}
+                  >
+                    Skip the next campaign
+                  </Button>
+                )}
+                {skipError && (
+                  <Alert severity='error' sx={{ borderRadius: 2 }} onClose={() => setSkipError('')}>{skipError}</Alert>
                 )}
                 </Stack>
               </motion.div>
@@ -556,8 +682,15 @@ export default function SubscriptionManagementPage() {
                         const d = (l.description ?? '').toLowerCase();
                         return d.includes('unused time') || d.includes('remaining time');
                       };
+                      // One-off lines (immediate campaign payments and plan-change settlements)
+                      // have a zero-length period; their description is shown verbatim instead
+                      // of the per-location monthly breakdown used for recurring cycle lines.
+                      const isOneOffLine = (l: { period_start: number | undefined; period_end: number | undefined }) =>
+                        l.period_start != null && l.period_start === l.period_end;
                       const subLines = invoice.description.filter(l => !isProrationLine(l));
-                      const isChangeEntry = !!invoice.invoice_description || (invoice.description.length > 0 && subLines.length === 0);
+                      // A pure change note has a description but no money movement; anything
+                      // with an amount renders as a payment row.
+                      const isChangeEntry = amount === 0 && (!!invoice.invoice_description || (invoice.description.length > 0 && subLines.length === 0));
 
                       const changeReason = invoice.invoice_description
                         ?? (isChangeEntry ? 'Plan or location updated' : null);
@@ -619,6 +752,15 @@ export default function SubscriptionManagementPage() {
                                       return (
                                         <Typography key={li} variant='caption' color='text.secondary' sx={{ display: 'block', lineHeight: 1.5 }}>
                                           {line.description ?? 'Founding Partner'}
+                                        </Typography>
+                                      );
+                                    }
+                                    // One-off charges (immediate campaign payment, plan or
+                                    // location settlement) carry their own explanation.
+                                    if (isOneOffLine(line)) {
+                                      return (
+                                        <Typography key={li} variant='caption' color='text.secondary' sx={{ display: 'block', lineHeight: 1.5 }}>
+                                          {line.description ?? invoice.invoice_description ?? 'One-time charge'}
                                         </Typography>
                                       );
                                     }
@@ -691,7 +833,7 @@ export default function SubscriptionManagementPage() {
               <Stack spacing={1.5}>
                 <Stack direction='row' justifyContent='space-between'>
                   <Typography variant='body2' color='text.secondary'>Locations</Typography>
-                  <Typography variant='body2' fontWeight={700}>{sub.active_location_count ?? 1}</Typography>
+                  <Typography variant='body2' fontWeight={700}>{sub.next_campaign_location_count ?? sub.active_location_count ?? 1}</Typography>
                 </Stack>
                 <Stack direction='row' justifyContent='space-between'>
                   <Typography variant='body2' color='text.secondary'>Price per location</Typography>
@@ -703,11 +845,16 @@ export default function SubscriptionManagementPage() {
                 <Stack direction='row' justifyContent='space-between' alignItems='center'>
                   <Typography variant='body2' fontWeight={700}>New monthly total</Typography>
                   <Typography variant='h6' fontWeight={900} color='primary.main'>
-                    ${((TIER_MAP[newTier] ?? 0) * (sub.active_location_count ?? 1)).toLocaleString()}
+                    ${((TIER_MAP[newTier] ?? 0) * (sub.next_campaign_location_count ?? sub.active_location_count ?? 1)).toLocaleString()}
                   </Typography>
                 </Stack>
               </Stack>
             </Box>
+
+            <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
+              Your new plan takes effect with the next campaign. The current campaign is not affected.
+              {sub.in_charged_window ? ' Since the next campaign is already paid, any price difference is charged or refunded right away.' : ''}
+            </Typography>
 
             {updateError && <Alert severity='error' sx={{ borderRadius: 2 }}>{updateError}</Alert>}
           </Stack>
@@ -725,7 +872,10 @@ export default function SubscriptionManagementPage() {
               });
             }}
             variant='contained'
-            disabled={updatingPlan || newTier === (sub.entries_per_location ?? 0)}
+            // Compare against the plan the NEXT campaign will run with (staged change wins
+            // over the live tier - e.g. a founding member's live 1,000 benefit is not
+            // their plan; their staged choice is).
+            disabled={updatingPlan || newTier === (sub.pending_entries_per_location ?? sub.entries_per_location ?? 0)}
             sx={{ fontWeight: 700 }}
           >
             {updatingPlan ? <CircularProgress size={20} color='inherit' /> : 'Confirm Change'}
@@ -751,7 +901,7 @@ export default function SubscriptionManagementPage() {
               </>
             ) : sub.draw_id ? (
               <DialogContentText>
-                Your plan stays active until <strong>{periodEndLabel}</strong>. You keep your spot in your current campaign, but your plan will not renew and you will not be entered into campaigns after that. No refund is issued.
+                Your plan will not renew and you will not be charged again. You keep your spot in every campaign you have already paid for, and you will not be entered into campaigns after that. No refund is issued.
               </DialogContentText>
             ) : (
               <DialogContentText>
@@ -772,6 +922,37 @@ export default function SubscriptionManagementPage() {
             sx={{ fontWeight: 700 }}
           >
             {cancelling ? <CircularProgress size={20} color='inherit' /> : 'Yes, Cancel'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Skip next campaign dialog */}
+      <Dialog open={skipConfirmOpen} onClose={() => setSkipConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
+        <DialogTitle sx={{ fontWeight: 800 }}>Skip the next campaign?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Your business will not participate in the upcoming campaign: it will not appear on the map and customers will not earn entries from you during it.
+            The payment already made for it is <strong>not refunded</strong>. Your plan continues normally and you rejoin from the campaign after.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setSkipConfirmOpen(false)} variant='outlined' sx={{ fontWeight: 700 }}>
+            Stay In
+          </Button>
+          <Button
+            onClick={() => {
+              setSkipError('');
+              doSkipCampaign(true, {
+                onSuccess: () => setSkipConfirmOpen(false),
+                onError: (err: any) => { setSkipConfirmOpen(false); setSkipError(err.response?.data?.error ?? 'Could not skip the campaign. Please try again.'); },
+              });
+            }}
+            color='warning'
+            variant='contained'
+            disabled={skippingCampaign}
+            sx={{ fontWeight: 700 }}
+          >
+            {skippingCampaign ? <CircularProgress size={20} color='inherit' /> : 'Skip Campaign'}
           </Button>
         </DialogActions>
       </Dialog>

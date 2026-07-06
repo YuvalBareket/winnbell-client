@@ -1,7 +1,7 @@
 import {
-  Paper, Box, Typography, Stack, IconButton, Divider, Button,
+  Paper, Box, Typography, Stack, IconButton, Divider, Button, Chip,
 } from '@mui/material';
-import { LocationOn, Edit, DeleteOutline, Share, PersonRemove, Person } from '@mui/icons-material';
+import { LocationOn, Edit, DeleteOutline, Share, PersonRemove, Person, Schedule } from '@mui/icons-material';
 import type { BusinessLocation } from '../../types/business.types';
 
 interface LocationCardProps {
@@ -33,7 +33,25 @@ const LocationCard = ({
     >
       <Stack direction='row' justifyContent='space-between' alignItems='flex-start' gap={1.5}>
         <Box flex={1} minWidth={0}>
-          <Typography variant='h6' fontWeight={700}>{loc.name}</Typography>
+          <Stack direction='row' alignItems='center' spacing={1} flexWrap='wrap'>
+            <Typography variant='h6' fontWeight={700}>{loc.name}</Typography>
+            {loc.activate_at_open && (
+              <Chip
+                icon={<Schedule sx={{ fontSize: '14px !important' }} />}
+                label='Starts next campaign'
+                size='small'
+                sx={{ fontWeight: 700, fontSize: '0.68rem', height: 22, bgcolor: 'rgba(25,118,210,0.1)', color: 'primary.main' }}
+              />
+            )}
+            {loc.deactivate_at_open && (
+              <Chip
+                icon={<Schedule sx={{ fontSize: '14px !important' }} />}
+                label='Ends with this campaign'
+                size='small'
+                sx={{ fontWeight: 700, fontSize: '0.68rem', height: 22, bgcolor: 'rgba(237,108,2,0.1)', color: 'warning.main' }}
+              />
+            )}
+          </Stack>
           <Typography
             variant='body2'
             color='text.secondary'

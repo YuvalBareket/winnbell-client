@@ -21,3 +21,7 @@ export const updateSubscriptionPlan = (entries_per_location: number) =>
 
 export const fetchSubscriptionInvoices = (): Promise<SubscriptionInvoice[]> =>
   api.get('/business/subscription/invoices').then(r => r.data);
+
+// Opt out of (or back into) the campaign already paid for. No refund either way.
+export const skipCampaignApi = (skip: boolean): Promise<{ skipped: boolean }> =>
+  api.post('/business/subscription/skip-campaign', { skip }).then(r => r.data);

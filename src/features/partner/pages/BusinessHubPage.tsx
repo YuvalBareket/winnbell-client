@@ -39,6 +39,7 @@ import EditLocationModal from './components/EditLocationModal';
 import EditBusinessDrawer from './components/EditBusinessDrawer';
 import CampaignCard from './components/CampaignCard';
 import LocationCard from './components/LocationCard';
+import { TIER_MAP } from '../../subscription/pages/components/subscribeTiers';
 import { useUploadBusinessLogo } from '../hooks/useUploadBusinessLogo';
 import { useUpdateCampaignSettings } from '../hooks/useUpdateCampaignSettings';
 import AddLocationDialog from './components/AddLocationDialog';
@@ -84,11 +85,20 @@ const BusinessHubPage = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [removingLocation, setRemovingLocation] = useState<BusinessLocation | null>(null);
 
-  const activeLocations = (business?.locations ?? []).filter((l) => l.is_active);
+  // Live locations plus staged adds (created during a running campaign, going live at the
+  // next open) — the owner must still see and manage a location they just added.
+  const activeLocations = (business?.locations ?? []).filter((l) => l.is_active || l.activate_at_open);
+  // What the NEXT campaign runs with: active minus scheduled removals plus scheduled adds.
+  const nextCampaignLocationCount = (business?.locations ?? [])
+    .filter((l) => (l.is_active && !l.deactivate_at_open) || l.activate_at_open).length;
 
+  // Pricing for the add-location dialog is the NEXT campaign's plan: the staged tier wins
+  // over the live one (e.g. a founding member's live 1,000 benefit is not their plan), and
+  // the per-location rate comes from the tier price map — fee_at_entry is a TOTAL, not a rate.
+  const nextCampaignTier = subscription?.pending_entries_per_location ?? subscription?.entries_per_location ?? null;
   const planSummary = subscription ? {
-    feePerLocation: subscription.fee_at_entry ?? 0,
-    locationCount: subscription.active_location_count ?? 0,
+    feePerLocation: nextCampaignTier != null ? (TIER_MAP[nextCampaignTier] ?? 0) : 0,
+    locationCount: nextCampaignLocationCount || (subscription.active_location_count ?? 0),
     billingInterval: subscription.billing_interval,
     hasStripeSubscription: !!subscription.stripe_subscription_id,
   } : null;
@@ -102,9 +112,15 @@ const BusinessHubPage = () => {
     doAddLocation(
       { name: data.name, address: data.address, lat: data.lat, lon: data.lon, suite: data.suite || null, phone: data.phone || null },
       {
-        onSuccess: () => {
+        onSuccess: (res) => {
           setAddLocationOpen(false);
-          setSnackbar({ open: true, message: 'Location added and plan updated.', severity: 'success' });
+          setSnackbar({
+            open: true,
+            message: res?.stagedForNextCampaign
+              ? 'Location added. It goes live when the next campaign opens.'
+              : 'Location added and plan updated.',
+            severity: 'success',
+          });
         },
         onError: (err: unknown) => {
           setAddLocationOpen(false);
@@ -121,9 +137,15 @@ const BusinessHubPage = () => {
     // Keep the dialog open with a loading button until the request resolves,
     // then close it - avoids closing instantly and showing a blank load behind.
     doRemoveLocation(loc.id, {
-      onSuccess: () => {
+      onSuccess: (res) => {
         setRemovingLocation(null);
-        setSnackbar({ open: true, message: 'Location removed and plan updated.', severity: 'success' });
+        setSnackbar({
+          open: true,
+          message: res?.scheduledForNextCampaign
+            ? 'Location removal scheduled. It keeps serving until the current campaign ends.'
+            : 'Location removed and plan updated.',
+          severity: 'success',
+        });
       },
       onError: (err: unknown) => {
         setRemovingLocation(null);
@@ -417,7 +439,7 @@ const BusinessHubPage = () => {
                     </Typography>
                   </Stack>
                   <Typography variant='body2' sx={{ color: TEXT_SECONDARY, lineHeight: 1.6, mb: 1.5, fontSize: '0.8rem' }}>
-                    Your remaining locations stay fully active with no change to their entry allocations. Your billing adjusts from the next cycle.
+                    During a running campaign this location keeps serving until the campaign ends, then stops. Your remaining locations stay fully active, and billing adjusts from the next campaign.
                   </Typography>
                   <Stack direction='row' alignItems='center' spacing={1}>
                     <Box sx={{ flex: 1, p: 1.5, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.03)', textAlign: 'center' }}>

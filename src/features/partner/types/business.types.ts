@@ -42,6 +42,11 @@ export interface BusinessLocation {
   manager_id: number | null;
   manager_name: string | null;
   is_active: boolean;
+  // Staged location changes (applied when the next campaign opens): a new location added
+  // during a running campaign waits with activate_at_open; a removed one keeps serving
+  // with deactivate_at_open until the campaign boundary.
+  activate_at_open?: boolean;
+  deactivate_at_open?: boolean;
   suite?: string | null;
   phone?: string | null;
 }

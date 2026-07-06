@@ -111,7 +111,15 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
       onClose={onClose}
       maxWidth='sm'
       fullWidth
-      PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden', m: { xs: 1.5, sm: 4 } } }}
+      PaperProps={{
+        sx: {
+          borderRadius: 3, overflow: 'hidden', m: { xs: 1.5, sm: 4 },
+          // Header stays fixed; the form body scrolls when the content (fields + plan
+          // card) is taller than the viewport, instead of squeezing and clipping.
+          maxHeight: { xs: 'calc(100dvh - 24px)', sm: '90dvh' },
+          display: 'flex', flexDirection: 'column',
+        },
+      }}
     >
       {/* ── Hero header ─────────────────────────────── */}
       <Box
@@ -119,10 +127,11 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
           position: 'relative',
           background: GRADIENT_HERO,
           px: { xs: 2.5, sm: 3 },
-          pt: 3,
-          pb: 3.25,
+          pt: 2,
+          pb: 2.25,
           color: 'white',
           overflow: 'hidden',
+          flexShrink: 0,
         }}
       >
         {/* decorative glow orbs */}
@@ -147,17 +156,17 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 320, damping: 20 }}
               sx={{
-                width: 40, height: 40, borderRadius: 2, flexShrink: 0,
+                width: 34, height: 34, borderRadius: 2, flexShrink: 0,
                 background: `linear-gradient(135deg, ${ALPHA_WHITE_30} 0%, ${ALPHA_WHITE_10} 100%)`,
                 border: `1px solid ${ALPHA_WHITE_30}`,
                 boxShadow: `inset 0 1px 1px ${ALPHA_WHITE_30}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              <AddBusiness sx={{ fontSize: 20 }} />
+              <AddBusiness sx={{ fontSize: 18 }} />
             </MotionBox>
             <Box>
-              <Typography fontWeight={800} sx={{ fontSize: '1.05rem', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
+              <Typography fontWeight={800} sx={{ fontSize: '0.95rem', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
                 Add New Location
               </Typography>
               <Typography sx={{ fontSize: '0.8rem', opacity: 0.82, mt: 0.25 }}>
@@ -179,13 +188,13 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
         </Stack>
       </Box>
 
-      {/* ── Form body ───────────────────────────────── */}
+      {/* ── Form body (scrolls independently of the fixed header) ── */}
       <Stack
-        spacing={2.25}
+        spacing={1.5}
         component='form'
         id='add-location-form'
         onSubmit={form.handleSubmit(handleSubmit)}
-        sx={{ px: { xs: 2.5, sm: 3 }, pt: 3.25, pb: 3.25 }}
+        sx={{ px: { xs: 2.5, sm: 3 }, pt: 1.75, pb: 1.75, overflowY: 'auto', flex: 1, minHeight: 0 }}
       >
         {/* Location Details Group */}
         <Stack spacing={2}>
@@ -268,7 +277,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
               <Box
                 sx={{
                   position: 'relative',
-                  p: 2.25,
+                  p: 1.5,
                   borderRadius: 3,
                   background: `linear-gradient(160deg, ${ALPHA_PRIMARY_06} 0%, ${ALPHA_PRIMARY_04} 100%)`,
                   border: `1px solid ${ALPHA_PRIMARY_10}`,
@@ -285,7 +294,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
                   }}
                 />
 
-                <Stack direction='row' alignItems='center' spacing={1} mb={0.75}>
+                <Stack direction='row' alignItems='center' spacing={1} mb={0.5}>
                   <Box
                     sx={{
                       width: 22, height: 22, borderRadius: 1.5,
@@ -307,17 +316,16 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
 
                 <Typography
                   variant='body2'
-                  sx={{ color: TEXT_SECONDARY, lineHeight: 1.6, mb: 2, fontSize: '0.8rem' }}
+                  sx={{ color: TEXT_SECONDARY, lineHeight: 1.6, mb: 1.25, fontSize: '0.8rem' }}
                 >
-                  Each new location is seamlessly added to your Winnbell network. Your plan adjusts at the same
-                  per-location rate, no surprises.
+                  Your new location joins with the next campaign, billed at your plan's per-location rate. No surprises.
                 </Typography>
 
                 <Stack direction='row' alignItems='stretch' spacing={1.25}>
                   {/* Today */}
                   <Box
                     sx={{
-                      flex: 1, px: 1.25, py: 1.5, borderRadius: 2.5, textAlign: 'center',
+                      flex: 1, px: 1.25, py: 1, borderRadius: 2.5, textAlign: 'center',
                       bgcolor: '#ffffff', border: `1px solid ${BORDER_SUBTLE}`,
                       display: 'flex', flexDirection: 'column', justifyContent: 'center',
                     }}
@@ -326,7 +334,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
                       variant='caption'
                       sx={{ color: TEXT_TERTIARY, fontWeight: 700, display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.6rem' }}
                     >
-                      Today
+                      Current plan
                     </Typography>
                     <Typography variant='body2' fontWeight={800} sx={{ color: TEXT_HEADING, lineHeight: 1.2 }}>
                       ${(planSummary.feePerLocation * planSummary.locationCount).toLocaleString()}
@@ -346,12 +354,12 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
                   >
                     <Box
                       sx={{
-                        width: 28, height: 28, borderRadius: '50%',
+                        width: 24, height: 24, borderRadius: '50%',
                         bgcolor: ALPHA_PRIMARY_10, color: PRIMARY_MAIN,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}
                     >
-                      <ArrowForwardOutlined sx={{ fontSize: 16 }} />
+                      <ArrowForwardOutlined sx={{ fontSize: 14 }} />
                     </Box>
                   </MotionBox>
 
@@ -361,7 +369,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.12, type: 'spring', stiffness: 280, damping: 22 }}
                     sx={{
-                      flex: 1, px: 1.25, py: 1.5, borderRadius: 2.5, textAlign: 'center',
+                      flex: 1, px: 1.25, py: 1, borderRadius: 2.5, textAlign: 'center',
                       background: `linear-gradient(150deg, ${PRIMARY_LIGHT} 0%, ${PRIMARY_MAIN} 100%)`,
                       color: 'white', boxShadow: SHADOW_PRIMARY_SOFT,
                       display: 'flex', flexDirection: 'column', justifyContent: 'center',
@@ -371,7 +379,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
                       variant='caption'
                       sx={{ color: 'white', fontWeight: 700, display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.6rem', opacity: 0.9 }}
                     >
-                      After adding
+                      From next campaign
                     </Typography>
                     <Typography variant='body1' fontWeight={800} sx={{ color: 'white', lineHeight: 1.2 }}>
                       ${(planSummary.feePerLocation * (planSummary.locationCount + 1)).toLocaleString()}
@@ -388,12 +396,12 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
         </AnimatePresence>
 
         {/* ── Actions ──────────────────────────────── */}
-        <Stack direction='row' spacing={1.5} pt={1.25}>
+        <Stack direction='row' spacing={1.5} pt={0.75}>
           <Button
             variant='outlined'
             onClick={onClose}
             sx={{
-              flex: 1, fontWeight: 700, py: 1.4, textTransform: 'none', whiteSpace: 'nowrap',
+              flex: 1, fontWeight: 700, py: 1.1, textTransform: 'none', whiteSpace: 'nowrap',
               fontSize: { xs: '0.85rem', sm: '0.9rem' }, borderColor: BORDER_SUBTLE, color: TEXT_SECONDARY,
               transition: 'all 0.2s ease',
               '&:hover': { borderColor: PRIMARY_MAIN, color: PRIMARY_MAIN, bgcolor: ALPHA_PRIMARY_04 },
@@ -408,7 +416,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
             disabled={isLoading}
             startIcon={!isLoading ? <AddBusiness sx={{ fontSize: 18 }} /> : undefined}
             sx={{
-              flex: 1.4, fontWeight: 800, py: 1.4, textTransform: 'none', whiteSpace: 'nowrap',
+              flex: 1.4, fontWeight: 800, py: 1.1, textTransform: 'none', whiteSpace: 'nowrap',
               fontSize: { xs: '0.85rem', sm: '0.9rem' },
               background: GRADIENT_PRIMARY,
               boxShadow: SHADOW_PRIMARY_SOFT,

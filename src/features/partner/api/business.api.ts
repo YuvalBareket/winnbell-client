@@ -43,13 +43,14 @@ export const updateLocation = async (
 
 export const addLocation = async (
   data: UpdateLocationInput,
-): Promise<{ locationId: number }> => {
-  const response = await api.post<{ locationId: number }>('/business/locations', data);
+): Promise<{ locationId: number; stagedForNextCampaign?: boolean }> => {
+  const response = await api.post<{ locationId: number; stagedForNextCampaign?: boolean }>('/business/locations', data);
   return response.data;
 };
 
-export const deleteLocation = async (locationId: number): Promise<void> => {
-  await api.delete(`/business/locations/${locationId}`);
+export const deleteLocation = async (locationId: number): Promise<{ success: boolean; scheduledForNextCampaign?: boolean }> => {
+  const response = await api.delete<{ success: boolean; scheduledForNextCampaign?: boolean }>(`/business/locations/${locationId}`);
+  return response.data;
 };
 
 export const removeLocationManager = async (locationId: number): Promise<void> => {
