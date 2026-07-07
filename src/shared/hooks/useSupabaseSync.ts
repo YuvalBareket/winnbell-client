@@ -6,6 +6,7 @@ import { selectIsAuthenticated, selectCurrentUser, selectIsBusiness } from '../.
 import { login, logout, addAccount } from '../../store/slices/authSlice';
 import { store } from '../../store/store';
 import { syncUserFn } from '../../features/auth/api/auth.api';
+import { onCrossTabLogout } from '../lib/crossTabLogout';
 
 export const useSupabaseSync = (retryCount = 0) => {
   const dispatch = useAppDispatch();
@@ -35,19 +36,18 @@ export const useSupabaseSync = (retryCount = 0) => {
       setIsSignedIn(!!session);
 
       if (!session) {
-        // Only clean up on explicit sign-out. Silent session drops (tab inactive,
-        // Supabase token refresh failure) must NOT wipe pendingRole/pendingInviteToken
-        // as a user may be mid-registration with an OAuth redirect pending.
+        // DECOUPLED (F1): a Supabase SIGNED_OUT must NEVER log the user out of the app.
+        // Supabase is only the login provider; the app runs on the independent internal JWT
+        // + 30-day refresh token. Supabase auto-refreshes its OWN token hourly, and that can
+        // fail involuntarily (two contexts racing its single-use token, suspend/resume),
+        // firing SIGNED_OUT — obeying it was the "kicked out after ~2 hours" bug. Real logout
+        // is explicit (useLogout / account removal, propagated to other tabs by
+        // broadcastLogout) and token revocation is enforced server-side (/auth/logout,
+        // password reset). Here we only clear the transient registration flags.
         if (event === 'SIGNED_OUT') {
           localStorage.removeItem('pendingRole');
           localStorage.removeItem('pendingInviteToken');
-          localStorage.removeItem('pendingAddAccount');
           localStorage.removeItem('install_prompt_dismissed');
-          if (isAuthenticatedRef.current) {
-            dispatch(logout());
-            localStorage.removeItem('wasLoggedIn');
-            import('../../main').then(({ queryClient }) => queryClient.clear()).catch(() => {});
-          }
         }
         syncing.current = false;
         return;
@@ -205,6 +205,19 @@ export const useSupabaseSync = (retryCount = 0) => {
 
     return () => subscription.unsubscribe();
   }, [retryCount]);
+
+  // Cross-tab logout: when another tab performs a REAL logout it calls broadcastLogout();
+  // mirror it here by clearing this tab's internal session. This replaces the cross-tab
+  // propagation that the Supabase SIGNED_OUT handler used to provide before F1 decoupled it,
+  // and (unlike the old path) never fires on an involuntary Supabase token-refresh failure.
+  useEffect(() => {
+    return onCrossTabLogout(() => {
+      if (!isAuthenticatedRef.current) return;
+      dispatch(logout());
+      localStorage.removeItem('wasLoggedIn');
+      import('../../main').then(({ queryClient }) => queryClient.clear()).catch(() => {});
+    });
+  }, [dispatch]);
 
   return { syncError, isLoaded, isSignedIn };
 };

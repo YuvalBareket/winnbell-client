@@ -2,6 +2,7 @@ import axios from 'axios';
 import { store } from '../../store/store';
 import { logout, removeAccount, updateAccountTokens } from '../../store/slices/authSlice';
 import { supabase } from '../lib/supabase';
+import { broadcastLogout } from '../lib/crossTabLogout';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/',
@@ -139,8 +140,11 @@ api.interceptors.response.use(
         // runs on internal JWTs anyway (useSupabaseSync's identity check ignores a
         // mismatched session, so it can never resurrect the dropped account).
       } else {
+        // Last account's refresh token was DEFINITIVELY rejected (already dead server-side,
+        // so no /auth/logout revoke needed). Full logout + clear other tabs.
         const wasAuthenticated = now.isAuthenticated;
         store.dispatch(logout());
+        broadcastLogout();
         if (wasAuthenticated) {
           supabase.auth.signOut().catch(() => {});
         }

@@ -5,6 +5,8 @@ import { logout, removeAccount } from '../../store/slices/authSlice';
 import { selectAccounts, selectActiveAccountId } from '../../store/selectors/authSelectors';
 import { supabase } from '../lib/supabase';
 import { homePathForUser } from './useAccountSwitcher';
+import { broadcastLogout } from '../lib/crossTabLogout';
+import { logoutFn } from '../../features/auth/api/auth.api';
 
 /**
  * "Log out" is per-account when more than one account is saved on this device:
@@ -20,6 +22,9 @@ export const useLogout = () => {
 
   return async () => {
     const { queryClient } = await import('../../main');
+    // Capture the active account's refresh token BEFORE we drop it, so we can revoke it
+    // server-side (F6) — a logged-out token must not stay refreshable for 30 days.
+    const activeRefresh = accounts.find((a) => a.user.id === activeAccountId)?.refreshToken ?? null;
 
     // More than one account saved: log out only the active one, stay signed into the other.
     if (accounts.length > 1 && activeAccountId != null) {
@@ -28,9 +33,10 @@ export const useLogout = () => {
       // flushSync so the remaining account's role is applied before we navigate (see switchTo).
       flushSync(() => { dispatch(removeAccount({ id: activeAccountId })); });
       navigate(homePathForUser(remaining[0]?.user), { replace: true });
-      // Note: we intentionally do NOT sign out of Supabase here — the remaining account
-      // keeps working on its internal JWT, and the Supabase session belongs to whichever
-      // account last authenticated through it.
+      if (activeRefresh) logoutFn(activeRefresh); // revoke just this account's session
+      // Note: no cross-tab broadcast and no Supabase signOut here — this is a per-account
+      // logout; the remaining account keeps working on its internal JWT, and other tabs may
+      // be on that remaining account.
       return;
     }
 
@@ -41,6 +47,8 @@ export const useLogout = () => {
     localStorage.removeItem('install_prompt_dismissed');
     localStorage.removeItem('pendingAddAccount');
     queryClient.clear();
+    broadcastLogout();                       // clear this session in every other tab
+    if (activeRefresh) logoutFn(activeRefresh); // revoke the refresh token server-side
     try {
       await supabase.auth.signOut();
     } catch {

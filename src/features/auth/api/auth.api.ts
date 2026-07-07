@@ -58,3 +58,16 @@ export const revokeAllSessionsFn = async (accessToken: string): Promise<void> =>
     { headers: { Authorization: `Bearer ${accessToken}` } },
   );
 };
+
+// Server-side revocation of ONE device's session on logout (deletes that refresh token so
+// it can never be refreshed again). Bare axios (not `api`) so the request interceptor can't
+// attach/refresh the active account's token — we pass the exact token to revoke in the body.
+// Fire-and-forget: local logout has already happened; a failed server revoke is non-fatal.
+export const logoutFn = async (refreshToken: string): Promise<void> => {
+  const baseURL = (import.meta.env.VITE_API_URL || 'http://localhost:3000/').replace(/\/$/, '');
+  try {
+    await axios.post(`${baseURL}/auth/logout`, { refreshToken });
+  } catch {
+    // best-effort
+  }
+};

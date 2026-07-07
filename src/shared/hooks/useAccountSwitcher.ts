@@ -4,6 +4,8 @@ import { useAppDispatch, useAppSelector } from '../../store/hook';
 import { switchAccount, removeAccount } from '../../store/slices/authSlice';
 import { selectAccounts, selectActiveAccountId } from '../../store/selectors/authSelectors';
 import { supabase } from '../lib/supabase';
+import { broadcastLogout } from '../lib/crossTabLogout';
+import { logoutFn } from '../../features/auth/api/auth.api';
 import type { User } from '../../features/auth/types/auth.types';
 
 // Role-aware home for an account (mirrors the redirect logic in AppRoutes/useSupabaseSync).
@@ -57,6 +59,9 @@ export const useAccountSwitcher = () => {
   // loading screen forever.
   const remove = async (id: number): Promise<{ loggedOut: boolean }> => {
     const remaining = accounts.filter((a) => a.user.id !== id);
+    // Capture the removed account's refresh token before dropping it, to revoke it
+    // server-side (F6) so a removed device's token cannot be refreshed for 30 days.
+    const removedRefresh = accounts.find((a) => a.user.id === id)?.refreshToken ?? null;
     await clearQueryCache();
 
     if (id === activeAccountId && remaining.length === 0) {
@@ -65,6 +70,8 @@ export const useAccountSwitcher = () => {
       localStorage.removeItem('wasLoggedIn');
       localStorage.removeItem('install_prompt_dismissed');
       localStorage.removeItem('pendingAddAccount');
+      broadcastLogout();                          // last account gone — clear other tabs
+      if (removedRefresh) logoutFn(removedRefresh); // revoke server-side
       try {
         await supabase.auth.signOut();
       } catch {
@@ -74,6 +81,7 @@ export const useAccountSwitcher = () => {
     }
 
     flushSync(() => { dispatch(removeAccount({ id })); });
+    if (removedRefresh) logoutFn(removedRefresh); // revoke the removed account's session
     if (id === activeAccountId) {
       navigate(homePathForUser(remaining[0].user), { replace: true });
     }
