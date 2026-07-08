@@ -31,10 +31,10 @@ interface ScriptsTabProps {
 }
 
 const SCRIPTS = [
-  { label: 'At checkout', text: 'By the way, we\'re on Winnbell. Scan this and you\'re in this month\'s prize draw. It only takes five seconds.' },
-  { label: 'New customer', text: 'Have you tried Winnbell? Scan our code and you\'re entered into this month\'s prize draw. It\'s free and takes seconds.' },
-  { label: 'Regulars', text: 'Don\'t forget to scan for this month\'s Winnbell draw before you head out.' },
-  { label: 'Free entry', text: 'You can join this month\'s draw for free, no purchase needed. Just scan our code.' },
+  { label: 'At checkout', text: 'By the way, we\'re on Winnbell. Scan this code, submit your receipt, and you\'re in this month\'s prize draw. It takes seconds.' },
+  { label: 'New to Winnbell', text: 'Have you tried Winnbell? Join through our code and you\'ll start off with a welcome entry from us into this month\'s draw.' },
+  { label: 'Regulars', text: 'Don\'t forget to submit your receipt for this month\'s Winnbell draw. Scan our code and it opens ready to go.' },
+  { label: 'Already a member', text: 'Already on Winnbell? Our code is the fastest way in. It takes you straight to receipt submission with our store already selected.' },
 ];
 
 const ScriptsTab = ({

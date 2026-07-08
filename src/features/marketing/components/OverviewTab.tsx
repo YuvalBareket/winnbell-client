@@ -1,18 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Box, Typography, Stack, Paper, Button, CircularProgress,
+  Box, Typography, Stack, Paper, Button, CircularProgress, Collapse, useMediaQuery, useTheme,
 } from '@mui/material';
+import { ExpandMoreRounded } from '@mui/icons-material';
 import {
-  ContentCopy, QrCode2, Check, AutoAwesomeRounded, ArrowForwardRounded,
+  QrCode2, Check, BookRounded,
+  TrendingUpRounded, LocationOnRounded, CardGiftcardRounded,
 } from '@mui/icons-material';
 import QRCodePlain from 'react-qr-code';
 import {
-  PRIMARY_MAIN,
-  GOLD_TROPHY, ACCENT_GOLD_LIGHT, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_80,
-  TEXT_HEADING,
+  PRIMARY_MAIN, PRIMARY_DEEP,
+  GOLD_TROPHY, AMBER_HOURGLASS, ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_80,
+  TEXT_HEADING, TEXT_SECONDARY,
   GRADIENT_GOLD_VIVID,
-  ALPHA_AMBER_12, ALPHA_AMBER_25,
 } from '../../../shared/colors';
 import { downloadNodeAsPng } from '../utils/capture';
 import { StarRounded } from '@mui/icons-material';
@@ -32,9 +33,12 @@ const OverviewTab = ({
   onRequireLocation,
   onTabSwitch,
 }: OverviewTabProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   // Playbook state
   const [playbook, setPlaybook] = useState([false, false, false, false]);
-  const [copied, setCopied] = useState(false);
+  const [playbookOpen, setPlaybookOpen] = useState(false);
   const [downloadingQr, setDownloadingQr] = useState(false);
 
   // Ref for QR download
@@ -64,18 +68,11 @@ const OverviewTab = ({
     localStorage.setItem('winnbell_grow_playbook', JSON.stringify(updated));
   };
 
-  const handleCopyScanUrl = () => {
-    navigator.clipboard.writeText(scanUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    });
-  };
-
   const handleDownloadQr = async () => {
     if (!heroQrRef.current) return;
     setDownloadingQr(true);
     try {
-      await downloadNodeAsPng(heroQrRef.current, 'winnbell-scan-qr.png', 3);
+      await downloadNodeAsPng(heroQrRef.current, 'winnbell-scan-qr.png', 2);
       onToast('QR downloaded!');
     } catch (err) {
       console.error(err);
@@ -99,174 +96,454 @@ const OverviewTab = ({
   };
 
   return (
-    <Box sx={{ pb: 4 }}>
+    <Box sx={{ p: 0 }}>
       {/* ════════════════════════════════════════════════════════════════════════
-          GROWTH PLAYBOOK CTA (Attractor - first thing on the page)
+          ROW 1: BLUE CARD (QR / new customer) | GOLD CARD (guide, desktop only)
       ════════════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.05 }}
       >
-        <motion.div
-          whileHover={{ scale: 1.012 }}
-          whileTap={{ scale: 0.99 }}
-          animate={{ scale: [1, 1.012, 1] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1.35fr 1fr' },
+            gap: { xs: 1.5, md: 2.5 },
+            alignItems: 'stretch',
+            mb: { xs: 1.5, md: 2.5 },
+          }}
         >
+          {/* ── BLUE CARD: the QR / new customer welcome (kept on mobile, guide folded in) ── */}
           <Paper
             elevation={0}
-            onClick={handleScrollToPlaybook}
             sx={{
               position: 'relative',
               overflow: 'hidden',
               borderRadius: 3,
-              p: { xs: 3, md: 4 },
-              mb: 3,
-              background: '#fff',
-              border: `1px solid ${GOLD_TROPHY}55`,
-              cursor: 'pointer',
-              boxShadow: `0 6px 18px ${ALPHA_AMBER_12}`,
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: '-50%',
-                right: '-15%',
-                width: 280,
-                height: 280,
-                borderRadius: '50%',
-                background: `radial-gradient(circle, ${GOLD_TROPHY}22 0%, transparent 70%)`,
-                pointerEvents: 'none',
-              },
+              p: { xs: 2, md: 2.5 },
+              background: `linear-gradient(135deg, ${PRIMARY_DEEP}, ${PRIMARY_MAIN})`,
+              color: '#fff',
             }}
           >
-            <Stack spacing={2} alignItems='flex-start' sx={{ position: 'relative', zIndex: 1, maxWidth: 560 }}>
-              <Typography
-                sx={{
-                  fontWeight: 800,
-                  fontSize: { xs: '1.5rem', md: '1.9rem' },
-                  lineHeight: 1.2,
-                  letterSpacing: '-0.01em',
-                  background: GRADIENT_GOLD_VIVID,
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  color: 'transparent',
-                }}
-              >
-                Get the most out of Winnbell
-              </Typography>
-              <motion.div whileHover={{ x: 4 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-                <Button
-                  startIcon={<AutoAwesomeRounded />}
-                  endIcon={<ArrowForwardRounded />}
-                  sx={{
-                    background: GRADIENT_GOLD_VIVID,
-                    color: '#fff',
-                    fontWeight: 800,
-                    textTransform: 'none',
-                    borderRadius: 1.5,
-                    px: 2.25,
-                    py: 0.9,
-                    fontSize: '0.82rem',
-                    boxShadow: `0 4px 14px ${ALPHA_AMBER_25}`,
-                    '& .MuiSvgIcon-root': { fontSize: 17 },
-                    '&:hover': { background: GRADIENT_GOLD_VIVID, opacity: 0.94 },
-                  }}
-                >
-                  See the Growth playbook
-                </Button>
-              </motion.div>
-            </Stack>
-          </Paper>
-        </motion.div>
-      </motion.div>
+            <Box sx={{ position: 'absolute', top: '-30%', right: '-8%', width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_20} 0%, transparent 70%)`, pointerEvents: 'none' }} />
+            <Stack spacing={1.75} sx={{ position: 'relative', zIndex: 1 }}>
+              <Stack direction='row' spacing={2} alignItems='flex-start'>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  {/* Pill badge */}
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      bgcolor: ALPHA_WHITE_15,
+                      border: `1px solid ${ALPHA_WHITE_20}`,
+                      borderRadius: '999px',
+                      px: 1.25,
+                      py: 0.5,
+                      mb: 1.25,
+                    }}
+                  >
+                    <StarRounded sx={{ fontSize: 12, color: GOLD_TROPHY }} />
+                    <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff' }}>
+                      Your scan code
+                    </Typography>
+                  </Box>
+                  <Typography sx={{ fontSize: { xs: '1.25rem', md: '1.45rem' }, fontWeight: 800, lineHeight: 1.2 }}>
+                    One code that{' '}
+                    <Box component='span' sx={{ color: GOLD_TROPHY }}>welcomes</Box>{' '}
+                    every customer
+                  </Typography>
+                  <Typography sx={{ fontSize: { xs: '0.8rem', md: '0.85rem' }, color: ALPHA_WHITE_80, lineHeight: 1.55, mt: 1 }}>
+                    It welcomes new members with a welcome entry from your business, and takes returning ones straight to receipt submission with your location already set.
+                  </Typography>
+                </Box>
+                {effectiveLocationId && (
+                  <Box sx={{ bgcolor: '#fff', borderRadius: 1.5, p: 0.75, flexShrink: 0, display: 'flex' }}>
+                    <QRCodePlain value={scanUrl} size={isMobile ? 74 : 92} level='H' fgColor={TEXT_HEADING} />
+                  </Box>
+                )}
+                {/* Hidden high-resolution QR (with white quiet-zone) used only for the download */}
+                {effectiveLocationId && (
+                  <Box ref={heroQrRef} aria-hidden sx={{ position: 'absolute', left: -99999, top: 0, bgcolor: '#fff', p: '48px', display: 'inline-flex' }}>
+                    <QRCodePlain value={scanUrl} size={1000} level='H' fgColor={TEXT_HEADING} />
+                  </Box>
+                )}
+              </Stack>
 
-      {/* ════════════════════════════════════════════════════════════════════════
-          SECTION A: NEW CUSTOMER WELCOME (hero banner)
-      ════════════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.05 }}
-      >
-        <Paper
-          elevation={0}
-          sx={{
-            position: 'relative',
-            overflow: 'hidden',
-            borderRadius: 3,
-            p: { xs: 2.5, md: 4 },
-            background: `linear-gradient(135deg, ${PRIMARY_MAIN} 0%, #0f3a6b 100%)`,
-            color: '#fff',
-            mb: 3,
-          }}
-        >
-          <Box sx={{ position: 'absolute', top: '-45%', right: '-8%', width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, transparent 70%)', pointerEvents: 'none' }} />
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 2.5, md: 4 }} alignItems={{ md: 'center' }} sx={{ position: 'relative' }}>
-            {/* Copy + actions */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, borderRadius: '999px', px: 1.5, py: 0.5, mb: 2 }}>
-                <StarRounded sx={{ fontSize: 14, color: GOLD_TROPHY }} />
-                <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACCENT_GOLD_LIGHT }}>
-                  New customer welcome
-                </Typography>
-              </Box>
-              <Typography sx={{ fontWeight: 800, fontSize: { xs: '1.45rem', md: '1.9rem' }, lineHeight: 1.2, letterSpacing: '-0.01em' }}>
-                Customers new to Winnbell get a{' '}
-                <Box component='span' sx={{ color: GOLD_TROPHY }}>free entry</Box>{' '}
-                when they scan
-              </Typography>
-              <Typography sx={{ color: ALPHA_WHITE_80, mt: 1.25, lineHeight: 1.6, fontSize: '0.9rem', maxWidth: 520 }}>
-                A lucky start on the house. Anyone joining Winnbell for the first time at your counter scans your code, gets a free entry into this month's draw, and remembers you for it.
-              </Typography>
-              <Stack direction='row' spacing={1.5} sx={{ mt: 2.5, flexWrap: 'wrap', gap: 1 }}>
+              {/* Actions */}
+              <Stack direction='row' spacing={1}>
                 {effectiveLocationId ? (
-                  <>
-                    <Button
-                      variant='contained'
-                      startIcon={<ContentCopy sx={{ fontSize: 18 }} />}
-                      onClick={handleCopyScanUrl}
-                      sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 2, px: 2.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
-                    >
-                      {copied ? 'Copied!' : 'Copy scan link'}
-                    </Button>
-                    <Button
-                      variant='outlined'
-                      startIcon={downloadingQr ? <CircularProgress size={16} color='inherit' /> : <QrCode2 sx={{ fontSize: 18 }} />}
-                      onClick={handleDownloadQr}
-                      disabled={downloadingQr}
-                      sx={{ color: '#fff', borderColor: ALPHA_WHITE_20, fontWeight: 700, textTransform: 'none', borderRadius: 2, px: 2.5, '&:hover': { borderColor: '#fff', bgcolor: ALPHA_WHITE_15 } }}
-                    >
-                      Download QR
-                    </Button>
-                  </>
+                  <Button
+                    variant='contained'
+                    startIcon={downloadingQr ? <CircularProgress size={16} color='inherit' /> : <QrCode2 sx={{ fontSize: 16 }} />}
+                    onClick={handleDownloadQr}
+                    disabled={downloadingQr}
+                    sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                  >
+                    Download QR
+                  </Button>
                 ) : (
                   <Button
                     variant='contained'
                     onClick={onRequireLocation}
-                    sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 2, px: 2.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                    sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
                   >
                     Choose a location to start
                   </Button>
                 )}
+                {/* Mobile only: the guide action folded into this card (gold card is desktop-only) */}
+                {isMobile && (
+                  <Button
+                    variant='outlined'
+                    startIcon={<BookRounded sx={{ fontSize: 16 }} />}
+                    onClick={handleScrollToPlaybook}
+                    sx={{ color: '#fff', borderColor: ALPHA_WHITE_20, bgcolor: ALPHA_WHITE_15, fontWeight: 700, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { borderColor: '#fff', bgcolor: ALPHA_WHITE_15 } }}
+                  >
+                    See the guide
+                  </Button>
+                )}
               </Stack>
-            </Box>
-            {/* QR panel - off-screen on mobile via absolute positioning, static on desktop */}
-            {effectiveLocationId && (
-              <Box sx={{ position: { xs: 'absolute', md: 'static' }, left: { xs: -9999, md: 'auto' }, top: { xs: 0, md: 'auto' }, flexShrink: 0, textAlign: 'center' }}>
-                <Box ref={heroQrRef} sx={{ bgcolor: '#fff', borderRadius: '18px', p: 2, display: 'flex' }}>
-                  <QRCodePlain value={scanUrl} size={128} level='H' fgColor={TEXT_HEADING} />
+            </Stack>
+          </Paper>
+
+          {/* ── GOLD CARD: the guide (desktop only; folded into the blue card on mobile) ── */}
+          {!isMobile && (
+            <Paper
+              elevation={0}
+              sx={{
+                borderRadius: 3,
+                border: `1.5px solid ${GOLD_TROPHY}55`,
+                background: '#fff',
+                boxShadow: `0 2px 8px ${GOLD_TROPHY}22`,
+                p: { xs: 2, md: 2.5 },
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}
+            >
+              <Stack spacing={1.5} alignItems='flex-start'>
+                {/* Gold pill badge */}
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    bgcolor: ACCENT_GOLD_LIGHT,
+                    border: `1px solid ${AMBER_HOURGLASS}`,
+                    borderRadius: '999px',
+                    px: 1.25,
+                    py: 0.5,
+                  }}
+                >
+                  <BookRounded sx={{ fontSize: 12, color: AMBER_HOURGLASS }} />
+                  <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: AMBER_HOURGLASS }}>
+                    Grow with Winnbell
+                  </Typography>
                 </Box>
-                <Typography sx={{ color: ALPHA_WHITE_80, fontSize: '0.68rem', mt: 1 }}>No purchase necessary</Typography>
-              </Box>
-            )}
-          </Stack>
+
+                {/* Heading - gold gradient text */}
+                <Typography
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: { xs: '1.2rem', md: '1.4rem' },
+                    lineHeight: 1.2,
+                    background: GRADIENT_GOLD_VIVID,
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    color: 'transparent',
+                  }}
+                >
+                  Get the most out of Winnbell
+                </Typography>
+
+                <Typography sx={{ fontSize: '0.85rem', color: TEXT_SECONDARY, lineHeight: 1.55 }}>
+                  Simple ways to bring in more customers and get more from every campaign.
+                </Typography>
+
+                <Button
+                  variant='contained'
+                  startIcon={<BookRounded sx={{ fontSize: 16 }} />}
+                  onClick={handleScrollToPlaybook}
+                  sx={{ background: GRADIENT_GOLD_VIVID, color: '#fff', fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 2, py: 0.75, fontSize: '0.85rem', mt: 0.5, '&:hover': { background: GRADIENT_GOLD_VIVID, opacity: 0.94 } }}
+                >
+                  See the guide
+                </Button>
+              </Stack>
+            </Paper>
+          )}
+        </Box>
+      </motion.div>
+
+      {/* ════════════════════════════════════════════════════════════════════════
+          ROW 2: THE CUSTOMER LOOP (3 CARDS)
+      ════════════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <Typography
+          sx={{
+            fontSize: '0.7rem',
+            fontWeight: 800,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: TEXT_SECONDARY,
+            mb: 2,
+          }}
+        >
+          The customer loop
+        </Typography>
+
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+            gap: { xs: 1.5, md: 2 },
+            mb: { xs: 1.5, md: 2.5 },
+          }}
+        >
+          {[
+            {
+              num: 1,
+              title: 'They scan your code',
+              desc: 'New customers join Winnbell in seconds. Members land right on receipt submission, with your location already selected.',
+              shortDesc: 'Join or submit, in seconds',
+            },
+            {
+              num: 2,
+              title: 'They enter the draw',
+              desc: 'Submitting a receipt from your shop puts them in this month\'s draw, and keeps your business on their radar.',
+              shortDesc: 'Receipts become draw entries',
+            },
+            {
+              num: 3,
+              title: 'They come back',
+              desc: 'Repeat visits grow, and nearby shoppers discover you on the map.',
+              shortDesc: 'Repeat visits and map discovery',
+            },
+          ].map((item) => (
+            <Paper
+              key={item.num}
+              elevation={0}
+              sx={{
+                borderRadius: 2.5,
+                border: '1px solid',
+                borderColor: 'divider',
+                p: { xs: 1.75, md: 2 },
+                background: '#fff',
+                boxShadow: `0 1px 3px rgba(0,0,0,0.04)`,
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              {/* Top row: badge + icon */}
+              <Stack direction='row' spacing={1} alignItems='flex-start' sx={{ mb: 1.5 }}>
+                {/* Navy badge with number */}
+                <Box
+                  sx={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 1,
+                    bgcolor: TEXT_HEADING,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: '0.875rem',
+                      fontWeight: 800,
+                      color: '#fff',
+                    }}
+                  >
+                    {item.num}
+                  </Typography>
+                </Box>
+
+                {/* Icon square - tinted bg */}
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 1.25,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    ...(item.num === 1
+                      ? {
+                          bgcolor: `${PRIMARY_MAIN}14`,
+                          color: PRIMARY_MAIN,
+                        }
+                      : item.num === 2
+                      ? {
+                          bgcolor: '#2e7d3214',
+                          color: '#2e7d32',
+                        }
+                      : {
+                          bgcolor: `${ACCENT_GOLD_DARK}14`,
+                          color: ACCENT_GOLD_DARK,
+                        }),
+                  }}
+                >
+                  {item.num === 1 && <QrCode2 sx={{ fontSize: 18 }} />}
+                  {item.num === 2 && <CardGiftcardRounded sx={{ fontSize: 18 }} />}
+                  {item.num === 3 && <TrendingUpRounded sx={{ fontSize: 18 }} />}
+                </Box>
+              </Stack>
+
+              {/* Title + description */}
+              <Typography
+                sx={{
+                  fontSize: '0.9rem',
+                  fontWeight: 800,
+                  color: TEXT_HEADING,
+                  mb: 0.75,
+                }}
+              >
+                {item.title}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: '0.8rem',
+                  color: TEXT_SECONDARY,
+                  lineHeight: 1.55,
+                  display: { xs: 'none', md: 'block' },
+                }}
+              >
+                {item.desc}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: '0.8rem',
+                  color: TEXT_SECONDARY,
+                  lineHeight: 1.55,
+                  display: { xs: 'block', md: 'none' },
+                }}
+              >
+                {item.shortDesc}
+              </Typography>
+            </Paper>
+          ))}
+        </Box>
+      </motion.div>
+
+      {/* ════════════════════════════════════════════════════════════════════════
+          ROW 3: BENEFITS STRIP (HORIZONTAL)
+      ════════════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            background: '#fff',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 3,
+            p: { xs: 2, md: 2.5 },
+            mb: { xs: 1.5, md: 2.5 },
+          }}
+        >
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              gap: { xs: 2, md: 2.5 },
+            }}
+          >
+            {[
+              {
+                icon: TrendingUpRounded,
+                title: 'More repeat visits',
+                subtitle: 'A reason to come back every time.',
+              },
+              {
+                icon: LocationOnRounded,
+                title: 'New discovery',
+                subtitle: 'Found by nearby shoppers.',
+              },
+              {
+                icon: CardGiftcardRounded,
+                title: 'No discounts',
+                subtitle: 'Loyalty without cutting your prices.',
+              },
+            ].map((item, idx) => {
+              const IconComponent = item.icon;
+              return (
+                <Stack
+                  key={idx}
+                  direction={{ xs: 'column', md: 'row' }}
+                  spacing={1.75}
+                  alignItems={{ xs: 'center', md: 'flex-start' }}
+                  sx={{ textAlign: { xs: 'center', md: 'left' } }}
+                >
+                  {/* Icon tile - white rounded */}
+                  <Box
+                    sx={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 1.5,
+                      bgcolor: '#fff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      boxShadow: `0 1px 3px rgba(0,0,0,0.06)`,
+                      color:
+                        idx === 0
+                          ? PRIMARY_MAIN
+                          : idx === 1
+                          ? '#2e7d32'
+                          : '#2e7d32',
+                    }}
+                  >
+                    {idx === 2 ? (
+                      <Check sx={{ fontSize: 20 }} />
+                    ) : (
+                      <IconComponent sx={{ fontSize: 20 }} />
+                    )}
+                  </Box>
+
+                  {/* Text content */}
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      sx={{
+                        fontSize: { xs: '1.05rem', md: '1.1rem' },
+                        fontWeight: 800,
+                        color: TEXT_HEADING,
+                        lineHeight: 1.2,
+                        mb: 0.5,
+                      }}
+                    >
+                      {item.title}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        color: TEXT_SECONDARY,
+                      }}
+                    >
+                      {item.subtitle}
+                    </Typography>
+                  </Box>
+                </Stack>
+              );
+            })}
+          </Box>
         </Paper>
       </motion.div>
 
       {/* ════════════════════════════════════════════════════════════════════════
-          SECTION C: YOUR GROWTH PLAYBOOK
+          ROW 4: YOUR GROWTH PLAYBOOK (PRESERVE EXISTING)
       ════════════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -276,7 +553,14 @@ const OverviewTab = ({
         <Paper
           ref={playbookRef}
           elevation={0}
-          sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: { xs: 2.5, md: 3.5 }, mb: 3 }}
+          sx={{
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            p: { xs: 2, md: 3 },
+            mb: 3,
+            background: '#fff',
+          }}
         >
           <Stack spacing={3}>
             <Box>
@@ -315,6 +599,19 @@ const OverviewTab = ({
               )}
             </Box>
 
+            {isMobile && (
+              <Button
+                fullWidth
+                variant='outlined'
+                onClick={() => setPlaybookOpen((o) => !o)}
+                endIcon={<ExpandMoreRounded sx={{ transform: playbookOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />}
+                sx={{ textTransform: 'none', fontWeight: 700, borderColor: 'divider', color: 'primary.main', '&:hover': { borderColor: 'primary.main' } }}
+              >
+                {playbookOpen ? 'Hide steps' : 'View steps'}
+              </Button>
+            )}
+
+            <Collapse in={!isMobile || playbookOpen} timeout='auto' unmountOnExit sx={{ width: '100%' }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
               {[
                 { title: 'Put a QR at your checkout', desc: 'This is the #1 driver of scans', action: 'See QR', tabName: 'Posters' as const },
@@ -373,6 +670,7 @@ const OverviewTab = ({
                 </Box>
               ))}
             </Box>
+            </Collapse>
           </Stack>
         </Paper>
       </motion.div>
