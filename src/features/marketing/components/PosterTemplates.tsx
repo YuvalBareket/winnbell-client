@@ -1,35 +1,15 @@
 import { Box, Typography } from '@mui/material';
 import QRCode from 'react-qr-code';
+import { BRAND_ICON_BLUE } from '../../../shared/colors';
 import iconBlue  from '../assets/winnbell_icon_blue.svg';
 import iconGold  from '../assets/winnbell_icon_gold.svg';
 import iconGreen from '../assets/winnbell_icon_green.svg';
 import iconPink  from '../assets/winnbell_icon_pink.svg';
-
-// ── Poster dimensions (US Letter ratio 8.5:11 = 1:1.294) ─────────────────────
-export const POSTER_W = 320;
-export const POSTER_H = 414; // US Letter ratio 1:1.294
-
-// Thumbnail scale - a unitless decimal fraction (NOT a CSS percentage)
-export const THUMB_SCALE = 0.27;
-export const THUMB_W = Math.round(POSTER_W * THUMB_SCALE); // ~86px
-export const THUMB_H = Math.round(POSTER_H * THUMB_SCALE); // ~122px
-
-// Smaller scale for mobile (4 in a row on ~375px screens)
-export const THUMB_SCALE_MOBILE = 0.19;
-export const THUMB_W_MOBILE = Math.round(POSTER_W * THUMB_SCALE_MOBILE); // ~61px
-export const THUMB_H_MOBILE = Math.round(POSTER_H * THUMB_SCALE_MOBILE); // ~86px
-
-export const HEADLINES = [
-  "Don't miss this month's campaign",
-  'You are one scan away',
-  'Scan now. See what you unlock.',
-];
-
-export const LEGAL_TEXT =
-  'This business participates in campaigns operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Alternative free entry method available on the platform. 18+. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com';
+import { LEGAL_TEXT } from './posterConstants';
+import type { PosterProps } from './posterConstants';
 
 // ── Color palettes per template (html2canvas-safe: solid fills, no shadows/glows) ──
-const PALETTE_CLASSIC = { primary: '#195DE2', light: '#4A90E2', accent: '#EEF3FD' };
+const PALETTE_CLASSIC = { primary: BRAND_ICON_BLUE, light: '#4A90E2', accent: '#EEF3FD' };
 const PALETTE_DARK    = { primary: '#0D1B2A', frame: '#1a2f47', gold: '#F5B932' };
 const PALETTE_FRESH   = { primary: '#059669', dark: '#047857', light: '#34D399', accent: '#F0FDF7' };
 const PALETTE_PINK    = { primary: '#EC4899', dark: '#BE185D', light: '#F472B6', accent: '#FDF2F8' };
@@ -37,15 +17,13 @@ const PALETTE_PINK    = { primary: '#EC4899', dark: '#BE185D', light: '#F472B6',
 // ── Shared poster wrapper ─────────────────────────────────────────────────────
 export const PosterWrap = ({ children, bg }: { children: React.ReactNode; bg?: string }) => (
   <Box sx={{
-    width: POSTER_W, height: POSTER_H, flexShrink: 0,
+    width: 320, height: 414, flexShrink: 0,
     display: 'flex', flexDirection: 'column',
     overflow: 'hidden', bgcolor: bg ?? 'white',
   }}>
     {children}
   </Box>
 );
-
-export interface PosterProps { businessName: string; scanUrl: string; headline: string }
 
 // ── QR code with centered logo bubble (WhatsApp-style) ───────────────────────
 export const QRWithBrand = ({ value, size, fgColor, logoSrc }: {
@@ -245,11 +223,3 @@ export const PosterPink = (p: PosterProps) => (
     businessColor: PALETTE_PINK.dark, poweredColor: '#999', legalColor: '#9aa0a6',
   }} />
 );
-
-// ── Template registry ─────────────────────────────────────────────────────────
-export const TEMPLATES = [
-  { id: 'classic', label: 'Classic Blue',  Component: PosterClassic },
-  { id: 'dark',    label: 'Dark Premium',  Component: PosterDark },
-  { id: 'fresh',   label: 'Fresh Green',   Component: PosterFresh },
-  { id: 'pink',    label: 'Light Pink',    Component: PosterPink },
-];

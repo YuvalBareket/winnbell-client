@@ -2,21 +2,27 @@ import { useState } from 'react';
 import {
   Box, Typography, Paper, Stack, Chip, Button, Divider, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Alert,
-  IconButton, Container, Skeleton,
+  Container, Skeleton,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import {
   ReceiptLong, CheckCircle, Cancel, EmojiEvents,
-  Lock, LockOpen, WorkspacePremium, Edit, Add as AddIcon, Remove as RemoveIcon, SwapHoriz, CreditCard,
+  Lock, LockOpen, WorkspacePremium, Edit, SwapHoriz, CreditCard,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { isAxiosError } from 'axios';
 import { PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSkipCampaign } from '../hooks/useSubscription';
 import { updatePaymentMethodApi } from '../api/subscription.api';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
-import { TIER_KEYS, TIER_MAP } from './components/subscribeTiers';
+import { TIER_MAP } from './components/subscribeTiers';
+import PlanCards from './components/PlanCards';
+
+// Extract the server's error message from an unknown thrown value, with a fallback.
+const apiErrorMessage = (err: unknown, fallback: string): string =>
+  (isAxiosError(err) ? (err.response?.data as { error?: string } | undefined)?.error : undefined) ?? fallback;
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   Active:     { bg: 'rgba(46,125,50,0.1)',   color: '#2e7d32' },
@@ -80,8 +86,8 @@ export default function SubscriptionManagementPage() {
     try {
       const { url } = await updatePaymentMethodApi();
       window.location.href = url;
-    } catch (err: any) {
-      setPmError(err.response?.data?.error ?? 'Could not open the payment update page. Please try again.');
+    } catch (err) {
+      setPmError(apiErrorMessage(err, 'Could not open the payment update page. Please try again.'));
       setPmLoading(false);
     }
   };
@@ -420,7 +426,7 @@ export default function SubscriptionManagementPage() {
                             color='inherit'
                             size='small'
                             disabled={skippingCampaign}
-                            onClick={() => doSkipCampaign(false, { onError: (err: any) => setSkipError(err.response?.data?.error ?? 'Could not rejoin the campaign.') })}
+                            onClick={() => doSkipCampaign(false, { onError: (err: unknown) => setSkipError(apiErrorMessage(err, 'Could not rejoin the campaign.')) })}
                             sx={{ fontWeight: 700 }}
                           >
                             Rejoin
@@ -441,7 +447,7 @@ export default function SubscriptionManagementPage() {
                         size='small'
                         variant='outlined'
                         startIcon={<Edit />}
-                        onClick={() => { setNewTier(sub.pending_entries_per_location ?? sub.entries_per_location ?? 750); setEditPlanOpen(true); setUpdateError(''); }}
+                        onClick={() => { setNewTier(sub.pending_entries_per_location ?? sub.entries_per_location ?? 2500); setEditPlanOpen(true); setUpdateError(''); }}
                         disabled={sub.is_founding || sub.status === 'Cancelled'}
                         sx={{ fontWeight: 700, textTransform: 'none' }}
                       >
@@ -892,7 +898,7 @@ export default function SubscriptionManagementPage() {
                                     const pricePerLoc = qty > 0 ? Math.abs(line.amount) / qty : Math.abs(line.amount);
                                     const label = qty > 1
                                       ? `${qty} locations × $${pricePerLoc.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}/location`
-                                      : `1 location — $${Math.abs(line.amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}/month`;
+                                      : `1 location - $${Math.abs(line.amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}/month`;
                                     return (
                                       <Typography key={li} variant='caption' color='text.secondary' sx={{ display: 'block', lineHeight: 1.5 }}>
                                         {label}
@@ -919,37 +925,16 @@ export default function SubscriptionManagementPage() {
       </Container>
 
       {/* Edit Plan dialog */}
-      <Dialog open={editPlanOpen} onClose={() => setEditPlanOpen(false)} fullWidth maxWidth='xs' PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
+      <Dialog open={editPlanOpen} onClose={() => setEditPlanOpen(false)} fullWidth maxWidth='sm' PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
         <DialogTitle sx={{ fontWeight: 800 }}>Change Plan</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>
-            {/* Tier stepper */}
+            {/* Plan picker */}
             <Box>
               <Typography variant='body2' color='text.secondary' mb={2}>
-                Entries per location per month
+                Pick your plan. It takes effect with the next campaign.
               </Typography>
-              <Stack direction='row' alignItems='center' justifyContent='center' spacing={2}>
-                <IconButton
-                  size='small'
-                  disabled={TIER_KEYS.indexOf(newTier) === 0}
-                  onClick={() => setNewTier(TIER_KEYS[TIER_KEYS.indexOf(newTier) - 1])}
-                  sx={{ width: 44, height: 44, border: '1.5px solid', borderColor: 'divider', borderRadius: 2 }}
-                >
-                  <RemoveIcon />
-                </IconButton>
-                <Box sx={{ textAlign: 'center', minWidth: 140 }}>
-                  <Typography variant='h5' fontWeight={900}>{newTier.toLocaleString()}</Typography>
-                  <Typography variant='caption' color='text.secondary'>entries</Typography>
-                </Box>
-                <IconButton
-                  size='small'
-                  disabled={TIER_KEYS.indexOf(newTier) === TIER_KEYS.length - 1}
-                  onClick={() => setNewTier(TIER_KEYS[TIER_KEYS.indexOf(newTier) + 1])}
-                  sx={{ width: 44, height: 44, border: '1.5px solid', borderColor: 'divider', borderRadius: 2 }}
-                >
-                  <AddIcon />
-                </IconButton>
-              </Stack>
+              <PlanCards selectedTier={newTier} onSelect={setNewTier} disabled={updatingPlan} />
             </Box>
 
             {/* Price breakdown */}
@@ -992,7 +977,7 @@ export default function SubscriptionManagementPage() {
               setUpdateError('');
               doUpdatePlan(newTier, {
                 onSuccess: () => setEditPlanOpen(false),
-                onError: (err: any) => setUpdateError(err.response?.data?.error ?? 'Failed to update plan'),
+                onError: (err: unknown) => setUpdateError(apiErrorMessage(err, 'Failed to update plan')),
               });
             }}
             variant='contained'
@@ -1068,7 +1053,7 @@ export default function SubscriptionManagementPage() {
               setSkipError('');
               doSkipCampaign(true, {
                 onSuccess: () => setSkipConfirmOpen(false),
-                onError: (err: any) => { setSkipConfirmOpen(false); setSkipError(err.response?.data?.error ?? 'Could not skip the campaign. Please try again.'); },
+                onError: (err: unknown) => { setSkipConfirmOpen(false); setSkipError(apiErrorMessage(err, 'Could not skip the campaign. Please try again.')); },
               });
             }}
             color='warning'

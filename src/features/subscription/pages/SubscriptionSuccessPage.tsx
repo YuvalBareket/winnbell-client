@@ -4,6 +4,7 @@ import { Box, Typography, Button, Paper, Stack, CircularProgress, Chip } from '@
 import { CheckCircle, Storefront, ErrorOutline, WorkspacePremium } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import { useAppDispatch } from '../../../store/hook';
 import { setBusinessActive } from '../../../store/slices/authSlice';
 import { api } from '../../../shared/api/client';
@@ -28,7 +29,8 @@ const SubscriptionSuccessPage = () => {
     staleTime: Infinity,
   });
   // Sold-out founding purchase: the payment was already refunded in full server-side.
-  const soldOutRefunded = (verifyError as any)?.response?.data?.code === 'FOUNDING_SOLD_OUT_REFUNDED';
+  const soldOutRefunded = isAxiosError(verifyError)
+    && (verifyError.response?.data as { code?: string } | undefined)?.code === 'FOUNDING_SOLD_OUT_REFUNDED';
 
   // Fetch subscription details after verification to get founding member info
   const { data: sub } = useQuery({

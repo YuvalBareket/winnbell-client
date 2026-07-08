@@ -1,14 +1,33 @@
 import {
-  Box, Button, Typography, Stack, Divider, Skeleton,
-  IconButton, CircularProgress,
+  Box, Button, Typography, Stack, Divider,
+  CircularProgress, IconButton,
 } from '@mui/material';
-import { Remove, Add, CreditCard, WorkspacePremium, CheckCircle, CalendarMonth } from '@mui/icons-material';
-import { useState } from 'react';
+import { WorkspacePremium, ArrowBack, Check, CreditCard, LockOutlined } from '@mui/icons-material';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TIER_MAP, TIER_KEYS, MAX_TIER } from './subscribeTiers';
+import { TIER_MAP, MAX_TIER, PLAN_META } from './subscribeTiers';
+import PlanCards from './PlanCards';
 import { useFoundingAvailability } from '../../hooks/useFoundingAvailability';
 import { useSubscription } from '../../hooks/useSubscription';
-import { GRADIENT_PRIMARY } from '../../../../shared/colors';
+import {
+  PRIMARY_DEEP,
+  ALPHA_WHITE_85,
+  ALPHA_WHITE_70,
+  TEXT_TERTIARY,
+  TEXT_EMPHASIS,
+  STATUS_ACTIVATED_TEXT,
+  GOLD_SOFT,
+  GOLD_TROPHY,
+  GOLD_INK,
+  GOLD_TINT_IVORY,
+  GOLD_TINT_CREAM,
+  AMBER_HOURGLASS,
+  ALPHA_GREEN_10,
+} from '../../../../shared/colors';
+
+// Gold gradients for the founding offer (light gold to amber).
+const GOLD_GRADIENT = `linear-gradient(135deg, ${GOLD_SOFT}, ${AMBER_HOURGLASS})`;
+const GOLD_GRADIENT_BAR = `linear-gradient(90deg, ${GOLD_SOFT}, ${AMBER_HOURGLASS})`;
 
 interface Props {
   selectedTier: number;
@@ -20,6 +39,7 @@ interface Props {
   onSubscribe: () => void;
   onFoundingSubscribe: () => void;
   onSkip: () => void;
+  onBack?: () => void;
 }
 
 const FOUNDING_ENTRIES = 1000;
@@ -28,11 +48,21 @@ const FOUNDING_PRICE   = 1200;
 const SubscribeStep3 = ({
   selectedTier, setSelectedTier,
   locationCount, loading, foundingLoading, error,
-  onSubscribe, onFoundingSubscribe, onSkip,
+  onSubscribe, onFoundingSubscribe, onSkip, onBack,
 }: Props) => {
   const { data: founding } = useFoundingAvailability();
   const { data: existingSub } = useSubscription();
   const [foundingMode, setFoundingMode] = useState(false);
+  const summaryRef = useRef<HTMLDivElement>(null);
+
+  // Selecting a plan reveals the Start Campaign action (esp. on mobile, where the
+  // summary bar sits below the cards).
+  const handleSelectTier = (tier: number) => {
+    setSelectedTier(tier);
+    requestAnimationFrame(() => {
+      summaryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  };
 
   const effectiveLocations  = locationCount || 1;
   // Hide the founding offer from a business that already holds a live subscription row -
@@ -49,16 +79,30 @@ const SubscribeStep3 = ({
   const regularYearlyCost = regularMonthlyForFounding * effectiveLocations * 12;
   const foundingSaving = regularYearlyCost - FOUNDING_PRICE;
   const totalMonthly        = pricePerLocation * effectiveLocations;
-  const currentIndex        = TIER_KEYS.indexOf(selectedTier);
-  const atMin               = currentIndex === 0;
-  const atMax               = currentIndex === TIER_KEYS.length - 1;
 
   return (
-    <Box sx={{ px: { xs: 3, md: 4 }, py: { xs: 3, md: 4 } }}>
+    <Box sx={{ px: { xs: 0, md: 4 }, pt: { xs: 0.5, md: 2 }, pb: { xs: 2, md: 4 } }}>
 
-      {/* ── Founding Partner selector banner (shown when active + spots remain) ── */}
+      {/* Step header - above the founding card (regular mode only) */}
+      {!foundingMode && (
+        <>
+          <Stack direction='row' alignItems='center' spacing={0.5} sx={{ mb: 0.5 }}>
+            {onBack && (
+              <IconButton onClick={onBack} size='small' aria-label='Back' sx={{ ml: -0.75, color: TEXT_TERTIARY }}>
+                <ArrowBack sx={{ fontSize: 22 }} />
+              </IconButton>
+            )}
+            <Typography variant='h6' fontWeight={700}>Pick your plan</Typography>
+          </Stack>
+          <Typography variant='caption' color='text.secondary' display='block' mb={2}>
+            Choose the entry volume that fits your traffic. Change it anytime.
+          </Typography>
+        </>
+      )}
+
+      {/* ── Founding Partner card (shown when active + spots remain) ── */}
       <AnimatePresence>
-      {foundingAvailable && (
+      {foundingAvailable && !foundingMode && (
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -66,144 +110,142 @@ const SubscribeStep3 = ({
           transition={{ duration: 0.35, ease: 'easeOut' }}
           style={{ marginBottom: 0 }}
         >
+        <motion.div whileHover={{ scale: 1.012 }} whileTap={{ scale: 0.995 }} animate={{ scale: [1, 1.012, 1] }} transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}>
         <Box
           onClick={() => !foundingLoading && !loading && setFoundingMode(m => !m)}
           sx={{
-            mb: 4, p: 3.5, borderRadius: 2, cursor: 'pointer',
-            position: 'relative', overflow: 'hidden',
-            border: foundingMode ? '2px solid #f59e0b' : '1.5px solid rgba(245,158,11,0.4)',
-            background: foundingMode
-              ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)'
-              : 'linear-gradient(135deg, #fef3c7 0%, #fcd34d 50%, #fbbf24 100%)',
-            boxShadow: foundingMode
-              ? '0 8px 32px rgba(245,158,11,0.3), inset 0 1px 0 rgba(255,255,255,0.3)'
-              : '0 4px 16px rgba(245,158,11,0.15)',
-            transition: 'all 0.24s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            '&:hover': {
-              borderColor: '#f59e0b',
-              boxShadow: foundingMode
-                ? '0 10px 40px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.4)'
-                : '0 6px 24px rgba(245,158,11,0.25)',
-              transform: 'translateY(-2px)',
-            },
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: '-50%', right: '-50%',
-              width: '300px', height: '300px',
-              background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-              borderRadius: '50%',
-              pointerEvents: 'none',
-            },
+            mb: { xs: '26px', md: '30px' }, mt: { xs: 1.5, md: 0 },
+            p: '2px',
+            borderRadius: '18px',
+            cursor: 'pointer',
+            // Gold gradient acts as the border; the card itself is white inside.
+            background: `linear-gradient(135deg, ${GOLD_SOFT}, ${GOLD_TROPHY} 40%, ${AMBER_HOURGLASS} 75%, ${GOLD_SOFT})`,
+            boxShadow: '0 10px 30px -14px rgba(245,158,11,0.4)',
+            transition: 'box-shadow 0.24s ease',
+            '&:hover': { boxShadow: '0 14px 38px -12px rgba(245,158,11,0.5)' },
           }}
         >
-          <Stack direction='column' spacing={2.5} position='relative' zIndex={1}>
-            {/* Badge + Headline row */}
-            <Stack direction='row' alignItems='flex-start' justifyContent='space-between'>
-              <Stack direction='column' spacing={1} flex={1}>
-                {/* Badge */}
+          {/* Inner white card with soft gold glow accents */}
+          <Box
+            sx={{
+              position: 'relative',
+              overflow: 'hidden',
+              borderRadius: '16px',
+              background: `linear-gradient(120deg, #ffffff 0%, ${GOLD_TINT_IVORY} 55%, ${GOLD_TINT_CREAM} 100%)`,
+              px: { xs: 2.5, md: 3.5 }, py: { xs: 2.5, md: 3 },
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              alignItems: { xs: 'stretch', md: 'center' },
+              justifyContent: { xs: 'flex-start', md: 'space-between' },
+              gap: { xs: 2.5, md: 3 },
+            }}
+          >
+            {/* gold glow accents */}
+            <Box sx={{ position: 'absolute', top: -80, right: 40, width: 220, height: 220, borderRadius: '50%', background: 'radial-gradient(circle, rgba(251,191,36,0.28), transparent 70%)', pointerEvents: 'none' }} />
+            <Box sx={{ position: 'absolute', bottom: -80, left: -40, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(251,191,36,0.18), transparent 70%)', pointerEvents: 'none' }} />
+
+          {/* LEFT GROUP: Icon + Text */}
+          <Stack
+            direction='row'
+            alignItems='center'
+            spacing={2}
+            flex={1}
+            position='relative'
+            zIndex={1}
+            sx={{ minWidth: 0 }}
+          >
+            {/* Icon tile */}
+            <Box
+              sx={{
+                width: 56, height: 56,
+                borderRadius: '15px',
+                background: GOLD_GRADIENT,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 8px 20px -6px rgba(245,158,11,0.55)',
+              }}
+            >
+              <WorkspacePremium sx={{ color: GOLD_INK, fontSize: 32 }} />
+            </Box>
+
+            {/* Text column */}
+            <Stack spacing={1.25} flex={1} sx={{ minWidth: 0 }}>
+              {/* Pill + Spots indicator row */}
+              <Stack
+                direction='row'
+                alignItems='center'
+                spacing={1.5}
+                sx={{ flexWrap: 'wrap', gap: 1 }}
+              >
+                {/* FOUNDING PARTNER pill */}
                 <Box
                   sx={{
                     display: 'inline-flex',
-                    px: 1.5, py: 0.5,
-                    bgcolor: 'rgba(0,0,0,0.08)',
-                    borderRadius: 1,
-                    width: 'fit-content',
+                    px: '11px', py: '4px',
+                    background: `linear-gradient(135deg, ${GOLD_SOFT}, ${GOLD_TROPHY})`,
+                    borderRadius: '6px',
+                    flexShrink: 0,
                   }}
                 >
                   <Typography
-                    variant='caption'
-                    fontWeight={900}
-                    color='#7c2d12'
-                    sx={{ letterSpacing: '0.08em', fontSize: '0.7rem' }}
+                    sx={{
+                      fontSize: '11px',
+                      fontWeight: 900,
+                      letterSpacing: '0.12em',
+                      color: GOLD_INK,
+                    }}
                   >
                     FOUNDING PARTNER
                   </Typography>
                 </Box>
-
-                {/* Headline */}
-                <Typography
-                  variant='h4'
-                  fontWeight={900}
-                  sx={{
-                    color: foundingMode ? '#fff' : '#78350f',
-                    lineHeight: 1.1,
-                    textShadow: foundingMode ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-                  }}
-                >
-                  Limited Offer
-                </Typography>
               </Stack>
 
-              {/* Crown/Premium icon or Selected checkmark */}
-              {foundingMode ? (
-                <CheckCircle
-                  sx={{
-                    color: '#fff',
-                    fontSize: 28,
-                    flexShrink: 0,
-                    ml: 2,
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
-                  }}
-                />
-              ) : (
-                <WorkspacePremium
-                  sx={{
-                    color: '#92400e',
-                    fontSize: 24,
-                    flexShrink: 0,
-                    ml: 2,
-                  }}
-                />
-              )}
-            </Stack>
-
-            {/* Spots counter + CTA row */}
-            <Stack direction='row' alignItems='center' justifyContent='space-between'>
-              {/* Spots pill */}
-              {founding.remaining <= 10 && (
-                <Box
-                  sx={{
-                    px: 1.75, py: 0.75,
-                    borderRadius: 2,
-                    bgcolor: founding.remaining <= 5
-                      ? 'rgba(239,68,68,0.15)'
-                      : 'rgba(0,0,0,0.06)',
-                    border: founding.remaining <= 5
-                      ? '1px solid rgba(239,68,68,0.3)'
-                      : '1px solid rgba(0,0,0,0.1)',
-                  }}
-                >
-                  <Typography
-                    variant='caption'
-                    fontWeight={700}
-                    sx={{
-                      color: founding.remaining <= 5 ? '#dc2626' : '#92400e',
-                      fontSize: '0.8rem',
-                    }}
-                  >
-                    {founding.remaining} of {founding.cap} spots left
-                  </Typography>
-                </Box>
-              )}
-
-              {/* CTA hint */}
-              {!foundingMode && (
-                <Typography
-                  variant='caption'
-                  sx={{
-                    color: '#92400e',
-                    fontStyle: 'italic',
-                    fontWeight: 500,
-                    opacity: 0.7,
-                  }}
-                >
-                  Tap to claim your spot →
-                </Typography>
-              )}
+              {/* Headline */}
+              <Typography
+                sx={{
+                  fontSize: { xs: '1.5rem', md: '1.7rem' },
+                  fontWeight: 900,
+                  letterSpacing: '-0.02em',
+                  color: GOLD_INK,
+                  lineHeight: 1.1,
+                }}
+              >
+                Limited Offer
+              </Typography>
             </Stack>
           </Stack>
+
+          {/* Claim - right side, same row as the text */}
+          <Box
+            sx={{
+              position: 'relative',
+              zIndex: 1,
+              flexShrink: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0.75,
+              alignSelf: { xs: 'stretch', md: 'center' },
+              width: { xs: '100%', md: 'auto' },
+              background: GOLD_GRADIENT,
+              color: GOLD_INK,
+              fontWeight: 900,
+              fontSize: '0.9rem',
+              px: 2.5,
+              py: 1.25,
+              borderRadius: '12px',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 8px 20px -8px rgba(245,158,11,0.5)',
+            }}
+          >
+            {foundingMode ? 'Choose a plan' : 'Claim your spot'}
+          </Box>
+          </Box>
+
         </Box>
+        </motion.div>
         </motion.div>
       )}
       </AnimatePresence>
@@ -211,224 +253,287 @@ const SubscribeStep3 = ({
       {/* ── FOUNDING MODE: details ── */}
       {foundingMode ? (
         <>
-          <Typography variant='h6' fontWeight={700} mb={0.5}>Entries per location</Typography>
-          <Typography variant='caption' color='text.secondary' display='block' mb={3}>per month</Typography>
-
-          <Stack direction='row' alignItems='center' justifyContent='center' spacing={2} sx={{ mb: 4 }}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant='h4' fontWeight={900}>
-                {FOUNDING_ENTRIES.toLocaleString()} entries
-              </Typography>
-              <Typography variant='body2' color='text.secondary' mt={1}>
-                per location / month
-              </Typography>
-            </Box>
+          {/* ── FOUNDING MODE: confirm + order summary (two-column) ── */}
+          <Stack direction='row' alignItems='center' spacing={0.5}>
+            <IconButton
+              onClick={() => !foundingLoading && setFoundingMode(false)}
+              size='small'
+              aria-label='Back to plans'
+              sx={{ ml: -0.75, color: TEXT_TERTIARY }}
+            >
+              <ArrowBack sx={{ fontSize: 22 }} />
+            </IconButton>
+            <Typography sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 800, letterSpacing: '-0.02em', color: PRIMARY_DEEP }}>
+              Confirm your Founding Partner plan
+            </Typography>
           </Stack>
-
-          <Divider sx={{ mb: 3 }} />
-
-          <Box sx={{ bgcolor: 'rgba(245,158,11,0.06)', borderRadius: 2.5, p: 3, mb: 3, border: '1px solid rgba(245,158,11,0.2)' }}>
-            <Stack spacing={2}>
-              <Stack direction='row' justifyContent='space-between'>
-                <Typography variant='body2' color='text.secondary'>Entries per location</Typography>
-                <Typography variant='body2' fontWeight={700}>{FOUNDING_ENTRIES.toLocaleString()} / mo</Typography>
-              </Stack>
-              <Stack direction='row' justifyContent='space-between'>
-                <Typography variant='body2' color='text.secondary'>Your locations</Typography>
-                {locationCount === null
-                  ? <Skeleton width={40} height={20} />
-                  : <Typography variant='body2' fontWeight={700}>{effectiveLocations}</Typography>}
-              </Stack>
-              <Stack direction='row' justifyContent='space-between' spacing={2}>
-                <Typography variant='body2' color='text.secondary' sx={{ flexShrink: 0 }}>Duration</Typography>
-                <Typography variant='body2' fontWeight={700} sx={{ textAlign: 'right' }}>Every campaign for 12 months</Typography>
-              </Stack>
-              <Divider />
-              <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                <Typography variant='body2' fontWeight={700}>One-time total</Typography>
-                <Typography variant='h5' fontWeight={900}
-                  sx={{ background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  ${FOUNDING_PRICE.toLocaleString()}
-                </Typography>
-              </Stack>
-              {foundingSaving > 0 && (
-                <Stack direction='row' justifyContent='space-between' alignItems='center'
-                  sx={{ bgcolor: 'rgba(22,163,74,0.08)', borderRadius: 2, px: 1.5, py: 1, border: '1px solid rgba(22,163,74,0.2)' }}>
-                  <Typography variant='caption' fontWeight={700} color='#15803d'>You save</Typography>
-                  <Typography variant='caption' fontWeight={900} color='#15803d'>
-                    ${foundingSaving.toLocaleString()} vs regular plan
-                  </Typography>
-                </Stack>
-              )}
-            </Stack>
-          </Box>
-
-          {error && <Typography variant='body2' color='error' textAlign='center' mb={2}>{error}</Typography>}
-
-          <Button
-            fullWidth variant='contained' size='large'
-            startIcon={foundingLoading ? undefined : <WorkspacePremium sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }} />}
-            onClick={onFoundingSubscribe}
-            disabled={foundingLoading || loading}
-            sx={{
-              py: { xs: 1.4, sm: 1.875 },
-              px: { xs: 1.5, sm: 2 },
-              fontWeight: 800,
-              fontSize: { xs: '0.82rem', sm: '1rem' },
-              textTransform: 'none',
-              whiteSpace: 'nowrap',
-              bgcolor: '#f59e0b', '&:hover': { bgcolor: '#d97706' },
-              boxShadow: '0 4px 14px rgba(245,158,11,0.4)',
-              '&:hover .MuiButton-root': { boxShadow: '0 6px 20px rgba(245,158,11,0.5)' },
-            }}
-          >
-            {foundingLoading
-              ? <CircularProgress size={24} color='inherit' />
-              : 'Claim Your Founding Spot'}
-          </Button>
-
-          <Typography variant='caption' color='text.disabled' textAlign='center' display='block' mt={1.5}>
-            You'll be redirected to Stripe's secure checkout. One-time payment, no recurring charges.
+          <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5, mb: 3 }}>
+            One-time payment for a full year of campaigns. Review and claim your spot.
           </Typography>
 
-          <Button fullWidth variant='text' size='small' onClick={() => setFoundingMode(false)}
-            sx={{ mt: 1, color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
-            Switch to regular monthly plan
-          </Button>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 360px' }, gap: { xs: 2, md: 3 }, alignItems: 'start' }}>
+
+            {/* LEFT: what's included (desktop only) */}
+            <Box sx={{ display: { xs: 'none', md: 'block' }, borderRadius: '18px', overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: '0 8px 22px -14px rgba(15,39,71,0.18)', background: '#fff' }}>
+              <Box sx={{ height: 5, background: GOLD_GRADIENT_BAR }} />
+              <Box sx={{ p: { xs: 2.5, md: 3.5 } }}>
+                <Stack direction='row' alignItems='center' spacing={2}>
+                  <Box sx={{ width: 52, height: 52, borderRadius: '14px', background: GOLD_GRADIENT, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 8px 18px -8px rgba(245,158,11,0.6)' }}>
+                    <WorkspacePremium sx={{ color: GOLD_INK, fontSize: 28 }} />
+                  </Box>
+                  <Box>
+                    <Stack direction='row' alignItems='center' spacing={1}>
+                      <Typography sx={{ fontSize: 16, fontWeight: 900, color: PRIMARY_DEEP }}>Founding Partner</Typography>
+                      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, bgcolor: ALPHA_GREEN_10, borderRadius: '999px', px: 1, py: '3px' }}>
+                        <Check sx={{ fontSize: 13, color: STATUS_ACTIVATED_TEXT }} />
+                        <Typography sx={{ fontSize: 11, fontWeight: 800, color: STATUS_ACTIVATED_TEXT }}>Selected</Typography>
+                      </Box>
+                    </Stack>
+                    <Typography variant='caption' color='text.secondary'>Locked-in founding rate for a full year</Typography>
+                  </Box>
+                </Stack>
+
+                <Divider sx={{ my: 2.5 }} />
+
+                <Typography sx={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary', mb: 1.5 }}>
+                  What&apos;s included
+                </Typography>
+                <Stack spacing={1.5}>
+                  {[
+                    <><b style={{ color: PRIMARY_DEEP }}>{FOUNDING_ENTRIES.toLocaleString()} entries</b> per location in every campaign</>,
+                    <>All campaigns for a full <b style={{ color: PRIMARY_DEEP }}>12 months</b></>,
+                    <><b style={{ color: PRIMARY_DEEP }}>One-time payment</b>. No monthly bill for 12 months</>,
+                    <>Your locations shown on the <b style={{ color: PRIMARY_DEEP }}>Winnbell map</b></>,
+                  ].map((node, i) => (
+                    <Stack key={i} direction='row' spacing={1.25} alignItems='flex-start'>
+                      <Check sx={{ fontSize: 18, color: AMBER_HOURGLASS, flexShrink: 0, mt: '1px' }} />
+                      <Typography sx={{ fontSize: 13.5, color: TEXT_EMPHASIS, lineHeight: 1.45 }}>{node}</Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Box>
+            </Box>
+
+            {/* RIGHT: order summary */}
+            <Box sx={{ borderRadius: '18px', overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: '0 8px 22px -14px rgba(15,39,71,0.18)', background: '#fff', position: { md: 'sticky' }, top: 20 }}>
+              <Box sx={{ height: 5, background: GOLD_GRADIENT_BAR }} />
+              <Box sx={{ p: { xs: 2.5, md: 3 } }}>
+                <Typography sx={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary', mb: 2 }}>
+                  Order summary
+                </Typography>
+
+                {foundingSaving > 0 && (
+                  <>
+                    <Stack direction='row' justifyContent='space-between' sx={{ mb: 1.5 }}>
+                      <Typography variant='body2' color='text.secondary' fontWeight={600}>Regular plan &middot; 12 mo</Typography>
+                      <Typography variant='body2' color='text.secondary' fontWeight={600} sx={{ textDecoration: 'line-through' }}>${regularYearlyCost.toLocaleString()}</Typography>
+                    </Stack>
+                    <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
+                      <Typography variant='body2' color='text.secondary' fontWeight={600}>Founding discount</Typography>
+                      <Typography variant='body2' fontWeight={800} color={STATUS_ACTIVATED_TEXT}>-${foundingSaving.toLocaleString()}</Typography>
+                    </Stack>
+                    <Divider sx={{ mb: 2 }} />
+                  </>
+                )}
+
+                <Stack direction='row' justifyContent='space-between' alignItems='flex-end' sx={{ mb: 0.5 }}>
+                  <Typography variant='body2' color='text.secondary' fontWeight={700}>Total today</Typography>
+                  <Typography sx={{ fontSize: 32, fontWeight: 900, letterSpacing: '-0.02em', color: PRIMARY_DEEP, lineHeight: 1 }}>${FOUNDING_PRICE.toLocaleString()}</Typography>
+                </Stack>
+                <Typography sx={{ textAlign: 'right', fontSize: 11.5, color: 'text.secondary', fontWeight: 600, mb: 2.5 }}>
+                  then $0 / month for 12 months
+                </Typography>
+
+                {error && <Typography variant='body2' color='error' textAlign='center' mb={1.5}>{error}</Typography>}
+
+                <Button
+                  fullWidth
+                  onClick={onFoundingSubscribe}
+                  disabled={foundingLoading || loading}
+                  startIcon={foundingLoading ? undefined : <CreditCard sx={{ fontSize: 18 }} />}
+                  sx={{
+                    background: GOLD_GRADIENT,
+                    color: GOLD_INK, fontWeight: 900, fontSize: 15, borderRadius: '13px',
+                    py: '13px', textTransform: 'none',
+                    boxShadow: '0 12px 26px -12px rgba(245,158,11,0.7)',
+                    '&:hover': { background: GOLD_GRADIENT, boxShadow: '0 16px 30px -10px rgba(245,158,11,0.75)' },
+                    '&.Mui-disabled': { opacity: 0.7, color: GOLD_INK },
+                  }}
+                >
+                  {foundingLoading ? <CircularProgress size={22} sx={{ color: GOLD_INK }} /> : 'Claim Founding Spot'}
+                </Button>
+
+                <Stack direction='row' alignItems='center' justifyContent='center' spacing={0.75} sx={{ mt: 1.5 }}>
+                  <LockOutlined sx={{ fontSize: 13, color: 'text.secondary' }} />
+                  <Typography variant='caption' color='text.secondary'>Secure one-time payment</Typography>
+                </Stack>
+
+                <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mt: 1.25, lineHeight: 1.5 }}>
+                  Charged once today. Your locations join the next campaign, since the current one is already open.
+                </Typography>
+                <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mt: 0.75 }}>
+                  Available for businesses with up to 3 locations.
+                </Typography>
+
+                <Box sx={{ textAlign: 'center', mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                  <Typography variant='caption' color='text.secondary'>
+                    Prefer monthly?{' '}
+                    <Box component='span' onClick={() => !foundingLoading && setFoundingMode(false)} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                      Back to plans
+                    </Box>
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         </>
       ) : (
         <>
-          {/* ── REGULAR MODE: tier stepper + price breakdown ── */}
-          <Typography variant='h6' fontWeight={700} mb={0.5}>How many entries per location?</Typography>
-          <Typography variant='caption' color='text.secondary' display='block' mb={3}>per month</Typography>
+          {/* ── REGULAR MODE: 3-plan picker + dark summary bar ── */}
+          <Box sx={{ mb: 3 }}>
+            <PlanCards selectedTier={selectedTier} onSelect={handleSelectTier} disabled={loading || foundingLoading} />
+          </Box>
 
-          <Stack direction='row' alignItems='center' justifyContent='center' spacing={2} sx={{ mb: 4 }}>
-            <IconButton onClick={() => setSelectedTier(TIER_KEYS[currentIndex - 1])} disabled={atMin}
-              sx={{ width: 52, height: 52, border: '2px solid', borderColor: 'divider', borderRadius: 2, opacity: atMin ? 0.4 : 1 }}>
-              <Remove />
-            </IconButton>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant='h4' fontWeight={900} sx={{ minWidth: { xs: 160, md: 200 } }}>
-                {selectedTier.toLocaleString()} entries
-              </Typography>
-              <Typography variant='body2' color='text.secondary' mt={1}>
-                ${pricePerLocation.toLocaleString()} per location / month
-              </Typography>
-            </Box>
-            <IconButton onClick={() => setSelectedTier(TIER_KEYS[currentIndex + 1])} disabled={atMax}
-              sx={{ width: 52, height: 52, border: '2px solid', borderColor: 'divider', borderRadius: 2, opacity: atMax ? 0.4 : 1 }}>
-              <Add />
-            </IconButton>
-          </Stack>
+          {/* ── Dark summary bar ── */}
+          <Box
+            ref={summaryRef}
+            sx={{
+              background: PRIMARY_DEEP,
+              borderRadius: '16px',
+              padding: '18px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '20px',
+              flexWrap: 'wrap',
+              mb: 1.75,
+            }}
+          >
+            {/* Left: plan summary */}
+            <Typography
+              sx={{
+                color: ALPHA_WHITE_85,
+                fontSize: '13.5px',
+                fontWeight: 600,
+                lineHeight: 1.5,
+              }}
+            >
+              {PLAN_META[selectedTier]?.name ?? ''}
+              {' · '}
+              {selectedTier.toLocaleString()} entries
+              {' · '}
+              <Box component='span' sx={{ color: '#fff' }}>
+                {locationCount === null ? '?' : effectiveLocations} location{effectiveLocations !== 1 ? 's' : ''}
+              </Box>
+              {' · '}
+              <Box component='span' sx={{ color: ALPHA_WHITE_70 }}>
+                billed monthly
+              </Box>
+            </Typography>
 
-          <Divider sx={{ mb: 3 }} />
-
-          <Box sx={{ bgcolor: 'rgba(2,146,183,0.06)', borderRadius: 2.5, p: 3, mb: 3 }}>
-            <Stack spacing={2}>
-              <Stack direction='row' justifyContent='space-between'>
-                <Typography variant='body2' color='text.secondary'>Entries per location</Typography>
-                <Typography variant='body2' fontWeight={700}>{selectedTier.toLocaleString()} / mo</Typography>
-              </Stack>
-              <Stack direction='row' justifyContent='space-between'>
-                <Typography variant='body2' color='text.secondary'>Your locations</Typography>
-                {locationCount === null
-                  ? <Skeleton width={40} height={20} />
-                  : <Typography variant='body2' fontWeight={700}>{effectiveLocations}</Typography>}
-              </Stack>
-              <Stack direction='row' justifyContent='space-between'>
-                <Typography variant='body2' color='text.secondary'>Price per location</Typography>
-                <Typography variant='body2' fontWeight={700}>${pricePerLocation.toLocaleString()}</Typography>
-              </Stack>
-              <Divider />
-              <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                <Typography variant='body2' fontWeight={700}>Total per month</Typography>
-                <Typography variant='h5' fontWeight={900}
-                  sx={{ background: GRADIENT_PRIMARY, backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {/* Right: total + button */}
+            <Stack direction='row' alignItems='center' gap={2.5}>
+              {/* Total label + price */}
+              <Box sx={{ textAlign: 'right' }}>
+                <Typography
+                  sx={{
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: ALPHA_WHITE_70,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  Total / month
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: '26px',
+                    fontWeight: 900,
+                    letterSpacing: '-0.02em',
+                    color: '#fff',
+                  }}
+                >
                   ${totalMonthly.toFixed(0)}
                 </Typography>
-              </Stack>
+              </Box>
+
+              {/* CTA button */}
+              <Button
+                variant='contained'
+                onClick={onSubscribe}
+                disabled={loading || foundingLoading}
+                sx={{
+                  background: '#fff',
+                  color: PRIMARY_DEEP,
+                  fontSize: '15px',
+                  fontWeight: 800,
+                  borderRadius: '12px',
+                  padding: '14px 24px',
+                  textTransform: 'none',
+                  whiteSpace: 'nowrap',
+                  '&:hover': {
+                    background: '#f5f5f5',
+                  },
+                  '&:disabled': {
+                    background: '#ccc',
+                    color: '#666',
+                  },
+                }}
+              >
+                {loading ? <CircularProgress size={20} color='inherit' sx={{ mr: 1 }} /> : null}
+                Start Campaign
+              </Button>
             </Stack>
           </Box>
 
-          {atMax && (
-            <Typography variant='body2' textAlign='center' sx={{ mb: 3, color: 'text.secondary', lineHeight: 1.6 }}>
-              Need more than {MAX_TIER.toLocaleString()} entries?{' '}
-              <Typography component='span' variant='body2' sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}
-                onClick={() => { window.location.href = 'mailto:support@winnbell.com'; }}>
-                Contact us
-              </Typography>{' '}for a custom plan.
+          {/* ── Footnote lines ── */}
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            alignItems='center'
+            justifyContent='center'
+            gap={2.25}
+            sx={{ flexWrap: 'wrap', mb: 3 }}
+          >
+            <Typography
+              sx={{
+                fontSize: '11.5px',
+                color: TEXT_TERTIARY,
+                fontWeight: 500,
+              }}
+            >
+              Billed on the 24th each month · you join the next campaign, since this one is already open
             </Typography>
-          )}
+            <Typography
+              sx={{
+                fontSize: '11.5px',
+                color: TEXT_TERTIARY,
+                fontWeight: 500,
+              }}
+            >
+              Need more than {MAX_TIER.toLocaleString()} entries?{' '}
+              <Box
+                component='span'
+                onClick={() => { window.location.href = 'mailto:support@winnbell.com'; }}
+                sx={{
+                  color: 'primary.main',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                Contact us
+              </Box>
+            </Typography>
+          </Stack>
 
           {error && <Typography variant='body2' color='error' textAlign='center' mb={2}>{error}</Typography>}
 
-          {/* ── Campaign timing callout ── */}
-          <AnimatePresence>
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.3, delay: 0.15 }}
-              style={{ marginBottom: 20 }}
-            >
-              <Box
-                sx={{
-                  borderRadius: 2,
-                  border: '1px solid rgba(2,146,183,0.2)',
-                  bgcolor: 'rgba(2,146,183,0.04)',
-                  p: 2.5,
-                  display: 'flex',
-                  gap: 2,
-                  alignItems: 'flex-start',
-                }}
-              >
-                <CalendarMonth
-                  sx={{
-                    fontSize: 20,
-                    color: 'primary.main',
-                    flexShrink: 0,
-                    mt: 0.25,
-                  }}
-                />
-                <Stack spacing={0.5} flex={1}>
-                  <Typography variant='subtitle2' fontWeight={700} color='text.primary'>
-                    Campaign timing
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5 }}>
-                    This month's campaign is already running, so you'll be in the next one. Sign up now and you'll be all set the moment it opens.
-                  </Typography>
-                  <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.4, mt: 1.5, display: 'block' }}>
-                    We bill on the 24th of each month, and each payment covers the next month's campaign.
-                    Sign up before the 24th and your first charge is on the 24th. Sign up after it and we charge your first campaign right away, so you still make the next one.
-                  </Typography>
-                </Stack>
-              </Box>
-            </motion.div>
-          </AnimatePresence>
-
-          <Button fullWidth variant='contained' size='large'
-            startIcon={loading ? undefined : <CreditCard sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }} />}
-            onClick={onSubscribe}
-            disabled={loading || foundingLoading}
-            sx={{
-              py: { xs: 1.4, sm: 1.875 },
-              px: { xs: 1.5, sm: 2 },
-              fontWeight: 800,
-              fontSize: { xs: '0.82rem', sm: '1rem' },
-              textTransform: 'none',
-              whiteSpace: 'nowrap',
-              boxShadow: '0 4px 14px rgba(2,146,183,0.35)',
-              '&:hover': { boxShadow: '0 6px 20px rgba(2,146,183,0.45)' },
-            }}>
-            {loading ? <CircularProgress size={24} color='inherit' /> : 'Start Campaign'}
-          </Button>
-
-          <Typography variant='caption' color='text.disabled' textAlign='center' display='block' mt={1.5}>
-            You'll be redirected to Stripe's secure checkout. You'll be enrolled in the next monthly campaign on payment.
-          </Typography>
-
           <Button fullWidth variant='text' size='small' onClick={onSkip}
-            sx={{ mt: 1.5, color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
+            sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
             I'll do it later
           </Button>
         </>

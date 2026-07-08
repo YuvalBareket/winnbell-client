@@ -9,7 +9,7 @@ import {
 import html2canvas from 'html2canvas';
 import QRCodePlain from 'react-qr-code';
 import {
-  PRIMARY_MAIN, BRAND_ICON_BLUE,
+  PRIMARY_MAIN, BRAND_ICON_BLUE, BRAND_NAVY,
 } from '../../../shared/colors';
 import { svgToPngDataUrl } from '../utils/capture';
 import iconMain from '../assets/winnbell_icon_main.svg';
@@ -19,7 +19,7 @@ import iconBrand from '../assets/winnbell_icon_brand.svg';
 // Sticker color themes
 const STICKER_THEMES = [
   { color: PRIMARY_MAIN, icon: iconMain },
-  { color: '#0f3a6b', icon: iconNavy },
+  { color: BRAND_NAVY, icon: iconNavy },
   { color: BRAND_ICON_BLUE, icon: iconBrand },
 ];
 
@@ -32,7 +32,7 @@ interface ScriptsTabProps {
 
 const SCRIPTS = [
   { label: 'At checkout', text: 'By the way, we\'re on Winnbell. Scan this code, submit your receipt, and you\'re in this month\'s prize draw. It takes seconds.' },
-  { label: 'New to Winnbell', text: 'Have you tried Winnbell? Join through our code and you\'ll start off with a welcome entry from us into this month\'s draw.' },
+  { label: 'New to Winnbell', text: 'Have you tried Winnbell? Join through our code and you\'re in this month\'s draw.' },
   { label: 'Regulars', text: 'Don\'t forget to submit your receipt for this month\'s Winnbell draw. Scan our code and it opens ready to go.' },
   { label: 'Already a member', text: 'Already on Winnbell? Our code is the fastest way in. It takes you straight to receipt submission with our store already selected.' },
 ];

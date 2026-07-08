@@ -17,8 +17,39 @@ import {
   POSTER_W, POSTER_H,
   THUMB_SCALE, THUMB_W, THUMB_H,
   THUMB_SCALE_MOBILE, THUMB_W_MOBILE, THUMB_H_MOBILE,
-  HEADLINES, TEMPLATES,
+  HEADLINES,
+} from './posterConstants';
+import {
+  PosterClassic, PosterDark, PosterFresh, PosterPink,
 } from './PosterTemplates';
+
+const TEMPLATES = [
+  { id: 'classic', label: 'Classic Blue',  Component: PosterClassic },
+  { id: 'dark',    label: 'Dark Premium',  Component: PosterDark },
+  { id: 'fresh',   label: 'Fresh Green',   Component: PosterFresh },
+  { id: 'pink',    label: 'Light Pink',    Component: PosterPink },
+];
+
+// Convert an <img src="...svg"> element to a PNG data URL at 2x rendered size.
+// Uses an offscreen canvas so the raster is sharp on retina and html2canvas picks it up.
+function svgImgToPngDataUrl(img: HTMLImageElement, scale = 2): Promise<string> {
+  const w = img.clientWidth || img.naturalWidth || 100;
+  const h = img.clientHeight || img.naturalHeight || 30;
+  return new Promise((resolve, reject) => {
+    const tmp = new Image();
+    tmp.crossOrigin = 'anonymous';
+    tmp.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = w * scale;
+      canvas.height = h * scale;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    tmp.onerror = reject;
+    tmp.src = img.src;
+  });
+}
 
 interface PostersTabProps {
   businessName: string;
@@ -84,6 +115,20 @@ const PostersTab = ({
         swaps.push({ svg, img });
       }
 
+      // 1b. Convert <img src="...svg"> elements (e.g. wordmark) to PNG data URLs so
+      //     html2canvas does not leave them blank in the captured output.
+      const svgImgEls = Array.from(
+        posterRef.current.querySelectorAll<HTMLImageElement>('img[src$=".svg"]'),
+      );
+      for (const imgEl of svgImgEls) {
+        const originalSrc = imgEl.src;
+        const pngUrl = await svgImgToPngDataUrl(imgEl, 2);
+        imgEl.src = pngUrl;
+        // Wait one microtask so the browser applies the new src before capture.
+        await new Promise<void>((r) => { const t = new Image(); t.onload = () => r(); t.onerror = () => r(); t.src = pngUrl; });
+        logoSwaps.push({ img: imgEl, originalSrc });
+      }
+
       // 2. Capture poster canvas - use explicit pixel dimensions to avoid shadow bleed
       const canvas = await html2canvas(posterRef.current, {
         scale: 3,
@@ -126,10 +171,13 @@ const PostersTab = ({
   };
 
   // ── Print: render poster to a new window and trigger browser print dialog ──
+  // handlePrint also rasterizes via html2canvas, so SVG img elements need the
+  // same swap treatment as handleDownload to avoid blank wordmarks in the output.
   const handlePrint = async () => {
     if (!posterRef.current) return;
     setDownloading(true);
     const swaps: Array<{ svg: SVGSVGElement; img: HTMLImageElement }> = [];
+    const logoSwaps: Array<{ img: HTMLImageElement; originalSrc: string }> = [];
 
     const scaleWrapper = posterRef.current.parentElement;
     const savedTransform = scaleWrapper?.style.transform ?? '';
@@ -153,6 +201,17 @@ const PostersTab = ({
         swaps.push({ svg, img });
       }
 
+      const svgImgEls = Array.from(
+        posterRef.current.querySelectorAll<HTMLImageElement>('img[src$=".svg"]'),
+      );
+      for (const imgEl of svgImgEls) {
+        const originalSrc = imgEl.src;
+        const pngUrl = await svgImgToPngDataUrl(imgEl, 2);
+        imgEl.src = pngUrl;
+        await new Promise<void>((r) => { const t = new Image(); t.onload = () => r(); t.onerror = () => r(); t.src = pngUrl; });
+        logoSwaps.push({ img: imgEl, originalSrc });
+      }
+
       const canvas = await html2canvas(posterRef.current, {
         scale: 3,
         width: POSTER_W,
@@ -164,6 +223,7 @@ const PostersTab = ({
       });
 
       swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
+      logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
 
       const imgData = canvas.toDataURL('image/png', 1.0);
       const printWin = window.open('', '_blank');
@@ -173,6 +233,7 @@ const PostersTab = ({
       }
     } catch (err) {
       swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
+      logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
       console.error(err);
       onToast('Print failed. Please try again.');
     } finally {

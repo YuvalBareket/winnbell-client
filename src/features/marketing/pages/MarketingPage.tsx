@@ -48,11 +48,9 @@ const MarketingPage = () => {
     ? currentUser?.location_id ?? null
     : (selectedLocationId || (locations.length === 1 ? locations[0].id : null));
 
-  const baseScanUrl = effectiveLocationId
+  const scanUrl = effectiveLocationId
     ? `${window.location.origin}/scan?l=${effectiveLocationId}`
     : window.location.origin;
-
-  const scanUrl = baseScanUrl;
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   const handleCopyScanUrl = () => {

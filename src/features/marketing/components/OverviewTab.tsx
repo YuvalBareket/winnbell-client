@@ -11,9 +11,10 @@ import {
 import QRCodePlain from 'react-qr-code';
 import {
   PRIMARY_MAIN, PRIMARY_DEEP,
-  GOLD_TROPHY, AMBER_HOURGLASS, ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_80,
+  GOLD_TROPHY, AMBER_HOURGLASS, ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_80, ALPHA_WHITE_90,
   TEXT_HEADING, TEXT_SECONDARY,
   GRADIENT_GOLD_VIVID,
+  METRIC_GOOD,
 } from '../../../shared/colors';
 import { downloadNodeAsPng } from '../utils/capture';
 import { StarRounded } from '@mui/icons-material';
@@ -179,7 +180,7 @@ const OverviewTab = ({
                     startIcon={downloadingQr ? <CircularProgress size={16} color='inherit' /> : <QrCode2 sx={{ fontSize: 16 }} />}
                     onClick={handleDownloadQr}
                     disabled={downloadingQr}
-                    sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                    sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { bgcolor: ALPHA_WHITE_90 } }}
                   >
                     Download QR
                   </Button>
@@ -187,7 +188,7 @@ const OverviewTab = ({
                   <Button
                     variant='contained'
                     onClick={onRequireLocation}
-                    sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                    sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { bgcolor: ALPHA_WHITE_90 } }}
                   >
                     Choose a location to start
                   </Button>
@@ -382,8 +383,8 @@ const OverviewTab = ({
                         }
                       : item.num === 2
                       ? {
-                          bgcolor: '#2e7d3214',
-                          color: '#2e7d32',
+                          bgcolor: `${METRIC_GOOD}14`,
+                          color: METRIC_GOOD,
                         }
                       : {
                           bgcolor: `${ACCENT_GOLD_DARK}14`,
@@ -501,8 +502,8 @@ const OverviewTab = ({
                         idx === 0
                           ? PRIMARY_MAIN
                           : idx === 1
-                          ? '#2e7d32'
-                          : '#2e7d32',
+                          ? METRIC_GOOD
+                          : METRIC_GOOD,
                     }}
                   >
                     {idx === 2 ? (

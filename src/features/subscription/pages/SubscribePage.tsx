@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import {
-  Box, Typography, Paper, Stack,
-  IconButton, Container,
+  Box, Container,
 } from '@mui/material';
-import {
-  ArrowBack,
-} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { isAxiosError } from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import { api } from '../../../shared/api/client';
@@ -21,22 +18,6 @@ import SubscribeStep1 from './components/SubscribeStep1';
 import SubscribeStep2 from './components/SubscribeStep2';
 import SubscribeStep3 from './components/SubscribeStep3';
 
-// ── Step headers ──────────────────────────────────────────────────────────────
-
-const STEP_COPY = [
-  {
-    headline: 'Start your campaign',
-    sub: 'Set a minimum receipt amount for entry eligibility, or accept any receipt amount from your store.',
-  },
-  {
-    headline: 'Make it crystal clear',
-    sub: 'Upload a receipt from your store and mark exactly where customers find the number they need to enter.',
-  },
-  {
-    headline: 'Pick your plan',
-    sub: 'Choose the entry volume that fits your traffic. You can scale up anytime.',
-  },
-];
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
@@ -93,7 +74,7 @@ const SubscribePage = () => {
   };
 
   // ── STEP 3 ─────────────────────────────────────────────────────────────────
-  const [selectedTier, setSelectedTier] = useState(500);
+  const [selectedTier, setSelectedTier] = useState(2500); // Growth (most popular)
   const [loading, setLoading] = useState(false);
   const [foundingLoading, setFoundingLoading] = useState(false);
   const [error, setError] = useState('');
@@ -107,8 +88,8 @@ const SubscribePage = () => {
       });
       if (!isStripeCheckoutUrl(data.url)) throw new Error('Invalid checkout URL');
       window.location.href = data.url;
-    } catch (err: any) {
-      const msg = err.response?.data?.error ?? '';
+    } catch (err) {
+      const msg = isAxiosError(err) ? err.response?.data?.error ?? '' : '';
       setError(
         msg.includes('already has an active subscription')
           ? 'Your business is already enrolled in a campaign. Go to Campaign Management to update settings.'
@@ -127,16 +108,14 @@ const SubscribePage = () => {
       const { data } = await api.post<{ url: string }>('/business/subscription/checkout', { founding: true });
       if (!isStripeCheckoutUrl(data.url)) throw new Error('Invalid checkout URL');
       window.location.href = data.url;
-    } catch (err: any) {
-      const msg = err.response?.data?.error ?? '';
+    } catch (err) {
+      const msg = isAxiosError(err) ? err.response?.data?.error ?? '' : '';
       setError(msg.length > 0 ? msg : 'Something went wrong. Please try again.');
       setFoundingLoading(false);
     }
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
-  const copy = STEP_COPY[step - 1];
-
   return (
     <Box
       sx={{
@@ -147,59 +126,18 @@ const SubscribePage = () => {
       <AppPageHero
         title='Grow Your Business'
         subtitle='A simple monthly subscription that brings customers back'
+        actions={
+          <Box sx={{ display: { xs: 'none', md: 'block' }, width: '100%', minWidth: { lg: 460 } }}>
+            <StepIndicator currentStep={step} />
+          </Box>
+        }
       />
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            p: { xs: 0, sm: 2, md: 0 },
-          }}
-        >
-          <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: 520, md: 560 } }}>
-            <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
-
-              {/* Step indicator */}
-              <Box sx={{ px: { xs: 3, md: 4 }, pt: { xs: 3, md: 4 }, pb: 0 }}>
-                <StepIndicator currentStep={step} />
-              </Box>
-
-              {/* Header - animated per step */}
-              <AnimatePresence mode='wait'>
-                <motion.div
-                  key={`header-${step}`}
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  <Box
-                    sx={{
-                      px: { xs: 3, md: 4 },
-                      pb: 3,
-                      background: 'linear-gradient(135deg, rgba(2,146,183,0.04) 0%, rgba(66,189,186,0.06) 100%)',
-                      borderBottom: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Stack direction='row' alignItems='center' spacing={1} mb={0.75}>
-                      {step > 1 && (
-                        <IconButton size='small' onClick={() => setStep(step - 1)} sx={{ p: 0.5, color: 'text.secondary', '&:hover': { bgcolor: 'transparent', color: 'text.primary' } }}>
-                          <ArrowBack sx={{ fontSize: 22 }} />
-                        </IconButton>
-                      )}
-                      <Typography variant='h4' fontWeight={900} color='text.primary' lineHeight={1.15}>
-                        {copy.headline}
-                      </Typography>
-                    </Stack>
-                    <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-                      {copy.sub}
-                    </Typography>
-                  </Box>
-                </motion.div>
-              </AnimatePresence>
+        {/* Step indicator - mobile only (desktop shows it in the header); sits on the bg, no card */}
+        <Box sx={{ display: { xs: 'block', md: 'none' },  mb: 0 }}>
+          <StepIndicator currentStep={step} />
+        </Box>
 
               {/* Step body - animated per step */}
               <AnimatePresence mode='wait'>
@@ -226,11 +164,10 @@ const SubscribePage = () => {
                     <SubscribeStep2
                       imgFile={imgFile}
                       setImgFile={setImgFile}
-                      existingImageUrl={undefined}
                       isSaving={isSaving}
                       onSave={handleSaveReceipt}
-                      onContinue={() => setStep(3)}
                       onSkip={() => setStep(3)}
+                      onBack={() => setStep(1)}
                     />
                   </motion.div>
                 )}
@@ -248,14 +185,12 @@ const SubscribePage = () => {
                       onSubscribe={handleSubscribe}
                       onFoundingSubscribe={handleFoundingSubscribe}
                       onSkip={() => navigate('/nearby')}
+                      onBack={() => setStep(2)}
                     />
                   </motion.div>
                 )}
 
-              </AnimatePresence>
-            </Paper>
-          </Box>
-        </Box>
+        </AnimatePresence>
       </Container>
     </Box>
   );

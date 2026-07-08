@@ -44,7 +44,7 @@ const SquareShareCard = ({ businessName, locationLabel, scanUrl }: CardProps) =>
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <Box component='img' src='/winnbell_app_name_white.svg' sx={{ height: 30 }} />
       <Typography sx={{ color: GOLD_TROPHY, fontWeight: 800, fontSize: 15, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-        First entry free
+        Free to enter
       </Typography>
     </Box>
     <Box>
@@ -78,7 +78,7 @@ const StoryShareCard = ({ businessName, scanUrl }: CardProps) => (
     </Box>
     <Box>
       <Typography sx={{ fontWeight: 900, fontSize: 50, lineHeight: 1.08, letterSpacing: '-0.02em' }}>
-        Your first entry is on us.
+        Scan to join this month's draw.
       </Typography>
       <Typography sx={{ color: ALPHA_WHITE_80, fontWeight: 600, fontSize: 19, mt: 2.5 }}>
         Scan in-store at {businessName}

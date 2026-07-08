@@ -27,6 +27,7 @@ export const BG_SUBTLE          = '#f1f5f9';   // subtle section backgrounds (wa
 // ── Text ─────────────────────────────────────
 export const TEXT_PRIMARY       = '#0f172a';   // near black, warm
 export const TEXT_SECONDARY     = '#475569';   // slightly warmer slate
+export const TEXT_EMPHASIS      = '#334155';   // between primary and secondary (checklist body)
 export const TEXT_HEADING       = '#0f2747';   // page headings (Register, etc.) (dark with slight teal cast)
 export const TEXT_ICON_MUTED    = '#7e8c8c';   // AppHeader icon (muted teal-grey)
 export const TEXT_TERTIARY      = '#94a3b8';   // de-emphasized labels (warmer tertiary)
@@ -57,6 +58,10 @@ export const TABLE_HEADER_BG       = '#f5f5f5';
 // ── Special accents ──────────────────────────
 export const GOLD_TROPHY    = '#fbbf24';  // trophy icon
 export const AMBER_HOURGLASS= '#f59e0b';  // hourglass icon
+export const GOLD_SOFT      = '#fcd34d';  // light gold (founding card gradient start)
+export const GOLD_INK       = '#3a2606';  // dark brown text/icons on gold backgrounds
+export const GOLD_TINT_IVORY= '#fffbf0';  // warm white tint (founding card inner bg)
+export const GOLD_TINT_CREAM= '#fef6e0';  // deeper warm cream (founding card inner bg end)
 export const SUCCESS_GREEN  = '#10b981';  // winner / success states
 
 // ── Analytics / dashboards ───────────────────
