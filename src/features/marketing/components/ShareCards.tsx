@@ -1,8 +1,7 @@
 import { useRef, useState } from 'react';
-import { Box, Typography, Stack, Paper, Button, CircularProgress } from '@mui/material';
+import type { ReactNode } from 'react';
+import { Box, Typography, Stack, Paper, Button, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { FileDownload } from '@mui/icons-material';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
 import QRCode from 'react-qr-code';
 import {
   PRIMARY_MAIN, GRADIENT_DRAW_CARD, GRADIENT_SUCCESS_GREEN,
@@ -10,6 +9,11 @@ import {
   GOLD_TROPHY, ACCENT_GOLD_LIGHT, ALPHA_WHITE_15, ALPHA_WHITE_80,
   TEXT_HEADING, TEXT_SECONDARY,
 } from '../../../shared/colors';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { FreeMode, Pagination, Mousewheel } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/free-mode';
+import 'swiper/css/pagination';
 import { downloadNodeAsPng } from '../utils/capture';
 
 // ── Master canvases (captured at scale 2 → 1080px wide social images) ─────────
@@ -167,16 +171,74 @@ const ReminderShareCard = ({ businessName, scanUrl }: CardProps) => (
   </Box>
 );
 
-// ── Section: swiper of post previews + save buttons ───────────────────────────
+// ── One gallery tile: fixed height, width follows the design's aspect ratio ────
+// Every tile is the same height (rowH), so the row sits on an even baseline; the
+// width is just rowH * (w/h), so a 9:16 Story is naturally narrower than a 4:5 card.
+interface Post { id: string; label: string; w: number; h: number; node: ReactNode }
+
+const GalleryTile = ({ post, rowH, disabled, isSaving, onSave }: {
+  post: Post; rowH: number; disabled: boolean; isSaving: boolean; onSave: () => void;
+}) => {
+  const scale = rowH / post.h;
+  const cardW = post.w * scale;
+
+  return (
+    <Box sx={{ width: cardW }}>
+      <Box
+        sx={{
+          width: cardW,
+          height: rowH,
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: '16px',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.16)',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+          '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 16px 40px rgba(0,0,0,0.22)' },
+        }}
+      >
+        <Box sx={{ position: 'absolute', top: 0, left: 0, width: post.w, height: post.h, transform: `scale(${scale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+          {post.node}
+        </Box>
+      </Box>
+      <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mt: 1.25 }}>
+        <Typography noWrap sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'text.secondary', mr: 1 }}>{post.label}</Typography>
+        {/* Slim text-style save chip - the preview is the star, not the button */}
+        <Button
+          size='small'
+          disabled={disabled}
+          onClick={onSave}
+          startIcon={isSaving
+            ? <CircularProgress size={12} color='inherit' />
+            : <FileDownload sx={{ fontSize: '14px !important' }} />}
+          sx={{
+            textTransform: 'none', fontWeight: 700, fontSize: '0.72rem',
+            color: PRIMARY_MAIN, minWidth: 0, px: 1, py: 0.25, borderRadius: '8px', flexShrink: 0,
+            '& .MuiButton-startIcon': { mr: 0.5 },
+            '&:hover': { bgcolor: `${PRIMARY_MAIN}0d` },
+          }}
+        >
+          Save
+        </Button>
+      </Stack>
+    </Box>
+  );
+};
+
+// ── Section: gallery of post previews + save buttons ──────────────────────────
 interface ReadyToShareProps extends CardProps {
   canDownload: boolean;
   onRequireLocation: () => void;
   onToast: (msg: string) => void;
 }
 
-const PREVIEW_H = 300;
-
 export const ReadyToShare = ({ businessName, locationLabel, scanUrl, prizeLabel, canDownload, onRequireLocation, onToast }: ReadyToShareProps) => {
+  const theme = useTheme();
+  const upSm = useMediaQuery(theme.breakpoints.up('sm'));
+  const upMd = useMediaQuery(theme.breakpoints.up('md'));
+  const upLg = useMediaQuery(theme.breakpoints.up('lg'));
+  // Every post renders at this height; width follows each design's ratio. Sized so ~2 slides
+  // show on mobile and ~3-4 on desktop within the swiper.
+  const rowH = upLg ? 340 : upMd ? 300 : upSm ? 260 : 190;
   const refs = useRef<Record<string, HTMLDivElement | null>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const props: CardProps = { businessName, locationLabel, scanUrl, prizeLabel };
@@ -194,12 +256,9 @@ export const ReadyToShare = ({ businessName, locationLabel, scanUrl, prizeLabel,
     if (!canDownload) { onRequireLocation(); return; }
     setSaving(id);
     try {
-      const targets = id === 'all' ? posts : posts.filter((p) => p.id === id);
-      for (const t of targets) {
-        const node = refs.current[t.id];
-        if (node) await downloadNodeAsPng(node, `winnbell-post-${t.id}.png`, 2);
-      }
-      onToast(id === 'all' ? 'All images downloaded!' : 'Image downloaded!');
+      const node = refs.current[id];
+      if (node) await downloadNodeAsPng(node, `winnbell-post-${id}.png`, 2);
+      onToast('Image downloaded!');
     } catch (err) {
       console.error(err);
       onToast('Download failed. Please try again.');
@@ -211,69 +270,52 @@ export const ReadyToShare = ({ businessName, locationLabel, scanUrl, prizeLabel,
   return (
     <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: { xs: 2.5, md: 3.5 }, overflow: 'hidden' }}>
       <Stack spacing={2.5}>
-        <Stack direction='row' alignItems='flex-start' justifyContent='space-between' spacing={2}>
-          <Box>
-            <Typography variant='h6' fontWeight={800} gutterBottom>Ready to share</Typography>
-            <Typography variant='body2' color='text.secondary'>
-              Post straight to Instagram, Facebook, or your Story. No design needed. Swipe for more.
-            </Typography>
-          </Box>
-          <Button
-            variant='outlined'
-            size='small'
-            startIcon={saving === 'all' ? <CircularProgress size={14} color='inherit' /> : <FileDownload sx={{ fontSize: 16 }} />}
-            disabled={saving !== null}
-            onClick={() => save('all')}
-            sx={{ textTransform: 'none', fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap', display: { xs: 'none', sm: 'inline-flex' } }}
-          >
-            Download all
-          </Button>
-        </Stack>
+        <Box>
+          <Typography variant='h6' fontWeight={800} gutterBottom>Ready to share</Typography>
+          <Typography variant='body2' color='text.secondary'>
+            Post straight to Instagram, Facebook, or your Story. No design needed.
+          </Typography>
+        </Box>
 
-        {/* Post swiper - keeps the page short no matter how many designs we add */}
-        <Box sx={{ '& .swiper': { overflow: 'visible' }, '& .swiper-slide': { width: 'auto' } }}>
-          <Swiper slidesPerView='auto' spaceBetween={20} grabCursor>
-            {posts.map((p) => {
-              const scale = PREVIEW_H / p.h;
-              return (
-                <SwiperSlide key={p.id}>
-                  <Box>
-                    {/* Scaled preview (display only - captures use the off-screen masters) */}
-                    <Box sx={{ width: p.w * scale, height: PREVIEW_H, position: 'relative', overflow: 'hidden', borderRadius: '14px', boxShadow: '0 8px 24px rgba(0,0,0,0.14)' }}>
-                      <Box sx={{ position: 'absolute', top: 0, left: 0, width: p.w, height: p.h, transform: `scale(${scale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
-                        {p.node}
-                      </Box>
-                    </Box>
-                    <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mt: 1, width: p.w * scale }}>
-                      <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: 'text.secondary' }}>{p.label}</Typography>
-                      {/* Slim text-style save chip - the preview is the star, not the button */}
-                      <Button
-                        size='small'
-                        disabled={saving !== null}
-                        onClick={() => save(p.id)}
-                        startIcon={saving === p.id
-                          ? <CircularProgress size={12} color='inherit' />
-                          : <FileDownload sx={{ fontSize: '14px !important' }} />}
-                        sx={{
-                          textTransform: 'none', fontWeight: 700, fontSize: '0.72rem',
-                          color: PRIMARY_MAIN, minWidth: 0, px: 1, py: 0.25, borderRadius: '8px',
-                          '& .MuiButton-startIcon': { mr: 0.5 },
-                          '&:hover': { bgcolor: `${PRIMARY_MAIN}0d` },
-                        }}
-                      >
-                        Save
-                      </Button>
-                    </Stack>
-                  </Box>
-                </SwiperSlide>
-              );
-            })}
+        {/* Gallery swiper - every post at one fixed height, width by ratio; ~2 slides on
+            mobile and ~3-4 on desktop, free-scroll with momentum and pagination dots. */}
+        <Box
+          sx={{
+            '& .swiper': { overflow: 'visible', pb: 4.5 },
+            '& .swiper-slide': { width: 'auto', height: 'auto' },
+            '& .swiper-pagination': { bottom: 0 },
+            '& .swiper-pagination-bullet': { bgcolor: TEXT_SECONDARY, opacity: 0.35 },
+            '& .swiper-pagination-bullet-active': { bgcolor: PRIMARY_MAIN, opacity: 1 },
+          }}
+        >
+          <Swiper
+            modules={[FreeMode, Pagination, Mousewheel]}
+            slidesPerView='auto'
+            spaceBetween={upMd ? 24 : 14}
+            grabCursor
+            freeMode={{ enabled: true, momentum: true, momentumBounce: false }}
+            mousewheel={{ forceToAxis: true }}
+            pagination={{ clickable: true }}
+          >
+            {posts.map((p) => (
+              <SwiperSlide key={p.id}>
+                <GalleryTile
+                  post={p}
+                  rowH={rowH}
+                  disabled={saving !== null}
+                  isSaving={saving === p.id}
+                  onSave={() => save(p.id)}
+                />
+              </SwiperSlide>
+            ))}
           </Swiper>
         </Box>
 
-        {/* Off-screen full-size masters: rendered UNTRANSFORMED and unclipped, so html2canvas
-            captures them cleanly (its known transform/overflow crop bugs never apply). */}
-        <Box aria-hidden sx={{ position: 'absolute', left: -99999, top: 0 }}>
+        {/* Off-screen full-size masters: each card keeps its true pixel size (no transform),
+            so html2canvas captures it cleanly. The 0x0 overflow-hidden wrapper clips their
+            combined height so these absolute nodes never extend the page's scroll area -
+            otherwise this short tab gains a tall empty region and the card bg "ends early". */}
+        <Box aria-hidden sx={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}>
           {posts.map((p) => (
             <Box key={p.id} ref={(el: HTMLDivElement | null) => { refs.current[p.id] = el; }} sx={{ width: p.w, height: p.h }}>
               {p.node}
