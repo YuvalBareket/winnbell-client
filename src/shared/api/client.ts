@@ -84,7 +84,15 @@ api.interceptors.response.use(
               .then(({ data }) => {
                 // updateAccountTokens (NOT login): writes the rotated tokens back to this
                 // account without re-activating it if the user switched away mid-refresh.
-                store.dispatch(updateAccountTokens({ user: failingUser, token: data.token, refreshToken: data.refreshToken }));
+                // Re-read the account by its pinned id at write-back time:
+                //  - if it's no longer saved (removed mid-refresh) we skip the dispatch entirely,
+                //    so a just-removed account can never be resurrected with fresh tokens (F9);
+                //  - we use its CURRENT user object, not the one captured at 401 time, so a
+                //    concurrent update (e.g. businessIsActive) isn't clobbered (F11).
+                const current = (store.getState().auth.accounts ?? []).find((a) => a.user.id === failingId);
+                if (current) {
+                  store.dispatch(updateAccountTokens({ user: current.user, token: data.token, refreshToken: data.refreshToken }));
+                }
               })
               .finally(() => { refreshPromise = null; });
           }

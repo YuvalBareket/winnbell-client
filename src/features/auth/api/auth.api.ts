@@ -24,6 +24,7 @@ export const loginUserFn = async (
 export const syncUserFn = async (
   accessToken: string,
   options?: { role?: string | null; inviteToken?: string | null; referralCode?: string | null; acquisitionSource?: string | null; acquiredViaLocationId?: number | null; promoCode?: string | null },
+  signal?: AbortSignal,
 ): Promise<AuthResponse> => {
   const response = await api.post<AuthResponse>(
     '/auth/sync',
@@ -35,7 +36,9 @@ export const syncUserFn = async (
       acquiredViaLocationId: options?.acquiredViaLocationId ?? null,
       promoCode: options?.promoCode || null,
     },
-    { headers: { Authorization: `Bearer ${accessToken}` } },
+    // signal lets useSupabaseSync abort an in-flight sync when the effect re-runs (retry) or
+    // unmounts, so a superseded attempt can't run concurrently with the new one (F14).
+    { headers: { Authorization: `Bearer ${accessToken}` }, signal },
   );
   return response.data;
 };

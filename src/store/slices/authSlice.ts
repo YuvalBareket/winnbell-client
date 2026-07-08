@@ -97,8 +97,11 @@ export const authSlice = createSlice({
         refreshToken: action.payload.refreshToken,
       };
       const idx = state.accounts.findIndex((a) => a.user.id === acc.user.id);
-      if (idx >= 0) state.accounts[idx] = acc;
-      else if (state.accounts.length < MAX_ACCOUNTS) state.accounts.push(acc); // defensive
+      // Only ever UPDATE an account that is still saved. Never push here: a refresh that resolves
+      // after the account was removed must not resurrect it (F9). The client.ts caller also guards
+      // this, so a missing index means "removed mid-refresh" and is intentionally a no-op.
+      if (idx < 0) return;
+      state.accounts[idx] = acc;
       // Mirror to the top-level fields only when this account is still the active one.
       if (state.activeAccountId === acc.user.id) {
         state.isAuthenticated = true;

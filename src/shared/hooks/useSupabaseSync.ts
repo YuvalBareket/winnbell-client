@@ -31,6 +31,11 @@ export const useSupabaseSync = (retryCount = 0) => {
 
   useEffect(() => {
     syncing.current = false;
+    // Per-effect-run abort + cancelled flag (F14): if the effect re-runs (retry) or unmounts while
+    // a /auth/sync is in flight, we abort that request and ignore its result, so a superseded
+    // attempt can never run concurrently with - or apply its result after - the new one.
+    let cancelled = false;
+    const controller = new AbortController();
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setIsLoaded(true);
       setIsSignedIn(!!session);
@@ -45,9 +50,11 @@ export const useSupabaseSync = (retryCount = 0) => {
         // broadcastLogout) and token revocation is enforced server-side (/auth/logout,
         // password reset). Here we only clear the transient registration flags.
         if (event === 'SIGNED_OUT') {
+          // Clear only transient REGISTRATION flags. install_prompt_dismissed is a user
+          // preference and real logout (useLogout/useAccountSwitcher) already clears it -
+          // wiping it here would reset the preference on an involuntary Supabase signout.
           localStorage.removeItem('pendingRole');
           localStorage.removeItem('pendingInviteToken');
-          localStorage.removeItem('install_prompt_dismissed');
         }
         syncing.current = false;
         return;
@@ -101,12 +108,14 @@ export const useSupabaseSync = (retryCount = 0) => {
           // Which location's flyer (for location_flyer) and which promo code (for promo_code).
           acquiredViaLocationId: pendingLocationId ? Number(pendingLocationId) : null,
           promoCode: (pendingTicketCode && pendingTicketCode.startsWith('PROMO')) ? pendingTicketCode : null,
-        });
+        }, controller.signal);
+
+        // A retry/unmount superseded this run while the request was completing — don't apply it.
+        if (cancelled) return;
 
         localStorage.removeItem('pendingInviteToken');
         localStorage.removeItem('pendingRole');
         localStorage.removeItem('pendingReferralCode');
-        localStorage.setItem('wasLoggedIn', '1');
 
         // Decide add-vs-replace by IDENTITY, not just the flag. The flag alone is fragile for the
         // add-REGISTER flow (the new account's session only arrives after an email round-trip, during
@@ -121,6 +130,13 @@ export const useSupabaseSync = (retryCount = 0) => {
         const syncedId = data.user.id;
 
         if (activeId == null || syncedId === activeId) {
+          // Same-account sync. Clear a lingering pendingAddAccount flag (F10) ONLY on an explicit
+          // fresh sign-in: the user actively logged into the SAME account, so no add is pending
+          // and the flag is stale (otherwise it makes every hourly resync bypass the early-return
+          // guard). A background TOKEN_REFRESHED must NOT clear it - during an add-via-register
+          // email round-trip the current account's hourly refresh lands here while the flag is
+          // still legitimately waiting for the NEW account's session to arrive.
+          if (isFreshLogin) localStorage.removeItem('pendingAddAccount');
           dispatch(login(payload));
         } else if (isAddingAccount) {
           localStorage.removeItem('pendingAddAccount');
@@ -148,6 +164,8 @@ export const useSupabaseSync = (retryCount = 0) => {
           }
         }
       } catch (err: unknown) {
+        // Aborted by a retry/unmount (F14) — the superseding run owns the outcome; do nothing.
+        if (cancelled) return;
         const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
         const status = axiosErr?.response?.status;
         const message = axiosErr?.response?.data?.message;
@@ -164,32 +182,36 @@ export const useSupabaseSync = (retryCount = 0) => {
           navigate('/');
           return;
         }
+        // These four branches are TERMINAL fresh-login failures (they log out and sign out of
+        // Supabase). Reaching them means no add is salvageable, so also drop a stale
+        // pendingAddAccount flag - leaving it would keep bypassing the early-return guard.
         if (message === 'REGION_RESTRICTED') {
           isRegionBlocked.current = true;
           dispatch(logout());
+          localStorage.removeItem('pendingAddAccount');
           await supabase.auth.signOut();
           navigate('/region-blocked');
         } else if (status === 403 && message === 'ACCOUNT_DELETED') {
           dispatch(logout());
-          localStorage.removeItem('wasLoggedIn');
           localStorage.removeItem('pendingRole');
           localStorage.removeItem('pendingInviteToken');
+          localStorage.removeItem('pendingAddAccount');
           await supabase.auth.signOut();
           navigate('/login?deleted=1');
         } else if (status === 401) {
           // Token is expired or invalid — sign out and redirect so user can log in again
           dispatch(logout());
-          localStorage.removeItem('wasLoggedIn');
           localStorage.removeItem('pendingRole');
           localStorage.removeItem('pendingInviteToken');
+          localStorage.removeItem('pendingAddAccount');
           await supabase.auth.signOut();
           navigate('/');
         } else if (status === 400 && message) {
           // Invite token invalid/expired/already-used — sign out and send back to register
           dispatch(logout());
-          localStorage.removeItem('wasLoggedIn');
           localStorage.removeItem('pendingRole');
           localStorage.removeItem('pendingInviteToken');
+          localStorage.removeItem('pendingAddAccount');
           await supabase.auth.signOut();
           navigate(`/register?syncError=${encodeURIComponent(message)}`);
         } else {
@@ -203,7 +225,11 @@ export const useSupabaseSync = (retryCount = 0) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      controller.abort();
+      subscription.unsubscribe();
+    };
   }, [retryCount]);
 
   // Cross-tab logout: when another tab performs a REAL logout it calls broadcastLogout();
@@ -214,7 +240,6 @@ export const useSupabaseSync = (retryCount = 0) => {
     return onCrossTabLogout(() => {
       if (!isAuthenticatedRef.current) return;
       dispatch(logout());
-      localStorage.removeItem('wasLoggedIn');
       import('../../main').then(({ queryClient }) => queryClient.clear()).catch(() => {});
     });
   }, [dispatch]);

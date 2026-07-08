@@ -28,7 +28,12 @@ export const persistor = persistStore(store);
 // user out on next launch. `pagehide` and the page turning `hidden` are the last reliable moments
 // on mobile (mobile browsers often skip `beforeunload`) to force the pending state to disk.
 // localStorage.setItem is synchronous, so the flush completes before the tab is suspended.
-if (typeof window !== 'undefined') {
+// Guard against duplicate registration when Vite HMR re-evaluates this module in dev
+// (same pattern as __APP_ROOT__ in main.tsx). flush() is idempotent, so duplicates would
+// be harmless, but there is no reason to accumulate listeners.
+const w = typeof window !== 'undefined' ? (window as unknown as { __FLUSH_ON_HIDE__?: boolean }) : null;
+if (w && !w.__FLUSH_ON_HIDE__) {
+  w.__FLUSH_ON_HIDE__ = true;
   const flushToDisk = (): void => {
     void persistor.flush();
   };

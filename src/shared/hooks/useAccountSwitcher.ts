@@ -67,7 +67,6 @@ export const useAccountSwitcher = () => {
     if (id === activeAccountId && remaining.length === 0) {
       navigate('/');
       flushSync(() => { dispatch(removeAccount({ id })); });
-      localStorage.removeItem('wasLoggedIn');
       localStorage.removeItem('install_prompt_dismissed');
       localStorage.removeItem('pendingAddAccount');
       broadcastLogout();                          // last account gone — clear other tabs

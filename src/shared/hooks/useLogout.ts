@@ -43,7 +43,6 @@ export const useLogout = () => {
     // Last (or only) account: full logout.
     navigate('/');
     dispatch(logout());
-    localStorage.removeItem('wasLoggedIn');
     localStorage.removeItem('install_prompt_dismissed');
     localStorage.removeItem('pendingAddAccount');
     queryClient.clear();
