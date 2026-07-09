@@ -20,9 +20,13 @@ import { useResumeSubscription } from '../hooks/useResumeSubscription';
 import { TIER_MAP } from './components/subscribeTiers';
 import PlanCards from './components/PlanCards';
 
-// Extract the server's error message from an unknown thrown value, with a fallback.
-const apiErrorMessage = (err: unknown, fallback: string): string =>
-  (isAxiosError(err) ? (err.response?.data as { error?: string } | undefined)?.error : undefined) ?? fallback;
+// Extract the server's error text from an unknown thrown value, with a fallback. Reads both
+// conventions the API uses: `{ error }` (stripe/subscription routes) and `{ message }`
+// (business/location routes), so a real reason is always surfaced when one exists.
+const apiErrorMessage = (err: unknown, fallback: string): string => {
+  const data = isAxiosError(err) ? (err.response?.data as { error?: string; message?: string } | undefined) : undefined;
+  return data?.error ?? data?.message ?? fallback;
+};
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   Active:     { bg: 'rgba(46,125,50,0.1)',   color: '#2e7d32' },
@@ -964,11 +968,15 @@ export default function SubscriptionManagementPage() {
               Your new plan takes effect with the next campaign. The current campaign is not affected.
               {sub.in_charged_window ? ' Since the next campaign is already paid, any price difference is charged or refunded right away.' : ''}
             </Typography>
-
-            {updateError && <Alert severity='error' sx={{ borderRadius: 2 }}>{updateError}</Alert>}
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        {/* Error lives OUTSIDE the scrollable content so it is always visible above the actions. */}
+        {updateError && (
+          <Box sx={{ px: 3, pt: 1 }}>
+            <Alert severity='error' onClose={() => setUpdateError('')} sx={{ borderRadius: 2 }}>{updateError}</Alert>
+          </Box>
+        )}
+        <DialogActions sx={{ px: 3, pb: 2, pt: 1 }}>
           <Button onClick={() => setEditPlanOpen(false)} variant='outlined' sx={{ fontWeight: 700 }}>
             Cancel
           </Button>
