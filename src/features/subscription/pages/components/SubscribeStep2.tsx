@@ -16,7 +16,6 @@ interface Props {
   setImgFile: (f: File | null) => void;
   isSaving: boolean;
   onSave: (blob: Blob) => void;
-  onSkip: () => void;
   onBack?: () => void;
 }
 
@@ -25,7 +24,6 @@ const SubscribeStep2 = ({
   setImgFile,
   isSaving,
   onSave,
-  onSkip,
   onBack,
 }: Props) => {
   const editorRef = useRef<CanvasEditorHandle>(null);
@@ -49,7 +47,8 @@ const SubscribeStep2 = ({
 
   return (
     <Box sx={{ px: { xs: 0, md: 4 }, pt: { xs: 0.5, md: 4 }, pb: { xs: 2, md: 4 } }}>
-      {/* Heading + subtitle */}
+      {/* Heading + subtitle. No "skip" here - the receipt guide is required so customers
+          always know which number to enter. */}
       <Stack direction='row' alignItems='center' spacing={0.5} sx={{ mb: 0.5 }}>
         {onBack && (
           <IconButton onClick={onBack} size='small' aria-label='Back' sx={{ ml: -0.75, color: TEXT_SECONDARY }}>
@@ -229,24 +228,6 @@ const SubscribeStep2 = ({
                   </Button>
                 </Stack>
               )}
-
-              {/* Skip for now - always available */}
-              <Typography
-                onClick={onSkip}
-                sx={{
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  color: TEXT_TERTIARY,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  mt: 0.5,
-                  '&:hover': {
-                    textDecoration: 'underline',
-                  },
-                }}
-              >
-                Skip for now
-              </Typography>
             </Stack>
           </Box>
     </Box>

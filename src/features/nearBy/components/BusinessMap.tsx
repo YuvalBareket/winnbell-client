@@ -51,7 +51,7 @@ const mapsLib = importLibrary('maps');
 
 type Props = {
   locations: NearbyLocation[];
-  onBusinessClick?: (locationId: number) => void;
+  onBusinessClick?: (locationId: number, loc: NearbyLocation) => void;
   userLocation?: { latitude: number; longitude: number } | null;
   onViewportChange?: (bounds: ViewportBounds) => void;
   /** When set (and changed), fly the map to this point. Used by search: tapping a result flies
@@ -139,7 +139,9 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
           title: loc.name,
           cursor: 'pointer',
         });
-        marker.addListener('click', () => onBusinessClickRef.current?.(id));
+        // Pass the location object up too, so the popup always has data to show even if the
+        // viewport-nearby list has since refetched and dropped this location.
+        marker.addListener('click', () => onBusinessClickRef.current?.(id, loc));
         markersByLocRef.current.set(id, marker);
       }
     });

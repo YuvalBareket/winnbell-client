@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Stack, Paper, Button, CircularProgress, Collapse, useMediaQuery, useTheme,
 } from '@mui/material';
@@ -36,6 +37,7 @@ const OverviewTab = ({
 }: OverviewTabProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
 
   // Playbook state
   const [playbook, setPlaybook] = useState([false, false, false, false]);
@@ -44,9 +46,6 @@ const OverviewTab = ({
 
   // Ref for QR download
   const heroQrRef = useRef<HTMLDivElement>(null);
-
-  // Ref for playbook card (for scroll-to-anchor)
-  const playbookRef = useRef<HTMLDivElement>(null);
 
   // Load playbook from localStorage
   useEffect(() => {
@@ -83,18 +82,7 @@ const OverviewTab = ({
     }
   };
 
-  const handleScrollToPlaybook = () => {
-    if (playbookRef.current) {
-      playbookRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Optional: trigger a subtle highlight pulse on arrival
-      const elem = playbookRef.current;
-      elem.style.transition = 'box-shadow 0.4s ease-out';
-      elem.style.boxShadow = `0 0 24px ${GOLD_TROPHY}40`;
-      setTimeout(() => {
-        elem.style.boxShadow = '0 0 0px transparent';
-      }, 1200);
-    }
-  };
+  const handleOpenGuide = () => navigate('/marketing/guide');
 
   return (
     <Box sx={{ p: 0 }}>
@@ -198,7 +186,7 @@ const OverviewTab = ({
                   <Button
                     variant='outlined'
                     startIcon={<BookRounded sx={{ fontSize: 16 }} />}
-                    onClick={handleScrollToPlaybook}
+                    onClick={handleOpenGuide}
                     sx={{ color: '#fff', borderColor: ALPHA_WHITE_20, bgcolor: ALPHA_WHITE_15, fontWeight: 700, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { borderColor: '#fff', bgcolor: ALPHA_WHITE_15 } }}
                   >
                     See the guide
@@ -266,7 +254,7 @@ const OverviewTab = ({
                 <Button
                   variant='contained'
                   startIcon={<BookRounded sx={{ fontSize: 16 }} />}
-                  onClick={handleScrollToPlaybook}
+                  onClick={handleOpenGuide}
                   sx={{ background: GRADIENT_GOLD_VIVID, color: '#fff', fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 2, py: 0.75, fontSize: '0.85rem', mt: 0.5, '&:hover': { background: GRADIENT_GOLD_VIVID, opacity: 0.94 } }}
                 >
                   See the guide
@@ -552,7 +540,6 @@ const OverviewTab = ({
         transition={{ duration: 0.5, delay: 0.2 }}
       >
         <Paper
-          ref={playbookRef}
           elevation={0}
           sx={{
             borderRadius: 3,

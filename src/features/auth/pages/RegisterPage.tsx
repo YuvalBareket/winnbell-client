@@ -140,6 +140,12 @@ const RegisterPage = () => {
   const [error, setError] = useState(searchParams.get('syncError') ?? '');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageVerified, setAgeVerified] = useState(false);
+  // Surface the same rules the submit enforces, but on blur so the user gets feedback early.
+  const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({});
+  const emailError = touched.email && formData.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+    ? 'Enter a valid email address.' : '';
+  const passwordError = touched.password && formData.password !== '' && formData.password.length < 8
+    ? 'Password must be at least 8 characters.' : '';
   const [regionBlocked, setRegionBlocked] = useState(false);
   const [toast, setToast] = useState('');
 
@@ -180,7 +186,9 @@ const RegisterPage = () => {
   const handleSubmit = async () => {
     if (!formData.fullName) { setError('Please enter your full name.'); return; }
     if (!formData.email) { setError('Please enter your email address.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { setTouched((t) => ({ ...t, email: true })); setError('Enter a valid email address.'); return; }
     if (!formData.password) { setError('Please enter a password.'); return; }
+    if (formData.password.length < 8) { setTouched((t) => ({ ...t, password: true })); setError('Password must be at least 8 characters.'); return; }
     if (!ageVerified || !termsAccepted) { setError('Please confirm your eligibility and accept the terms.'); return; }
     setLoading(true);
     setError('');
@@ -310,6 +318,8 @@ const RegisterPage = () => {
             <Box>
               <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Email</Typography>
               <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
+                onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                error={!!emailError} helperText={emailError}
                 InputProps={{
                   startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
                   sx: { bgcolor: 'background.paper' },
@@ -322,6 +332,8 @@ const RegisterPage = () => {
             <Box>
               <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Password</Typography>
               <TextField fullWidth name='password' value={formData.password} onChange={handleChange}
+                onBlur={() => setTouched((t) => ({ ...t, password: true }))}
+                error={!!passwordError} helperText={passwordError}
                 type={showPassword ? 'text' : 'password'} placeholder='••••••••'
                 InputProps={{
                   startAdornment: (<InputAdornment position='start'><Lock sx={{ color: 'text.secondary' }} /></InputAdornment>),

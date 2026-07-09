@@ -166,7 +166,6 @@ const SubscribePage = () => {
                       setImgFile={setImgFile}
                       isSaving={isSaving}
                       onSave={handleSaveReceipt}
-                      onSkip={() => setStep(3)}
                       onBack={() => setStep(1)}
                     />
                   </motion.div>

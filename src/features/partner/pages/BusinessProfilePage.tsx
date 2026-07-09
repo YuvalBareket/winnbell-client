@@ -1,4 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { alpha } from '@mui/material/styles';
 import {
@@ -38,7 +39,7 @@ import { Controller, useForm, useFieldArray } from 'react-hook-form';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import type { BusinessSetupInput } from '../types/business.types';
 import { useAppSelector } from '../../../store/hook';
-import { selectCurrentUser } from '../../../store/selectors/authSelectors';
+import { selectCurrentUser, selectIsRequiresBusinessSetup } from '../../../store/selectors/authSelectors';
 import AddressAutoComplete from '../../../shared/components/AddressAutoComplete';
 import { useBusinessSetup } from '../hooks/useBusinessSetup';
 import {
@@ -88,6 +89,15 @@ const FieldLabel = ({ children, hint }: { children: React.ReactNode; hint?: stri
 
 const BusinessProfilePage = () => {
   const user = useAppSelector(selectCurrentUser);
+  const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
+  const navigate = useNavigate();
+
+  // This wizard is only for businesses that still need setup. An owner who already finished
+  // (or a manager) landing here by URL is sent back to their hub instead of a stray setup form.
+  useEffect(() => {
+    if (!requiresBusinessSetup) navigate('/nearby', { replace: true });
+  }, [requiresBusinessSetup, navigate]);
+
   const [step, setStep] = useState(0);
   const [logoDialogOpen, setLogoDialogOpen] = useState(false);
   const [logoImageSrc, setLogoImageSrc] = useState<string | null>(null);

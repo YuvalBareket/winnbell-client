@@ -57,6 +57,7 @@ const BusinessProfilePage = lazy(() => import('../features/partner/pages/Busines
 const BusinessHubPage = lazy(() => import('../features/partner/pages/BusinessHubPage'));
 const BusinessAnalyticsPage = lazy(() => import('../features/partner/pages/BusinessAnalyticsPage'));
 const MarketingPage = lazy(() => import('../features/marketing/pages/MarketingPage'));
+const MarketingGuidePage = lazy(() => import('../features/marketing/pages/MarketingGuidePage'));
 const CampaignDashboardPage = lazy(() => import('../features/campaign/pages/CampaignDashboardPage'));
 
 // Light fallback for in-app route chunk loading — a gentle spinner, NOT the full-screen
@@ -173,6 +174,7 @@ const AppRoutes = () => {
               <Route path='/settings' element={<SettingsPage />} />
               {isUser && <Route path='/invite' element={<InviteFriendsPage />} />}
               <Route path='/marketing' element={isBusinessAdmin || isManager ? <MarketingPage /> : <Navigate to={homePath} replace />} />
+              <Route path='/marketing/guide' element={isBusinessAdmin || isManager ? <MarketingGuidePage /> : <Navigate to={homePath} replace />} />
               {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}
             </>
           )}

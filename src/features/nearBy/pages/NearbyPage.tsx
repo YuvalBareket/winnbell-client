@@ -25,6 +25,7 @@ import {
 import { useCurrentLocation } from '../hooks/useCurrentLocation';
 import BusinessMap from '../components/BusinessMap';
 import MapBusinessPopup from '../components/MapBusinessPopup';
+import type { NearbyLocation } from '../types/nearBy.types';
 import { useNearbyWithZoom } from '../hooks/useNearbyWithZoom';
 import { useBusinessSearch } from '../hooks/useBusinessSearch';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
@@ -63,6 +64,9 @@ const NearbyPage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
+  // The location clicked, snapshotted at click time. Used as the popup's basic info so the card
+  // always opens with data even if the viewport-nearby list refetches and drops it afterward.
+  const [clickedLocation, setClickedLocation] = useState<NearbyLocation | null>(null);
   const [focusTarget, setFocusTarget] = useState<{ lat: number; lng: number } | null>(null);
   const { openMenu } = useMenuDrawer();
 
@@ -165,7 +169,7 @@ const NearbyPage = () => {
         <BusinessMap
           locations={locations}
           userLocation={userLocation}
-          onBusinessClick={(id) => setSelectedLocationId(id)}
+          onBusinessClick={(id, loc) => { setSelectedLocationId(id); setClickedLocation(loc); }}
           onViewportChange={onViewportChange}
           focusLocation={focusTarget}
         />
@@ -396,6 +400,7 @@ const NearbyPage = () => {
                     elevation={0}
                     onClick={() => {
                       setSelectedLocationId(partner.location_id);
+                      setClickedLocation(partner);
                       // Fly the map to the tapped business (esp. useful for off-screen search hits).
                       if (partner.latitude && partner.longitude) {
                         setFocusTarget({ lat: partner.latitude, lng: partner.longitude });
@@ -484,8 +489,8 @@ const NearbyPage = () => {
       {/* POPUP DRAWER */}
       <MapBusinessPopup
         locationId={selectedLocationId}
-        basicInfo={selectedLocation}
-        onClose={() => setSelectedLocationId(null)}
+        basicInfo={clickedLocation ?? selectedLocation}
+        onClose={() => { setSelectedLocationId(null); setClickedLocation(null); }}
         userLocation={userLocation}
       />
     </Box>

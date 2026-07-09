@@ -55,6 +55,8 @@ const AppSidebar = () => {
 
   return (
     <Box
+      component='nav'
+      aria-label='Main navigation'
       sx={{
         width: 260,
         height: '100dvh',

@@ -52,17 +52,22 @@ interface ReceiptEntryFormProps {
   onBlockedChange?: (blocked: boolean) => void;
 }
 
-const toParticipating = (n: NearbyLocation): ParticipatingLocation => ({
-  location_id: n.location_id,
-  location_name: n.name,
-  address: n.address,
-  business_id: n.id,
-  business_name: n.name,
-  sector: n.sector,
-  logo_url: n.logo_url,
-  receipt_example_image_url: 'receipt_example_image_url' in n ? (n as any).receipt_example_image_url : null,
-  min_transaction_amount: 'min_transaction_amount' in n ? (n as any).min_transaction_amount : null,
-});
+// Accepts either the compact NearbyLocation (name/id) OR the profile detail shape
+// (business_name/location_name/business_id) - the map drawer passes the latter, so read both.
+const toParticipating = (n: NearbyLocation | NearbyLocationDetail): ParticipatingLocation => {
+  const d = n as Partial<NearbyLocationDetail> & NearbyLocation;
+  return {
+    location_id: n.location_id,
+    location_name: d.location_name ?? n.name,
+    address: n.address,
+    business_id: d.business_id ?? n.id,
+    business_name: d.business_name ?? n.name,
+    sector: n.sector,
+    logo_url: n.logo_url,
+    receipt_example_image_url: 'receipt_example_image_url' in n ? (n as any).receipt_example_image_url : null,
+    min_transaction_amount: 'min_transaction_amount' in n ? (n as any).min_transaction_amount : null,
+  };
+};
 
 // ── Step indicator: (1) Business ——— (2) Receipt ────────────────────────────
 // Exported so RedeemPage can place it in the desktop header-card actions.
@@ -177,7 +182,6 @@ const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact
 
 const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   primaryColor,
-  preselectedBusinessId,
   preselectedLocation,
   preselectedLocationId,
   onSuccess,
@@ -217,10 +221,14 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const { data: searchResults = [], isFetching: isSearching } = useSearchParticipatingLocations(debouncedTerm);
   const receiptImageUpload = useUploadReceiptImage();
 
+  // Always resolve the AUTHORITATIVE participating detail by location id - it carries the real
+  // business/location name and min_transaction_amount, which the compact object passed from the
+  // map drawer may lack (that caused a blank name and a wrong "1 entry" estimate).
+  const resolvedLocationId = preselectedLocationId ?? preselectedLocation?.location_id;
   const { data: preselectedLocationData, isFetching: isLocationFetching } = useQuery({
-    queryKey: [...queryKeys.participating.all, 'location', preselectedLocationId],
-    queryFn: () => fetchParticipatingLocationById(preselectedLocationId!),
-    enabled: !!preselectedLocationId && !preselectedLocation && !preselectedBusinessId,
+    queryKey: [...queryKeys.participating.all, 'location', resolvedLocationId],
+    queryFn: () => fetchParticipatingLocationById(resolvedLocationId!),
+    enabled: !!resolvedLocationId,
     staleTime: 5 * 60_000,
   });
 
@@ -295,23 +303,22 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     gcTime: 2 * 60_000,
   });
 
-  // Auto-select location if preselected (skip if user manually cleared the selection)
+  // Auto-select location if preselected (skip if user manually changed the selection).
   useEffect(() => {
     if (userChangedLocation.current) return;
-    if (selectedLocation) return;
+    // Authoritative fetched detail wins and UPGRADES an already-set partial object as soon as it
+    // loads (real name + min_transaction_amount), so we do not early-return on selectedLocation here.
     if (preselectedLocationData) {
       setSelectedLocation(preselectedLocationData);
       return;
     }
-    // If full location object was passed directly (e.g. from NearBy drawer), use it immediately
-    if (preselectedLocation) {
+    // Show the object passed directly (e.g. from the NearBy drawer) immediately while the fetch loads.
+    if (preselectedLocation && !selectedLocation) {
       setSelectedLocation(toParticipating(preselectedLocation));
       setSelectedLocationCapReached(!!('cap_reached' in preselectedLocation && preselectedLocation.cap_reached));
-      return;
     }
     // No business-id-only fallback: a business id alone can't identify WHICH branch of a
-    // multi-location business the user meant. Every real caller passes the exact preselectedLocation
-    // (or preselectedLocationId) above, so there is nothing to fall back to here.
+    // multi-location business the user meant.
   }, [preselectedLocationData, preselectedLocation, selectedLocation]);
 
   // ──────────────────────────────────────────────────
