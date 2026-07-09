@@ -487,7 +487,7 @@ const CampaignDashboardPage = () => {
       )}
       <Box sx={{ bgcolor: 'white', border: `1px solid ${BORDER_SUBTLE}`, borderRadius: { xs: '16px', md: '18px' }, overflow: 'hidden', boxShadow: SHADOW_CARD }}>
         {isDesktop && (
-          <Box sx={{ px: '22px', py: '15px', bgcolor: BG_SUBTLE, borderBottom: `1px solid ${CHART_GRID}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ px: '22px', py: '15px', borderBottom: `1px solid ${CHART_GRID}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography sx={{ fontSize: '12px', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: TEXT_SECONDARY }}>Recent entries</Typography>
             <Typography sx={{ fontSize: '12px', fontWeight: 600, color: TEXT_TERTIARY }}>{liveText}</Typography>
           </Box>
