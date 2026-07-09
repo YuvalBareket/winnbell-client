@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import {
   Box, Container, Paper, Tabs, Tab,
@@ -19,6 +20,10 @@ import OverviewTab from '../components/OverviewTab';
 import SocialPostsTab from '../components/SocialPostsTab';
 import PostersTab from '../components/PostersTab';
 import ScriptsTab from '../components/ScriptsTab';
+import {
+  staggerContainer,
+  riseIn,
+} from '../../../shared/motion';
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 const MarketingPage = () => {
@@ -61,18 +66,21 @@ const MarketingPage = () => {
   };
 
   const showLocationSelector = isBusiness && locations.length > 1 && !isManager;
-  // Desktop: a compact location dropdown in the header card
+  // Desktop: a compact location dropdown in the header card. No pressable gesture here -
+  // scale-on-tap on a text input feels glitchy while typing.
   const headerLocationControl = showLocationSelector ? (
-    <Autocomplete
-      size='small'
-      options={locations}
-      getOptionLabel={(opt) => opt.name}
-      value={locations.find(l => l.id === selectedLocationId) ?? null}
-      onChange={(_, val) => setSelectedLocationId(val?.id ?? '')}
-      isOptionEqualToValue={(a, b) => a.id === b.id}
-      renderInput={(params) => <TextField {...params} label='Location' placeholder='Pick a location' />}
-      sx={{ minWidth: 220 }}
-    />
+    <Box sx={{ display: 'inline-flex' }}>
+      <Autocomplete
+        size='small'
+        options={locations}
+        getOptionLabel={(opt) => opt.name}
+        value={locations.find(l => l.id === selectedLocationId) ?? null}
+        onChange={(_, val) => setSelectedLocationId(val?.id ?? '')}
+        isOptionEqualToValue={(a, b) => a.id === b.id}
+        renderInput={(params) => <TextField {...params} label='Location' placeholder='Pick a location' />}
+        sx={{ minWidth: 220 }}
+      />
+    </Box>
   ) : null;
 
   // Helper to switch to a tab by name
@@ -88,34 +96,55 @@ const MarketingPage = () => {
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8 }}>
-      <AppPageHero
-        title='Marketing Materials'
-        subtitle='Leverage Winnbell with ready-made marketing materials, and check out our growth playbook to bring in more customers.'
-        actions={isDesktop ? headerLocationControl : undefined}
-      />
+
+      {/* Hero entrance - riseIn (full-width, no scale to avoid mobile viewport flash) */}
+      <motion.div
+        variants={riseIn}
+        initial='hidden'
+        animate='visible'
+      >
+        <AppPageHero
+          title='Marketing Materials'
+          subtitle='Leverage Winnbell with ready-made marketing materials, and check out our growth playbook to bring in more customers.'
+          actions={isDesktop ? headerLocationControl : undefined}
+        />
+      </motion.div>
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 }, position: 'relative', zIndex: 1 }}>
-        {/* Tabs bar */}
-        <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: 3 }}>
-          <Tabs
-            value={activeTab}
-            onChange={(_, val) => setActiveTab(val)}
-            variant='scrollable'
-            scrollButtons='auto'
-            sx={{
-              px: { xs: 1.5, md: 2 },
-              '& .MuiTabs-indicator': {
-                height: 3,
-                backgroundColor: PRIMARY_MAIN,
-              },
-            }}
-          >
-            <Tab label='Overview' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
-            <Tab label='Social Posts' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
-            <Tab label='Posters' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
-            <Tab label='Scripts' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
-          </Tabs>
-        </Paper>
+
+        {/* Tabs bar entrance */}
+        <motion.div
+          variants={staggerContainer}
+          initial='hidden'
+          animate='visible'
+        >
+          <motion.div variants={riseIn}>
+            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: 3 }}>
+              <Tabs
+                value={activeTab}
+                onChange={(_, val) => setActiveTab(val)}
+                variant='scrollable'
+                scrollButtons='auto'
+                sx={{
+                  px: { xs: 1.5, md: 2 },
+                  '& .MuiTabs-indicator': {
+                    height: 3,
+                    backgroundColor: PRIMARY_MAIN,
+                    // Spring-feel cubic-bezier for a snappy left/width slide between tabs.
+                    // MUI sets these properties via direct style mutation so CSS transition
+                    // is the correct mechanism here (Framer layoutId cannot track it).
+                    transition: 'left 0.25s cubic-bezier(0.34,1.56,0.64,1), width 0.25s cubic-bezier(0.34,1.56,0.64,1)',
+                  },
+                }}
+              >
+                <Tab label='Overview' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
+                <Tab label='Social Posts' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
+                <Tab label='Posters' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
+                <Tab label='Scripts' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
+              </Tabs>
+            </Paper>
+          </motion.div>
+        </motion.div>
 
         {/* Tab content */}
         {activeTab === 0 && (

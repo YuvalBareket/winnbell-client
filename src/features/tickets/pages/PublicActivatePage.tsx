@@ -1,29 +1,33 @@
 import { useEffect, useState } from 'react';
-import { 
-  Box, 
-  Button, 
-  Typography, 
-  Stack, 
-  Paper, 
-  CircularProgress 
+import {
+  Box,
+  Button,
+  Typography,
+  Stack,
+  Paper,
+  CircularProgress
 } from '@mui/material';
-import { 
-  Login, 
-  PersonAdd, 
-  CheckCircle, 
-  ConfirmationNumber, 
-  ErrorOutline 
+import {
+  Login,
+  PersonAdd,
+  CheckCircle,
+  ConfirmationNumber,
+  ErrorOutline
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsAuthenticated } from '../../../store/selectors/authSelectors';
 import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
-import { 
-  GRADIENT_HERO, 
-  ALPHA_WHITE_15, 
-  ALPHA_WHITE_30, 
-  PRIMARY_MAIN 
+import {
+  GRADIENT_HERO,
+  ALPHA_WHITE_15,
+  ALPHA_WHITE_30,
+  PRIMARY_MAIN
 } from '../../../shared/colors';
+import {
+  popIn, staggerContainer,
+} from '../../../shared/motion';
 
 const PENDING_CODE_KEY = 'pendingTicketCode';
 
@@ -77,20 +81,22 @@ const PublicActivatePage = () => {
   if (!code) {
     return (
       <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
-        <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 4, textAlign: 'center' }}>
-          <ErrorOutline sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
-          <Typography variant='h6' fontWeight={800} mb={1}>Invalid Link</Typography>
-          <Typography variant='body2' color='text.secondary'>
-            This link doesn't contain a valid entry code. Please scan the QR code on your receipt again.
-          </Typography>
-          <Button 
-            variant="contained" 
-            sx={{ mt: 3 }}
-            onClick={() => navigate('/')}
-          >
-            Go Home
-          </Button>
-        </Paper>
+        <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
+          <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 4, textAlign: 'center' }}>
+            <ErrorOutline sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+            <Typography variant='h6' fontWeight={800} mb={1}>Invalid Link</Typography>
+            <Typography variant='body2' color='text.secondary'>
+              This link doesn't contain a valid entry code. Please scan the QR code on your receipt again.
+            </Typography>
+            <Button
+              variant="contained"
+              sx={{ mt: 3 }}
+              onClick={() => navigate('/')}
+            >
+              Go Home
+            </Button>
+          </Paper>
+        </motion.div>
       </Box>
     );
   }
@@ -98,79 +104,93 @@ const PublicActivatePage = () => {
   // ─── 3. Unauthenticated View (User is NOT logged in) ───────────────────────
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
-      <Box
-        component="img"
-        src="/winnbell_app_name.png"
-        alt="Winnbell"
-        sx={{ height: 36, mb: 3, objectFit: 'contain' }}
-      />
-      <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+      <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
+        <Box
+          component="img"
+          src="/winnbell_app_name.png"
+          alt="Winnbell"
+          sx={{ height: 36, mb: 3, objectFit: 'contain' }}
+        />
+      </motion.div>
+      <motion.div variants={staggerContainer} initial="hidden" animate="visible" style={{ width: '100%' }}>
+        <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
 
-        <Box sx={{ background: GRADIENT_HERO, p: 3.5, textAlign: 'center', color: 'white' }}>
-          <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, border: `2px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
-            <CheckCircle sx={{ fontSize: 32 }} />
-          </Box>
-          <Typography variant='h6' fontWeight={800}>{isPromo ? 'Promotional Entry!' : 'Entry Scanned!'}</Typography>
-          <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>{isPromo ? 'Sign in to claim your free campaign entry' : 'Sign in to activate your entry'}</Typography>
-        </Box>
-
-        <Box sx={{ px: 3, pt: 3, pb: 3, textAlign: 'center' }}>
-          <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-            {isPromo ? 'Promo Code' : 'Your entry code'}
-          </Typography>
-
-          <Box sx={{ mt: 1, mb: 2.5,ml:0.5, display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: `${PRIMARY_MAIN}10`, border: `1px solid ${PRIMARY_MAIN}30`, borderRadius: 2, px: 2.5, py: 1 }}>
-            <ConfirmationNumber sx={{ fontSize: 16, color: PRIMARY_MAIN }} />
-            <Typography variant='h6' fontWeight={900} sx={{ fontFamily: 'monospace', color: PRIMARY_MAIN, letterSpacing: 3 }}>
-              {code}
-            </Typography>
-          </Box>
-
-          <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 2.5, textAlign: 'center', lineHeight: 1.5 }}>
-            Winnbell is a local campaign where every purchase earns you entries and one lucky winner takes the prize.
-          </Typography>
-
-          <Typography variant='body2' color='text.secondary' sx={{ mb: 3, lineHeight: 1.6 }}>
-            {isPromo
-              ? "Create a free account or sign in. We'll enter you into the current campaign automatically."
-              : "Create a free account or sign in. We'll activate your entry automatically as soon as you're in."}
-          </Typography>
-
-          <Stack spacing={1.5}>
-            <Box>
-              <Button
-                variant='contained'
-                size='large'
-                fullWidth
-                startIcon={<PersonAdd />}
-                onClick={() => navigate('/register/user')}
-                sx={{ fontWeight: 800, py: 1.5 }}
-              >
-                Create Free Account
-              </Button>
-              <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 1, textAlign: 'center' }}>
-                100% free. No credit card needed.
-              </Typography>
+          <motion.div variants={popIn}>
+            <Box sx={{ background: GRADIENT_HERO, p: 3.5, textAlign: 'center', color: 'white' }}>
+              <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, border: `2px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+                <CheckCircle sx={{ fontSize: 32 }} />
+              </Box>
+              <Typography variant='h6' fontWeight={800}>{isPromo ? 'Promotional Entry!' : 'Entry Scanned!'}</Typography>
+              <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>{isPromo ? 'Sign in to claim your free campaign entry' : 'Sign in to activate your entry'}</Typography>
             </Box>
-            <Button
-              variant='outlined'
-              size='large'
-              fullWidth
-              startIcon={<Login />}
-              onClick={() => navigate('/login')}
-              sx={{ fontWeight: 700, py: 1.5 }}
-            >
-              Sign In
-            </Button>
-          </Stack>
+          </motion.div>
 
-          <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 2 }}>
-            {isPromo
-              ? 'Your promo code is saved. We\'ll enter you into the campaign the moment you sign in.'
-              : 'Your entry code is saved. It will activate the moment you sign in.'}
-          </Typography>
-        </Box>
-      </Paper>
+          <Box sx={{ px: 3, pt: 3, pb: 3, textAlign: 'center' }}>
+            <motion.div variants={popIn}>
+              <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                {isPromo ? 'Promo Code' : 'Your entry code'}
+              </Typography>
+
+              <Box sx={{ mt: 1, mb: 2.5, ml: 0.5, display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: `${PRIMARY_MAIN}10`, border: `1px solid ${PRIMARY_MAIN}30`, borderRadius: 2, px: 2.5, py: 1 }}>
+                <ConfirmationNumber sx={{ fontSize: 16, color: PRIMARY_MAIN }} />
+                <Typography variant='h6' fontWeight={900} sx={{ fontFamily: 'monospace', color: PRIMARY_MAIN, letterSpacing: 3 }}>
+                  {code}
+                </Typography>
+              </Box>
+            </motion.div>
+
+            <motion.div variants={popIn}>
+              <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 2.5, textAlign: 'center', lineHeight: 1.5 }}>
+                Winnbell is a local campaign where every purchase earns you entries and one lucky winner takes the prize.
+              </Typography>
+
+              <Typography variant='body2' color='text.secondary' sx={{ mb: 3, lineHeight: 1.6 }}>
+                {isPromo
+                  ? "Create a free account or sign in. We'll enter you into the current campaign automatically."
+                  : "Create a free account or sign in. We'll activate your entry automatically as soon as you're in."}
+              </Typography>
+            </motion.div>
+
+            <motion.div variants={popIn}>
+              <Stack spacing={1.5}>
+                <Box>
+                  <Button
+                    variant='contained'
+                    size='large'
+                    fullWidth
+                    startIcon={<PersonAdd />}
+                    onClick={() => navigate('/register/user')}
+                    sx={{ fontWeight: 800, py: 1.5 }}
+                  >
+                    Create Free Account
+                  </Button>
+                  <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 1, textAlign: 'center' }}>
+                    100% free. No credit card needed.
+                  </Typography>
+                </Box>
+                <Button
+                  variant='outlined'
+                  size='large'
+                  fullWidth
+                  startIcon={<Login />}
+                  onClick={() => navigate('/login')}
+                  sx={{ fontWeight: 700, py: 1.5 }}
+                >
+                  Sign In
+                </Button>
+              </Stack>
+            </motion.div>
+
+            <motion.div variants={popIn}>
+              <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 2 }}>
+                {isPromo
+                  ? 'Your promo code is saved. We\'ll enter you into the campaign the moment you sign in.'
+                  : 'Your entry code is saved. It will activate the moment you sign in.'}
+              </Typography>
+            </motion.div>
+          </Box>
+        </Paper>
+      </motion.div>
     </Box>
   );
 };

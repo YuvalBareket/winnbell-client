@@ -6,6 +6,9 @@ import {
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import {
+  staggerContainer, popIn, riseIn, pressableCard,
+} from '../../../shared/motion';
 import { SettingsOutlined } from '@mui/icons-material';
 import { useLogout } from '../../../shared/hooks/useLogout';
 import { api } from '../../../shared/api/client';
@@ -44,9 +47,9 @@ const SettingsPage = () => {
           {/* Left Sidebar - Desktop only */}
           {isDesktop && (
             <motion.div
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
+              variants={riseIn}
+              initial='hidden'
+              animate='visible'
             >
               <Paper
                 elevation={0}
@@ -73,14 +76,17 @@ const SettingsPage = () => {
             </motion.div>
           )}
 
-          {/* Right Column - Settings Cards */}
+          {/* Right Column - Settings Cards. minWidth 0 keeps the minmax(0,1fr) grid track's
+              overflow protection intact (grid items default to min-width:auto). */}
+          <motion.div
+            variants={staggerContainer}
+            initial='hidden'
+            animate='visible'
+            style={{ minWidth: 0 }}
+          >
           <Stack spacing={3} sx={{ minWidth: 0 }}>
             {/* Danger Zone Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
+            <motion.div variants={popIn}>
               <Paper
                 elevation={0}
                 sx={{
@@ -143,29 +149,32 @@ const SettingsPage = () => {
                         Permanently removes your personal data. Your entries remain for draw integrity.
                       </Typography>
                     </Box>
-                    <Button
-                      variant='outlined'
-                      sx={{
-                        color: '#d32f2f',
-                        borderColor: '#d32f2f',
-                        fontWeight: 700,
-                        textTransform: 'none',
-                        flexShrink: 0,
-                        transition: 'all 0.3s',
-                        '&:hover': {
-                          bgcolor: 'rgba(211, 47, 47, 0.05)',
+                    <motion.div {...pressableCard} style={{ flexShrink: 0 }}>
+                      <Button
+                        variant='outlined'
+                        sx={{
+                          color: '#d32f2f',
                           borderColor: '#d32f2f',
-                        },
-                      }}
-                      onClick={() => setDeleteDialogOpen(true)}
-                    >
-                      Delete Account
-                    </Button>
+                          fontWeight: 700,
+                          textTransform: 'none',
+                          flexShrink: 0,
+                          transition: 'all 0.3s',
+                          '&:hover': {
+                            bgcolor: 'rgba(211, 47, 47, 0.05)',
+                            borderColor: '#d32f2f',
+                          },
+                        }}
+                        onClick={() => setDeleteDialogOpen(true)}
+                      >
+                        Delete Account
+                      </Button>
+                    </motion.div>
                   </Stack>
                 </Box>
               </Paper>
             </motion.div>
           </Stack>
+          </motion.div>
         </Box>
       </Container>
 

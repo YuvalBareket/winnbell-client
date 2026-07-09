@@ -9,6 +9,7 @@ import {
   Login, Google, Storefront, EmojiEvents, CardGiftcard,
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { supabase } from '../../../shared/lib/supabase';
 import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
 import { useAppSelector } from '../../../store/hook';
@@ -18,6 +19,9 @@ import {
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
   GOOGLE_BLUE, SHADOW_GOOGLE, SHADOW_NEUTRAL_SOFT,
 } from '../../../shared/colors';
+import {
+  staggerContainer, popIn, riseIn,
+} from '../../../shared/motion';
 
 // ─── Shared brand panel for desktop ─────────────────────────────────────────
 
@@ -187,164 +191,190 @@ const LoginPage = () => {
   // ─── Form content (shared between mobile & desktop) ──────────────────────────
 
   const FormContent = () => (
-    <Stack sx={{ zoom: { xs: 0.85, md: 0.75 } }}>
-      {/* Header */}
-      <Box sx={{ mb: { xs: 2, md: 3 }, textAlign: isDesktop ? 'left' : 'center' }}>
-        {!isDesktop && (
-          <Paper elevation={4} sx={{ width: 56, height: 56, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, transform: 'rotate(3deg)', mx: 'auto' }}>
-            <img style={{width:'34px'}} src='/winnbell_logo_white.png' />
-          </Paper>
-        )}
-        <Stack direction='row' alignItems='center' gap={3} mb={1} justifyContent={isDesktop ? 'flex-start' : 'center'}>
-          {isDesktop && (
-            <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
-              <ArrowBackIosNew fontSize='small' />
-            </IconButton>
-          )}
-          <Typography variant='h4' sx={{ fontWeight: 700 }}>{addMode ? 'Add Account' : 'Welcome Back'}</Typography>
-        </Stack>
-        <Typography variant='body1' color='text.secondary'>{addMode ? 'Sign in to the account you want to add' : 'Sign in to check your entries'}</Typography>
-      </Box>
-
-      {sessionError && (
-        <Alert severity='warning' sx={{ mb: 3, borderRadius: 2 }}>
-          Your previous session didn't complete. Please sign in again.
-        </Alert>
-      )}
-
-      {accountDeleted && (
-        <Alert severity='info' sx={{ mb: 3, borderRadius: 2 }}>
-          Your account has been deleted. If this was a mistake, please contact support.
-        </Alert>
-      )}
-
-      {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
-
-      {resetState === 'sent' && (
-        <Alert severity='success' onClose={() => setResetState('idle')} sx={{ mb: 3, borderRadius: 2 }}>
-          Reset link sent. Check your inbox and follow the link to set a new password.
-        </Alert>
-      )}
-      {resetState === 'error' && (
-        <Alert severity='error' onClose={() => setResetState('idle')} sx={{ mb: 3, borderRadius: 2 }}>
-          Could not send reset email. Check the address and try again.
-        </Alert>
-      )}
-
-      <Stack spacing={1.5}>
-        <Box>
-          <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Email</Typography>
-          <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
-            InputProps={{
-              startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              sx: { bgcolor: 'background.paper' },
-            }}
-          />
-        </Box>
-
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, ml: 1 }}>
-            <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>Password</Typography>
-            <Typography
-              variant='caption'
-              sx={{ fontWeight: 700, color: 'primary.main', cursor: 'pointer' }}
-              onClick={async () => {
-        if (!formData.email) { setError('Enter your email above first, then click Forgot.'); return; }
-        setResetState('loading');
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-        setResetState(resetError ? 'error' : 'sent');
-      }}
-            >
-              {resetState === 'loading' ? 'Sending...' : 'Forgot?'}
-            </Typography>
+    <motion.div variants={staggerContainer} initial="hidden" animate="visible">
+      <Stack sx={{ zoom: { xs: 0.85, md: 0.75 } }}>
+        {/* Header */}
+        <motion.div variants={riseIn}>
+          <Box sx={{ mb: { xs: 2, md: 3 }, textAlign: isDesktop ? 'left' : 'center' }}>
+            {!isDesktop && (
+              <Paper elevation={4} sx={{ width: 56, height: 56, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, transform: 'rotate(3deg)', mx: 'auto' }}>
+                <img style={{width:'34px'}} src='/winnbell_logo_white.png' />
+              </Paper>
+            )}
+            <Stack direction='row' alignItems='center' gap={3} mb={1} justifyContent={isDesktop ? 'flex-start' : 'center'}>
+              {isDesktop && (
+                <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
+                  <ArrowBackIosNew fontSize='small' />
+                </IconButton>
+              )}
+              <Typography variant='h4' sx={{ fontWeight: 700 }}>{addMode ? 'Add Account' : 'Welcome Back'}</Typography>
+            </Stack>
+            <Typography variant='body1' color='text.secondary'>{addMode ? 'Sign in to the account you want to add' : 'Sign in to check your entries'}</Typography>
           </Box>
-          <TextField fullWidth name='password' value={formData.password} onChange={handleChange}
-            type={showPassword ? 'text' : 'password'} placeholder='Enter your password'
-            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-            InputProps={{
-              startAdornment: (<InputAdornment position='start'><Lock sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              endAdornment: (
-                <InputAdornment position='end'>
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge='end'>
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-              sx: { bgcolor: 'background.paper' },
-            }}
-          />
-        </Box>
+        </motion.div>
 
-        <Box>
-          <Divider sx={{ mb: 2 }}>
-            <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700, px: 1 }}>OR</Typography>
-          </Divider>
-          <Button
-            fullWidth
-            variant='contained'
-            startIcon={googleLoading ? <CircularProgress size={20} color='inherit' /> : <Google />}
-            onClick={() => termsAccepted ? handleSocialLogin('google') : setToast('Please approve the terms first')}
-            disabled={googleLoading}
-            sx={{
-              py: 1.5,
-              textTransform: 'none',
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              border: `2px solid ${GOOGLE_BLUE}`,
-              fontWeight: 700,
-              fontSize: '1rem',
-              boxShadow: SHADOW_NEUTRAL_SOFT,
-              transition: 'all 0.2s ease-in-out',
-              opacity: 1,
-              '&:hover': {
-                bgcolor: 'background.paper',
-                boxShadow: SHADOW_GOOGLE,
-              },
-              '&:disabled': {
-                bgcolor: 'background.paper',
-                color: 'text.primary',
-                border: `2px solid ${GOOGLE_BLUE}`,
-                opacity: 1,
-              },
-            }}>
-            {googleLoading ? 'Signing in...' : 'Continue with Google'}
-          </Button>
-        </Box>
+        {sessionError && (
+          <motion.div variants={popIn}>
+            <Alert severity='warning' sx={{ mb: 3, borderRadius: 2 }}>
+              Your previous session didn't complete. Please sign in again.
+            </Alert>
+          </motion.div>
+        )}
 
-        <FormControlLabel
-          control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
-          label={
-            <Typography variant='caption' color='text.secondary'>
-              I agree to the{' '}
-              <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
-                Terms of Service
-              </Typography>{' '}and{' '}
-              <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
-                Privacy Policy
-              </Typography>
+        {accountDeleted && (
+          <motion.div variants={popIn}>
+            <Alert severity='info' sx={{ mb: 3, borderRadius: 2 }}>
+              Your account has been deleted. If this was a mistake, please contact support.
+            </Alert>
+          </motion.div>
+        )}
+
+        {error && (
+          <motion.div variants={popIn}>
+            <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>
+          </motion.div>
+        )}
+
+        {resetState === 'sent' && (
+          <motion.div variants={popIn}>
+            <Alert severity='success' onClose={() => setResetState('idle')} sx={{ mb: 3, borderRadius: 2 }}>
+              Reset link sent. Check your inbox and follow the link to set a new password.
+            </Alert>
+          </motion.div>
+        )}
+        {resetState === 'error' && (
+          <motion.div variants={popIn}>
+            <Alert severity='error' onClose={() => setResetState('idle')} sx={{ mb: 3, borderRadius: 2 }}>
+              Could not send reset email. Check the address and try again.
+            </Alert>
+          </motion.div>
+        )}
+
+        <Stack spacing={1.5}>
+          <motion.div variants={popIn}>
+            <Box>
+              <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Email</Typography>
+              <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
+                InputProps={{
+                  startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
+                  sx: { bgcolor: 'background.paper' },
+                }}
+              />
+            </Box>
+          </motion.div>
+
+          <motion.div variants={popIn}>
+            <Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, ml: 1 }}>
+                <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>Password</Typography>
+                <Typography
+                  variant='caption'
+                  sx={{ fontWeight: 700, color: 'primary.main', cursor: 'pointer' }}
+                  onClick={async () => {
+            if (!formData.email) { setError('Enter your email above first, then click Forgot.'); return; }
+            setResetState('loading');
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email, {
+              redirectTo: `${window.location.origin}/reset-password`,
+            });
+            setResetState(resetError ? 'error' : 'sent');
+          }}
+                >
+                  {resetState === 'loading' ? 'Sending...' : 'Forgot?'}
+                </Typography>
+              </Box>
+              <TextField fullWidth name='password' value={formData.password} onChange={handleChange}
+                type={showPassword ? 'text' : 'password'} placeholder='Enter your password'
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                InputProps={{
+                  startAdornment: (<InputAdornment position='start'><Lock sx={{ color: 'text.secondary' }} /></InputAdornment>),
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge='end'>
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                  sx: { bgcolor: 'background.paper' },
+                }}
+              />
+            </Box>
+          </motion.div>
+
+          <motion.div variants={popIn}>
+            <Box>
+              <Divider sx={{ mb: 2 }}>
+                <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700, px: 1 }}>OR</Typography>
+              </Divider>
+              <Button
+                fullWidth
+                variant='contained'
+                startIcon={googleLoading ? <CircularProgress size={20} color='inherit' /> : <Google />}
+                onClick={() => termsAccepted ? handleSocialLogin('google') : setToast('Please approve the terms first')}
+                disabled={googleLoading}
+                sx={{
+                  py: 1.5,
+                  textTransform: 'none',
+                  bgcolor: 'background.paper',
+                  color: 'text.primary',
+                  border: `2px solid ${GOOGLE_BLUE}`,
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  boxShadow: SHADOW_NEUTRAL_SOFT,
+                  transition: 'all 0.2s ease-in-out',
+                  opacity: 1,
+                  '&:hover': {
+                    bgcolor: 'background.paper',
+                    boxShadow: SHADOW_GOOGLE,
+                  },
+                  '&:disabled': {
+                    bgcolor: 'background.paper',
+                    color: 'text.primary',
+                    border: `2px solid ${GOOGLE_BLUE}`,
+                    opacity: 1,
+                  },
+                }}>
+                {googleLoading ? 'Signing in...' : 'Continue with Google'}
+              </Button>
+            </Box>
+          </motion.div>
+
+          <motion.div variants={popIn}>
+            <FormControlLabel
+              control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
+              label={
+                <Typography variant='caption' color='text.secondary'>
+                  I agree to the{' '}
+                  <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                    Terms of Service
+                  </Typography>{' '}and{' '}
+                  <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                    Privacy Policy
+                  </Typography>
+                </Typography>
+              }
+            />
+          </motion.div>
+
+          <motion.div variants={popIn}>
+            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted}
+              endIcon={!loading && <Login />}
+              sx={{ py: 1.5, fontSize: '1rem', fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
+              {loading ? <CircularProgress size={24} color='inherit' /> : 'Sign In'}
+            </Button>
+          </motion.div>
+        </Stack>
+
+        <Box sx={{ mt: 'auto', pt: 2, textAlign: 'center' }}>
+          <Typography variant='body2' color='text.secondary' fontWeight={500}>
+            Don't have an account?{' '}
+            <Typography component='span' onClick={() => navigate(addMode ? '/register?add=1' : inviteToken ? `/register/?token=${inviteToken}` : '/register')}
+              sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+              Create new account
             </Typography>
-          }
-        />
-
-        <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted}
-          endIcon={!loading && <Login />}
-          sx={{ py: 1.5, fontSize: '1rem', fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
-          {loading ? <CircularProgress size={24} color='inherit' /> : 'Sign In'}
-        </Button>
-      </Stack>
-
-      <Box sx={{ mt: 'auto', pt: 2, textAlign: 'center' }}>
-        <Typography variant='body2' color='text.secondary' fontWeight={500}>
-          Don't have an account?{' '}
-          <Typography component='span' onClick={() => navigate(addMode ? '/register?add=1' : inviteToken ? `/register/?token=${inviteToken}` : '/register')}
-            sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
-            Create new account
           </Typography>
-        </Typography>
-      </Box>
-    </Stack>
+        </Box>
+      </Stack>
+    </motion.div>
   );
 
   // ─── Redirect already-authenticated users ───────────────────────────────────

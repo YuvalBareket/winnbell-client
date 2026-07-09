@@ -23,8 +23,15 @@ import {
   AccountBalanceWalletOutlined,
   ArrowForwardOutlined,
 } from '@mui/icons-material';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef } from 'react';
+import {
+  staggerContainer,
+  popIn,
+  riseIn,
+  wiggle,
+} from '../../../shared/motion';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import AppHeader from '../../../shared/components/AppHeader';
@@ -235,79 +242,96 @@ const BusinessHubPage = () => {
       />
 
       <Container maxWidth='lg' sx={{ mt: -5 }}>
-        <Stack spacing={3}>
-          {/* Onboarding banner - shown when not yet subscribed, desktop only */}
-          {!business.is_subscribed && (
-            <Paper
-              elevation={3}
-              sx={{
-                display: 'flex',
-                p: 2.5,
-                borderRadius: 2,
-                border: '1px solid #00000021',
-                backgroundColor:'white',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 2,
-                flexWrap: 'wrap',
-              }}
-            >
-              <Stack direction='row' alignItems='center' spacing={1.5} flex={1} minWidth={0}>
-                <Warning sx={{ color: 'warning.main', flexShrink: 0 }} />
-                <Box minWidth={0}>
-                  <Typography variant='body2' fontWeight={700} color='warning.dark'>
-                    Complete your onboarding
-                  </Typography>
-                  <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'none', sm: 'block' } }}>
-                    Your business isn't live yet. Start a campaign to appear on the map and begin issuing entries.
-                  </Typography>
-                  <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'block', sm: 'none' } }}>
-                    Start a campaign to go live on the map
-                  </Typography>
-                </Box>
-              </Stack>
-              {!isManager && (
-                <Button
-                  variant='contained'
-                  size='small'
-                  startIcon={<CreditCard sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
-                  onClick={() => navigate('/subscribe')}
-                  sx={{ fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
+        <Stack
+          spacing={3}
+          component={motion.div}
+          variants={staggerContainer}
+          initial='hidden'
+          animate='visible'
+        >
+          {/* Onboarding banner - shown when not yet subscribed */}
+          <AnimatePresence>
+            {!business.is_subscribed && (
+              <motion.div key='onboarding-banner' variants={riseIn} exit={{ opacity: 0, y: -12, transition: { duration: 0.25 } }}>
+                <Paper
+                  elevation={3}
+                  sx={{
+                    display: 'flex',
+                    p: 2.5,
+                    borderRadius: 2,
+                    border: '1px solid #00000021',
+                    backgroundColor:'white',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 2,
+                    flexWrap: 'wrap',
+                  }}
                 >
-                  Start Campaign
-                </Button>
-              )}
-            </Paper>
-          )}
+                  <Stack direction='row' alignItems='center' spacing={1.5} flex={1} minWidth={0}>
+                    <motion.span {...wiggle} style={{ display: 'flex', flexShrink: 0 }}>
+                      <Warning sx={{ color: 'warning.main' }} />
+                    </motion.span>
+                    <Box minWidth={0}>
+                      <Typography variant='body2' fontWeight={700} color='warning.dark'>
+                        Complete your onboarding
+                      </Typography>
+                      <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'none', sm: 'block' } }}>
+                        Your business isn't live yet. Start a campaign to appear on the map and begin issuing entries.
+                      </Typography>
+                      <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'block', sm: 'none' } }}>
+                        Start a campaign to go live on the map
+                      </Typography>
+                    </Box>
+                  </Stack>
+                  {!isManager && (
+                    <Button
+                      variant='contained'
+                      size='small'
+                      startIcon={<CreditCard sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
+                      onClick={() => navigate('/subscribe')}
+                      sx={{ fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
+                    >
+                      Start Campaign
+                    </Button>
+                  )}
+                </Paper>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Profile Preview button */}
-          <Paper
-            elevation={0}
-            sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
-          >
-            <Box>
-              <Typography variant='body2' fontWeight={700}>Public Profile Preview</Typography>
-              <Typography variant='caption' color='text.secondary'>See how customers find you on the Winnbell map</Typography>
-            </Box>
-            <Button
-              variant='outlined'
-              size='small'
-              startIcon={<PreviewOutlined />}
-              onClick={() => setPreviewOpen(true)}
-              sx={{ fontWeight: 700, textTransform: 'none', flexShrink: 0 }}
+          {/* Profile Preview button - entrance only; the card itself is not clickable */}
+          <motion.div variants={popIn}>
+            <Paper
+              elevation={0}
+              sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
             >
-              Preview
-            </Button>
-          </Paper>
+              <Box>
+                <Typography variant='body2' fontWeight={700}>Public Profile Preview</Typography>
+                <Typography variant='caption' color='text.secondary'>See how customers find you on the Winnbell map</Typography>
+              </Box>
+              <Button
+                variant='outlined'
+                size='small'
+                startIcon={<PreviewOutlined />}
+                onClick={() => setPreviewOpen(true)}
+                sx={{ fontWeight: 700, textTransform: 'none', flexShrink: 0 }}
+              >
+                Preview
+              </Button>
+            </Paper>
+          </motion.div>
 
           {/* Campaign card */}
+          <motion.div variants={riseIn}>
           <CampaignCard
             business={business}
             updateCampaignSettings={updateCampaignSettings}
             isUpdatingSettings={isUpdatingSettings}
           />
+          </motion.div>
 
           {/* Branch Management */}
+          <motion.div variants={riseIn}>
           <Box>
             <Stack direction='row' alignItems='center' justifyContent='space-between' spacing={1.5} mb={2}>
               <Typography
@@ -353,21 +377,25 @@ const BusinessHubPage = () => {
             ) : (
               <Box sx={{ display: { xs: 'flex', md: 'grid' }, flexDirection: 'column', gridTemplateColumns: { md: '1fr 1fr' }, gap: 2 }}>
                 {activeLocations.map((loc: BusinessLocation) => (
-                  <LocationCard
-                    key={loc.id}
-                    loc={loc}
-                    onEdit={setEditingLocation}
-                    onRemove={!isManager ? setRemovingLocation : undefined}
-                    onInvite={handleGenerateInvite}
-                    onRemoveManager={setRemoveManagerLocationId}
-                    isInviting={isInviting}
-                    isRemoving={isRemovingLocation}
-                    isLastLocation={activeLocations.length === 1}
-                  />
+                  /* display:grid stretches the card to fill the wrapper, keeping the two
+                     columns equal-height like when the card was the grid item itself */
+                  <motion.div key={loc.id} variants={popIn} style={{ height: '100%', display: 'grid' }}>
+                    <LocationCard
+                      loc={loc}
+                      onEdit={setEditingLocation}
+                      onRemove={!isManager ? setRemovingLocation : undefined}
+                      onInvite={handleGenerateInvite}
+                      onRemoveManager={setRemoveManagerLocationId}
+                      isInviting={isInviting}
+                      isRemoving={isRemovingLocation}
+                      isLastLocation={activeLocations.length === 1}
+                    />
+                  </motion.div>
                 ))}
               </Box>
             )}
           </Box>
+          </motion.div>
         </Stack>
       </Container>
 

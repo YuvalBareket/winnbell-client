@@ -17,6 +17,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import { staggerContainer, popIn, riseIn } from '../../../shared/motion';
 import {
   CampaignOutlined,
   TrendingUpOutlined,
@@ -62,18 +63,6 @@ import {
 import { formatCurrency, formatRelativeTime } from '../../../shared/utils/date';
 import type { BusinessLocation } from '../../partner/types/business.types';
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-};
 
 // Compact revenue for the tight mobile KPI card (e.g. $4.8k); full currency on desktop.
 const compactCurrency = (n: number) =>
@@ -530,7 +519,7 @@ const CampaignDashboardPage = () => {
               const last = idx === displayEntries.length - 1;
 
               return (
-                <motion.div key={entry.ticket_id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                <motion.div key={entry.ticket_id} variants={popIn} initial="hidden" animate="visible">
                   {/* Desktop row */}
                   <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '40px minmax(0,1fr) 110px 120px', gap: 2, alignItems: 'center', px: '22px', py: '16px', borderBottom: last ? 'none' : `1px solid ${BG_SUBTLE}` }}>
                     <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: AVATAR_BLUE_BG, color: PRIMARY_MAIN, fontWeight: 800, fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initial}</Box>
@@ -611,23 +600,23 @@ const CampaignDashboardPage = () => {
 
       {/* zoom stays on the content only (not the header), so the hero renders full-size. */}
       <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 2.5 }, zoom: { xs: 0.9, md: 0.85 } }}>
-        <motion.div variants={containerVariants} initial="hidden" animate="visible">
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible">
           <Stack spacing={{ xs: 2, md: 2.5 }}>
             {/* Mobile controls sit above the KPIs (custom pills; desktop uses the hero inputs). */}
             {!isDesktop && mobileControls && (
-              <motion.div variants={itemVariants}>{mobileControls}</motion.div>
+              <motion.div variants={riseIn}>{mobileControls}</motion.div>
             )}
 
             {/* KPIs */}
-            {!noCampaign && <motion.div variants={itemVariants}>{kpiSection}</motion.div>}
+            {!noCampaign && <motion.div variants={riseIn}>{kpiSection}</motion.div>}
 
             {/* Campaign card + entries feed (two columns on desktop) */}
             {noCampaign ? (
-              <motion.div variants={itemVariants}>{isHeaderLoading ? cardSkeleton : noCampaignCard}</motion.div>
+              <motion.div variants={popIn}>{isHeaderLoading ? cardSkeleton : noCampaignCard}</motion.div>
             ) : (
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '380px 1fr' }, gap: { xs: 2, md: 2.5 }, alignItems: 'start' }}>
-                <motion.div variants={itemVariants}>{isHeaderLoading ? cardSkeleton : campaignCard}</motion.div>
-                <motion.div variants={itemVariants}>{entriesFeed}</motion.div>
+                <motion.div variants={popIn}>{isHeaderLoading ? cardSkeleton : campaignCard}</motion.div>
+                <motion.div variants={riseIn}>{entriesFeed}</motion.div>
               </Box>
             )}
           </Stack>

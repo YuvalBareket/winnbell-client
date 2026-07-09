@@ -4,12 +4,16 @@ import {
   IconButton, useMediaQuery, useTheme, TextField,
 } from '@mui/material';
 import { MarkEmailRead, ArrowBackIosNew, ArrowForward, ConfirmationNumber, Storefront, EmojiEvents, CardGiftcard } from '@mui/icons-material';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../../shared/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import {
   BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
 } from '../../../shared/colors';
+import {
+  staggerContainer, popIn, riseIn,
+} from '../../../shared/motion';
 
 // ─── Brand Panel ─────────────────────────────────────────────────────────────
 
@@ -151,71 +155,88 @@ const VerifyEmailPage = () => {
   // ─── Form content (shared between mobile & desktop) ──────────────────────
 
   const FormContent = () => (
-    <Stack sx={{ zoom: { xs: 0.85, md: 0.85 } }}>
-      {/* Header */}
-      <Box sx={{ mb: { xs: 6, md: 5 }, textAlign: isDesktop ? 'left' : 'center' }}>
-        {!isDesktop && (
-          <Paper elevation={4} sx={{ width: 80, height: 80, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, mx: 'auto' }}>
-            <MarkEmailRead sx={{ color: 'white', fontSize: 40 }} />
-          </Paper>
-        )}
-        <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>Verify your email</Typography>
-        <Typography variant='body1' color='text.secondary'>
-          Enter the 6-digit code we sent to{pendingEmail ? ` ${pendingEmail}` : ' your email address'}.
-        </Typography>
-      </Box>
-
-      {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
-
-      <Stack spacing={3}>
-        <TextField
-          label='Verification code'
-          placeholder='Enter 6-digit code'
-          value={code}
-          onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-          onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
-          inputMode='numeric'
-          autoFocus
-          fullWidth
-          inputProps={{ maxLength: 6, style: { letterSpacing: '0.3em', fontSize: '1.25rem' } }}
-        />
-
-        {/* Submit Button */}
-        <Button
-          variant='contained'
-          size='large'
-          onClick={handleVerify}
-          disabled={loading || code.length < 6}
-          endIcon={!loading && <ArrowForward />}
-          sx={{
-            py: 2,
-            fontWeight: 700,
-            boxShadow: SHADOW_PRIMARY_SOFT,
-          }}
-        >
-          {loading ? <CircularProgress size={24} color='inherit' /> : 'Confirm & Continue'}
-        </Button>
-
-        {/* Resend Link */}
-        <Box sx={{ textAlign: 'center', pt: 1 }}>
-          <Typography variant='body2' color='text.secondary'>
-            Didn't receive a code?{' '}
-            <Typography
-              component='span'
-              variant='body2'
-              sx={{
-                color: resendCooldown > 0 ? 'text.secondary' : 'primary.main',
-                fontWeight: 700,
-                cursor: resendCooldown > 0 ? 'default' : 'pointer',
-              }}
-              onClick={handleResend}
-            >
-              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
+    <motion.div variants={staggerContainer} initial="hidden" animate="visible">
+      <Stack sx={{ zoom: { xs: 0.85, md: 0.85 } }}>
+        {/* Header */}
+        <motion.div variants={riseIn}>
+          <Box sx={{ mb: { xs: 6, md: 5 }, textAlign: isDesktop ? 'left' : 'center' }}>
+            {!isDesktop && (
+              <Paper elevation={4} sx={{ width: 80, height: 80, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, mx: 'auto' }}>
+                <MarkEmailRead sx={{ color: 'white', fontSize: 40 }} />
+              </Paper>
+            )}
+            <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>Verify your email</Typography>
+            <Typography variant='body1' color='text.secondary'>
+              Enter the 6-digit code we sent to{pendingEmail ? ` ${pendingEmail}` : ' your email address'}.
             </Typography>
-          </Typography>
-        </Box>
+          </Box>
+        </motion.div>
+
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div variants={popIn} key="error" exit={{ opacity: 0, y: -10, transition: { duration: 0.18 } }}>
+              <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <Stack spacing={3}>
+          <motion.div variants={popIn}>
+            <TextField
+              label='Verification code'
+              placeholder='Enter 6-digit code'
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
+              inputMode='numeric'
+              autoFocus
+              fullWidth
+              inputProps={{ maxLength: 6, style: { letterSpacing: '0.3em', fontSize: '1.25rem' } }}
+            />
+          </motion.div>
+
+          {/* Submit Button */}
+          <motion.div variants={popIn}>
+            <Button
+              fullWidth
+              variant='contained'
+              size='large'
+              onClick={handleVerify}
+              disabled={loading || code.length < 6}
+              endIcon={!loading && <ArrowForward />}
+              sx={{
+                py: 2,
+                fontWeight: 700,
+                boxShadow: SHADOW_PRIMARY_SOFT,
+              }}
+            >
+              {loading ? <CircularProgress size={24} color='inherit' /> : 'Confirm & Continue'}
+            </Button>
+          </motion.div>
+
+          {/* Resend Link */}
+          <motion.div variants={popIn}>
+            <Box sx={{ textAlign: 'center', pt: 1 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Didn't receive a code?{' '}
+                <Typography
+                  component='span'
+                  variant='body2'
+                  sx={{
+                    color: resendCooldown > 0 ? 'text.secondary' : 'primary.main',
+                    fontWeight: 700,
+                    cursor: resendCooldown > 0 ? 'default' : 'pointer',
+                  }}
+                  onClick={handleResend}
+                >
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
+                </Typography>
+              </Typography>
+            </Box>
+          </motion.div>
+        </Stack>
       </Stack>
-    </Stack>
+    </motion.div>
   );
 
   // ─── Desktop layout ──────────────────────────────────────────────────────────

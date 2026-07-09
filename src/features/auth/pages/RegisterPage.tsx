@@ -9,6 +9,7 @@ import {
   Storefront, Google, ConfirmationNumber, EmojiEvents, CardGiftcard, Warning,
 } from '@mui/icons-material';
 import { useNavigate, useParams, useSearchParams, useLocation, Navigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { api } from '../../../shared/api/client';
 import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
 import { useAppSelector } from '../../../store/hook';
@@ -20,6 +21,9 @@ import {
   ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, ALPHA_PRIMARY_20,
   GOOGLE_BLUE, SHADOW_GOOGLE, SHADOW_NEUTRAL_SOFT,
 } from '../../../shared/colors';
+import {
+  staggerContainer, popIn, riseIn,
+} from '../../../shared/motion';
 
 // ─── Shared brand panel for desktop ─────────────────────────────────────────
 
@@ -248,164 +252,186 @@ const RegisterPage = () => {
   // ─── Form content (shared between mobile & desktop) ──────────────────────────
 
   const FormContent = () => (
-    <Stack sx={{ zoom: { xs: 0.85, md: 0.75 } }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: isDesktop ? 'flex-start' : 'center', mb: 2 }}>
-     
-        <Stack direction='row' alignItems='center' gap={3} mb={1}>
-          {isDesktop && (
-            <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
-              <ArrowBackIosNew fontSize='small' />
-            </IconButton>
-          )}
-          <Typography variant='h4' sx={{ fontWeight: 800, color: TEXT_HEADING, textAlign: isDesktop ? 'left' : 'center' }}>
-            {roleTitle}
-          </Typography>
-        </Stack>
-        <Typography variant='body2' color='text.secondary' sx={{ textAlign: isDesktop ? 'left' : 'center', px: isDesktop ? 0 : 2 }}>
-          {roleSubtitle}
-        </Typography>
-      </Box>
-
-      {regionBlocked && (
-        <Alert severity='error' sx={{ borderRadius: 2 }}>
-          Winnbell is not available in your region yet. We're expanding soon!
-        </Alert>
-      )}
-
-      {location.state?.message && (
-        <Alert severity='warning' sx={{ mb: 2, borderRadius: 2 }}>{location.state.message}</Alert>
-      )}
-
-      {error && <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
-
-      <Stack spacing={2}>
-        <Box>
-          <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Full Name</Typography>
-          <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
-            InputProps={{
-              startAdornment: (<InputAdornment position='start'><Person sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              sx: { bgcolor: 'background.paper' },
-            }}
-          />
-        </Box>
-
-        <Box>
-          <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Email</Typography>
-          <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
-            InputProps={{
-              startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              sx: { bgcolor: 'background.paper' },
-            }}
-          />
-        </Box>
-
-        <Box>
-          <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Password</Typography>
-          <TextField fullWidth name='password' value={formData.password} onChange={handleChange}
-            type={showPassword ? 'text' : 'password'} placeholder='••••••••'
-            InputProps={{
-              startAdornment: (<InputAdornment position='start'><Lock sx={{ color: 'text.secondary' }} /></InputAdornment>),
-              endAdornment: (
-                <InputAdornment position='end'>
-                  <IconButton onClick={() => setShowPassword(!showPassword)} size='small'>
-                    {showPassword ? <VisibilityOff fontSize='small' /> : <Visibility fontSize='small' />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-              sx: { bgcolor: 'background.paper' },
-            }}
-          />
-        </Box>
-
-        <Box>
-          <Divider sx={{ mb: 2 }}>
-            <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700 }}>OR</Typography>
-          </Divider>
-          <Button
-            fullWidth
-            variant='contained'
-            startIcon={googleLoading ? <CircularProgress size={20} color='inherit' /> : <Google />}
-            onClick={() => (termsAccepted && ageVerified) ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
-            disabled={googleLoading}
-            sx={{
-              py: 1.5,
-              textTransform: 'none',
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              border: `2px solid ${GOOGLE_BLUE}`,
-              fontWeight: 700,
-              fontSize: '1rem',
-              boxShadow: SHADOW_NEUTRAL_SOFT,
-              transition: 'all 0.2s ease-in-out',
-              opacity: 1,
-              '&:hover': {
-                bgcolor: 'background.paper',
-                boxShadow: SHADOW_GOOGLE,
-              },
-              '&:disabled': {
-                bgcolor: 'background.paper',
-                color: 'text.primary',
-                border: `2px solid ${GOOGLE_BLUE}`,
-                opacity: 1,
-              },
-            }}>
-            {googleLoading ? 'Signing up...' : 'Continue with Google'}
-          </Button>
-        </Box>
-
-        <Stack spacing={1}>
-          <FormControlLabel
-            control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
-            label={
-              <Typography variant='caption' color='text.secondary'>
-                I agree to the{' '}
-                <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
-                  Terms of Service
-                </Typography>{' '}and{' '}
-                <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
-                  Privacy Policy
-                </Typography>
+    <motion.div variants={staggerContainer} initial="hidden" animate="visible">
+      <Stack sx={{ zoom: { xs: 0.85, md: 0.75 } }}>
+        {/* Header */}
+        <motion.div variants={riseIn}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: isDesktop ? 'flex-start' : 'center', mb: 2 }}>
+            <Stack direction='row' alignItems='center' gap={3} mb={1}>
+              {isDesktop && (
+                <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
+                  <ArrowBackIosNew fontSize='small' />
+                </IconButton>
+              )}
+              <Typography variant='h4' sx={{ fontWeight: 800, color: TEXT_HEADING, textAlign: isDesktop ? 'left' : 'center' }}>
+                {roleTitle}
               </Typography>
-            }
-          />
+            </Stack>
+            <Typography variant='body2' color='text.secondary' sx={{ textAlign: isDesktop ? 'left' : 'center', px: isDesktop ? 0 : 2 }}>
+              {roleSubtitle}
+            </Typography>
+          </Box>
+        </motion.div>
 
-          <FormControlLabel
-            control={<Checkbox checked={ageVerified} onChange={(e) => setAgeVerified(e.target.checked)} size='small' />}
-            label={<Typography variant='caption' color='text.secondary'>I confirm that I am 18 years of age or older and a legal U.S. resident.</Typography>}
-          />
+        {regionBlocked && (
+          <motion.div variants={popIn}>
+            <Alert severity='error' sx={{ borderRadius: 2 }}>
+              Winnbell is not available in your region yet. We're expanding soon!
+            </Alert>
+          </motion.div>
+        )}
 
-          <Box sx={{ pt: 0.5 }}>
-            <Typography variant='caption' sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block' }}>
-              <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
-              <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
+        {location.state?.message && (
+          <motion.div variants={popIn}>
+            <Alert severity='warning' sx={{ mb: 2, borderRadius: 2 }}>{location.state.message}</Alert>
+          </motion.div>
+        )}
+
+        {error && (
+          <motion.div variants={popIn}>
+            <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>
+          </motion.div>
+        )}
+
+        <Stack spacing={1.5}>
+          <motion.div variants={popIn}>
+            <Box>
+              <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Full Name</Typography>
+              <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
+                InputProps={{
+                  startAdornment: (<InputAdornment position='start'><Person sx={{ color: 'text.secondary' }} /></InputAdornment>),
+                  sx: { bgcolor: 'background.paper' },
+                }}
+              />
+            </Box>
+          </motion.div>
+
+          <motion.div variants={popIn}>
+            <Box>
+              <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Email</Typography>
+              <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
+                InputProps={{
+                  startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
+                  sx: { bgcolor: 'background.paper' },
+                }}
+              />
+            </Box>
+          </motion.div>
+
+          <motion.div variants={popIn}>
+            <Box>
+              <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Password</Typography>
+              <TextField fullWidth name='password' value={formData.password} onChange={handleChange}
+                type={showPassword ? 'text' : 'password'} placeholder='••••••••'
+                InputProps={{
+                  startAdornment: (<InputAdornment position='start'><Lock sx={{ color: 'text.secondary' }} /></InputAdornment>),
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton onClick={() => setShowPassword(!showPassword)} size='small'>
+                        {showPassword ? <VisibilityOff fontSize='small' /> : <Visibility fontSize='small' />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                  sx: { bgcolor: 'background.paper' },
+                }}
+              />
+            </Box>
+          </motion.div>
+
+          <motion.div variants={popIn}>
+            <Box>
+              <Divider sx={{ mb: 2 }}>
+                <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700 }}>OR</Typography>
+              </Divider>
+              <Button
+                fullWidth
+                variant='contained'
+                startIcon={googleLoading ? <CircularProgress size={20} color='inherit' /> : <Google />}
+                onClick={() => (termsAccepted && ageVerified) ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
+                disabled={googleLoading}
+                sx={{
+                  py: 1.5,
+                  textTransform: 'none',
+                  bgcolor: 'background.paper',
+                  color: 'text.primary',
+                  border: `2px solid ${GOOGLE_BLUE}`,
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  boxShadow: SHADOW_NEUTRAL_SOFT,
+                  transition: 'all 0.2s ease-in-out',
+                  opacity: 1,
+                  '&:hover': {
+                    bgcolor: 'background.paper',
+                    boxShadow: SHADOW_GOOGLE,
+                  },
+                  '&:disabled': {
+                    bgcolor: 'background.paper',
+                    color: 'text.primary',
+                    border: `2px solid ${GOOGLE_BLUE}`,
+                    opacity: 1,
+                  },
+                }}>
+                {googleLoading ? 'Signing up...' : 'Continue with Google'}
+              </Button>
+            </Box>
+          </motion.div>
+
+          <motion.div variants={popIn}>
+            <Stack spacing={1}>
+              <FormControlLabel
+                control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
+                label={
+                  <Typography variant='caption' color='text.secondary'>
+                    I agree to the{' '}
+                    <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                      Terms of Service
+                    </Typography>{' '}and{' '}
+                    <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                      Privacy Policy
+                    </Typography>
+                  </Typography>
+                }
+              />
+
+              <FormControlLabel
+                control={<Checkbox checked={ageVerified} onChange={(e) => setAgeVerified(e.target.checked)} size='small' />}
+                label={<Typography variant='caption' color='text.secondary'>I confirm that I am 18 years of age or older and a legal U.S. resident.</Typography>}
+              />
+
+              <Box sx={{ pt: 0.5 }}>
+                <Typography variant='caption' sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block' }}>
+                  <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
+                  <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
+                </Typography>
+              </Box>
+            </Stack>
+          </motion.div>
+
+          <motion.div variants={popIn}>
+            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted || !ageVerified} disableElevation
+              sx={{
+                py: 1.5, fontSize: '1rem', fontWeight: 700,
+                bgcolor: isLocationManager ? ROLE_MANAGER_BG : 'primary.main',
+                boxShadow: SHADOW_PRIMARY_SOFT,
+                '&:hover': { bgcolor: isLocationManager ? ROLE_MANAGER_HOVER : 'primary.dark' },
+              }}
+            >
+              {loading ? <CircularProgress size={24} color='inherit' /> : 'Create Account'}
+            </Button>
+          </motion.div>
+
+          <Box sx={{ pt: 1, textAlign: 'center' }}>
+            <Typography variant='body2' color='text.secondary' fontWeight={600}>
+              Already have an account?{' '}
+              <Typography component='span' onClick={() => navigate(addMode ? '/login?add=1' : inviteToken ? `/login/?token=${inviteToken}` : '/login')}
+                sx={{ color: 'primary.main', fontWeight: 800, cursor: 'pointer' }}>
+                Sign In
+              </Typography>
             </Typography>
           </Box>
         </Stack>
-
-        <Button variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted || !ageVerified} disableElevation
-          sx={{
-            py: 1.5, fontSize: '1rem', fontWeight: 700,
-            bgcolor: isLocationManager ? ROLE_MANAGER_BG : 'primary.main',
-            boxShadow: SHADOW_PRIMARY_SOFT,
-            '&:hover': { bgcolor: isLocationManager ? ROLE_MANAGER_HOVER : 'primary.dark' },
-          }}
-        >
-          {loading ? <CircularProgress size={24} color='inherit' /> : 'Create Account'}
-        </Button>
-
       </Stack>
-
-      <Box sx={{ pt: 1, textAlign: 'center' }}>
-        <Typography variant='body2' color='text.secondary' fontWeight={600}>
-          Already have an account?{' '}
-          <Typography component='span' onClick={() => navigate(addMode ? '/login?add=1' : inviteToken ? `/login/?token=${inviteToken}` : '/login')}
-            sx={{ color: 'primary.main', fontWeight: 800, cursor: 'pointer' }}>
-            Sign In
-          </Typography>
-        </Typography>
-      </Box>
-    </Stack>
+    </motion.div>
   );
 
   // ─── Redirect already-authenticated users ───────────────────────────────────

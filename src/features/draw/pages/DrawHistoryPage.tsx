@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   Box, Container, Typography, Paper, Stack, Skeleton,
 } from '@mui/material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
@@ -17,6 +17,7 @@ import CampaignSwiperCard from '../components/CampaignSwiperCard';
 import { DrawResultDetail } from '../components/DrawResultDetail';
 import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
 import type { IDrawResult } from '../types';
+import { staggerContainer, popIn, riseIn, SPRING_POP } from '../../../shared/motion';
 
 const DrawHistoryPage = () => {
   const [selectedDrawIndex, setSelectedDrawIndex] = useState(0);
@@ -51,9 +52,9 @@ const DrawHistoryPage = () => {
         {!isLoading && history && history.length > 0 && allCampaigns.length > 0 && (
           <Box
             component={motion.div}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
+            variants={riseIn}
+            initial='hidden'
+            animate='visible'
             sx={{
               pt: { xs: 0.75, md: 1.5 },
               // Optical centering: the left margin is pulled 20px further than the right, which
@@ -92,10 +93,18 @@ const DrawHistoryPage = () => {
               ))}
             </Swiper>
             {/* Dots below the deck (mt clears the active card's glow shadow) */}
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', mt: 6 }}>
+            <Box
+              component={motion.div}
+              variants={staggerContainer}
+              initial='hidden'
+              animate='visible'
+              sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', mt: 6 }}
+            >
               {allCampaigns.map((_, i) => (
                 <Box
                   key={i}
+                  component={motion.div}
+                  variants={popIn}
                   onClick={() => swiperInst?.slideToLoop(i)}
                   sx={{ height: 6, borderRadius: '3px', cursor: 'pointer', transition: 'all 0.3s', width: i === selectedDrawIndex ? 20 : 6, bgcolor: i === selectedDrawIndex ? PRIMARY_MAIN : BORDER_LIGHT }}
                 />
@@ -107,9 +116,9 @@ const DrawHistoryPage = () => {
         {/* Error state */}
         {isError && (
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            variants={riseIn}
+            initial='hidden'
+            animate='visible'
           >
             <Paper
             elevation={0}
@@ -132,9 +141,9 @@ const DrawHistoryPage = () => {
         {/* Loading state */}
         {isLoading && (
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            variants={riseIn}
+            initial='hidden'
+            animate='visible'
           >
             <Stack spacing={{ xs: 3, md: 10.75 }}>
               {/* Deck skeleton: the centered featured card */}
@@ -164,9 +173,9 @@ const DrawHistoryPage = () => {
         {/* Empty state */}
         {!isLoading && !isError && (!history || history.length === 0) && (
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            variants={riseIn}
+            initial='hidden'
+            animate='visible'
           >
             <Paper
             elevation={0}
@@ -186,20 +195,22 @@ const DrawHistoryPage = () => {
           </motion.div>
         )}
 
-        {/* Detail for the selected campaign */}
-        {!isLoading && history && history.length > 0 && allCampaigns.length > 0 && selectedDraw && (
-          <motion.div
-            key={selectedDraw.id}
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-            exit={{ opacity: 0, y: -16 }}
-          >
-            <Box sx={{ pb: 1.5, pt: 3 }}>
-              <DrawResultDetail draw={selectedDraw} onLocationClick={(id) => setProfileLocationId(id)} />
-            </Box>
-          </motion.div>
-        )}
+        {/* Detail for the selected campaign. AnimatePresence makes the exit actually run
+            when switching draws (an exit prop is inert without it). */}
+        <AnimatePresence mode='wait'>
+          {!isLoading && history && history.length > 0 && allCampaigns.length > 0 && selectedDraw && (
+            <motion.div
+              key={selectedDraw.id}
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0, transition: SPRING_POP }}
+              exit={{ opacity: 0, y: -16, transition: { duration: 0.18 } }}
+            >
+              <Box sx={{ pb: 1.5, pt: 3 }}>
+                <DrawResultDetail draw={selectedDraw} onLocationClick={(id) => setProfileLocationId(id)} />
+              </Box>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Container>
 
       {/* Business Location Popup */}
