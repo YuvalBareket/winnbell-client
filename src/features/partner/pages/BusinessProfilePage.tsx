@@ -10,8 +10,10 @@ import {
   IconButton,
   InputAdornment,
   Alert,
+  Snackbar,
   Dialog,
   Drawer,
+
 } from '@mui/material';
 import {
   ArrowForward,
@@ -29,6 +31,7 @@ import {
   Close,
   AddLocationAltOutlined,
   EditOutlined,
+  DeleteOutlined,
 } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Controller, useForm, useFieldArray } from 'react-hook-form';
@@ -57,7 +60,7 @@ import {
 } from '../../../shared/colors';
 import { staggerContainer, popIn, SPRING_POP } from '../../../shared/motion';
 import LogoCropDialog from './components/LogoCropDialog';
-import LocationMapPicker from './components/LocationMapPicker';
+import LocationsMap from './components/LocationsMap';
 
 const STEPS = ['Business Info', 'Location'];
 const logoBase = import.meta.env.VITE_R2_PUBLIC_URL;
@@ -181,17 +184,22 @@ const BusinessProfilePage = () => {
   return (
     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, minHeight: '100dvh', height: { md: '100dvh' }, overflow: { md: 'hidden' }, bgcolor: 'white' }}>
 
-      {/* ══ Brand panel (fixed 100dvh on desktop, top header on mobile) ══ */}
+      {/* ══ Brand panel (collapses away on desktop step 2 so the map can take the stage) ══ */}
       <Box
         sx={{
-          width: { xs: '100%', md: '40%' }, flexShrink: 0,
+          width: { xs: '100%', md: step === 1 ? 0 : '40%' }, flexShrink: 0, minWidth: 0,
           height: { xs: 'auto', md: '100dvh' },
           background: GRADIENT_SIDEBAR, color: 'white', position: 'relative', overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
-          px: { xs: 1.5, md: '44px' },
+          px: { xs: 1.5, md: step === 1 ? 0 : '44px' },
           pt: { xs: 'calc(env(safe-area-inset-top, 0px) + 10px)', md: '48px' },
           pb: { xs: '26px', md: '48px' },
           borderRadius: { xs: '0 0 26px 26px', md: 0 },
+          // Desktop step 1 -> 2: the panel folds shut (width + padding) while its content fades
+          // out faster, so nothing visibly squishes. Going back plays it in reverse.
+          opacity: { xs: 1, md: step === 1 ? 0 : 1 },
+          pointerEvents: { xs: 'auto', md: step === 1 ? 'none' : 'auto' },
+          transition: 'width 0.55s cubic-bezier(0.22,1,0.36,1), padding 0.55s cubic-bezier(0.22,1,0.36,1), opacity 0.28s ease',
         }}
       >
         <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_10, filter: 'blur(60px)', pointerEvents: 'none' }} />
@@ -264,13 +272,209 @@ const BusinessProfilePage = () => {
         </Stack>
       </Box>
 
-      {/* ══ Form panel (scrolls independently) ══ */}
+      {/* ══ Form panel / Content area ══ */}
       <Box sx={{ flex: 1, height: { md: '100dvh' }, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <form onSubmit={handleSubmit(submit)} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-          <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ maxWidth: 620, width: '100%', mx: { xs: 0, md: 'auto' }, my: { md: 'auto' }, px: { xs: 2.5, sm: 4, md: 6 }, py: { xs: 2.5, md: 6 } }}>
+          {/* Step 2: Two-panel layout on desktop, single-column on mobile */}
+          {step === 1 && (
+            <Box sx={{ display: 'flex', flex: 1, minHeight: 0, flexDirection: { xs: 'column', md: 'row' }, gap: 0 }}>
+              {/* LEFT: Location List Panel */}
+              <Box sx={{ width: { xs: '100%', md: 452 }, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: { xs: 'none', md: `1px solid ${BORDER_LIGHT}` }, borderBottom: { xs: `1px solid ${BORDER_LIGHT}`, md: 'none' }, bgcolor: 'white', overflowY: 'auto', minHeight: { xs: 'auto', md: 0 } }}>
+                {/* Slides in from the left as the brand panel folds away */}
+                <Box component={motion.div} initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.45, delay: 0.16, ease: [0.22, 1, 0.36, 1] }} sx={{ px: 3, py: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  {/* Step badge */}
+                  <Stack direction='row' alignItems='center' spacing={1} sx={{ mb: 2.5 }}>
+                    <Box sx={{ width: 20, height: 20, borderRadius: '50%', bgcolor: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Typography sx={{ fontSize: '0.65rem', fontWeight: 800, color: 'white' }}>2</Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: TEXT_SECONDARY, letterSpacing: '0.5px' }}>Step 2 of 2 - Locations</Typography>
+                  </Stack>
 
-              {step === 0 ? (
+                  {/* Title */}
+                  <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING, mb: 0.5 }}>Where can customers find you?</Typography>
+
+                  {/* Subtitle */}
+                  <Typography sx={{ fontSize: '0.9rem', color: TEXT_TERTIARY, fontWeight: 500, mb: 2 }}>Add every branch where customers can earn entries. You can add more anytime.</Typography>
+
+                  {/* List header: "Your locations · {count}" */}
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: TEXT_SECONDARY, mb: 1.5 }}>Your locations - {fields.length}</Typography>
+
+                  {/* Scrollable location cards */}
+                  <Stack spacing={1.375} sx={{ mb: 2.5, flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                    {fields.map((f, index) => {
+                      const isExpanded = expandedIndex === index;
+                      const locName = watchedLocations?.[index]?.name;
+                      const locAddr = watchedLocations?.[index]?.address;
+                      const locLat = watchedLocations?.[index]?.lat ?? null;
+                      const locLon = watchedLocations?.[index]?.lon ?? null;
+
+                      return (
+                        <motion.div key={f.id} layout transition={{ layout: { duration: 0.34, ease: [0.22, 1, 0.36, 1] } }}>
+                          <AnimatePresence mode='wait' initial={false}>
+                            {isExpanded ? (
+                              <motion.div key='exp' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.2 }}>
+                                <Box sx={{ p: 2.25, borderRadius: '16px', border: `1.5px solid ${PRIMARY_MAIN}`, boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}`, bgcolor: 'white' }}>
+                                  <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 2 }}>
+                                    <Stack direction='row' alignItems='center' spacing={1}>
+                                      <Box sx={{ width: 26, height: 26, borderRadius: '8px', bgcolor: ALPHA_PRIMARY_10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LocationOn sx={{ fontSize: 15, color: PRIMARY_MAIN }} /></Box>
+                                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: TEXT_SECONDARY, letterSpacing: '-0.01em' }}>Location {index + 1}</Typography>
+                                    </Stack>
+                                    {fields.length > 1 && (
+                                      <IconButton size='small' onClick={() => removeLocationAt(index)} sx={{ color: TEXT_TERTIARY }}><Close fontSize='small' /></IconButton>
+                                    )}
+                                  </Stack>
+                                  <Stack spacing={2}>
+                                    <Box>
+                                      <FieldLabel>Branch name</FieldLabel>
+                                      <Controller name={`locations.${index}.name`} control={control} render={({ field }) => (
+                                        <TextField {...field} fullWidth size='small' placeholder='e.g. Downtown, Main Branch' sx={fieldSx} />
+                                      )} />
+                                    </Box>
+                                    <Box>
+                                      <FieldLabel>Street address</FieldLabel>
+                                      <Controller name={`locations.${index}.address`} control={control} rules={{ required: 'Address is required' }} render={({ field: { onChange, value }, fieldState: { error } }) => {
+                                        const addressValue = value && locLat != null && locLon != null ? { label: value, lat: locLat, lon: locLon } : null;
+                                        return (
+                                          <>
+                                            {/* Wrap so the autocomplete input matches the sibling fields (small, 12px radius, same border/focus). */}
+                                            <Box sx={fieldSx}>
+                                              <AddressAutoComplete
+                                                label=''
+                                                placeholder='Start typing your address...'
+                                                value={addressValue}
+                                                size='small'
+                                                onSelect={(sel) => {
+                                                  onChange(sel?.label || '');
+                                                  setValue(`locations.${index}.lat`, sel?.lat ?? null);
+                                                  setValue(`locations.${index}.lon`, sel?.lon ?? null);
+                                                }}
+                                              />
+                                            </Box>
+                                            {error && <Typography sx={{ fontSize: '0.72rem', color: 'error.main', mt: 0.5, ml: 0.5 }}>{error.message}</Typography>}
+                                          </>
+                                        );
+                                      }} />
+                                    </Box>
+                                    <Stack direction='row' spacing={1.75}>
+                                      <Box sx={{ flex: 1 }}>
+                                        <FieldLabel>Suite / unit <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
+                                        <Controller name={`locations.${index}.suite`} control={control} render={({ field }) => (
+                                          <TextField {...field} fullWidth size='small' placeholder='e.g. Unit 4' sx={fieldSx} />
+                                        )} />
+                                      </Box>
+                                      <Box sx={{ flex: 1 }}>
+                                        <FieldLabel>Phone <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
+                                        <Controller name={`locations.${index}.phone`} control={control} render={({ field }) => (
+                                          <TextField {...field} fullWidth size='small' placeholder='(302) 555-0142'
+                                            InputProps={{ startAdornment: (<InputAdornment position='start'><PhoneOutlined sx={{ color: TEXT_TERTIARY, fontSize: 18 }} /></InputAdornment>) }} sx={fieldSx} />
+                                        )} />
+                                      </Box>
+                                    </Stack>
+                                  </Stack>
+                                </Box>
+                              </motion.div>
+                            ) : (
+                              <motion.div key='col' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                                <Box
+                                  onClick={() => setExpandedIndex(index)}
+                                  sx={{
+                                    p: 1.75,
+                                    borderRadius: '14px',
+                                    border: `1px solid ${BORDER_LIGHT}`,
+                                    bgcolor: 'white',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s ease',
+                                    '&:hover': { borderColor: PRIMARY_MAIN },
+                                    ...(index === expandedIndex && { borderColor: PRIMARY_MAIN, boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}` }),
+                                  }}
+                                >
+                                  <Stack direction='row' alignItems='center' spacing={1.25}>
+                                    <Box sx={{ width: 38, height: 38, borderRadius: '10px', flexShrink: 0, bgcolor: ALPHA_PRIMARY_10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LocationOn sx={{ fontSize: 19, color: PRIMARY_MAIN }} /></Box>
+
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                      <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', mb: 0.25 }}>{locName || `Location ${index + 1}`}</Typography>
+                                      <Stack direction='row' alignItems='center' spacing={0.5}>
+                                        <LocationOn sx={{ fontSize: 13, color: TEXT_TERTIARY, flexShrink: 0 }} />
+                                        <Typography sx={{ fontSize: '0.78rem', color: TEXT_TERTIARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{locAddr || 'No address yet'}</Typography>
+                                      </Stack>
+                                    </Box>
+
+                                    <Stack direction='row' alignItems='center' spacing={0.5} sx={{ flexShrink: 0 }}>
+                                      <IconButton size='small' onClick={(e) => { e.stopPropagation(); setExpandedIndex(index); }} sx={{ color: TEXT_TERTIARY }}><EditOutlined fontSize='small' /></IconButton>
+                                      {fields.length > 1 && (
+                                        <IconButton size='small' onClick={(e) => { e.stopPropagation(); removeLocationAt(index); }} sx={{ color: TEXT_TERTIARY }}><DeleteOutlined fontSize='small' /></IconButton>
+                                      )}
+                                    </Stack>
+                                  </Stack>
+                                </Box>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </motion.div>
+                      );
+                    })}
+                  </Stack>
+
+                  {/* "Add another location" button */}
+                  <Button
+                    variant='outlined'
+                    startIcon={<AddLocationAltOutlined />}
+                    onClick={addAnother}
+                    fullWidth
+                    sx={{
+                      fontWeight: 700,
+                      borderRadius: '12px',
+                      color: PRIMARY_MAIN,
+                      borderColor: alpha(PRIMARY_MAIN, 0.4),
+                      borderStyle: 'dashed',
+                      borderWidth: '1.5px',
+                      bgcolor: alpha(PRIMARY_MAIN, 0.02),
+                      py: 1.15,
+                      mb: 2.5,
+                      '&:hover': { borderColor: PRIMARY_MAIN, bgcolor: ALPHA_PRIMARY_10 },
+                    }}
+                  >
+                    Add another location
+                  </Button>
+
+                </Box>
+              </Box>
+
+              {/* RIGHT: Map Panel - glides in from the right once the space has opened up */}
+              <Box sx={{ flex: 1, minWidth: 0, display: { xs: 'none', md: 'flex' }, flexDirection: 'column', height: { md: '100%' }, overflow: 'hidden' }}>
+                <motion.div
+                  initial={{ opacity: 0, x: 48, scale: 0.985 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  transition={{ duration: 0.55, delay: 0.26, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ flex: 1, minHeight: 0, position: 'relative' }}
+                >
+                  <LocationsMap
+                    locations={watchedLocations || []}
+                    activeIndex={expandedIndex}
+                    sector={selectedSector}
+                  />
+                  {/* Floating actions on the map - always visible, no scrolling needed */}
+                  <Stack direction='row' spacing={1.5} sx={{ position: 'absolute', bottom: 20, right: 20, zIndex: 5 }}>
+                    <Button variant='outlined' startIcon={<ArrowBack />} onClick={() => setStep(0)}
+                      sx={{ borderRadius: '13px', px: 2.75, py: 1.4, fontWeight: 800, color: TEXT_SECONDARY, bgcolor: 'white', borderColor: 'white', boxShadow: `0 10px 24px -8px ${alpha(TEXT_HEADING, 0.35)}`, '&:hover': { bgcolor: 'white', borderColor: BORDER_LIGHT } }}>
+                      Back
+                    </Button>
+                    <Button type='submit' disabled={isPending} endIcon={isPending ? undefined : <CheckCircle />}
+                      sx={{ ...primaryBtnSx, py: 1.4, px: 4 }}>
+                      {isPending ? <CircularProgress size={20} color='inherit' /> : 'Complete setup'}
+                    </Button>
+                  </Stack>
+                </motion.div>
+              </Box>
+            </Box>
+          )}
+
+          {/* Mobile & Desktop Step 0: Single-column form panel */}
+          {step !== 1 && (
+            <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ maxWidth: 620, width: '100%', mx: { xs: 0, md: 'auto' }, my: { md: 'auto' }, px: { xs: 2.5, sm: 4, md: 6 }, py: { xs: 2.5, md: 6 } }}>
+
+              {step === 0 && (
                 <motion.div initial='hidden' animate='visible' variants={staggerContainer}>
                   <Stack spacing={3}>
                     <motion.div variants={popIn}>
@@ -365,136 +569,10 @@ const BusinessProfilePage = () => {
                     </motion.div>
                   </Stack>
                 </motion.div>
-              ) : (
-                <motion.div initial='hidden' animate='visible' variants={staggerContainer}>
-                  <Stack spacing={2.5}>
-                    <motion.div variants={popIn}>
-                      <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>Where can customers find you?</Typography>
-                      <Typography sx={{ fontSize: '0.9rem', color: TEXT_TERTIARY, fontWeight: 500, mt: 0.5 }}>Add every place customers can visit. Each one shows up as a pin on the Winnbell map.</Typography>
-                    </motion.div>
-
-                    <Stack spacing={1.5}>
-                      {fields.map((f, index) => {
-                        const isExpanded = expandedIndex === index;
-                        const locName = watchedLocations?.[index]?.name;
-                        const locAddr = watchedLocations?.[index]?.address;
-                        const locLat = watchedLocations?.[index]?.lat ?? null;
-                        const locLon = watchedLocations?.[index]?.lon ?? null;
-                        return (
-                          <motion.div key={f.id} layout transition={{ layout: { duration: 0.34, ease: [0.22, 1, 0.36, 1] } }}>
-                            <AnimatePresence mode='wait' initial={false}>
-                              {isExpanded ? (
-                                <motion.div key='exp' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.2 }}>
-                                  <Box sx={{ p: 2.25, borderRadius: '16px', border: `1.5px solid ${PRIMARY_MAIN}`, boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}`, bgcolor: 'white' }}>
-                                    <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 2 }}>
-                                      <Stack direction='row' alignItems='center' spacing={1}>
-                                        <Box sx={{ width: 26, height: 26, borderRadius: '8px', bgcolor: ALPHA_PRIMARY_10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LocationOn sx={{ fontSize: 15, color: PRIMARY_MAIN }} /></Box>
-                                        <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, color: TEXT_SECONDARY, letterSpacing: '-0.01em' }}>Location {index + 1}</Typography>
-                                      </Stack>
-                                      {fields.length > 1 && (
-                                        <IconButton size='small' onClick={() => removeLocationAt(index)} sx={{ color: TEXT_TERTIARY }}><Close fontSize='small' /></IconButton>
-                                      )}
-                                    </Stack>
-                                    <Stack spacing={2}>
-                                      <Box>
-                                        <FieldLabel>Branch name</FieldLabel>
-                                        <Controller name={`locations.${index}.name`} control={control} render={({ field }) => (
-                                          <TextField {...field} fullWidth size='small' placeholder='e.g. Downtown, Main Branch' sx={fieldSx} />
-                                        )} />
-                                      </Box>
-                                      <Box>
-                                        <FieldLabel>Street address</FieldLabel>
-                                        <Controller name={`locations.${index}.address`} control={control} rules={{ required: 'Address is required' }} render={({ field: { onChange, value }, fieldState: { error } }) => {
-                                          const addressValue = value && locLat != null && locLon != null ? { label: value, lat: locLat, lon: locLon } : null;
-                                          return (
-                                            <>
-                                              <AddressAutoComplete
-                                                label=''
-                                                placeholder='Start typing your address...'
-                                                value={addressValue}
-                                                onSelect={(sel) => {
-                                                  onChange(sel?.label || '');
-                                                  setValue(`locations.${index}.lat`, sel?.lat ?? null);
-                                                  setValue(`locations.${index}.lon`, sel?.lon ?? null);
-                                                }}
-                                              />
-                                              {error && <Typography sx={{ fontSize: '0.72rem', color: 'error.main', mt: 0.5, ml: 0.5 }}>{error.message}</Typography>}
-                                            </>
-                                          );
-                                        }} />
-                                      </Box>
-                                      <LocationMapPicker
-                                        key={f.id}
-                                        lat={locLat}
-                                        lng={locLon}
-                                        onChange={(newLat, newLng) => {
-                                          setValue(`locations.${index}.lat`, newLat);
-                                          setValue(`locations.${index}.lon`, newLng);
-                                        }}
-                                      />
-                                      <Stack direction='row' spacing={1.75}>
-                                        <Box sx={{ flex: 1 }}>
-                                          <FieldLabel>Suite / unit <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
-                                          <Controller name={`locations.${index}.suite`} control={control} render={({ field }) => (
-                                            <TextField {...field} fullWidth size='small' placeholder='e.g. Unit 4' sx={fieldSx} />
-                                          )} />
-                                        </Box>
-                                        <Box sx={{ flex: 1 }}>
-                                          <FieldLabel>Phone <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
-                                          <Controller name={`locations.${index}.phone`} control={control} render={({ field }) => (
-                                            <TextField {...field} fullWidth size='small' placeholder='(302) 555-0142'
-                                              InputProps={{ startAdornment: (<InputAdornment position='start'><PhoneOutlined sx={{ color: TEXT_TERTIARY, fontSize: 18 }} /></InputAdornment>) }} sx={fieldSx} />
-                                          )} />
-                                        </Box>
-                                      </Stack>
-                                    </Stack>
-                                  </Box>
-                                </motion.div>
-                              ) : (
-                                <motion.div key='col' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                                  <Stack direction='row' alignItems='center' spacing={1.5} onClick={() => setExpandedIndex(index)} sx={{ p: 1.75, borderRadius: '14px', border: `1px solid ${BORDER_LIGHT}`, bgcolor: 'white', cursor: 'pointer', transition: 'border-color 0.15s ease', '&:hover': { borderColor: PRIMARY_MAIN } }}>
-                                    <Box sx={{ width: 34, height: 34, borderRadius: '10px', flexShrink: 0, bgcolor: ALPHA_PRIMARY_10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LocationOn sx={{ fontSize: 18, color: PRIMARY_MAIN }} /></Box>
-                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                      <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{locName || `Location ${index + 1}`}</Typography>
-                                      <Typography sx={{ fontSize: '0.78rem', color: TEXT_TERTIARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{locAddr || 'No address yet'}</Typography>
-                                    </Box>
-                                    <EditOutlined sx={{ fontSize: 18, color: TEXT_TERTIARY, flexShrink: 0 }} />
-                                    {fields.length > 1 && (
-                                      <IconButton size='small' onClick={(e) => { e.stopPropagation(); removeLocationAt(index); }} sx={{ color: TEXT_TERTIARY, flexShrink: 0 }}><Close fontSize='small' /></IconButton>
-                                    )}
-                                  </Stack>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </motion.div>
-                        );
-                      })}
-                    </Stack>
-
-                    <Box>
-                      <Button variant='outlined' startIcon={<AddLocationAltOutlined />} onClick={addAnother}
-                        sx={{ fontWeight: 700, borderRadius: '12px', color: PRIMARY_MAIN, borderColor: alpha(PRIMARY_MAIN, 0.4), px: 2.25, py: 1.15, '&:hover': { borderColor: PRIMARY_MAIN, bgcolor: ALPHA_PRIMARY_10 } }}>
-                        Add another location
-                      </Button>
-                    </Box>
-
-                    {setupError && <motion.div variants={popIn}><Alert severity='error' sx={{ borderRadius: 2 }}>{setupError}</Alert></motion.div>}
-
-                    {/* desktop actions */}
-                    <motion.div variants={popIn}>
-                      <Stack direction='row' spacing={1.75} sx={{ display: { xs: 'none', md: 'flex' }, mt: 1 }}>
-                        <Button variant='outlined' startIcon={<ArrowBack />} onClick={() => setStep(0)} sx={{ borderRadius: '13px', px: 2.75, py: 1.75, fontWeight: 800, color: TEXT_SECONDARY, borderColor: BORDER_LIGHT }}>Back</Button>
-                        <Button type='submit' fullWidth disabled={isPending} endIcon={isPending ? undefined : <CheckCircle />} sx={{ flex: 1, ...primaryBtnSx }}>
-                          {isPending ? <CircularProgress size={20} color='inherit' /> : 'Complete setup'}
-                        </Button>
-                      </Stack>
-                    </motion.div>
-                  </Stack>
-                </motion.div>
               )}
+              </Box>
             </Box>
-          </Box>
-
+          )}
           {/* mobile sticky CTA */}
           <Box sx={{ display: { xs: 'block', md: 'none' }, position: 'sticky', bottom: 0, bgcolor: 'white', borderTop: `1px solid ${BORDER_LIGHT}`, px: 2.5, pt: 1.75, pb: 2.75 }}>
             {step === 0 ? (
@@ -516,6 +594,18 @@ const BusinessProfilePage = () => {
 
       <input ref={logoInputRef} type='file' accept='image/*' onChange={handleLogoFile} style={{ display: 'none' }} />
       <LogoCropDialog open={logoDialogOpen} imageSrc={logoImageSrc ?? undefined} onClose={() => { setLogoDialogOpen(false); setLogoImageSrc(null); }} onUploadComplete={handleLogoUploadComplete} />
+
+      {/* Setup errors surface as a toast so they are never buried below the fold */}
+      <Snackbar
+        open={!!setupError}
+        autoHideDuration={6000}
+        onClose={(_, reason) => { if (reason !== 'clickaway') setSetupError(''); }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity='error' variant='filled' onClose={() => setSetupError('')} sx={{ borderRadius: '12px', boxShadow: `0 12px 28px -8px ${alpha(TEXT_HEADING, 0.4)}` }}>
+          {setupError}
+        </Alert>
+      </Snackbar>
 
       <CategoryPicker
         open={categoryPickerOpen}
