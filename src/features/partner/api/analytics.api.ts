@@ -27,7 +27,7 @@ export interface OverviewResponse {
   returning_participants: number;
   new_pct: number;
   returning_pct: number;
-  entry_cap: { used: number; cap: number | null; pct: number };
+  entry_cap: { used: number; cap: number | null; pct: number; enrolled: boolean };
   draw_capacity: { draw_id: number; label: string; status: string; used: number; cap: number | null; pct: number }[];
   series: AnalyticsSeriesPoint[];
   // Auto-chosen time granularity for `series`, based on the actual data span (not the window).

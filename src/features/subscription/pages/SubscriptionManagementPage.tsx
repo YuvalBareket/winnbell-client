@@ -925,7 +925,7 @@ export default function SubscriptionManagementPage() {
       </Container>
 
       {/* Edit Plan dialog */}
-      <Dialog open={editPlanOpen} onClose={() => setEditPlanOpen(false)} fullWidth maxWidth='sm' PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
+      <Dialog open={editPlanOpen} onClose={() => setEditPlanOpen(false)} fullWidth maxWidth='md' PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
         <DialogTitle sx={{ fontWeight: 800 }}>Change Plan</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>

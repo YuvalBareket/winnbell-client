@@ -36,6 +36,7 @@ import {
   WarningAmberOutlined,
   ShowChartOutlined,
   PieChartOutlineOutlined,
+  EventAvailableOutlined,
 } from '@mui/icons-material';
 import {
   ResponsiveContainer,
@@ -306,7 +307,7 @@ const ChartCard = ({
 }) => (
   <Paper
     elevation={0}
-    sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: SHADOW_CARD }}
+    sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: SHADOW_CARD, height: '100%' }}
   >
     <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
       <Box>
@@ -555,7 +556,7 @@ const BusinessAnalyticsPage = () => {
           }}
         >
           {/* New vs Returning */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants} style={{ height: '100%' }}>
             <ChartCard
               title="New participations vs Repeat"
               subtitle="Entered once vs came back for more"
@@ -627,7 +628,7 @@ const BusinessAnalyticsPage = () => {
           </motion.div>
 
           {/* Entry Cap Utilization */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants} style={{ height: '100%' }}>
             <ChartCard title="Draw Capacity Used" subtitle="Entries issued against your cap">
               <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: CHART_HEIGHT }}>
                 {(() => {
@@ -753,6 +754,22 @@ const BusinessAnalyticsPage = () => {
                             );
                           })}
                         </motion.div>
+                      </Box>
+                    );
+                  }
+
+                  // Not yet enrolled in a live campaign: a fresh subscriber has no draw
+                  // allowance to show until the next campaign opens, so avoid a fake 0 / cap gauge.
+                  if (cap && !cap.enrolled) {
+                    return (
+                      <Box sx={{ textAlign: 'center', py: 5 }}>
+                        <EventAvailableOutlined sx={{ fontSize: 40, color: 'text.disabled' }} />
+                        <Typography variant="body2" fontWeight={700} sx={{ mt: 1.5 }}>
+                          Not in a campaign yet
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, maxWidth: 260, mx: 'auto', lineHeight: 1.5 }}>
+                          Your capacity appears here once your next campaign opens and entries start coming in.
+                        </Typography>
                       </Box>
                     );
                   }
