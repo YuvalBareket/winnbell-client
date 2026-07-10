@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Box, Typography, Stack, Paper, Button, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { FileDownload } from '@mui/icons-material';
-import QRCode from 'react-qr-code';
 import {
   PRIMARY_MAIN, GRADIENT_DRAW_CARD, GRADIENT_SUCCESS_GREEN,
   GRADIENT_POST_NAVY, GRADIENT_POST_LIGHT, GRADIENT_POST_ORANGE,
@@ -24,21 +23,15 @@ const FEED_H = 675;               // 4:5
 const STORY_W = 440;              // 9:16 for Stories
 const STORY_H = 780;
 
-interface CardProps { businessName: string; locationLabel: string; scanUrl: string; prizeLabel?: string | null }
-
-// Plain QR in a white panel (no brand icon overlay - cleaner at social sizes).
-const QrPanel = ({ scanUrl, size, dark = TEXT_HEADING }: { scanUrl: string; size: number; dark?: string }) => (
-  <Box sx={{ boxSizing: 'border-box', bgcolor: '#fff', borderRadius: '16px', p: '12px', flexShrink: 0, display: 'flex' }}>
-    <QRCode value={scanUrl} size={size} level='H' fgColor={dark} />
-  </Box>
-);
+// No QR on social images - the post's link (story link sticker / caption) does the linking.
+interface CardProps { businessName: string; locationLabel: string; prizeLabel?: string | null }
 
 const FinePrint = ({ light = true }: { light?: boolean }) => (
   <Typography sx={{ color: light ? ALPHA_WHITE_80 : TEXT_SECONDARY, fontSize: 12 }}>No purchase necessary</Typography>
 );
 
-// 1. Square: "Scan. Play. Win."
-const SquareShareCard = ({ businessName, locationLabel, scanUrl }: CardProps) => (
+// 1. Square: "Shop. Play. Win."
+const SquareShareCard = ({ businessName, locationLabel }: CardProps) => (
   <Box sx={{ boxSizing: 'border-box', width: FEED_W, height: FEED_H, background: GRADIENT_DRAW_CARD, color: '#fff', p: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
     <Box sx={{ position: 'absolute', top: -110, right: -80, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, transparent 70%)' }} />
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -48,7 +41,7 @@ const SquareShareCard = ({ businessName, locationLabel, scanUrl }: CardProps) =>
       </Typography>
     </Box>
     <Box>
-      {['Scan.', 'Play.', 'Win.'].map((w) => (
+      {['Shop.', 'Play.', 'Win.'].map((w) => (
         <Typography key={w} sx={{ fontWeight: 900, fontSize: 74, lineHeight: 1.04, letterSpacing: '-0.02em' }}>{w}</Typography>
       ))}
     </Box>
@@ -58,13 +51,12 @@ const SquareShareCard = ({ businessName, locationLabel, scanUrl }: CardProps) =>
         <Typography noWrap sx={{ color: ALPHA_WHITE_80, fontWeight: 600, fontSize: 15, mt: 0.5 }}>{locationLabel}</Typography>
         <Box sx={{ mt: 1.5 }}><FinePrint /></Box>
       </Box>
-      <QrPanel scanUrl={scanUrl} size={104} />
     </Box>
   </Box>
 );
 
-// 2. Story: "Your first entry is on us."
-const StoryShareCard = ({ businessName, scanUrl }: CardProps) => (
+// 2. Story: join this month's draw
+const StoryShareCard = ({ businessName }: CardProps) => (
   <Box sx={{ boxSizing: 'border-box', width: STORY_W, height: STORY_H, background: GRADIENT_SUCCESS_GREEN, color: '#fff', p: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
     <Box sx={{ position: 'absolute', bottom: -140, left: -100, width: 340, height: 340, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, transparent 70%)' }} />
     <Box>
@@ -78,21 +70,20 @@ const StoryShareCard = ({ businessName, scanUrl }: CardProps) => (
     </Box>
     <Box>
       <Typography sx={{ fontWeight: 900, fontSize: 50, lineHeight: 1.08, letterSpacing: '-0.02em' }}>
-        Scan to join this month's draw.
+        Join this month's draw.
       </Typography>
       <Typography sx={{ color: ALPHA_WHITE_80, fontWeight: 600, fontSize: 19, mt: 2.5 }}>
-        Scan in-store at {businessName}
+        At {businessName}
       </Typography>
     </Box>
     <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 2 }}>
       <FinePrint />
-      <QrPanel scanUrl={scanUrl} size={96} />
     </Box>
   </Box>
 );
 
 // 3. Prize post: "This month's grand draw $X"
-const PrizeShareCard = ({ businessName, scanUrl, prizeLabel }: CardProps) => (
+const PrizeShareCard = ({ businessName, prizeLabel }: CardProps) => (
   <Box sx={{ boxSizing: 'border-box', width: FEED_W, height: FEED_H, background: GRADIENT_POST_NAVY, color: '#fff', p: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
     <Box sx={{ position: 'absolute', top: -120, right: -90, width: 320, height: 320, borderRadius: '50%', background: `radial-gradient(circle, ${GOLD_TROPHY}2e 0%, ${GOLD_TROPHY}10 45%, transparent 70%)` }} />
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -110,16 +101,15 @@ const PrizeShareCard = ({ businessName, scanUrl, prizeLabel }: CardProps) => (
     </Box>
     <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 2 }}>
       <Box>
-        <Typography sx={{ fontWeight: 800, fontSize: 18 }}>Scan to join the draw</Typography>
+        <Typography sx={{ fontWeight: 800, fontSize: 18 }}>Join the draw in-store</Typography>
         <Box sx={{ mt: 1 }}><FinePrint /></Box>
       </Box>
-      <QrPanel scanUrl={scanUrl} size={96} />
     </Box>
   </Box>
 );
 
 // 4. Announcement: "We're on Winnbell." (light card)
-const AnnounceShareCard = ({ businessName, locationLabel, scanUrl }: CardProps) => (
+const AnnounceShareCard = ({ businessName, locationLabel }: CardProps) => (
   <Box sx={{ boxSizing: 'border-box', width: FEED_W, height: FEED_H, background: GRADIENT_POST_LIGHT, color: TEXT_HEADING, p: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
     <Box sx={{ position: 'absolute', bottom: -130, right: -90, width: 320, height: 320, borderRadius: '50%', background: `radial-gradient(circle, ${PRIMARY_MAIN}14 0%, ${PRIMARY_MAIN}08 45%, transparent 70%)` }} />
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -133,7 +123,7 @@ const AnnounceShareCard = ({ businessName, locationLabel, scanUrl }: CardProps) 
         We're on Winnbell.
       </Typography>
       <Typography sx={{ color: TEXT_SECONDARY, fontWeight: 700, fontSize: 18, mt: 1.5 }}>
-        Scan in-store to join the monthly prize draw.
+        Join the monthly prize draw in-store.
       </Typography>
     </Box>
     <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 2 }}>
@@ -142,13 +132,12 @@ const AnnounceShareCard = ({ businessName, locationLabel, scanUrl }: CardProps) 
         <Typography noWrap sx={{ color: TEXT_SECONDARY, fontWeight: 600, fontSize: 15, mt: 0.5 }}>{locationLabel}</Typography>
         <Box sx={{ mt: 1.5 }}><FinePrint light={false} /></Box>
       </Box>
-      <QrPanel scanUrl={scanUrl} size={96} />
     </Box>
   </Box>
 );
 
 // 5. Reminder: "Don't leave without scanning your receipt."
-const ReminderShareCard = ({ businessName, scanUrl }: CardProps) => (
+const ReminderShareCard = ({ businessName }: CardProps) => (
   <Box sx={{ boxSizing: 'border-box', width: FEED_W, height: FEED_H, background: GRADIENT_POST_ORANGE, color: '#fff', p: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
     <Box sx={{ position: 'absolute', top: -120, left: -90, width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 45%, transparent 70%)' }} />
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -166,7 +155,6 @@ const ReminderShareCard = ({ businessName, scanUrl }: CardProps) => (
         <Typography sx={{ color: ALPHA_WHITE_80, fontWeight: 700, fontSize: 16, mt: 0.5 }}>Takes seconds at the counter.</Typography>
         <Box sx={{ mt: 1.5 }}><FinePrint /></Box>
       </Box>
-      <QrPanel scanUrl={scanUrl} size={96} />
     </Box>
   </Box>
 );
@@ -231,7 +219,7 @@ interface ReadyToShareProps extends CardProps {
   onToast: (msg: string) => void;
 }
 
-export const ReadyToShare = ({ businessName, locationLabel, scanUrl, prizeLabel, canDownload, onRequireLocation, onToast }: ReadyToShareProps) => {
+export const ReadyToShare = ({ businessName, locationLabel, prizeLabel, canDownload, onRequireLocation, onToast }: ReadyToShareProps) => {
   const theme = useTheme();
   const upSm = useMediaQuery(theme.breakpoints.up('sm'));
   const upMd = useMediaQuery(theme.breakpoints.up('md'));
@@ -241,7 +229,7 @@ export const ReadyToShare = ({ businessName, locationLabel, scanUrl, prizeLabel,
   const rowH = upLg ? 340 : upMd ? 300 : upSm ? 260 : 190;
   const refs = useRef<Record<string, HTMLDivElement | null>>({});
   const [saving, setSaving] = useState<string | null>(null);
-  const props: CardProps = { businessName, locationLabel, scanUrl, prizeLabel };
+  const props: CardProps = { businessName, locationLabel, prizeLabel };
 
   const posts = [
     { id: 'square', label: 'Instagram / Facebook · 4:5', w: FEED_W, h: FEED_H, node: <SquareShareCard {...props} /> },

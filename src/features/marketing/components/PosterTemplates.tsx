@@ -1,10 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import QRCode from 'react-qr-code';
 import { BRAND_ICON_BLUE } from '../../../shared/colors';
-import iconBlue  from '../assets/winnbell_icon_blue.svg';
-import iconGold  from '../assets/winnbell_icon_gold.svg';
-import iconGreen from '../assets/winnbell_icon_green.svg';
-import iconPink  from '../assets/winnbell_icon_pink.svg';
 import { LEGAL_TEXT } from './posterConstants';
 import type { PosterProps } from './posterConstants';
 
@@ -25,29 +21,6 @@ export const PosterWrap = ({ children, bg }: { children: React.ReactNode; bg?: s
   </Box>
 );
 
-// ── QR code with centered logo bubble (WhatsApp-style) ───────────────────────
-export const QRWithBrand = ({ value, size, fgColor, logoSrc }: {
-  value: string; size: number; fgColor?: string; logoSrc?: string;
-}) => {
-  const bubbleSize = Math.round(size * 0.7);
-  const logoSize  = Math.round(size * 0.27);
-  return (
-    <Box sx={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <QRCode value={value} size={size} level='H' fgColor={fgColor} />
-      {/* White fade so the centered logo stays legible (required, renders fine in PDF) */}
-      <Box sx={{
-        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-        width: bubbleSize, height: bubbleSize,
-        background: 'radial-gradient(circle, rgba(255,255,255,0.82) 15%, rgba(255,255,255,0) 60%, rgba(255,255,255,0) 75%)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <Box component='img' src={logoSrc ?? '/winnbell_icon.svg'} alt='Winnbell'
-          sx={{ height: logoSize, width: 'auto', display: 'block' }} />
-      </Box>
-    </Box>
-  );
-};
-
 // Display font for headlines (Coiny is loaded app-wide in index.html). The Dark
 // template overrides with a heavy Jakarta for a more luxe, serious feel.
 const DISPLAY_FONT = '"Sora", "Plus Jakarta Sans", system-ui, sans-serif';
@@ -66,7 +39,6 @@ interface PosterTheme {
   qrFrameBorder: string;
   qrFrameBg: string;
   qrOnDark?: boolean;          // wrap QR in a white card (dark templates)
-  logoSrc: string;
   ctaBg: string;
   ctaText: string;
   reassureColor: string;
@@ -81,7 +53,7 @@ interface PosterTheme {
 // header ~52 + footer ~78 leaves ~284 for the body. The body holds three blocks
 // (message / QR / CTA) ~244px tall, distributed with space-evenly so the
 // whitespace is balanced and nothing clips. Keep this rhythm when editing.
-const PosterBase = ({ businessName, scanUrl, headline, t }: PosterProps & { t: PosterTheme }) => (
+const PosterBase = ({ businessName, scanUrl, headline, minAmountLabel, t }: PosterProps & { t: PosterTheme }) => (
   <PosterWrap bg={t.pageBg}>
     {/* Brand band */}
     <Box sx={{
@@ -116,18 +88,20 @@ const PosterBase = ({ businessName, scanUrl, headline, t }: PosterProps & { t: P
         </Typography>
       </Box>
 
-      {/* Block 2: the hero - QR */}
+      {/* Block 2: the hero - QR (plain, no center icon, for maximum scannability) */}
       <Box sx={{ p: 0.75, bgcolor: t.qrFrameBg, borderRadius: 1, border: `3px solid ${t.qrFrameBorder}` }}>
         {t.qrOnDark ? (
-          <Box sx={{ bgcolor: 'white', p: '5px', borderRadius: 0.5 }}>
-            <QRWithBrand value={scanUrl} size={110} fgColor={t.qrFg} logoSrc={t.logoSrc} />
+          <Box sx={{ bgcolor: 'white', p: '5px', borderRadius: 0.5, display: 'flex' }}>
+            <QRCode value={scanUrl} size={110} level='H' fgColor={t.qrFg} />
           </Box>
         ) : (
-          <QRWithBrand value={scanUrl} size={110} fgColor={t.qrFg} logoSrc={t.logoSrc} />
+          <Box sx={{ display: 'flex' }}>
+            <QRCode value={scanUrl} size={110} level='H' fgColor={t.qrFg} />
+          </Box>
         )}
       </Box>
 
-      {/* Block 3: loud CTA + reassurance */}
+      {/* Block 3: loud CTA + reassurance + threshold (if present) */}
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Box sx={{
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
@@ -143,6 +117,14 @@ const PosterBase = ({ businessName, scanUrl, headline, t }: PosterProps & { t: P
         }}>
           No purchase necessary. Takes seconds.
         </Typography>
+        {minAmountLabel && (
+          <Typography sx={{
+            fontFamily: SANS_FONT, fontSize: '7.5px', fontWeight: 500, color: t.reassureColor,
+            textAlign: 'center', lineHeight: 1.3, mt: 0.4,
+          }}>
+            Receipts of {minAmountLabel} or more enter the draw.
+          </Typography>
+        )}
       </Box>
     </Box>
 
@@ -168,7 +150,6 @@ export const PosterClassic = (p: PosterProps) => (
     badgeBg: PALETTE_CLASSIC.primary, badgeText: 'white',
     headlineColor: PALETTE_CLASSIC.primary,
     qrFg: PALETTE_CLASSIC.primary, qrFrameBorder: PALETTE_CLASSIC.primary, qrFrameBg: 'white',
-    logoSrc: iconBlue,
     ctaBg: PALETTE_CLASSIC.primary, ctaText: 'white',
     reassureColor: '#5f6b7a',
     footerBg: PALETTE_CLASSIC.accent, footerBorder: `${PALETTE_CLASSIC.primary}26`,
@@ -184,7 +165,6 @@ export const PosterDark = (p: PosterProps) => (
     badgeBg: PALETTE_DARK.gold, badgeText: PALETTE_DARK.primary,
     headlineColor: 'white',
     qrFg: PALETTE_DARK.primary, qrFrameBorder: PALETTE_DARK.gold, qrFrameBg: PALETTE_DARK.frame, qrOnDark: true,
-    logoSrc: iconGold,
     ctaBg: PALETTE_DARK.gold, ctaText: PALETTE_DARK.primary,
     reassureColor: 'rgba(255,255,255,0.7)',
     footerBg: PALETTE_DARK.primary, footerBorder: `${PALETTE_DARK.gold}40`,
@@ -200,7 +180,6 @@ export const PosterFresh = (p: PosterProps) => (
     badgeBg: PALETTE_FRESH.primary, badgeText: 'white',
     headlineColor: '#064e3b',
     qrFg: PALETTE_FRESH.dark, qrFrameBorder: PALETTE_FRESH.primary, qrFrameBg: 'white',
-    logoSrc: iconGreen,
     ctaBg: PALETTE_FRESH.primary, ctaText: 'white',
     reassureColor: '#5f6b7a',
     footerBg: PALETTE_FRESH.accent, footerBorder: `${PALETTE_FRESH.primary}26`,
@@ -216,7 +195,6 @@ export const PosterPink = (p: PosterProps) => (
     badgeBg: PALETTE_PINK.primary, badgeText: 'white',
     headlineColor: '#831843',
     qrFg: PALETTE_PINK.dark, qrFrameBorder: PALETTE_PINK.primary, qrFrameBg: 'white',
-    logoSrc: iconPink,
     ctaBg: PALETTE_PINK.primary, ctaText: 'white',
     reassureColor: '#5f6b7a',
     footerBg: PALETTE_PINK.accent, footerBorder: `${PALETTE_PINK.primary}26`,

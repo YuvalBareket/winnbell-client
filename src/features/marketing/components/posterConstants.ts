@@ -25,4 +25,4 @@ export const HEADLINES = [
 export const LEGAL_TEXT =
   'This business participates in campaigns operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Alternative free entry method available on the platform. 18+. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com';
 
-export interface PosterProps { businessName: string; scanUrl: string; headline: string }
+export interface PosterProps { businessName: string; scanUrl: string; headline: string; minAmountLabel?: string | null }

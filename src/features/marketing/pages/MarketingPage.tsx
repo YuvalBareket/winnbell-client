@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import {
@@ -16,10 +16,10 @@ import {
 } from '../../../shared/colors';
 import { useGetDraws } from '../../draw/hooks/useGetDraws';
 import { formatCurrency } from '../../../shared/utils/date';
-import OverviewTab from '../components/OverviewTab';
 import SocialPostsTab from '../components/SocialPostsTab';
 import PostersTab from '../components/PostersTab';
 import ScriptsTab from '../components/ScriptsTab';
+import BrandKitTab from '../components/BrandKitTab';
 import {
   staggerContainer,
   riseIn,
@@ -45,6 +45,21 @@ const MarketingPage = () => {
   const [copied, setCopied] = useState(false);
   // "Choose a location" buttons open this picker directly (no scroll-to-top hunting).
   const [locPickerOpen, setLocPickerOpen] = useState(false);
+
+  // Center the selected tab in the scrollable tab bar (mobile) - MUI only scrolls it
+  // into view at the edge, which hides what comes next.
+  const tabsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = tabsRef.current;
+    if (!root) return;
+    const scroller = root.querySelector<HTMLElement>('.MuiTabs-scroller');
+    const selected = root.querySelectorAll<HTMLElement>('.MuiTab-root')[activeTab];
+    if (!scroller || !selected) return;
+    scroller.scrollTo({
+      left: selected.offsetLeft - (scroller.clientWidth - selected.clientWidth) / 2,
+      behavior: 'smooth',
+    });
+  }, [activeTab]);
 
   const businessName = businessData?.name ?? 'Your Business';
   const locations = (isBusiness ? businessData?.locations?.filter((l) => l.is_active) : []) ?? [];
@@ -83,16 +98,6 @@ const MarketingPage = () => {
     </Box>
   ) : null;
 
-  // Helper to switch to a tab by name
-  const handleTabSwitch = (tabName: 'Social Posts' | 'Posters' | 'Scripts') => {
-    const tabMap: Record<string, number> = {
-      'Overview': 0,
-      'Social Posts': 1,
-      'Posters': 2,
-      'Scripts': 3,
-    };
-    setActiveTab(tabMap[tabName] ?? 0);
-  };
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8 }}>
@@ -105,7 +110,7 @@ const MarketingPage = () => {
       >
         <AppPageHero
           title='Marketing Materials'
-          subtitle='Leverage Winnbell with ready-made marketing materials, and check out our growth playbook to bring in more customers.'
+          subtitle='Ready-made materials to promote your campaign and drive customer entries.'
           actions={isDesktop ? headerLocationControl : undefined}
         />
       </motion.div>
@@ -121,6 +126,7 @@ const MarketingPage = () => {
           <motion.div variants={riseIn}>
             <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: 3 }}>
               <Tabs
+                ref={tabsRef}
                 value={activeTab}
                 onChange={(_, val) => setActiveTab(val)}
                 variant='scrollable'
@@ -137,10 +143,10 @@ const MarketingPage = () => {
                   },
                 }}
               >
-                <Tab label='Overview' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
-                <Tab label='Social Posts' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
-                <Tab label='Posters' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
-                <Tab label='Scripts' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
+                <Tab label='QR Posters' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
+                <Tab label='Social Assets' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
+                <Tab label='Staff Scripts' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
+                <Tab label='Create Your Own' sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.9rem' }} />
               </Tabs>
             </Paper>
           </motion.div>
@@ -148,12 +154,15 @@ const MarketingPage = () => {
 
         {/* Tab content */}
         {activeTab === 0 && (
-          <OverviewTab
-            effectiveLocationId={effectiveLocationId}
+          <PostersTab
+            businessName={businessName}
             scanUrl={scanUrl}
+            effectiveLocationId={effectiveLocationId}
             onToast={setSnackbar}
             onRequireLocation={() => setLocPickerOpen(true)}
-            onTabSwitch={handleTabSwitch}
+            copied={copied}
+            onCopy={handleCopyScanUrl}
+            minAmountLabel={businessData?.min_transaction_amount ? `${formatCurrency(Number(businessData.min_transaction_amount))}` : null}
           />
         )}
 
@@ -170,19 +179,16 @@ const MarketingPage = () => {
         )}
 
         {activeTab === 2 && (
-          <PostersTab
-            businessName={businessName}
+          <ScriptsTab
             scanUrl={scanUrl}
             effectiveLocationId={effectiveLocationId}
             onToast={setSnackbar}
             onRequireLocation={() => setLocPickerOpen(true)}
-            copied={copied}
-            onCopy={handleCopyScanUrl}
           />
         )}
 
         {activeTab === 3 && (
-          <ScriptsTab
+          <BrandKitTab
             scanUrl={scanUrl}
             effectiveLocationId={effectiveLocationId}
             onToast={setSnackbar}
@@ -226,7 +232,7 @@ const MarketingPage = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
-          severity={snackbar.includes('failed') ? 'error' : 'success'}
+          severity={snackbar.includes('failed') ? 'error' : snackbar.includes('coming soon') ? 'info' : 'success'}
           variant='filled'
           sx={{ width: '100%' }}
         >

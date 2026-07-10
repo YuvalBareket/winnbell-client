@@ -1,16 +1,21 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Stack, Paper, Button,
   useMediaQuery, useTheme, CircularProgress,
 } from '@mui/material';
 import {
-  CheckCircleOutline, FileDownload, Print, ContentCopy,
+  CheckCircleOutline, FileDownload, Print, ContentCopy, QrCode2, BookRounded, StarRounded,
 } from '@mui/icons-material';
+import QRCodePlain from 'react-qr-code';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import {
-  PRIMARY_MAIN, SHADOW_CARD,
+  PRIMARY_MAIN, PRIMARY_DEEP, SHADOW_CARD,
+  GOLD_TROPHY, ACCENT_GOLD_LIGHT, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_80, ALPHA_WHITE_90,
+  TEXT_HEADING, TEXT_SECONDARY, AMBER_HOURGLASS,
+  GRADIENT_GOLD_VIVID,
 } from '../../../shared/colors';
 import { svgToPngDataUrl } from '../utils/capture';
 import {
@@ -59,6 +64,7 @@ interface PostersTabProps {
   onRequireLocation: () => void;
   copied: boolean;
   onCopy: () => void;
+  minAmountLabel?: string | null;
 }
 
 const PostersTab = ({
@@ -69,15 +75,37 @@ const PostersTab = ({
   onRequireLocation,
   copied,
   onCopy,
+  minAmountLabel,
 }: PostersTabProps) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
 
   const [selectedId, setSelectedId] = useState('classic');
   const [headline, setHeadline] = useState(HEADLINES[0]);
   const [downloading, setDownloading] = useState(false);
 
   const posterRef = useRef<HTMLDivElement>(null);
+  const heroQrRef = useRef<HTMLDivElement>(null);
+  const [downloadingQr, setDownloadingQr] = useState(false);
+
+  const handleDownloadQr = async () => {
+    if (!heroQrRef.current) return;
+    setDownloadingQr(true);
+    try {
+      const { downloadNodeAsPng } = await import('../utils/capture');
+      await downloadNodeAsPng(heroQrRef.current, 'winnbell-scan-qr.png', 2);
+      onToast('QR downloaded!');
+    } catch (err) {
+      console.error(err);
+      onToast('Download failed. Please try again.');
+    } finally {
+      setDownloadingQr(false);
+    }
+  };
+
+  const handleOpenGuide = () => navigate('/marketing/guide');
 
   const thumbScale = isDesktop ? THUMB_SCALE : THUMB_SCALE_MOBILE;
   const thumbW = isDesktop ? THUMB_W : THUMB_W_MOBILE;
@@ -252,11 +280,182 @@ const PostersTab = ({
       transition={{ duration: 0.5, delay: 0.05 }}
     >
       <Box sx={{ pb: 4 }}>
+        {/* Blue + Gold cards (moved from Overview) */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.08 }}
+        >
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1.35fr 1fr' },
+              gap: { xs: 1.5, md: 2.5 },
+              alignItems: 'stretch',
+              mb: { xs: 2, md: 3 },
+            }}
+          >
+            {/* Blue QR Card */}
+            <Paper
+              elevation={0}
+              sx={{
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: 3,
+                p: { xs: 2, md: 2.5 },
+                background: `linear-gradient(135deg, ${PRIMARY_DEEP}, ${PRIMARY_MAIN})`,
+                color: '#fff',
+              }}
+            >
+              <Box sx={{ position: 'absolute', top: '-30%', right: '-8%', width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_20} 0%, transparent 70%)`, pointerEvents: 'none' }} />
+              <Stack spacing={1.75} sx={{ position: 'relative', zIndex: 1 }}>
+                <Stack direction='row' spacing={2} alignItems='flex-start'>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        bgcolor: ALPHA_WHITE_15,
+                        border: `1px solid ${ALPHA_WHITE_20}`,
+                        borderRadius: '999px',
+                        px: 1.25,
+                        py: 0.5,
+                        mb: 1.25,
+                      }}
+                    >
+                      <StarRounded sx={{ fontSize: 12, color: GOLD_TROPHY }} />
+                      <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff' }}>
+                        Your scan code
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: { xs: '1.25rem', md: '1.45rem' }, fontWeight: 800, lineHeight: 1.2 }}>
+                      One code that{' '}
+                      <Box component='span' sx={{ color: GOLD_TROPHY }}>welcomes</Box>{' '}
+                      every customer
+                    </Typography>
+                    <Typography sx={{ fontSize: { xs: '0.8rem', md: '0.85rem' }, color: ALPHA_WHITE_80, lineHeight: 1.55, mt: 1 }}>
+                      It welcomes new members with a welcome entry from your business, and takes returning ones straight to receipt submission with your location already set.
+                    </Typography>
+                  </Box>
+                  {effectiveLocationId && (
+                    <Box sx={{ bgcolor: '#fff', borderRadius: 1.5, p: 0.75, flexShrink: 0, display: 'flex' }}>
+                      <QRCodePlain value={scanUrl} size={isMobile ? 74 : 92} level='H' fgColor={TEXT_HEADING} />
+                    </Box>
+                  )}
+                  {effectiveLocationId && (
+                    <Box ref={heroQrRef} aria-hidden sx={{ position: 'absolute', left: -99999, top: 0, bgcolor: '#fff', p: '48px', display: 'inline-flex' }}>
+                      <QRCodePlain value={scanUrl} size={1000} level='H' fgColor={TEXT_HEADING} />
+                    </Box>
+                  )}
+                </Stack>
+
+                <Stack direction='row' spacing={1}>
+                  {effectiveLocationId ? (
+                    <Button
+                      variant='contained'
+                      startIcon={downloadingQr ? <CircularProgress size={16} color='inherit' /> : <QrCode2 sx={{ fontSize: 16 }} />}
+                      onClick={handleDownloadQr}
+                      disabled={downloadingQr}
+                      sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { bgcolor: ALPHA_WHITE_90 } }}
+                    >
+                      Download QR
+                    </Button>
+                  ) : (
+                    <Button
+                      variant='contained'
+                      onClick={onRequireLocation}
+                      sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { bgcolor: ALPHA_WHITE_90 } }}
+                    >
+                      Choose a location to start
+                    </Button>
+                  )}
+                  {isMobile && (
+                    <Button
+                      variant='outlined'
+                      startIcon={<BookRounded sx={{ fontSize: 16 }} />}
+                      onClick={handleOpenGuide}
+                      sx={{ color: '#fff', borderColor: ALPHA_WHITE_20, bgcolor: ALPHA_WHITE_15, fontWeight: 700, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { borderColor: '#fff', bgcolor: ALPHA_WHITE_15 } }}
+                    >
+                      See the guide
+                    </Button>
+                  )}
+                </Stack>
+              </Stack>
+            </Paper>
+
+            {/* Gold Guide Card (desktop only, folded into blue on mobile) */}
+            {!isMobile && (
+              <Paper
+                elevation={0}
+                sx={{
+                  borderRadius: 3,
+                  border: `1.5px solid ${GOLD_TROPHY}55`,
+                  background: '#fff',
+                  boxShadow: `0 2px 8px ${GOLD_TROPHY}22`,
+                  p: { xs: 2, md: 2.5 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <Stack spacing={1.5} alignItems='flex-start'>
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      bgcolor: ACCENT_GOLD_LIGHT,
+                      border: `1px solid ${AMBER_HOURGLASS}`,
+                      borderRadius: '999px',
+                      px: 1.25,
+                      py: 0.5,
+                    }}
+                  >
+                    <BookRounded sx={{ fontSize: 12, color: AMBER_HOURGLASS }} />
+                    <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: AMBER_HOURGLASS }}>
+                      Grow with Winnbell
+                    </Typography>
+                  </Box>
+
+                  <Typography
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: { xs: '1.2rem', md: '1.4rem' },
+                      lineHeight: 1.2,
+                      background: GRADIENT_GOLD_VIVID,
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      color: 'transparent',
+                    }}
+                  >
+                    Get the most out of Winnbell
+                  </Typography>
+
+                  <Typography sx={{ fontSize: '0.85rem', color: TEXT_SECONDARY, lineHeight: 1.55 }}>
+                    Simple ways to bring in more customers and get more from every campaign.
+                  </Typography>
+
+                  <Button
+                    variant='contained'
+                    startIcon={<BookRounded sx={{ fontSize: 16 }} />}
+                    onClick={handleOpenGuide}
+                    sx={{ background: GRADIENT_GOLD_VIVID, color: '#fff', fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 2, py: 0.75, fontSize: '0.85rem', mt: 0.5, '&:hover': { background: GRADIENT_GOLD_VIVID, opacity: 0.94 } }}
+                  >
+                    See the guide
+                  </Button>
+                </Stack>
+              </Paper>
+            )}
+          </Box>
+        </motion.div>
+
         <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: { xs: 2.5, md: 3.5 } }}>
           <Stack spacing={3}>
             <Box>
               <Typography variant='h6' fontWeight={800} gutterBottom>Posters</Typography>
-              <Typography variant='body2' color='text.secondary'>Pick a design, choose a location, and download to print.</Typography>
+              <Typography variant='body2' color='text.secondary'>Place this at your register or another visible spot so customers can easily see it and join your campaigns.</Typography>
             </Box>
 
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
@@ -300,7 +499,7 @@ const PostersTab = ({
                               pointerEvents: 'none',
                             }}
                           >
-                            <Thumb businessName={businessName} scanUrl={scanUrl} headline={headline} />
+                            <Thumb businessName={businessName} scanUrl={scanUrl} headline={headline} minAmountLabel={minAmountLabel} />
                           </Box>
                           {isActive && (
                             <Box sx={{
@@ -342,7 +541,7 @@ const PostersTab = ({
                         {TEMPLATES.find(t => t.id === selectedId)?.Component
                           ? (() => {
                             const Comp = TEMPLATES.find(t => t.id === selectedId)!.Component;
-                            return <Comp businessName={businessName} scanUrl={scanUrl} headline={headline} />;
+                            return <Comp businessName={businessName} scanUrl={scanUrl} headline={headline} minAmountLabel={minAmountLabel} />;
                           })()
                           : null
                         }
