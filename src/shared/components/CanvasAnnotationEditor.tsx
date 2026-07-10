@@ -1,7 +1,9 @@
-import { useEffect, forwardRef, useImperativeHandle } from 'react';
-import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
-import { CloudUpload, UndoOutlined, DeleteOutlineOutlined } from '@mui/icons-material';
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { Box, Button, CircularProgress, Stack, Typography, IconButton, useMediaQuery } from '@mui/material';
+import { CloudUpload, UndoOutlined, DeleteOutlineOutlined, RemoveRounded, AddRounded, EditOutlined, PanToolOutlined } from '@mui/icons-material';
+import { motion } from 'framer-motion';
 import { useCanvasAnnotation } from '../hooks/useCanvasAnnotation';
+import { pdfFirstPageToImage } from '../lib/pdfToImage';
 
 export interface CanvasEditorHandle {
   /** Flatten the annotation to a blob and hand it to onSave. */
@@ -33,7 +35,7 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
   onFileSelect,
   onSave,
   isSaving = false,
-  instructionText = 'Draw over the receipt number with your finger or mouse to highlight it for customers',
+  instructionText = 'Drag across the receipt number to draw a line over it and highlight it for customers',
   hideSaveButton = false,
   hideInstruction = false,
   hideToolbar = false,
@@ -41,18 +43,30 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
 }, ref) => {
   const {
     canvasRef,
-    canvasContainerRef,
     fileInputRef,
     imgFile: internalImgFile,
     setImgFile,
     pathCount,
-    handlePointerDown,
-    handlePointerMove,
-    handlePointerUp,
+    zoom,
+    tool,
+    setTool,
+    minScale,
+    maxScale,
+    zoomIn,
+    zoomOut,
+    resetZoom,
     handleUndo,
     handleClearAll,
     getAnnotatedBlob,
   } = useCanvasAnnotation();
+
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  // Show the Draw/Move toggle whenever a mouse/trackpad exists (a single pointer can't do the
+  // one-finger-draw / two-finger-pan trick). 'any-pointer: fine' stays true on touchscreen
+  // laptops with a mouse, unlike 'pointer: coarse' which reports the primary pointer only.
+  const hasFinePointer = useMediaQuery('(any-pointer: fine)');
 
   // Sync controlled prop into hook state
   useEffect(() => {
@@ -64,10 +78,31 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
     onPathCountChange?.(pathCount);
   }, [pathCount, onPathCountChange]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-    setImgFile(file);
-    onFileSelect(file);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.files?.[0] ?? null;
+    // Reset the input so picking the same file again still fires onChange.
+    e.target.value = '';
+    setFileError(null);
+    if (!raw) return;
+
+    // PDFs are rendered to an image (first page) so they flow through the same annotation pipeline.
+    if (raw.type === 'application/pdf' || /\.pdf$/i.test(raw.name)) {
+      setIsProcessing(true);
+      try {
+        const image = await pdfFirstPageToImage(raw);
+        setImgFile(image);
+        onFileSelect(image);
+      } catch (err) {
+        console.error('[CanvasAnnotationEditor] PDF render failed:', err);
+        setFileError('Could not read that PDF. Try a photo or a different file.');
+      } finally {
+        setIsProcessing(false);
+      }
+      return;
+    }
+
+    setImgFile(raw);
+    onFileSelect(raw);
   };
 
   const handleNewPhoto = () => {
@@ -91,29 +126,38 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
     return (
       <>
         <Box
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => !isProcessing && fileInputRef.current?.click()}
           sx={{
-            border: '2px dashed', borderColor: 'divider', borderRadius: 2,
+            border: '2px dashed', borderColor: fileError ? 'error.main' : 'divider', borderRadius: 2,
             minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            textAlign: 'center', cursor: 'pointer', mb: 3,
+            textAlign: 'center', cursor: isProcessing ? 'default' : 'pointer', mb: fileError ? 1.5 : 3,
             transition: 'all 0.18s',
-            '&:hover': { borderColor: 'primary.main', bgcolor: 'rgba(25,93,230,0.03)' },
-            '&:active': { transform: 'scale(0.99)' },
+            '&:hover': isProcessing ? {} : { borderColor: 'primary.main', bgcolor: 'rgba(25,93,230,0.03)' },
+            '&:active': isProcessing ? {} : { transform: 'scale(0.99)' },
           }}
         >
           <Stack alignItems='center' spacing={1.5} sx={{ p: 4 }}>
             <Box sx={{ width: 56, height: 56, borderRadius: 2.5, bgcolor: 'rgba(25,93,230,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CloudUpload sx={{ fontSize: 28, color: 'primary.main' }} />
+              {isProcessing
+                ? <CircularProgress size={26} />
+                : <CloudUpload sx={{ fontSize: 28, color: 'primary.main' }} />}
             </Box>
             <Typography variant='body1' fontWeight={800} color='text.primary'>
-              Upload a receipt photo
+              {isProcessing ? 'Reading your PDF...' : 'Upload a receipt photo or PDF'}
             </Typography>
             <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5, maxWidth: 280 }}>
-              Take a photo of any receipt from your store - then you'll mark where the receipt number is
+              {isProcessing
+                ? 'Turning the first page into an image you can mark up.'
+                : "Take a photo or upload a PDF of any receipt from your store - then you'll mark where the receipt number is"}
             </Typography>
           </Stack>
         </Box>
-        <input ref={fileInputRef} type='file' accept='image/*' hidden onChange={handleFileChange} />
+        {fileError && (
+          <Typography variant='body2' sx={{ color: 'error.main', fontWeight: 600, mb: 3 }}>
+            {fileError}
+          </Typography>
+        )}
+        <input ref={fileInputRef} type='file' accept='image/*,application/pdf' hidden onChange={handleFileChange} />
       </>
     );
   }
@@ -130,20 +174,120 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
         </Box>
       )}
 
-      {/* Canvas */}
-      <Box ref={canvasContainerRef} sx={{ borderRadius: 2.5, overflow: 'hidden', border: '1px solid', borderColor: 'divider', mb: 2, lineHeight: 0 }}>
+      {/* Canvas viewport: the receipt is drawn (pan + zoom) inside the canvas, so it always
+          fits at 1x and no gesture ever leaks to the page. */}
+      <Box
+        sx={{
+          position: 'relative',
+          borderRadius: 2.5,
+          border: '1px solid',
+          borderColor: 'divider',
+          mb: 1,
+          overflow: 'hidden',
+          height: { xs: 360, md: 460 },
+          bgcolor: 'action.hover',
+        }}
+      >
         <canvas
           ref={canvasRef}
-          onMouseDown={handlePointerDown}
-          onMouseMove={handlePointerMove}
-          onMouseUp={handlePointerUp}
-          onMouseLeave={handlePointerUp}
-          onTouchStart={handlePointerDown}
-          onTouchMove={handlePointerMove}
-          onTouchEnd={handlePointerUp}
-          style={{ display: 'block', width: '100%', cursor: 'crosshair', touchAction: 'none' }}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            cursor: hasFinePointer && tool === 'pan' ? 'grab' : 'crosshair',
+            // Pure touch (no mouse): 'none' so one finger always draws (two fingers zoom/pan).
+            // With a mouse present, Draw uses pan-y (vertical page scroll) and Move uses none.
+            touchAction: !hasFinePointer ? 'none' : (tool === 'pan' ? 'none' : 'pan-y'),
+          }}
         />
+
+        {/* Draw / Move tool toggle (shown when a mouse exists; touch uses finger count instead) */}
+        {hasFinePointer && (
+          <Box
+            component={motion.div}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            sx={{ position: 'absolute', top: 12, left: 12, zIndex: 2 }}
+          >
+            <Stack
+              direction='row'
+              spacing={0.25}
+              sx={{
+                bgcolor: 'background.paper',
+                borderRadius: 999,
+                p: 0.25,
+                boxShadow: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <IconButton
+                size='small'
+                onClick={() => setTool('draw')}
+                aria-label='Draw tool'
+                sx={{ color: tool === 'draw' ? 'primary.main' : 'text.secondary', bgcolor: tool === 'draw' ? 'action.selected' : 'transparent' }}
+              >
+                <EditOutlined sx={{ fontSize: 18 }} />
+              </IconButton>
+              <IconButton
+                size='small'
+                onClick={() => setTool('pan')}
+                aria-label='Move tool'
+                sx={{ color: tool === 'pan' ? 'primary.main' : 'text.secondary', bgcolor: tool === 'pan' ? 'action.selected' : 'transparent' }}
+              >
+                <PanToolOutlined sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Stack>
+          </Box>
+        )}
+
+        {/* Zoom control pill, overlaid bottom-right of the viewport */}
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          sx={{ position: 'absolute', bottom: 12, right: 12, zIndex: 2 }}
+        >
+          <Stack
+            direction='row'
+            alignItems='center'
+            spacing={0.25}
+            sx={{
+              bgcolor: 'background.paper',
+              borderRadius: 999,
+              px: 0.5,
+              py: 0.25,
+              boxShadow: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <IconButton size='small' onClick={zoomOut} disabled={zoom <= minScale} aria-label='Zoom out'>
+              <RemoveRounded sx={{ fontSize: 18 }} />
+            </IconButton>
+            <Button
+              size='small'
+              onClick={resetZoom}
+              disabled={zoom <= minScale}
+              sx={{ minWidth: 44, px: 0.5, fontSize: '0.75rem', fontWeight: 700, textTransform: 'none', color: 'text.secondary' }}
+            >
+              {Math.round(zoom * 100)}%
+            </Button>
+            <IconButton size='small' onClick={zoomIn} disabled={zoom >= maxScale} aria-label='Zoom in'>
+              <AddRounded sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Stack>
+        </Box>
       </Box>
+
+      {/* Interaction hint */}
+      <Typography variant='caption' sx={{ display: 'block', color: 'text.secondary', mb: 2, textAlign: 'center' }}>
+        {hasFinePointer
+          ? 'Draw tool marks the number. Tap the hand to move around. Ctrl-scroll to zoom.'
+          : 'One finger to mark the number. Two fingers to zoom and move around.'}
+      </Typography>
 
       {/* Toolbar */}
       {!hideToolbar && (
@@ -163,7 +307,7 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
         </Stack>
       )}
 
-      <input ref={fileInputRef} type='file' accept='image/*' hidden onChange={handleFileChange} />
+      <input ref={fileInputRef} type='file' accept='image/*,application/pdf' hidden onChange={handleFileChange} />
 
       {!hideSaveButton && (
         <Button fullWidth variant='contained' size='large' onClick={handleSaveClick} disabled={isSaving}

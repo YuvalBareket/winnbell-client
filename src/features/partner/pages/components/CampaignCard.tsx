@@ -21,7 +21,7 @@ import { getUploadUrl } from '../../api/business.api';
 
 interface CampaignCardProps {
   business: BusinessData;
-  updateCampaignSettings?: (data: { min_transaction_amount: number; receipt_example_image_url?: string | null }) => void;
+  updateCampaignSettings?: (data: { min_transaction_amount?: number; receipt_example_image_url?: string | null }) => void;
   isUpdatingSettings?: boolean;
 }
 
@@ -107,10 +107,8 @@ const CampaignCard = ({
     try {
       const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg', blob.size);
       await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
-      updateCampaignSettings?.({
-        min_transaction_amount: business.min_transaction_amount,
-        receipt_example_image_url: publicUrl,
-      });
+      // The receipt example is independent of the threshold, so only send the image.
+      updateCampaignSettings?.({ receipt_example_image_url: publicUrl });
       setEditingReceipt(false);
       setImgFile(null);
     } catch (err) {

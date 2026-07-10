@@ -143,8 +143,8 @@ const SubscribeStep2 = ({
                 </Typography>
                 <Stack spacing={1.625} sx={{ display: 'flex', flexDirection: 'column' }}>
                   {[
-                    'Upload a real receipt from your store.',
-                    'Circle the receipt\'s unique number they enter.',
+                    'Upload a real receipt from your store (photo or PDF).',
+                    'Drag a line over the receipt\'s unique number they enter.',
                     'Save · this becomes the in-app guide.',
                   ].map((text, idx) => (
                     <Stack

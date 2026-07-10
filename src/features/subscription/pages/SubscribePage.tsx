@@ -27,7 +27,6 @@ const SubscribePage = () => {
   const locationCount = businessData?.locations?.filter(l => l.is_active).length ?? null;
 
   const [step, setStep] = useState(1);
-  const [savedThreshold, setSavedThreshold] = useState<number | null>(null);
 
   // ── STEP 1 ─────────────────────────────────────────────────────────────────
   const [thresholdInput, setThresholdInput] = useState('');
@@ -44,7 +43,6 @@ const SubscribePage = () => {
     setThresholdError('');
     try {
       await updateCampaignSettingsApi({ min_transaction_amount: parsedThreshold });
-      setSavedThreshold(parsedThreshold);
       setStep(2);
     } catch (err) {
       console.error('Failed to save threshold:', err);
@@ -63,7 +61,8 @@ const SubscribePage = () => {
     try {
       const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg', blob.size);
       await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
-      await updateCampaignSettingsApi({ min_transaction_amount: savedThreshold, receipt_example_image_url: publicUrl });
+      // Step 1 already saved the threshold; the receipt example is independent, so only send the image.
+      await updateCampaignSettingsApi({ receipt_example_image_url: publicUrl });
       setImgFile(null);
       setStep(3);
     } catch (err) {

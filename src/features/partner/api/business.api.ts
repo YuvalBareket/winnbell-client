@@ -9,7 +9,7 @@ import type {
 } from '../types/business.types';
 
 export interface UpdateCampaignSettingsInput {
-  min_transaction_amount: number | null;
+  min_transaction_amount?: number;
   receipt_example_image_url?: string | null;
 }
 
