@@ -221,7 +221,6 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                 fontWeight: 800,
                 fontSize: { xs: 15, sm: 19 },
                 border: `2px solid ${ALPHA_WHITE_30}`,
-                backdropFilter: 'blur(12px)',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
                 flexShrink: 0,
               }}
@@ -246,7 +245,6 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                   bgcolor: ALPHA_WHITE_15,
                   color: 'white',
                   border: `1px solid ${ALPHA_WHITE_20}`,
-                  backdropFilter: 'blur(8px)',
                   borderRadius: '6px',
                   '& .MuiChip-label': { px: 1 },
                 }}

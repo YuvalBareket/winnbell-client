@@ -20,7 +20,7 @@ const ReferralBonusSuccessDialog: React.FC<Props> = ({
     open={open}
     fullScreen
     TransitionComponent={Fade}
-    PaperProps={{ sx: { bgcolor: 'transparent' } }}
+    PaperProps={{ sx: { bgcolor: 'transparent', boxShadow: 'none' } }}
   >
     <Box sx={{
       height: '100%', display: 'flex', flexDirection: 'column',

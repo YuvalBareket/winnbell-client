@@ -214,7 +214,9 @@ const BusinessProfilePage = () => {
       >
         <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_10, filter: 'blur(60px)', pointerEvents: 'none' }} />
         <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: alpha(PRIMARY_LIGHT, 0.24), filter: 'blur(50px)', pointerEvents: 'none' }} />
-        <Box sx={{ display: { xs: 'block', md: 'none' }, position: 'absolute', top: -70, right: -50, width: 200, height: 200, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(46px)', pointerEvents: 'none' }} />
+        {/* Mobile orb: radial gradient, not filter:blur - the band is rounded on mobile and
+            blurred children break its rounded clipping on Android. */}
+        <Box sx={{ display: { xs: 'block', md: 'none' }, position: 'absolute', top: -100, right: -80, width: 290, height: 290, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`, pointerEvents: 'none' }} />
 
         <Box sx={{ position: 'relative', zIndex: 1 }}>
           <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: { xs: 36, md: 26 }, width: 'auto', objectFit: 'contain' }} />

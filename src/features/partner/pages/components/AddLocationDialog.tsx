@@ -134,19 +134,22 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
           flexShrink: 0,
         }}
       >
-        {/* decorative glow orbs */}
+        {/* decorative glow orbs (radial gradients, not filter:blur - blurred children break
+            the dialog's rounded clipping and box-shadow on Android) */}
         <Box
           aria-hidden
           sx={{
-            position: 'absolute', top: -60, right: -40, width: 180, height: 180,
-            borderRadius: '50%', bgcolor: ALPHA_WHITE_10, filter: 'blur(8px)', pointerEvents: 'none',
+            position: 'absolute', top: -60, right: -40, width: 190, height: 190,
+            borderRadius: '50%', pointerEvents: 'none',
+            background: `radial-gradient(circle, ${ALPHA_WHITE_10} 0%, ${ALPHA_WHITE_10} 55%, transparent 78%)`,
           }}
         />
         <Box
           aria-hidden
           sx={{
-            position: 'absolute', bottom: -70, left: -30, width: 140, height: 140,
-            borderRadius: '50%', bgcolor: ALPHA_WHITE_10, filter: 'blur(6px)', pointerEvents: 'none',
+            position: 'absolute', bottom: -70, left: -30, width: 148, height: 148,
+            borderRadius: '50%', pointerEvents: 'none',
+            background: `radial-gradient(circle, ${ALPHA_WHITE_10} 0%, ${ALPHA_WHITE_10} 58%, transparent 80%)`,
           }}
         />
         <Stack direction='row' alignItems='flex-start' justifyContent='space-between' sx={{ position: 'relative' }}>

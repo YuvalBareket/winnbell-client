@@ -127,7 +127,9 @@ const AppPageHero = ({ title, subtitle, chip, actions, variant = 'hero' }: AppPa
           pb: (title || subtitle) ? 2.5 : 1.75,
         }}
       >
-        <Box sx={{ position: 'absolute', top: -80, right: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(50px)', pointerEvents: 'none' }} />
+        {/* Glow orb: radial gradient, not filter:blur - blurred children break the band's
+            rounded-bottom clipping on Android. */}
+        <Box sx={{ position: 'absolute', top: -110, right: -90, width: 320, height: 320, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`, pointerEvents: 'none' }} />
 
         <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ position: 'relative' }}>
           <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 36, width: 'auto', objectFit: 'contain' }} />

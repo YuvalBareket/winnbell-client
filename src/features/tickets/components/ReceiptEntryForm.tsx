@@ -896,30 +896,29 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             overflow: 'hidden',
           }}
         >
-          {/* Soft glowing light accents (shine effect) */}
+          {/* Soft glowing light accents (shine effect). Radial gradients, NOT filter:blur -
+              blurred children break the dialog's rounded clipping and box-shadow on Android. */}
           <Box
             sx={{
               position: 'absolute',
-              top: -40,
-              right: -30,
-              width: 150,
-              height: 150,
+              top: -70,
+              right: -60,
+              width: 230,
+              height: 230,
               borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.28)',
-              filter: 'blur(40px)',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 45%, transparent 70%)',
               pointerEvents: 'none',
             }}
           />
           <Box
             sx={{
               position: 'absolute',
-              bottom: -50,
-              left: -40,
-              width: 120,
-              height: 120,
+              bottom: -80,
+              left: -70,
+              width: 190,
+              height: 190,
               borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.18)',
-              filter: 'blur(35px)',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 45%, transparent 70%)',
               pointerEvents: 'none',
             }}
           />

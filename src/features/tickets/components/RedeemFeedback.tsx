@@ -57,7 +57,7 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
       open={successDialogOpen}
       fullScreen
       TransitionComponent={Fade}
-      PaperProps={{ sx: { bgcolor: 'transparent' } }}
+      PaperProps={{ sx: { bgcolor: 'transparent', boxShadow: 'none' } }}
     >
       <Box
         sx={{

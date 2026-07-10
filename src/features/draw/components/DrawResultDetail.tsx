@@ -3,7 +3,7 @@
 import { Box, Typography, Stack, Link } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
-  EmojiEvents, EmojiEventsOutlined, ConfirmationNumberOutlined, CalendarTodayOutlined,
+  EmojiEvents, EmojiEventsOutlined, CalendarTodayOutlined,
   ArticleOutlined, HourglassEmptyOutlined,
 } from '@mui/icons-material';
 import type { IDrawResult } from '../types';
@@ -13,7 +13,7 @@ import {
   PRIMARY_MAIN, PRIMARY_DEEP, GOLD_TROPHY, ACCENT_GOLD, ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
   ALPHA_WHITE_10, ALPHA_WHITE_20, ALPHA_WHITE_70, ALPHA_WHITE_80,
   BG_SURFACE, BORDER_SUBTLE, TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY, CHART_GRID,
-  ALPHA_PRIMARY_10, SHADOW_CARD,
+  SHADOW_CARD,
   ALPHA_AMBER_08, ALPHA_AMBER_04, ALPHA_AMBER_12, ALPHA_AMBER_25,
 } from '../../../shared/colors';
 
@@ -113,11 +113,7 @@ export const DrawResultDetail = ({ draw, onLocationClick }: { draw: IDrawResult;
       {/* Stat cards */}
       <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.08 }}>
         <Stack direction='row' spacing={1.5}>
-          {/* Total entries only matters for the live campaign - hidden on ended draws. */}
-          {!isClosed && (
-            <StatCard icon={<ConfirmationNumberOutlined sx={{ fontSize: 22 }} />} tint={ALPHA_PRIMARY_10} iconColor={PRIMARY_MAIN} label='Total Entries' value={draw.entry_count?.toLocaleString() ?? '0'} />
-          )}
-          <StatCard icon={<EmojiEventsOutlined sx={{ fontSize: 22 }} />} tint={ACCENT_GOLD_LIGHT} iconColor={ACCENT_GOLD_DARK} label={isClosed ? 'Prize Awarded' : 'Prize Pool'} value={prize} valueColor={ACCENT_GOLD_DARK} hideOnMobile={!isClosed} />
+          <StatCard icon={<EmojiEventsOutlined sx={{ fontSize: 22 }} />} tint={ACCENT_GOLD_LIGHT} iconColor={ACCENT_GOLD_DARK} label={isClosed ? 'Prize Awarded' : 'Prize Pool'} value={prize} valueColor={ACCENT_GOLD_DARK} />
           <StatCard icon={<CalendarTodayOutlined sx={{ fontSize: 20 }} />} tint={CHART_GRID} iconColor={TEXT_TERTIARY} label='Draw Date' value={drawDate} />
         </Stack>
       </motion.div>

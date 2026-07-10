@@ -33,29 +33,28 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
         boxShadow: SHADOW_CARD,
       }}
     >
-      {/* Decorative Blur Orbs */}
+      {/* Decorative glow orbs. Radial gradients, NOT filter:blur - blurred children break
+          the card's rounded clipping and box-shadow on Android. */}
       <Box
         sx={{
           position: 'absolute',
-          top: '-20%',
-          right: '-10%',
-          width: 192,
-          height: 192,
-          bgcolor: ALPHA_WHITE_10,
+          top: '-25%',
+          right: '-12%',
+          width: 280,
+          height: 280,
+          background: `radial-gradient(circle, ${ALPHA_WHITE_10} 0%, transparent 68%)`,
           borderRadius: '50%',
-          filter: 'blur(48px)',
         }}
       />
       <Box
         sx={{
           position: 'absolute',
-          bottom: '-10%',
-          left: '-5%',
-          width: 128,
-          height: 128,
-          bgcolor: 'rgba(66, 165, 245, 0.2)',
+          bottom: '-14%',
+          left: '-7%',
+          width: 190,
+          height: 190,
+          background: 'radial-gradient(circle, rgba(66, 165, 245, 0.2) 0%, transparent 68%)',
           borderRadius: '50%',
-          filter: 'blur(32px)',
         }}
       />
 

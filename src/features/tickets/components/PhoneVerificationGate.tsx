@@ -281,16 +281,17 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
             <AppHeader onMenuOpen={() => setMenuOpen(true)} onGradient />
           </Box>
 
-          {/* Decorative orbs */}
+          {/* Decorative orbs (radial gradients, not filter:blur - blurred children break
+              the rounded clipping on Android) */}
           <Box sx={{
-            position: 'absolute', top: -80, right: -80,
-            width: 280, height: 280, borderRadius: '50%',
-            bgcolor: ALPHA_WHITE_15, filter: 'blur(60px)',
+            position: 'absolute', top: -110, right: -110,
+            width: 400, height: 400, borderRadius: '50%',
+            background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`,
           }} />
           <Box sx={{
-            position: 'absolute', bottom: -60, left: -60,
-            width: 220, height: 220, borderRadius: '50%',
-            bgcolor: ALPHA_WHITE_15, filter: 'blur(50px)',
+            position: 'absolute', bottom: -90, left: -90,
+            width: 320, height: 320, borderRadius: '50%',
+            background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`,
           }} />
 
           {/* Title and subtitle */}
@@ -364,16 +365,17 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
             position: 'relative',
             overflow: 'hidden',
           }}>
-            {/* Decorative orbs */}
+            {/* Decorative orbs (radial gradients, not filter:blur - blurred children break
+                the rounded clipping on Android) */}
             <Box sx={{
-              position: 'absolute', top: -80, right: -80,
-              width: 280, height: 280, borderRadius: '50%',
-              bgcolor: ALPHA_WHITE_15, filter: 'blur(60px)',
+              position: 'absolute', top: -110, right: -110,
+              width: 400, height: 400, borderRadius: '50%',
+              background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`,
             }} />
             <Box sx={{
-              position: 'absolute', bottom: -60, left: -60,
-              width: 220, height: 220, borderRadius: '50%',
-              bgcolor: ALPHA_WHITE_15, filter: 'blur(50px)',
+              position: 'absolute', bottom: -90, left: -90,
+              width: 320, height: 320, borderRadius: '50%',
+              background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`,
             }} />
 
             <Box sx={{ position: 'relative', zIndex: 1 }}>
