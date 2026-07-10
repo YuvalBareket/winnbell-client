@@ -148,19 +148,29 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
               width: { xs: '100%', sm: 'auto' },
               mt: { xs: 1, sm: 0 },
               '&:hover': { bgcolor: 'transparent' },
-              background: 'linear-gradient(90deg, rgba(255,255,255,0.45) 20%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.45) 80%)',
-              backgroundSize: '250% auto',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              animation: 'shimmer 2.8s linear infinite',
-              '@keyframes shimmer': {
-                '0%': { backgroundPosition: '200% center' },
-                '100%': { backgroundPosition: '-100% center' },
-              },
             }}
           >
-            Are you a business owner?
+            {/* Shimmer is scoped to this inline span (not the button root): a background-clip:text
+                element with an oversized animated background reports phantom scroll overflow, which
+                is what caused the hero to scroll. Keeping it inline-block contains it to the text. */}
+            <Box
+              component='span'
+              sx={{
+                display: 'inline-block',
+                background: 'linear-gradient(90deg, rgba(255,255,255,0.45) 20%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.45) 80%)',
+                backgroundSize: '250% auto',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                animation: 'shimmer 2.8s linear infinite',
+                '@keyframes shimmer': {
+                  '0%': { backgroundPosition: '200% center' },
+                  '100%': { backgroundPosition: '-100% center' },
+                },
+              }}
+            >
+              Are you a business owner?
+            </Box>
           </Button>
         </motion.div>
       </Container>

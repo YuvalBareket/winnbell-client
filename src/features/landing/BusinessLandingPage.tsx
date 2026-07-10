@@ -20,8 +20,10 @@ const BusinessLandingPage = () => {
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
+  // overflowX 'clip' (not 'hidden') so overflow-y stays 'visible' and no phantom 100dvh scroll
+  // container appears next to the page scrollbar. See LandingPage for the full note.
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', overflowX: 'hidden', zoom: { xs: 0.9, md: 1 } }}>
+    <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', overflowX: 'clip', zoom: { xs: 0.9, md: 1 } }}>
       {/* Business Hero */}
       <Box
         sx={{

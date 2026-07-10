@@ -25,8 +25,11 @@ const LandingPage = () => {
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
+  // overflowX 'clip' (not 'hidden'): 'hidden' promotes overflow-y to 'auto', which turns this root
+  // into a scroll container and produces a second, ~100dvh phantom scrollbar next to the page one
+  // (min-height 100dvh + zoom overshoot). 'clip' contains horizontal overflow without a scroll container.
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', overflowX: 'hidden', zoom: { xs: 0.9, md: 1 } }}>
+    <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', overflowX: 'clip', zoom: { xs: 0.9, md: 1 } }}>
       <LandingHero onNavigate={navigate} />
       {/* These sections run their own internal whileInView entrances - double-wrapping them
           risks the inner triggers never firing, so they render bare. */}

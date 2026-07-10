@@ -140,6 +140,9 @@ const RegisterPage = () => {
   const [error, setError] = useState(searchParams.get('syncError') ?? '');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageVerified, setAgeVerified] = useState(false);
+  // Business owners sign the business agreement instead - the consumer age/residency
+  // eligibility checkbox does not apply to them.
+  const ageOk = isBusinessOwner || ageVerified;
   // Surface the same rules the submit enforces, but on blur so the user gets feedback early.
   const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({});
   const emailError = touched.email && formData.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
@@ -189,7 +192,7 @@ const RegisterPage = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { setTouched((t) => ({ ...t, email: true })); setError('Enter a valid email address.'); return; }
     if (!formData.password) { setError('Please enter a password.'); return; }
     if (formData.password.length < 8) { setTouched((t) => ({ ...t, password: true })); setError('Password must be at least 8 characters.'); return; }
-    if (!ageVerified || !termsAccepted) { setError('Please confirm your eligibility and accept the terms.'); return; }
+    if (!ageOk || !termsAccepted) { setError('Please confirm your eligibility and accept the terms.'); return; }
     setLoading(true);
     setError('');
     try {
@@ -359,7 +362,7 @@ const RegisterPage = () => {
                 fullWidth
                 variant='contained'
                 startIcon={googleLoading ? <CircularProgress size={20} color='inherit' /> : <Google />}
-                onClick={() => (termsAccepted && ageVerified) ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
+                onClick={() => (termsAccepted && ageOk) ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
                 disabled={googleLoading}
                 sx={{
                   py: 1.5,
@@ -391,36 +394,55 @@ const RegisterPage = () => {
           <motion.div variants={popIn}>
             <Stack spacing={1}>
               <FormControlLabel
+                sx={{ alignItems: 'flex-start', '& .MuiCheckbox-root': { pt: 0 } }}
                 control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
                 label={
-                  <Typography variant='caption' color='text.secondary'>
-                    I agree to the{' '}
-                    <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
-                      Terms of Service
-                    </Typography>{' '}and{' '}
-                    <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
-                      Privacy Policy
+                  isBusinessOwner ? (
+                    <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
+                      I certify that I am authorized to bind the Participating Business identified above. I have read and agree to the{' '}
+                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/business-agreement'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                        Winnbell Participating Business Agreement
+                      </Typography>
+                      , including the{' '}
+                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                        Privacy Policy
+                      </Typography>
+                      , Business Participation Guidelines, Cancellation & Refund Policy, and any Campaign Terms incorporated therein. I understand that checking this box and clicking "Create Account" constitutes my electronic signature and binds the Participating Business to these terms.
                     </Typography>
-                  </Typography>
+                  ) : (
+                    <Typography variant='caption' color='text.secondary'>
+                      I agree to the{' '}
+                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                        Terms of Service
+                      </Typography>{' '}and{' '}
+                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                        Privacy Policy
+                      </Typography>
+                    </Typography>
+                  )
                 }
               />
 
-              <FormControlLabel
-                control={<Checkbox checked={ageVerified} onChange={(e) => setAgeVerified(e.target.checked)} size='small' />}
-                label={<Typography variant='caption' color='text.secondary'>I confirm that I am 18 years of age or older and a legal U.S. resident.</Typography>}
-              />
+              {!isBusinessOwner && (
+                <>
+                  <FormControlLabel
+                    control={<Checkbox checked={ageVerified} onChange={(e) => setAgeVerified(e.target.checked)} size='small' />}
+                    label={<Typography variant='caption' color='text.secondary'>I confirm that I am 18 years of age or older and a legal U.S. resident.</Typography>}
+                  />
 
-              <Box sx={{ pt: 0.5 }}>
-                <Typography variant='caption' sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block' }}>
-                  <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
-                  <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
-                </Typography>
-              </Box>
+                  <Box sx={{ pt: 0.5 }}>
+                    <Typography variant='caption' sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block' }}>
+                      <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
+                      <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
+                    </Typography>
+                  </Box>
+                </>
+              )}
             </Stack>
           </motion.div>
 
           <motion.div variants={popIn}>
-            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted || !ageVerified} disableElevation
+            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted || !ageOk} disableElevation
               sx={{
                 py: 1.5, fontSize: '1rem', fontWeight: 700,
                 bgcolor: isLocationManager ? ROLE_MANAGER_BG : 'primary.main',
