@@ -52,6 +52,7 @@ const TermsOfServicePage = lazy(() => import('../features/legal/pages/TermsOfSer
 const PrivacyPolicyPage = lazy(() => import('../features/legal/pages/PrivacyPolicyPage'));
 const OfficialRulesPage = lazy(() => import('../features/legal/pages/OfficialRulesPage'));
 const BusinessAgreementPage = lazy(() => import('../features/legal/pages/BusinessAgreementPage'));
+const BusinessGuidelinesPage = lazy(() => import('../features/legal/pages/BusinessGuidelinesPage'));
 const BusinessDashboard = lazy(() => import('../features/admin/pages/BusinessDashboard'));
 const BusinessProfilePage = lazy(() => import('../features/partner/pages/BusinessProfilePage'));
 const BusinessHubPage = lazy(() => import('../features/partner/pages/BusinessHubPage'));
@@ -139,6 +140,7 @@ const AppRoutes = () => {
       <Route path='/rules' element={<OfficialRulesPage />} />
       <Route path='/rules/:drawId' element={<OfficialRulesPage />} />
       <Route path='/business-agreement' element={<BusinessAgreementPage />} />
+      <Route path='/business-guidelines' element={<BusinessGuidelinesPage />} />
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>

@@ -1,20 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import {
-  Box, Container, Paper, Tabs, Tab,
-  useMediaQuery, useTheme, Snackbar, Alert,
-  Autocomplete, TextField,
+  Box, Container, Paper, Tabs, Tab, Stack,
+  Snackbar, Alert,
   Dialog, DialogTitle, List, ListItemButton, ListItemIcon, ListItemText, Typography,
 } from '@mui/material';
-import { LocationOnOutlined } from '@mui/icons-material';
+import { LocationOnOutlined, MenuBookRounded, FactCheckRounded, ArrowForwardRounded } from '@mui/icons-material';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager, selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import {
    PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
+   ACCENT_GOLD_DARK, ACCENT_GOLD_LIGHT,
 } from '../../../shared/colors';
-import { useGetDraws } from '../../draw/hooks/useGetDraws';
 import { formatCurrency } from '../../../shared/utils/date';
 import SocialPostsTab from '../components/SocialPostsTab';
 import PostersTab from '../components/PostersTab';
@@ -27,16 +27,11 @@ import {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 const MarketingPage = () => {
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+  const navigate = useNavigate();
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
   const currentUser = useAppSelector(selectCurrentUser);
   const { data: businessData } = useBusinessData(isBusiness);
-  // Live draw prize for the "Prize post" share card (card hidden when no open draw).
-  const { data: activeDraws } = useGetDraws();
-  const openDraw = activeDraws?.find((d) => d.status?.toLowerCase() === 'open') ?? activeDraws?.[0];
-  const prizeLabel = openDraw?.prize_amount != null ? formatCurrency(openDraw.prize_amount) : null;
 
   // State
   const [snackbar, setSnackbar] = useState('');
@@ -80,25 +75,6 @@ const MarketingPage = () => {
     });
   };
 
-  const showLocationSelector = isBusiness && locations.length > 1 && !isManager;
-  // Desktop: a compact location dropdown in the header card. No pressable gesture here -
-  // scale-on-tap on a text input feels glitchy while typing.
-  const headerLocationControl = showLocationSelector ? (
-    <Box sx={{ display: 'inline-flex' }}>
-      <Autocomplete
-        size='small'
-        options={locations}
-        getOptionLabel={(opt) => opt.name}
-        value={locations.find(l => l.id === selectedLocationId) ?? null}
-        onChange={(_, val) => setSelectedLocationId(val?.id ?? '')}
-        isOptionEqualToValue={(a, b) => a.id === b.id}
-        renderInput={(params) => <TextField {...params} label='Location' placeholder='Pick a location' />}
-        sx={{ minWidth: 220 }}
-      />
-    </Box>
-  ) : null;
-
-
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8 }}>
 
@@ -111,7 +87,6 @@ const MarketingPage = () => {
         <AppPageHero
           title='Marketing Materials'
           subtitle='Ready-made materials to promote your campaign and drive customer entries.'
-          actions={isDesktop ? headerLocationControl : undefined}
         />
       </motion.div>
 
@@ -123,6 +98,73 @@ const MarketingPage = () => {
           initial='hidden'
           animate='visible'
         >
+          {/* Resource documents - the guide and the participation guidelines, above the tabs */}
+          <motion.div variants={riseIn}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                gap: 1.5,
+                mb: 1.5,
+              }}
+            >
+              {[
+                {
+                  icon: MenuBookRounded,
+                  iconColor: ACCENT_GOLD_DARK,
+                  iconBg: ACCENT_GOLD_LIGHT,
+                  title: 'Get the most out of Winnbell',
+                  desc: 'Simple, proven ways to bring in more customers.',
+                  onClick: () => navigate('/marketing/guide'),
+                  mobileHidden: false,
+                },
+                {
+                  icon: FactCheckRounded,
+                  iconColor: PRIMARY_MAIN,
+                  iconBg: `${PRIMARY_MAIN}12`,
+                  title: 'Business Participation Guidelines',
+                  desc: 'What to say and show so your campaign stays within the rules.',
+                  onClick: () => navigate('/business-guidelines'),
+                  // Mobile shows only the guide card; the guidelines stay reachable from
+                  // the menu (Business Agreement) and the register flow.
+                  mobileHidden: true,
+                },
+              ].map((r) => (
+                <Paper
+                  key={r.title}
+                  elevation={0}
+                  onClick={r.onClick}
+                  sx={{
+                    // minWidth 0: grid items default to min-width auto, which stops them
+                    // shrinking below their text width and overflows narrow screens.
+                    minWidth: 0,
+                    display: r.mobileHidden ? { xs: 'none', sm: 'flex' } : 'flex',
+                    alignItems: 'center', gap: 1.75,
+                    px: 2, py: 1.5, borderRadius: 2.5,
+                    border: '1px solid', borderColor: 'divider',
+                    cursor: 'pointer', transition: 'all 0.18s ease',
+                    '&:hover': {
+                      borderColor: r.iconColor,
+                      boxShadow: `0 6px 18px -8px ${r.iconColor}55`,
+                      transform: 'translateY(-1px)',
+                      '& .doc-arrow': { transform: 'translateX(3px)', color: r.iconColor },
+                    },
+                    '&:active': { transform: 'scale(0.99)' },
+                  }}
+                >
+                  <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: r.iconBg, color: r.iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <r.icon sx={{ fontSize: 20 }} />
+                  </Box>
+                  <Stack sx={{ minWidth: 0, flex: 1 }}>
+                    <Typography noWrap sx={{ fontSize: '0.875rem', fontWeight: 800 }}>{r.title}</Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', lineHeight: 1.4 }}>{r.desc}</Typography>
+                  </Stack>
+                  <ArrowForwardRounded className='doc-arrow' sx={{ fontSize: 18, color: 'text.disabled', flexShrink: 0, transition: 'all 0.18s ease' }} />
+                </Paper>
+              ))}
+            </Box>
+          </motion.div>
+
           <motion.div variants={riseIn}>
             <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: 3 }}>
               <Tabs
@@ -169,9 +211,7 @@ const MarketingPage = () => {
         {activeTab === 1 && (
           <SocialPostsTab
             businessName={businessName}
-            locationLabel={locations.find(l => l.id === effectiveLocationId)?.name ?? ''}
             scanUrl={scanUrl}
-            prizeLabel={prizeLabel}
             canDownload={!!effectiveLocationId}
             onRequireLocation={() => setLocPickerOpen(true)}
             onToast={setSnackbar}
@@ -179,12 +219,7 @@ const MarketingPage = () => {
         )}
 
         {activeTab === 2 && (
-          <ScriptsTab
-            scanUrl={scanUrl}
-            effectiveLocationId={effectiveLocationId}
-            onToast={setSnackbar}
-            onRequireLocation={() => setLocPickerOpen(true)}
-          />
+          <ScriptsTab onToast={setSnackbar} />
         )}
 
         {activeTab === 3 && (

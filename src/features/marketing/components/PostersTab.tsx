@@ -1,23 +1,26 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Stack, Paper, Button,
   useMediaQuery, useTheme, CircularProgress,
 } from '@mui/material';
 import {
-  CheckCircleOutline, FileDownload, Print, ContentCopy, QrCode2, BookRounded, StarRounded,
+  CheckCircleOutline, FileDownload, Print, ContentCopy,
 } from '@mui/icons-material';
-import QRCodePlain from 'react-qr-code';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import QRCodePlain from 'react-qr-code';
 import {
-  PRIMARY_MAIN, PRIMARY_DEEP, SHADOW_CARD,
-  GOLD_TROPHY, ACCENT_GOLD_LIGHT, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_80, ALPHA_WHITE_90,
-  TEXT_HEADING, TEXT_SECONDARY, AMBER_HOURGLASS,
-  GRADIENT_GOLD_VIVID,
+  PRIMARY_MAIN, BRAND_ICON_BLUE, BRAND_NAVY, SHADOW_CARD,
 } from '../../../shared/colors';
 import { svgToPngDataUrl } from '../utils/capture';
+
+// Sticker color themes
+const STICKER_THEMES = [
+  { color: PRIMARY_MAIN },
+  { color: BRAND_NAVY },
+  { color: BRAND_ICON_BLUE },
+];
 import {
   POSTER_W, POSTER_H,
   THUMB_SCALE, THUMB_W, THUMB_H,
@@ -79,33 +82,61 @@ const PostersTab = ({
 }: PostersTabProps) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const navigate = useNavigate();
 
   const [selectedId, setSelectedId] = useState('classic');
   const [headline, setHeadline] = useState(HEADLINES[0]);
   const [downloading, setDownloading] = useState(false);
 
   const posterRef = useRef<HTMLDivElement>(null);
-  const heroQrRef = useRef<HTMLDivElement>(null);
-  const [downloadingQr, setDownloadingQr] = useState(false);
 
-  const handleDownloadQr = async () => {
-    if (!heroQrRef.current) return;
-    setDownloadingQr(true);
+  // ── Partner sticker (moved here from the Scripts tab) ─────────────────────
+  const [stickerIdx, setStickerIdx] = useState(0);
+  const [downloadingSticker, setDownloadingSticker] = useState(false);
+  const stickerRef = useRef<HTMLDivElement>(null);
+  const stickerTheme = STICKER_THEMES[stickerIdx];
+
+  const handleDownloadSticker = async () => {
+    if (!stickerRef.current) return;
+    setDownloadingSticker(true);
+    const swaps: Array<{ svg: SVGSVGElement; img: HTMLImageElement }> = [];
+
     try {
-      const { downloadNodeAsPng } = await import('../utils/capture');
-      await downloadNodeAsPng(heroQrRef.current, 'winnbell-scan-qr.png', 2);
-      onToast('QR downloaded!');
+      const svgEls = Array.from(stickerRef.current.querySelectorAll<SVGSVGElement>('svg'));
+      for (const svg of svgEls) {
+        const pngUrl = await svgToPngDataUrl(svg, 3);
+        const img = document.createElement('img');
+        img.src = pngUrl;
+        const w = svg.clientWidth || Number(svg.getAttribute('width') ?? 150);
+        const h = svg.clientHeight || Number(svg.getAttribute('height') ?? 150);
+        img.style.cssText = `width:${w}px;height:${h}px;display:block;`;
+        svg.parentNode!.insertBefore(img, svg);
+        svg.style.display = 'none';
+        swaps.push({ svg, img });
+      }
+
+      const canvas = await html2canvas(stickerRef.current, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: null,
+        logging: false,
+        imageTimeout: 0,
+      });
+
+      swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
+
+      const link = document.createElement('a');
+      link.download = 'winnbell-sticker.png';
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
+      onToast('Sticker downloaded!');
     } catch (err) {
+      swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
       console.error(err);
       onToast('Download failed. Please try again.');
     } finally {
-      setDownloadingQr(false);
+      setDownloadingSticker(false);
     }
   };
-
-  const handleOpenGuide = () => navigate('/marketing/guide');
 
   const thumbScale = isDesktop ? THUMB_SCALE : THUMB_SCALE_MOBILE;
   const thumbW = isDesktop ? THUMB_W : THUMB_W_MOBILE;
@@ -280,177 +311,6 @@ const PostersTab = ({
       transition={{ duration: 0.5, delay: 0.05 }}
     >
       <Box sx={{ pb: 4 }}>
-        {/* Blue + Gold cards (moved from Overview) */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.08 }}
-        >
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1.35fr 1fr' },
-              gap: { xs: 1.5, md: 2.5 },
-              alignItems: 'stretch',
-              mb: { xs: 2, md: 3 },
-            }}
-          >
-            {/* Blue QR Card */}
-            <Paper
-              elevation={0}
-              sx={{
-                position: 'relative',
-                overflow: 'hidden',
-                borderRadius: 3,
-                p: { xs: 2, md: 2.5 },
-                background: `linear-gradient(135deg, ${PRIMARY_DEEP}, ${PRIMARY_MAIN})`,
-                color: '#fff',
-              }}
-            >
-              <Box sx={{ position: 'absolute', top: '-30%', right: '-8%', width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_20} 0%, transparent 70%)`, pointerEvents: 'none' }} />
-              <Stack spacing={1.75} sx={{ position: 'relative', zIndex: 1 }}>
-                <Stack direction='row' spacing={2} alignItems='flex-start'>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box
-                      sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        bgcolor: ALPHA_WHITE_15,
-                        border: `1px solid ${ALPHA_WHITE_20}`,
-                        borderRadius: '999px',
-                        px: 1.25,
-                        py: 0.5,
-                        mb: 1.25,
-                      }}
-                    >
-                      <StarRounded sx={{ fontSize: 12, color: GOLD_TROPHY }} />
-                      <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff' }}>
-                        Your scan code
-                      </Typography>
-                    </Box>
-                    <Typography sx={{ fontSize: { xs: '1.25rem', md: '1.45rem' }, fontWeight: 800, lineHeight: 1.2 }}>
-                      One code that{' '}
-                      <Box component='span' sx={{ color: GOLD_TROPHY }}>welcomes</Box>{' '}
-                      every customer
-                    </Typography>
-                    <Typography sx={{ fontSize: { xs: '0.8rem', md: '0.85rem' }, color: ALPHA_WHITE_80, lineHeight: 1.55, mt: 1 }}>
-                      It welcomes new members with a welcome entry from your business, and takes returning ones straight to receipt submission with your location already set.
-                    </Typography>
-                  </Box>
-                  {effectiveLocationId && (
-                    <Box sx={{ bgcolor: '#fff', borderRadius: 1.5, p: 0.75, flexShrink: 0, display: 'flex' }}>
-                      <QRCodePlain value={scanUrl} size={isMobile ? 74 : 92} level='H' fgColor={TEXT_HEADING} />
-                    </Box>
-                  )}
-                  {effectiveLocationId && (
-                    <Box ref={heroQrRef} aria-hidden sx={{ position: 'absolute', left: -99999, top: 0, bgcolor: '#fff', p: '48px', display: 'inline-flex' }}>
-                      <QRCodePlain value={scanUrl} size={1000} level='H' fgColor={TEXT_HEADING} />
-                    </Box>
-                  )}
-                </Stack>
-
-                <Stack direction='row' spacing={1}>
-                  {effectiveLocationId ? (
-                    <Button
-                      variant='contained'
-                      startIcon={downloadingQr ? <CircularProgress size={16} color='inherit' /> : <QrCode2 sx={{ fontSize: 16 }} />}
-                      onClick={handleDownloadQr}
-                      disabled={downloadingQr}
-                      sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { bgcolor: ALPHA_WHITE_90 } }}
-                    >
-                      Download QR
-                    </Button>
-                  ) : (
-                    <Button
-                      variant='contained'
-                      onClick={onRequireLocation}
-                      sx={{ bgcolor: '#fff', color: PRIMARY_MAIN, fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { bgcolor: ALPHA_WHITE_90 } }}
-                    >
-                      Choose a location to start
-                    </Button>
-                  )}
-                  {isMobile && (
-                    <Button
-                      variant='outlined'
-                      startIcon={<BookRounded sx={{ fontSize: 16 }} />}
-                      onClick={handleOpenGuide}
-                      sx={{ color: '#fff', borderColor: ALPHA_WHITE_20, bgcolor: ALPHA_WHITE_15, fontWeight: 700, textTransform: 'none', borderRadius: 1.5, px: 1.5, py: 0.65, fontSize: '0.85rem', flex: 1, '&:hover': { borderColor: '#fff', bgcolor: ALPHA_WHITE_15 } }}
-                    >
-                      See the guide
-                    </Button>
-                  )}
-                </Stack>
-              </Stack>
-            </Paper>
-
-            {/* Gold Guide Card (desktop only, folded into blue on mobile) */}
-            {!isMobile && (
-              <Paper
-                elevation={0}
-                sx={{
-                  borderRadius: 3,
-                  border: `1.5px solid ${GOLD_TROPHY}55`,
-                  background: '#fff',
-                  boxShadow: `0 2px 8px ${GOLD_TROPHY}22`,
-                  p: { xs: 2, md: 2.5 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                }}
-              >
-                <Stack spacing={1.5} alignItems='flex-start'>
-                  <Box
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      bgcolor: ACCENT_GOLD_LIGHT,
-                      border: `1px solid ${AMBER_HOURGLASS}`,
-                      borderRadius: '999px',
-                      px: 1.25,
-                      py: 0.5,
-                    }}
-                  >
-                    <BookRounded sx={{ fontSize: 12, color: AMBER_HOURGLASS }} />
-                    <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: AMBER_HOURGLASS }}>
-                      Grow with Winnbell
-                    </Typography>
-                  </Box>
-
-                  <Typography
-                    sx={{
-                      fontWeight: 800,
-                      fontSize: { xs: '1.2rem', md: '1.4rem' },
-                      lineHeight: 1.2,
-                      background: GRADIENT_GOLD_VIVID,
-                      WebkitBackgroundClip: 'text',
-                      backgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      color: 'transparent',
-                    }}
-                  >
-                    Get the most out of Winnbell
-                  </Typography>
-
-                  <Typography sx={{ fontSize: '0.85rem', color: TEXT_SECONDARY, lineHeight: 1.55 }}>
-                    Simple ways to bring in more customers and get more from every campaign.
-                  </Typography>
-
-                  <Button
-                    variant='contained'
-                    startIcon={<BookRounded sx={{ fontSize: 16 }} />}
-                    onClick={handleOpenGuide}
-                    sx={{ background: GRADIENT_GOLD_VIVID, color: '#fff', fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 2, py: 0.75, fontSize: '0.85rem', mt: 0.5, '&:hover': { background: GRADIENT_GOLD_VIVID, opacity: 0.94 } }}
-                  >
-                    See the guide
-                  </Button>
-                </Stack>
-              </Paper>
-            )}
-          </Box>
-        </motion.div>
-
         <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: { xs: 2.5, md: 3.5 } }}>
           <Stack spacing={3}>
             <Box>
@@ -660,6 +520,124 @@ const PostersTab = ({
             </Stack>
           </Stack>
         </Paper>
+
+        {/* Partner sticker (moved from Scripts) */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.12 }}
+        >
+          <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: { xs: 2.5, md: 3.5 }, mt: 3 }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 2.5, md: 4 }} alignItems={{ xs: 'stretch', md: 'center' }}>
+              {/* Text + controls */}
+              <Stack spacing={2.5} sx={{ flex: 1, minWidth: 0 }}>
+                <Box>
+                  <Typography variant='h6' fontWeight={800} gutterBottom>
+                    Be a proud Winnbell partner
+                  </Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    Add our sticker to your door or register so customers notice.
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 1.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Sticker color
+                  </Typography>
+                  <Stack direction='row' spacing={1.5}>
+                    {STICKER_THEMES.map((option, i) => (
+                      <Box
+                        key={i}
+                        onClick={() => setStickerIdx(i)}
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: '8px',
+                          background: option.color,
+                          cursor: 'pointer',
+                          border: stickerIdx === i ? `2px solid ${PRIMARY_MAIN}` : '2px solid transparent',
+                          boxShadow: stickerIdx === i ? `0 0 0 2px white, 0 0 0 4px ${PRIMARY_MAIN}` : 'none',
+                          transition: 'all 0.2s',
+                          '&:hover': { borderColor: PRIMARY_MAIN },
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                </Box>
+
+                {effectiveLocationId ? (
+                  <Button
+                    variant='contained'
+                    size='large'
+                    startIcon={downloadingSticker ? undefined : <FileDownload />}
+                    onClick={handleDownloadSticker}
+                    disabled={downloadingSticker}
+                    sx={{ py: 1.2, fontWeight: 800, fontSize: '0.9rem', textTransform: 'none', alignSelf: { xs: 'stretch', md: 'flex-start' }, px: { md: 4 } }}
+                  >
+                    {downloadingSticker ? <><CircularProgress size={18} color='inherit' sx={{ mr: 1 }} />Generating...</> : 'Download sticker'}
+                  </Button>
+                ) : (
+                  <Button
+                    variant='outlined'
+                    size='large'
+                    onClick={onRequireLocation}
+                    sx={{ py: 1.2, fontWeight: 700, fontSize: '0.9rem', textTransform: 'none', alignSelf: { xs: 'stretch', md: 'flex-start' }, px: { md: 4 } }}
+                  >
+                    Choose a location to download
+                  </Button>
+                )}
+              </Stack>
+
+              {/* Sticker preview */}
+              <Box
+                ref={stickerRef}
+                sx={{
+                  background: `linear-gradient(160deg, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 42%, rgba(0,0,0,0.34) 100%), ${stickerTheme.color}`,
+                  borderRadius: '50%',
+                  padding: '26px',
+                  width: 290,
+                  height: 290,
+                  alignSelf: 'center',
+                  flexShrink: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-evenly',
+                  alignItems: 'center',
+                }}
+              >
+                <Box component='img' src='/winnbell_app_name_white.svg' sx={{ height: 22 }} />
+                <Box
+                  sx={{
+                    borderRadius: '14px',
+                    backgroundColor: 'white',
+                    padding: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <QRCodePlain value={scanUrl} size={136} level='H' fgColor={stickerTheme.color} />
+                </Box>
+                {/* Fixed 3-line break, shortest line at the bottom, so nothing touches the
+                    curved edge (near the circle's bottom the usable width is the chord). */}
+                <Typography
+                  sx={{
+                    color: 'white',
+                    fontSize: '0.55rem',
+                    textAlign: 'center',
+                    opacity: 0.85,
+                    letterSpacing: 0.2,
+                    lineHeight: 1.45,
+                    whiteSpace: 'pre-line',
+                    mb: '-5px',
+                  }}
+                >
+                  {'No purchase necessary.\nAlternative method of entry & official rules\navailable at Winnbell.com'}
+                </Typography>
+              </Box>
+            </Stack>
+          </Paper>
+        </motion.div>
       </Box>
     </motion.div>
   );

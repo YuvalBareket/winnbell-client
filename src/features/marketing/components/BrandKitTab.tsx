@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Stack, Paper, Button, CircularProgress,
 } from '@mui/material';
-import { FileDownload, ContentCopy, Download } from '@mui/icons-material';
+import { FileDownload, ContentCopy, Download, FactCheckRounded, ArrowForwardRounded } from '@mui/icons-material';
 import QRCodePlain from 'react-qr-code';
 import {
   PRIMARY_MAIN, TEXT_HEADING, TEXT_SECONDARY,
@@ -25,8 +26,8 @@ const BrandKitTab = ({
   onToast,
   onRequireLocation,
 }: BrandKitTabProps) => {
+  const navigate = useNavigate();
   const [downloadingQr, setDownloadingQr] = useState(false);
-  const [copiedHex, setCopiedHex] = useState<string | null>(null);
   const [copiedLegal, setCopiedLegal] = useState(false);
 
   const qrRef = useRef<HTMLDivElement>(null);
@@ -46,13 +47,6 @@ const BrandKitTab = ({
     }
   };
 
-  const handleCopyHex = (hex: string) => {
-    navigator.clipboard.writeText(hex).then(() => {
-      setCopiedHex(hex);
-      setTimeout(() => setCopiedHex(null), 2500);
-    });
-  };
-
   const handleCopyLegal = () => {
     navigator.clipboard.writeText(LEGAL_TEXT).then(() => {
       setCopiedLegal(true);
@@ -60,19 +54,40 @@ const BrandKitTab = ({
     });
   };
 
-  const handleDownloadLogo = (filename: string) => {
-    const link = document.createElement('a');
-    link.href = `/${filename}`;
-    link.download = filename;
-    link.click();
+  // Rasterize the SVG asset to a transparent PNG (long edge ~1200px) - businesses can drop
+  // a PNG straight into Canva/posts, while raw SVGs just open in a browser tab.
+  const handleDownloadLogo = async (filename: string) => {
+    try {
+      const img = new Image();
+      img.src = `/${filename}`;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error(`Could not load ${filename}`));
+      });
+      const w = img.naturalWidth || 1200;
+      const h = img.naturalHeight || 400;
+      const scale = Math.max(1, 1200 / Math.max(w, h));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(w * scale);
+      canvas.height = Math.round(h * scale);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('No canvas context');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) throw new Error('PNG export failed');
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename.replace(/\.svg$/i, '.png');
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      onToast('Download failed. Please try again.');
+    }
   };
-
-  const BRAND_COLORS = [
-    { name: 'Primary', hex: PRIMARY_MAIN },
-    { name: 'Text Heading', hex: TEXT_HEADING },
-    { name: 'Trophy Gold', hex: '#fbbf24' },
-    { name: 'Accent Green', hex: '#2e7d32' },
-  ];
 
   return (
     <motion.div
@@ -194,83 +209,57 @@ const BrandKitTab = ({
                 </Paper>
               </motion.div>
 
-              {/* Brand Colors Card */}
-              <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }} initial='hidden' animate='visible' transition={{ delay: 0.2, duration: 0.4 }}>
-                <Paper elevation={0} sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', p: 2, height: '100%' }}>
-                  <Stack spacing={2}>
-                    <Box>
-                      <Typography variant='subtitle2' fontWeight={800} gutterBottom>Brand colors</Typography>
-                      <Typography variant='caption' color='text.secondary'>Click to copy hex value</Typography>
-                    </Box>
-
-                    <Stack spacing={1}>
-                      {BRAND_COLORS.map((color) => (
-                        <Box
-                          key={color.hex}
-                          onClick={() => handleCopyHex(color.hex)}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                            p: 1,
-                            borderRadius: 1.5,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            border: '1px solid',
-                            borderColor: copiedHex === color.hex ? 'success.main' : 'divider',
-                            bgcolor: copiedHex === color.hex ? 'rgba(46,125,50,0.04)' : 'transparent',
-                            '&:hover': { borderColor: PRIMARY_MAIN, bgcolor: ALPHA_PRIMARY_06 },
-                          }}
-                        >
-                          <Box sx={{ width: 28, height: 28, borderRadius: 1, bgcolor: color.hex, flexShrink: 0 }} />
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant='caption' fontWeight={700} display='block'>{color.name}</Typography>
-                            <Typography variant='caption' color='text.secondary' sx={{ fontFamily: 'monospace' }}>{color.hex}</Typography>
-                          </Box>
-                          {copiedHex === color.hex && (
-                            <Typography variant='caption' color='success.main' fontWeight={700}>Copied</Typography>
-                          )}
+              {/* Guidelines Card - links to the Business Participation Guidelines document */}
+              <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }} initial='hidden' animate='visible' transition={{ delay: 0.25, duration: 0.4 }} style={{ height: '100%' }}>
+                <Paper elevation={0} sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <Stack spacing={2} sx={{ flex: 1 }}>
+                    {/* Hero band */}
+                    <Box
+                      onClick={() => navigate('/business-guidelines')}
+                      sx={{
+                        position: 'relative',
+                        overflow: 'hidden',
+                        borderRadius: 2,
+                        p: 2.25,
+                        background: `linear-gradient(135deg, ${ALPHA_PRIMARY_06}, ${PRIMARY_MAIN}14)`,
+                        border: `1px solid ${PRIMARY_MAIN}22`,
+                        cursor: 'pointer',
+                        transition: 'all 0.18s ease',
+                        '&:hover': {
+                          borderColor: PRIMARY_MAIN,
+                          boxShadow: `0 6px 18px -8px ${PRIMARY_MAIN}55`,
+                          '& .guide-arrow': { transform: 'translateX(3px)' },
+                        },
+                        '&:active': { transform: 'scale(0.99)' },
+                      }}
+                    >
+                      <Box sx={{ position: 'absolute', top: -50, right: -40, width: 150, height: 150, borderRadius: '50%', background: `radial-gradient(circle, ${PRIMARY_MAIN}14 0%, transparent 68%)`, pointerEvents: 'none' }} />
+                      <Stack direction='row' spacing={1.75} alignItems='center' sx={{ position: 'relative' }}>
+                        <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: '#fff', color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 12px -4px ${PRIMARY_MAIN}44` }}>
+                          <FactCheckRounded sx={{ fontSize: 22 }} />
                         </Box>
-                      ))}
-                    </Stack>
-                  </Stack>
-                </Paper>
-              </motion.div>
-
-              {/* Rules Card */}
-              <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }} initial='hidden' animate='visible' transition={{ delay: 0.25, duration: 0.4 }}>
-                <Paper elevation={0} sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', p: 2, height: '100%' }}>
-                  <Stack spacing={2}>
-                    <Box>
-                      <Typography variant='subtitle2' fontWeight={800} gutterBottom>Rules for your own designs</Typography>
-                      <Typography variant='caption' color='text.secondary'>Keep brand consistent and compliant</Typography>
-                    </Box>
-
-                    <Box sx={{ p: 1.5, bgcolor: '#f5f5f5', borderRadius: 1.5 }}>
-                      <Stack spacing={1}>
-                        <Box>
-                          <Typography variant='caption' fontWeight={700} display='block' sx={{ color: 'success.main', mb: 0.5 }}>Do</Typography>
-                          <Stack spacing={0.5}>
-                            <Typography variant='caption'>Include the scan QR or link</Typography>
-                            <Typography variant='caption'>Say entry is free</Typography>
-                            <Typography variant='caption'>Keep logo colors intact</Typography>
-                          </Stack>
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                          <Typography sx={{ fontSize: '0.9rem', fontWeight: 800, color: TEXT_HEADING, lineHeight: 1.25 }}>
+                            Business Participation Guidelines
+                          </Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: TEXT_SECONDARY, mt: 0.25 }}>
+                            The rules your own designs and staff need to follow.
+                          </Typography>
                         </Box>
-                        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 1 }}>
-                          <Typography variant='caption' fontWeight={700} display='block' sx={{ color: '#c62828', mb: 0.5 }}>Don't</Typography>
-                          <Stack spacing={0.5}>
-                            <Typography variant='caption'>Promise winning or imply purchase improves odds</Typography>
-                            <Typography variant='caption'>Alter logo colors or proportions</Typography>
-                            <Typography variant='caption'>Forget the legal line</Typography>
-                          </Stack>
-                        </Box>
+                        <ArrowForwardRounded className='guide-arrow' sx={{ fontSize: 18, color: PRIMARY_MAIN, flexShrink: 0, transition: 'transform 0.18s ease' }} />
                       </Stack>
                     </Box>
 
-                    <Box ref={legalRef} sx={{ p: 1.25, bgcolor: ALPHA_PRIMARY_06, borderRadius: 1 }}>
-                      <Typography variant='caption' sx={{ lineHeight: 1.4, color: TEXT_SECONDARY }}>
-                        {LEGAL_TEXT}
+                    {/* Required disclosure - the one thing every custom design must carry */}
+                    <Box>
+                      <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 0.75, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        Required on custom materials
                       </Typography>
+                      <Box ref={legalRef} sx={{ p: 1.25, bgcolor: ALPHA_PRIMARY_06, borderRadius: 1 }}>
+                        <Typography variant='caption' sx={{ lineHeight: 1.4, color: TEXT_SECONDARY }}>
+                          {LEGAL_TEXT}
+                        </Typography>
+                      </Box>
                     </Box>
 
                     <Button
@@ -280,6 +269,7 @@ const BrandKitTab = ({
                       startIcon={<ContentCopy sx={{ fontSize: 14 }} />}
                       onClick={handleCopyLegal}
                       sx={{
+                        mt: 'auto',
                         textTransform: 'none',
                         fontWeight: 700,
                         fontSize: '0.85rem',
