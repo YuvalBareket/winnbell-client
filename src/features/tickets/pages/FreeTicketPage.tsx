@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 import CardGiftcardOutlined from '@mui/icons-material/CardGiftcardOutlined';
 import StarRounded from '@mui/icons-material/StarRounded';
-import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
 import EventAvailableRounded from '@mui/icons-material/EventAvailableRounded';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
