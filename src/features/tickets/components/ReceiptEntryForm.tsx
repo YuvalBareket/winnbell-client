@@ -544,11 +544,11 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             <FreeEntryCard variant='compact' onClaim={() => navigate('/freeTicket')} />
           </Box>
 
-          {/* Mobile: "or pick where you shopped" divider (frame-2) */}
+          {/* Mobile: "or submit a receipt instead" divider (frame-2) */}
           <Box component={motion.div} variants={riseIn} sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1.5, mb: 2 }}>
             <Box sx={{ flex: 1, height: '1px', bgcolor: BORDER_LIGHT }} />
             <Typography sx={{ color: TEXT_SECONDARY, fontWeight: 700, fontSize: '0.7rem', letterSpacing: 0.6, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-              Or pick where you shopped
+              Or submit a receipt instead
             </Typography>
             <Box sx={{ flex: 1, height: '1px', bgcolor: BORDER_LIGHT }} />
           </Box>
