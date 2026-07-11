@@ -5,7 +5,7 @@ import {
   useMediaQuery, useTheme, Skeleton,
 } from '@mui/material';
 import {
-  Directions, Close, CheckCircle, LocationOn, InfoOutlined,
+  Directions, Close, LocationOn, InfoOutlined,
   ReceiptLong, AttachMoney, LocalPhoneOutlined, LanguageOutlined,
   LocationOnOutlined,
 } from '@mui/icons-material';

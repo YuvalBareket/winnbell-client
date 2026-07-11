@@ -10,13 +10,11 @@ import {
   Avatar,
   Stack,
   CircularProgress,
-  Chip,
 } from '@mui/material';
 import {
   Search,
   MyLocation,
   Directions,
-  CheckCircle,
   SearchOff,
   Storefront as StorefrontIcon,
 } from '@mui/icons-material';
