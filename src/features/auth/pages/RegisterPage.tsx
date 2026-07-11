@@ -41,7 +41,7 @@ const BrandPanel = ({ isBusinessOwner, isLocationManager }: { isBusinessOwner: b
         { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Track performance and engagement' },
       ]
     : [
-        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local partner businesses' },
+        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local businesses' },
         { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your free weekly entry - no purchase needed' },
         { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
       ];

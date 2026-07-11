@@ -129,7 +129,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
       ]
     : [
-        { label: 'Nearby Partners', icon: <StorefrontOutlined />, path: '/nearby' },
+        { label: 'Nearby Businesses', icon: <StorefrontOutlined />, path: '/nearby' },
         { label: 'Entry submission', icon: <ReceiptLongOutlined />, path: '/scan' },
         { label: 'My Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Campaigns Hub', icon: <EmojiEventsOutlined />, path: '/draws/history' },

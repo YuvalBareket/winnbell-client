@@ -288,18 +288,11 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                     size='small'
                     sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: `${sectorInfo.color}18`, color: sectorInfo.color, border: `1px solid ${sectorInfo.color}33` }}
                   />
-                  {detail?.cap_reached ? (
+                  {detail?.cap_reached && (
                     <Chip
                       label='Entries Full'
                       size='small'
                       sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#f3f4f6', color: '#6b7280' }}
-                    />
-                  ) : (
-                    <Chip
-                      icon={<CheckCircle sx={{ fontSize: '11px !important', color: '#16a34a !important' }} />}
-                      label='Active Partner'
-                      size='small'
-                      sx={{ height: 22, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#dcfce7', color: '#16a34a' }}
                     />
                   )}
                   {userLocation && (

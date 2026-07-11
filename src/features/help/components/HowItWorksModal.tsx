@@ -35,14 +35,14 @@ interface Props {
 const steps = [
   {
     icon: StorefrontOutlined,
-    title: 'Visit Partner Businesses',
-    description: 'Find participating partner businesses near you using the Winnbell map',
+    title: 'Visit Local Businesses',
+    description: 'Find participating businesses near you using the Winnbell map',
     color: PRIMARY_LIGHT,
   },
   {
     icon: ReceiptLongOutlined,
     title: 'Submit Your Receipt',
-    description: `Visit a participating partner business and submit your receipt to earn a campaign entry. Up to ${MAX_ENTRIES_PER_DRAW} entries per campaign per member.`,
+    description: `Visit a participating business and submit your receipt to earn a campaign entry. Up to ${MAX_ENTRIES_PER_DRAW} entries per campaign per member.`,
     color: PRIMARY_MAIN,
   },
   {

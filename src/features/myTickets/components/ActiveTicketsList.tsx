@@ -568,7 +568,7 @@ const EmptyStateAnimated = ({ isClosed, onAction }: { isClosed: boolean; onActio
     <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
       {isClosed
         ? 'This campaign has ended and you were not entered in it.'
-        : 'Claim your free weekly entry or submit a receipt at a partner business'}
+        : 'Claim your free weekly entry or submit a receipt at a local business'}
     </Typography>
     {/* CTA only makes sense for the CURRENT campaign - a closed draw can't be entered. */}
     {!isClosed && (

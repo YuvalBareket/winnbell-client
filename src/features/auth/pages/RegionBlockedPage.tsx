@@ -43,7 +43,7 @@ const BrandPanel = () => (
     {/* Feature bullets */}
     <Stack spacing={2.5}>
       {[
-        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local partner businesses' },
+        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local businesses' },
         { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your free weekly entry - no purchase needed' },
         { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
       ].map((item, i) => (

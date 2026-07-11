@@ -185,7 +185,7 @@ const NearbyPage = () => {
             </IconButton>
             <InputBase
               sx={{ ml: 1, flex: 1, fontWeight: 600 }}
-              placeholder='Search partners...'
+              placeholder='Search businesses...'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -272,7 +272,7 @@ const NearbyPage = () => {
         </Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pt: { xs: 0, md: 2 }, pb: 1 }}>
-          <Typography variant='h6' sx={{ fontWeight: 700 }}>Partners List</Typography>
+          <Typography variant='h6' sx={{ fontWeight: 700 }}>Business List</Typography>
           {isFetching && !isLoading && <CircularProgress size={14} thickness={5} />}
         </Box>
 
@@ -353,7 +353,7 @@ const NearbyPage = () => {
             <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
               <SearchOff sx={{ fontSize: 56, color: 'text.disabled', mb: 1.5 }} />
               <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
-                No partners found
+                No businesses found
               </Typography>
               <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5, mb: 2 }}>
                 Try adjusting your search or sector filter.
@@ -371,12 +371,12 @@ const NearbyPage = () => {
             </Box>
           )}
 
-          {/* Empty state - no nearby partners at all */}
+          {/* Empty state - no nearby businesses at all */}
           {!listLoading && !listError && filteredLocations.length === 0 && searchTerm.length === 0 && !selectedSector && (
             <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
               <StorefrontIcon sx={{ fontSize: 56, color: 'text.disabled', mb: 1.5 }} />
               <Typography variant='subtitle1' fontWeight={700} color='text.secondary'>
-                No partners near you yet
+                No businesses near you yet
               </Typography>
               <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
                 Try zooming out on the map or check back later.
@@ -448,19 +448,6 @@ const NearbyPage = () => {
                             ? `${formatDistanceMiles(haversineKm(userLocation.latitude, userLocation.longitude, partner.latitude, partner.longitude))} away`
                             : sectorInfo.label}
                         </Typography>
-                        <Chip
-                          icon={<CheckCircle sx={{ fontSize: '12px !important' }} />}
-                          label='Partner'
-                          size='small'
-                          sx={{
-                            height: 20,
-                            fontSize: '0.65rem',
-                            fontWeight: 700,
-                            bgcolor: 'rgba(46, 125, 50, 0.1)',
-                            color: 'success.main',
-                            '& .MuiChip-icon': { color: 'success.main' },
-                          }}
-                        />
                       </Box>
                     </Box>
                   </Box>

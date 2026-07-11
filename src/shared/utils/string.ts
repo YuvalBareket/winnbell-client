@@ -8,7 +8,7 @@ export const getUserInitials = (fullName?: string | null): string =>
 
 /** Get display label for a user role */
 export const getRoleLabel = (isAdmin: boolean, isBusiness: boolean, isManager: boolean): string =>
-  isAdmin ? 'Admin' : isBusiness ? 'Partner' : isManager ? 'Manager' : 'Member';
+  isAdmin ? 'Admin' : isBusiness ? 'Business' : isManager ? 'Manager' : 'Member';
 
 /** Get color for a user role */
 export const getRoleColor = (isAdmin: boolean, isBusiness: boolean, isManager: boolean): string =>

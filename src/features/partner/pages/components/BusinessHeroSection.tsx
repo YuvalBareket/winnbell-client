@@ -113,7 +113,7 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
                   sx={{ bgcolor: ALPHA_WHITE_15, color: 'white', fontWeight: 700, borderRadius: 2 }}
                 />
                 {business.is_subscribed ? (
-                  <Chip label='Active Partner' size='small' color='success' sx={{ fontWeight: 700, borderRadius: 2 }} />
+                  <Chip label='Active' size='small' color='success' sx={{ fontWeight: 700, borderRadius: 2 }} />
                 ) : (
                   <Chip label='Pending Activation' size='small' sx={{ fontWeight: 700, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
                 )}

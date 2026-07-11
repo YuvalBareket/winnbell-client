@@ -254,7 +254,7 @@ const BusinessProfilePage = () => {
               <motion.div key='b2' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.28 }}>
                 <Typography sx={{ fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.12, fontSize: { xs: '1.4rem', md: '2.35rem' }, mb: { xs: 0.5, md: 2 } }}>Put yourself on the map.</Typography>
                 <Typography sx={{ fontSize: { xs: '0.8rem', md: '0.95rem' }, color: ALPHA_WHITE_70, lineHeight: 1.7, maxWidth: 340, mb: { xs: 0, md: 4 } }}>
-                  Customers discover partner businesses by location. Drop your pin so nearby members can find you and earn entries.
+                  Customers discover businesses by location. Drop your pin so nearby members can find you and earn entries.
                 </Typography>
                 <Stack spacing={2} sx={{ display: { xs: 'none', md: 'flex' } }}>
                   {[
