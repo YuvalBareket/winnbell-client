@@ -17,22 +17,23 @@ export interface PlanMeta {
 }
 
 // Display metadata for the 3-card plan picker. Copy stays compliant: describes
-// volume/value, never implies more entries improve winning odds.
+// campaign capacity/volume only, never implies any entry is worth more than another
+// or that more entries improve winning odds.
 export const PLAN_META: Record<number, PlanMeta> = {
   1000: {
-    name: 'Starter',
-    tagline: 'For a quieter location',
-    features: ['On the Winnbell map', 'Entries every campaign'],
+    name: 'Low Volume',
+    tagline: 'For lower-traffic locations',
+    features: ['Map visibility while active', 'Campaign setup tools', 'Winnbell campaign administration'],
   },
   2500: {
-    name: 'Growth',
-    tagline: 'Where most shops start',
+    name: 'Medium Volume',
+    tagline: 'For steady customer traffic',
     popular: true,
-    features: ['Everything in Starter', 'Best value per entry'],
+    features: ['Everything in Low Volume', 'Increased campaign capacity', 'Better fit for active locations'],
   },
   5000: {
-    name: 'Pro',
-    tagline: 'High-traffic and multi-branch',
-    features: ['Everything in Growth', 'Maximum entry volume'],
+    name: 'High Volume',
+    tagline: 'For busy or multi-location businesses',
+    features: ['Everything in Medium Volume', 'Highest standard capacity', 'Built for busy locations'],
   },
 };

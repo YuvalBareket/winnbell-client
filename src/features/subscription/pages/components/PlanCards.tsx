@@ -16,10 +16,10 @@ interface PlanCardsProps {
   disabled?: boolean;
 }
 
-// The 3-plan picker (Starter / Growth / Pro). Shared by the subscribe flow and the
+// The 3-plan picker (Low / Medium / High Volume). Shared by the subscribe flow and the
 // plan-change management page so both stay in sync with subscribeTiers.
-// Matches the design precisely: white cards, price-forward layout, blue entries highlight,
-// green check icons, select/selected buttons, popular badge on Growth.
+// Matches the design precisely: white cards, price-forward layout, blue capacity highlight,
+// green check icons, select/selected buttons, popular badge on the Medium Volume plan.
 const PlanCards = ({ selectedTier, onSelect, disabled }: PlanCardsProps) => (
   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
     {TIER_KEYS.map((tier) => {
@@ -114,11 +114,11 @@ const PlanCards = ({ selectedTier, onSelect, disabled }: PlanCardsProps) => (
                 color: TEXT_TERTIARY,
               }}
             >
-              / location / mo
+              / location / month
             </Typography>
           </Box>
 
-          {/* Entries line */}
+          {/* Capacity line - describes campaign capacity, never per-entry value */}
           <Typography
             sx={{
               fontSize: '13px',
@@ -128,11 +128,26 @@ const PlanCards = ({ selectedTier, onSelect, disabled }: PlanCardsProps) => (
               marginBottom: '16px',
             }}
           >
-            {tier.toLocaleString()} entries / mo
+            Monthly campaign capacity: up to {tier.toLocaleString()} entries
           </Typography>
 
           {/* Divider (hidden on mobile with the feature list) */}
           <Box sx={{ display: { xs: 'none', sm: 'block' }, height: '1px', background: BORDER_SUBTLE, marginBottom: '16px' }} />
+
+          {/* "Included:" label above the feature list - hidden on mobile with the list */}
+          <Typography
+            sx={{
+              display: { xs: 'none', sm: 'block' },
+              fontSize: '11px',
+              fontWeight: 800,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              color: TEXT_TERTIARY,
+              marginBottom: '10px',
+            }}
+          >
+            Included:
+          </Typography>
 
           {/* Features (flex:1 to push button to bottom) - hidden on mobile */}
           <Stack spacing={1.125} sx={{ display: { xs: 'none', sm: 'flex' }, flex: 1, marginBottom: { xs: 0, sm: '18px' } }}>

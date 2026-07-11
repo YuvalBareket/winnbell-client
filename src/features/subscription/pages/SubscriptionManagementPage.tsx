@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   Box, Typography, Paper, Stack, Chip, Button, Divider, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Alert,
@@ -53,6 +53,15 @@ export default function SubscriptionManagementPage() {
   const [editPlanOpen, setEditPlanOpen] = useState(false);
   const [newTier, setNewTier] = useState<number>(0);
   const [updateError, setUpdateError] = useState('');
+  // Bottom of the Change Plan dialog - selecting a plan scrolls the breakdown into view
+  // (esp. on mobile, where the price + confirm sit below the cards).
+  const editPlanBottomRef = useRef<HTMLDivElement>(null);
+  const handleSelectNewTier = (tier: number) => {
+    setNewTier(tier);
+    requestAnimationFrame(() => {
+      editPlanBottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    });
+  };
 
   const { data: sub, isLoading, isError } = useSubscription();
   const { data: invoices, isLoading: invoicesLoading } = useSubscriptionInvoices();
@@ -120,6 +129,11 @@ export default function SubscriptionManagementPage() {
   // campaign to open. While set, it is what Stripe will bill, so it leads the display.
   const hasPendingPlan = sub?.pending_entries_per_location != null;
 
+  // Cancelled before ever being charged into a campaign: there is nothing pending (no charge,
+  // no draw), so we drop the "cancels on <date> / still active" framing and just show it as
+  // cancelled - the future period-end date is meaningless here and only confuses.
+  const cancelledNoCampaign = !!sub?.cancel_at_period_end && !sub?.draw_id;
+
   const drawDateLabel = sub?.draw_date
     ? new Date(sub.draw_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
@@ -177,7 +191,9 @@ export default function SubscriptionManagementPage() {
             {cancelResult.refundType !== 'none' ? (
               <>Founding membership cancelled. You have been removed from upcoming campaigns and a <strong>refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
             ) : (
-              <>Subscription cancelled. Your plan stays active until {periodEndLabel} and you keep your current campaign. It will not renew after that.</>
+              sub.draw_id
+                ? <>Subscription cancelled. Your plan stays active until {periodEndLabel} and you keep your current campaign. It will not renew after that.</>
+                : <>Subscription cancelled. You have not been charged and are not entered in any campaign, so nothing further will happen.</>
             )}
           </Alert>
         )}
@@ -366,7 +382,7 @@ export default function SubscriptionManagementPage() {
                       </Box>
                     </Stack>
                     <Chip
-                    label={sub.cancel_at_period_end ? 'Cancels Soon' : (STATUS_LABEL[sub.status] ?? sub.status)}
+                    label={cancelledNoCampaign ? 'Cancelled' : sub.cancel_at_period_end ? 'Cancels Soon' : (STATUS_LABEL[sub.status] ?? sub.status)}
                     size='small'
                     sx={{
                       fontWeight: 700,
@@ -379,7 +395,17 @@ export default function SubscriptionManagementPage() {
                   {/* Plan details */}
                   <Box sx={{ px: 3, py: 3 }}>
                     <Stack spacing={2}>
-                      {periodEndLabel && (
+                      {cancelledNoCampaign ? (
+                        <Box>
+                          <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
+                            Plan status
+                          </Typography>
+                          <Typography variant='h6' fontWeight={800} color='text.primary'>Cancelled</Typography>
+                          <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
+                            You were not charged and are not in any campaign. Resume your plan whenever you're ready.
+                          </Typography>
+                        </Box>
+                      ) : periodEndLabel && (
                         <Box>
                           <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
                             {sub.is_founding ? 'Membership expires' : sub.cancel_at_period_end ? 'Cancels on' : 'Next charge on'}
@@ -441,7 +467,7 @@ export default function SubscriptionManagementPage() {
                       </Alert>
                     )}
 
-                    {sub.cancel_at_period_end && (
+                    {sub.cancel_at_period_end && !cancelledNoCampaign && (
                       <Alert severity='warning' sx={{ mt: 2.5, borderRadius: 2 }}>
                         Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. It just will not renew after that.
                       </Alert>
@@ -452,7 +478,7 @@ export default function SubscriptionManagementPage() {
                         variant='outlined'
                         startIcon={<Edit />}
                         onClick={() => { setNewTier(sub.pending_entries_per_location ?? sub.entries_per_location ?? 2500); setEditPlanOpen(true); setUpdateError(''); }}
-                        disabled={sub.is_founding || sub.status === 'Cancelled'}
+                        disabled={sub.is_founding || sub.status === 'Cancelled' || sub.cancel_at_period_end}
                         sx={{ fontWeight: 700, textTransform: 'none' }}
                       >
                         Edit Plan
@@ -938,7 +964,7 @@ export default function SubscriptionManagementPage() {
               <Typography variant='body2' color='text.secondary' mb={2}>
                 Pick your plan. It takes effect with the next campaign.
               </Typography>
-              <PlanCards selectedTier={newTier} onSelect={setNewTier} disabled={updatingPlan} />
+              <PlanCards selectedTier={newTier} onSelect={handleSelectNewTier} disabled={updatingPlan} />
             </Box>
 
             {/* Price breakdown */}
@@ -968,6 +994,8 @@ export default function SubscriptionManagementPage() {
               Your new plan takes effect with the next campaign. The current campaign is not affected.
               {sub.in_charged_window ? ' Since the next campaign is already paid, any price difference is charged or refunded right away.' : ''}
             </Typography>
+            {/* Scroll target: selecting a plan brings the breakdown into view */}
+            <Box ref={editPlanBottomRef} />
           </Stack>
         </DialogContent>
         {/* Error lives OUTSIDE the scrollable content so it is always visible above the actions. */}

@@ -29,6 +29,19 @@ const DrawPreparationView = ({
 }: DrawPreparationViewProps) => {
   const navigate = useNavigate();
 
+  // A subscription set to cancel that was never charged into a campaign (no draw_id) is
+  // effectively not subscribed going forward - it will not renew and enters no campaign.
+  // Show the getting-ready / subscribe checklist, not the "you're registered" one, so we
+  // never claim an active subscription or a registered campaign that will not happen.
+  const effectivelySubscribed = isSubscribed
+    && !(subscription?.cancel_at_period_end && !subscription?.draw_id);
+
+  // A cancelling business already has a plan record, so send them to Manage plan (to
+  // reactivate) rather than the fresh subscribe flow. A truly new business goes to /subscribe.
+  const hasExistingPlan = !!subscription?.cancel_at_period_end;
+  const planLabel = hasExistingPlan ? 'Reactivate your campaign plan' : 'Subscribe to a campaign plan';
+  const planPath = hasExistingPlan ? '/subscription/manage' : '/subscribe';
+
   const drawDate = subscription?.draw_date ? new Date(subscription.draw_date) : null;
   const daysUntil = drawDate
     ? Math.ceil((drawDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -38,7 +51,7 @@ const DrawPreparationView = ({
     ? `$${Number(subscription.prize_amount).toFixed(0)}`
     : null;
 
-  const checklist = isSubscribed
+  const checklist = effectivelySubscribed
     ? [
         { label: 'Subscription active', done: true },
         { label: `Registered for ${subscription?.draw_name ?? 'upcoming campaign'}`, done: true },
@@ -47,7 +60,7 @@ const DrawPreparationView = ({
         { label: 'Go live on the map when campaign opens', done: false, info: true },
       ]
     : [
-        { label: 'Subscribe to a campaign plan', done: false, path: '/subscribe' },
+        { label: planLabel, done: false, path: planPath },
         { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
         { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
         { label: 'Go live on the map when your campaign opens', done: false, info: true },
@@ -59,8 +72,8 @@ const DrawPreparationView = ({
   return (
     <Box sx={{ minHeight: isDesktop ? 'auto' : 'calc(var(--dvh100, 100dvh) - 138px)', pb: 6 }}>
       <AppPageHero
-        title={isSubscribed ? 'Preparing for Your Campaign' : 'Get Your Business Ready'}
-        subtitle={isSubscribed
+        title={effectivelySubscribed ? 'Preparing for Your Campaign' : 'Get Your Business Ready'}
+        subtitle={effectivelySubscribed
           ? "You're registered - your business goes live when the campaign opens"
           : 'A few quick steps to get your business live on Winnbell'}
       />
@@ -76,7 +89,7 @@ const DrawPreparationView = ({
           >
             <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
             <Box sx={{ background: GRADIENT_HERO, p: 3, color: 'white' }}>
-              <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>{isSubscribed ? 'Registered Campaign' : 'Upcoming Campaign'}</Typography>
+              <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>{effectivelySubscribed ? 'Registered Campaign' : 'Upcoming Campaign'}</Typography>
               <Typography variant='h6' fontWeight={800} sx={{ mt: 0.5 }}>
                 {subscription?.draw_name ?? 'Upcoming Monthly Campaign'}
               </Typography>
@@ -106,7 +119,7 @@ const DrawPreparationView = ({
               </Box>
               <Box sx={{ p: 2, bgcolor: 'rgba(25,93,230,0.04)', borderRadius: 2, border: '1px solid rgba(25,93,230,0.1)' }}>
                 <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-                  Once the campaign is live, customers can submit receipts from your store through the Winnbell app to earn campaign entries. Members also receive one free entry per week regardless of any purchase.
+                  Once the campaign is live, customers can submit receipts from your store through the Winnbell app to earn campaign entries. Members also receive one free entry per week regardless of any purchase, once your campaign is live.
                 </Typography>
               </Box>
             </Box>
@@ -123,12 +136,12 @@ const DrawPreparationView = ({
               <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 3 }}>
                 <Typography variant='h6' fontWeight={800} mb={0.5}>How it works at your location</Typography>
                 <Typography variant='body2' color='text.secondary' mb={2.5}>
-                  {isSubscribed
+                  {effectivelySubscribed
                     ? 'Your campaign is set up. Here is what to expect once it opens.'
                     : 'Your location goes live once the business owner activates a plan.'}
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                  {(isSubscribed
+                  {(effectivelySubscribed
                     ? [
                         { title: 'Registered for the campaign', desc: `Your business is set for ${subscription?.draw_name ?? 'the upcoming campaign'}.` },
                         { title: 'Campaign opens', desc: 'When it goes live, customers can submit receipts from your location to enter.' },
@@ -149,7 +162,7 @@ const DrawPreparationView = ({
                       <Box sx={{
                         width: 32, height: 32, borderRadius: '50%', flexShrink: 0, zIndex: 1,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        bgcolor: i === 0 && isSubscribed ? 'success.main' : 'primary.main',
+                        bgcolor: i === 0 && effectivelySubscribed ? 'success.main' : 'primary.main',
                         color: 'white', fontWeight: 800, fontSize: 14,
                       }}>
                         {i + 1}
