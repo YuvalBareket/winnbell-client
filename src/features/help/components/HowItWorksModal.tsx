@@ -1,23 +1,31 @@
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Box,
   Typography,
   IconButton,
   Button,
-  Stack,
 } from '@mui/material';
 import {
   Close,
-  AccountCircleOutlined,
   StorefrontOutlined,
   ReceiptLongOutlined,
   CardGiftcard,
   EmojiEventsOutlined,
 } from '@mui/icons-material';
+import { motion } from 'framer-motion';
 import { MAX_ENTRIES_PER_DRAW } from '../../../shared/constants/entries';
+import {
+  PRIMARY_MAIN,
+  PRIMARY_LIGHT,
+  PRIMARY_DEEP,
+  GRADIENT_PRIMARY,
+  ACCENT_GOLD,
+  TEXT_PRIMARY,
+  TEXT_SECONDARY,
+} from '../../../shared/colors';
+import { staggerContainer, riseIn, SPRING_POP } from '../../../shared/motion';
 
 interface Props {
   open: boolean;
@@ -26,34 +34,28 @@ interface Props {
 
 const steps = [
   {
-    icon: AccountCircleOutlined,
-    title: 'Sign Up',
-    description: 'Create your free Winnbell account in seconds',
-    color: '#3b82f6', // primary.main (blue)
-  },
-  {
     icon: StorefrontOutlined,
     title: 'Visit Partner Businesses',
     description: 'Find participating partner businesses near you using the Winnbell map',
-    color: '#10b981', // green
+    color: PRIMARY_LIGHT,
   },
   {
     icon: ReceiptLongOutlined,
     title: 'Submit Your Receipt',
     description: `Visit a participating partner business and submit your receipt to earn a campaign entry. Up to ${MAX_ENTRIES_PER_DRAW} entries per campaign per member.`,
-    color: '#f59e0b', // amber
+    color: PRIMARY_MAIN,
   },
   {
     icon: CardGiftcard,
     title: 'Get Your Free Entry',
     description: 'Every member gets 1 free entry every week - no purchase needed',
-    color: '#8b5cf6', // violet
+    color: PRIMARY_DEEP,
   },
   {
     icon: EmojiEventsOutlined,
-    title: 'Win Monthly Prizes',
-    description: 'A winner is drawn at the end of each monthly campaign from all valid entries',
-    color: '#ef4444', // red
+    title: 'A Chance to Win',
+    description: 'Every valid entry gives you a chance to win in the monthly prize draw',
+    color: ACCENT_GOLD,
   },
 ];
 
@@ -67,7 +69,8 @@ const HowItWorksModal = ({ open, onClose }: Props) => {
       fullScreen={false}
       PaperProps={{
         sx: {
-          borderRadius: { xs: 0, sm: 3 },
+          borderRadius: '15px',
+          overflow: 'hidden',
         },
       }}
       slotProps={{
@@ -78,38 +81,130 @@ const HowItWorksModal = ({ open, onClose }: Props) => {
         },
       }}
     >
-      {/* Header */}
-      <DialogTitle
+      {/* Premium Gradient Header */}
+      <Box
         sx={{
+          background: GRADIENT_PRIMARY,
+          p: 3,
           display: 'flex',
-          justifyContent: 'space-between',
+          flexDirection: 'column',
           alignItems: 'center',
-          fontWeight: 800,
-          fontSize: '1.25rem',
-          pb: 2,
+          gap: 2,
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        How Winnbell Works
+        {/* Soft glowing radial-gradient accents (not filter:blur - preserves Android clipping) */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -60,
+            right: -50,
+            width: 200,
+            height: 200,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 45%, transparent 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: -70,
+            left: -60,
+            width: 180,
+            height: 180,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 45%, transparent 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Close button positioned in header */}
         <IconButton
           onClick={onClose}
           size='small'
           sx={{
-            color: 'text.secondary',
-            '&:hover': { color: 'text.primary' },
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            color: 'rgba(255,255,255,0.7)',
+            '&:hover': { color: 'white', bgcolor: 'rgba(255,255,255,0.1)' },
+            zIndex: 10,
           }}
         >
           <Close fontSize='small' />
         </IconButton>
-      </DialogTitle>
 
-      {/* Content */}
-      <DialogContent dividers>
-        <Stack spacing={3} sx={{ py: 1 }}>
+        {/* Heading with position relative for z-index layering */}
+        <Typography
+          sx={{
+            fontWeight: 900,
+            fontSize: { xs: '1.5rem', sm: '1.75rem' },
+            color: '#ffffff',
+            textAlign: 'center',
+            letterSpacing: -0.3,
+            position: 'relative',
+            zIndex: 1,
+            mt: 1,
+          }}
+        >
+          How Winnbell Works
+        </Typography>
+      </Box>
+
+      {/* Content with staggered step animations */}
+      <DialogContent
+        sx={{
+          pt: 4,
+          pb: 3,
+          px: 3,
+          bgcolor: 'background.paper',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0,
+        }}
+      >
+        {/* Steps Timeline Container */}
+        <Box
+          component={motion.div}
+          variants={staggerContainer}
+          initial='hidden'
+          animate={open ? 'visible' : 'hidden'}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}
+        >
           {steps.map((step, idx) => {
             const Icon = step.icon;
+            const isLast = idx === steps.length - 1;
+
             return (
-              <Box key={idx} sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                {/* Icon Badge */}
+              <Box
+                key={idx}
+                component={motion.div}
+                variants={riseIn}
+                sx={{
+                  display: 'flex',
+                  gap: 2.5,
+                  pb: isLast ? 0 : 2.5,
+                  position: 'relative',
+                }}
+              >
+                {/* Vertical connector line (appears between steps, not on last) */}
+                {!isLast && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      left: 27.5,
+                      top: 56,
+                      width: 2,
+                      height: 'calc(100% - 56px)',
+                      bgcolor: 'divider',
+                      zIndex: 0,
+                    }}
+                  />
+                )}
+
+                {/* Numbered Icon Chip */}
                 <Box
                   sx={{
                     minWidth: 56,
@@ -122,7 +217,9 @@ const HowItWorksModal = ({ open, onClose }: Props) => {
                     backgroundColor: step.color,
                     color: 'white',
                     flexShrink: 0,
-                    boxShadow: `0 4px 12px ${step.color}40`,
+                    boxShadow: `0 4px 16px ${step.color}35`,
+                    position: 'relative',
+                    zIndex: 1,
                     fontSize: '1.5rem',
                     fontWeight: 800,
                   }}
@@ -130,7 +227,7 @@ const HowItWorksModal = ({ open, onClose }: Props) => {
                   <Icon sx={{ fontSize: 28 }} />
                 </Box>
 
-                {/* Text */}
+                {/* Step Content */}
                 <Box sx={{ flex: 1, pt: 0.5 }}>
                   <Typography
                     variant='h6'
@@ -138,6 +235,7 @@ const HowItWorksModal = ({ open, onClose }: Props) => {
                       fontWeight: 700,
                       fontSize: '0.95rem',
                       mb: 0.5,
+                      color: TEXT_PRIMARY,
                     }}
                   >
                     {idx + 1}. {step.title}
@@ -146,7 +244,7 @@ const HowItWorksModal = ({ open, onClose }: Props) => {
                     variant='body2'
                     sx={{
                       fontSize: '0.85rem',
-                      color: 'text.secondary',
+                      color: TEXT_SECONDARY,
                       lineHeight: 1.5,
                     }}
                   >
@@ -156,10 +254,12 @@ const HowItWorksModal = ({ open, onClose }: Props) => {
               </Box>
             );
           })}
-        </Stack>
+        </Box>
 
         {/* Legal Note */}
         <Box
+          component={motion.div}
+          variants={riseIn}
           sx={{
             mt: 4,
             pt: 3,
@@ -171,7 +271,7 @@ const HowItWorksModal = ({ open, onClose }: Props) => {
             variant='caption'
             sx={{
               fontSize: '0.75rem',
-              color: 'text.secondary',
+              color: TEXT_SECONDARY,
               lineHeight: 1.6,
             }}
           >
@@ -181,21 +281,38 @@ const HowItWorksModal = ({ open, onClose }: Props) => {
       </DialogContent>
 
       {/* Actions */}
-      <DialogActions sx={{ p: 2 }}>
-        <Button
-          onClick={onClose}
-          variant='contained'
-          color='primary'
-          fullWidth
-          sx={{
-            fontWeight: 700,
-            fontSize: '0.9rem',
-            py: 1.2,
-            textTransform: 'none',
-          }}
+      <DialogActions sx={{ p: 2.5, bgcolor: 'background.paper' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={open ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+          transition={SPRING_POP}
+          style={{ width: '100%' }}
         >
-          Got it!
-        </Button>
+          <Button
+            onClick={onClose}
+            variant='contained'
+            color='primary'
+            fullWidth
+            sx={{
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              py: 1.3,
+              textTransform: 'none',
+              borderRadius: 2,
+              boxShadow: `0 4px 16px ${PRIMARY_MAIN}30`,
+              transition: 'all 180ms ease-out',
+              '&:hover': {
+                boxShadow: `0 6px 24px ${PRIMARY_MAIN}40`,
+                transform: 'translateY(-1px)',
+              },
+              '&:active': {
+                transform: 'translateY(0)',
+              },
+            }}
+          >
+            Got it!
+          </Button>
+        </motion.div>
       </DialogActions>
     </Dialog>
   );
