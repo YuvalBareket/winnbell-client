@@ -29,7 +29,7 @@ import { breathe, pressable } from '../../../shared/motion';
 const GRADIENT_FREE = `linear-gradient(155deg, ${PRIMARY_MAIN} 0%, ${PRIMARY_DEEP} 100%)`;
 
 const FREE_ENTRY_INFO =
-  'Winnbell gives every member one free entry each week. It resets every Sunday, so claim yours before the week is up. No receipt, no spend, ever.';
+  'Winnbell gives every member one free entry each week. It resets every Sunday, so claim yours before the week is up.';
 
 const getNextSunday = (): Date => {
   const now = new Date();
