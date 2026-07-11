@@ -104,7 +104,7 @@ const SocialPostsTab = ({
   const [selectedRatio, setSelectedRatio] = useState<RatioId>('square-1-1');
   const [selectedStyle, setSelectedStyle] = useState<string>('navy');
   const [headline, setHeadline] = useState("This month's draw is live.");
-  const [tagline, setTagline] = useState('Shop local. Free to enter.');
+  const [tagline, setTagline] = useState('Shop local.');
   const [subtext, setSubtext] = useState(`Join this month's draw at ${businessName}`);
   const imageRef = useRef<HTMLDivElement>(null);
 
@@ -164,7 +164,7 @@ const SocialPostsTab = ({
     const kickerSize = isStory ? 11 : 10;
     const headlineSize = isStory ? 52 : 48;
     const subtextSize = isStory ? 15 : 13;
-    const logoHeight = isStory ? 24 : 22;
+    const logoHeight = isStory ? 38 : 34;
 
     return (
       <Box
@@ -234,10 +234,10 @@ const SocialPostsTab = ({
           )}
         </Box>
 
-        {/* Footer - Fine print */}
+        {/* Footer - Fine print (matches the QR sticker's legal disclosure) */}
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Typography sx={{ color: style.fineprint, fontSize: 12, fontWeight: 600 }}>
-            No purchase necessary
+          <Typography sx={{ color: style.fineprint, fontSize: 11, fontWeight: 600, lineHeight: 1.4, whiteSpace: 'pre-line' }}>
+            {'No purchase necessary.\nAlternative method of entry & official rules available at Winnbell.com'}
           </Typography>
         </Box>
       </Box>
@@ -457,7 +457,7 @@ const SocialPostsTab = ({
                     const val = e.target.value;
                     if (val.length <= 40) setTagline(val);
                   }}
-                  placeholder='Shop local. Free to enter.'
+                  placeholder='Shop local.'
                   sx={{
                     width: '100%',
                     background: '#f7f9fc',
