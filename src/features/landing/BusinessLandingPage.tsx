@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowForward, Storefront, ExpandMore,
   TravelExploreRounded, QrCodeScannerRounded, ConfirmationNumberRounded, AutoAwesomeRounded,
+  PersonAddAltRounded, CardMembershipRounded, StorefrontRounded, PriceChangeRounded,
   TrendingUpRounded, AutorenewRounded, TrackChangesRounded, SavingsRounded, CampaignRounded,
   PsychologyRounded, PaidRounded, BoltRounded, InsightsRounded, DesignServicesRounded,
 } from '@mui/icons-material';
@@ -85,9 +86,9 @@ const BusinessLandingPage = () => {
                 mb: { xs: 2, md: 3 },
               }}
             >
-              Winnbell. Where customer excitement becomes your{' '}
+              Turn every visit into something they{' '}
               <Box component='span' sx={{ color: GOLD_TROPHY }}>
-                business growth.
+                look forward to.
               </Box>
             </Typography>
           </motion.div>
@@ -188,13 +189,13 @@ const BusinessLandingPage = () => {
               From sign-up to live in four steps:
             </Typography>
 
-            {/* Step Row */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: { xs: 2, md: 3 }, mb: { xs: 4, md: 6 } }}>
+            {/* Step cards */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: { xs: 1.5, md: 3 }, mb: { xs: 4, md: 6 } }}>
               {[
-                { num: 1, title: 'Create your account' },
-                { num: 2, title: 'Subscribe' },
-                { num: 3, title: 'Set up your profile' },
-                { num: 4, title: 'Set your minimum purchase' },
+                { num: 1, Icon: PersonAddAltRounded, title: 'Create your account' },
+                { num: 2, Icon: CardMembershipRounded, title: 'Subscribe' },
+                { num: 3, Icon: StorefrontRounded, title: 'Set up your profile' },
+                { num: 4, Icon: PriceChangeRounded, title: 'Set your minimum purchase' },
               ].map((step, i) => (
                 <motion.div
                   key={step.num}
@@ -202,26 +203,40 @@ const BusinessLandingPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: 0.1 + i * 0.08 }}
+                  style={{ height: '100%' }}
                 >
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      height: '100%',
+                      bgcolor: 'background.paper',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: { xs: 2, md: 3 },
+                      p: { xs: 2, md: 3 },
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      transition: 'all 0.3s ease',
+                      '&:hover': { boxShadow: '0 8px 24px rgba(21,101,192,0.12)', borderColor: PRIMARY_MAIN },
+                    }}
+                  >
                     <Box
                       sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: '50%',
-                        bgcolor: PRIMARY_MAIN,
-                        color: 'white',
+                        width: { xs: 48, md: 56 },
+                        height: { xs: 48, md: 56 },
+                        borderRadius: 2.5,
+                        bgcolor: `${PRIMARY_MAIN}0d`,
+                        color: PRIMARY_MAIN,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontWeight: 900,
-                        fontSize: '1.25rem',
                         mb: { xs: 1.5, md: 2 },
                       }}
                     >
-                      {step.num}
+                      <step.Icon sx={{ fontSize: { xs: 24, md: 28 } }} />
                     </Box>
-                    <Typography sx={{ fontWeight: 600, color: TEXT_HEADING, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
+                    <Typography sx={{ fontWeight: 700, color: TEXT_HEADING, fontSize: { xs: '0.88rem', md: '0.95rem' }, textAlign: 'center' }}>
                       {step.title}
                     </Typography>
                   </Box>
