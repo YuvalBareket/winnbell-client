@@ -447,12 +447,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     </motion.div>
   );
 
-  const renderFooterNote = () => (
-    <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 1.25, color: TEXT_SECONDARY, opacity: 0.8, fontSize: '0.72rem' }}>
-      Free to play. No purchase necessary.
-    </Typography>
-  );
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
@@ -822,7 +816,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               {/* Mobile submit (desktop submit lives in the summary rail) */}
               <Box sx={{ display: { xs: 'block', md: 'none' }, mt: 1 }}>
                 {renderSubmit()}
-                {renderFooterNote()}
               </Box>
             </Box>
           </Box>
@@ -856,7 +849,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               </Box>
             </Box>
             {renderSubmit()}
-            {renderFooterNote()}
           </Box>
         </Box>
         )}
