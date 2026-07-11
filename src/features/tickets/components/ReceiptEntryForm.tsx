@@ -538,15 +538,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </Box>
       )}
 
-      {/* Mobile step bar for step 2 (desktop shows it in the page header actions).
-          In step 1 the bar renders below the "or pick where you shopped" divider so it
-          sits with the receipt flow it describes, not above the separate free-entry card. */}
-      {!riskLevel.isDrawCapped && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached && !successDialogOpen && selectedLocation && (
-        <Box component={motion.div} variants={riseIn} initial='hidden' animate='visible' sx={{ display: { xs: 'block', md: 'none' }, pb: 2}}>
-          <StepIndicator step={2} />
-        </Box>
-      )}
-
+      {/* Step bar is desktop-only (rendered in the page header actions); mobile omits it. */}
       {!riskLevel.isDrawCapped && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached && <>
 
       {/* ── Step 1: Select Business ─────────────────── */}
