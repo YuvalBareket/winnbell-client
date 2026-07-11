@@ -11,7 +11,7 @@ const STEPS = [
   {
     num: '02',
     title: 'Earn entries',
-    body: 'Visit a Winnbell partner business and submit your receipt to earn additional campaign entries.',
+    body: 'Visit a Winnbell partner business, make a qualifying purchase, and submit your receipt to earn additional campaign entries.',
   },
   {
     num: '03',
@@ -22,7 +22,8 @@ const STEPS = [
 
 const HowItWorks = () => {
   return (
-    <Box sx={{ py: { xs: 8, md: 12 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.default' }}>
+    // Small bottom padding: the PrizeSpotlight card follows directly and carries its own spacing.
+    <Box sx={{ pt: { xs: 8, md: 12 }, pb: { xs: 4.5, md: 5.5 }, px: { xs: 2.5, md: 0 }, bgcolor: 'background.default' }}>
       <Container maxWidth='lg'>
         <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 8 } }}>
           <motion.div

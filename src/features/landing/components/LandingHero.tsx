@@ -64,7 +64,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
               mb: { xs: 2, md: 3 },
             }}
           >
-            Shop local. Win monthly prizes.
+            Shop local. Win monthly cash prizes.
           </Typography>
         </motion.div>
 
@@ -84,8 +84,8 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
               fontWeight: 400,
             }}
           >
-            Support local businesses, earn campaign entries, and compete for real cash prizes
-            every month. Free to join. No purchase necessary.
+            Turn everyday shopping into chances to win real monthly cash prizes. Earn entries
+            through participating businesses or claim your free entry today. No purchase necessary.
           </Typography>
         </motion.div>
 

@@ -7,6 +7,7 @@ import { api } from '../../shared/api/client';
 import { queryKeys } from '../../shared/constants/queryKeys';
 import LandingHero from './components/LandingHero';
 import HowItWorks from './components/HowItWorks';
+import PrizeSpotlight from './components/PrizeSpotlight';
 import Testimonial from './components/Testimonial';
 import FinalCTA from './components/FinalCTA';
 import LandingFooter from './components/LandingFooter';
@@ -34,6 +35,7 @@ const LandingPage = () => {
       {/* These sections run their own internal whileInView entrances - double-wrapping them
           risks the inner triggers never firing, so they render bare. */}
       <HowItWorks />
+      <PrizeSpotlight onNavigate={navigate} />
       <Testimonial />
       <FinalCTA onNavigate={navigate} />
       {/* Footer has no internal animation. NO negative viewport margin here: the footer is

@@ -4,10 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowForward, Storefront, ExpandMore,
   TravelExploreRounded, QrCodeScannerRounded, ConfirmationNumberRounded, AutoAwesomeRounded,
-  PersonAddAltRounded, CardMembershipRounded, StorefrontRounded, PriceChangeRounded,
   TrendingUpRounded, AutorenewRounded, TrackChangesRounded, SavingsRounded, CampaignRounded,
   PsychologyRounded, PaidRounded, BoltRounded, InsightsRounded, DesignServicesRounded,
 } from '@mui/icons-material';
+
+// "How it works" steps - numbered 01-04 to match the user landing design
+const BUSINESS_STEPS = [
+  { num: '01', title: 'Create your account', body: 'Register your business in a couple of minutes.' },
+  { num: '02', title: 'Set up your profile', body: 'Add your name, logo, and locations so customers recognize you.' },
+  { num: '03', title: 'Subscribe', body: 'Pick the plan that fits your locations, then set your minimum purchase, the amount that qualifies a receipt for entries.' },
+  { num: '04', title: 'Prepare for the campaign', body: 'Look through our guide and get ready for the upcoming campaign.' },
+];
 import { motion } from 'framer-motion';
 import LandingNavbar from './components/LandingNavbar';
 import LandingFooter from './components/LandingFooter';
@@ -86,7 +93,7 @@ const BusinessLandingPage = () => {
                 mb: { xs: 2, md: 3 },
               }}
             >
-              Turn every visit into something they{' '}
+              Turn every customer visit into something they{' '}
               <Box component='span' sx={{ color: GOLD_TROPHY }}>
                 look forward to.
               </Box>
@@ -189,60 +196,59 @@ const BusinessLandingPage = () => {
               From sign-up to live in four steps:
             </Typography>
 
-            {/* Step cards */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: { xs: 1.5, md: 3 }, mb: { xs: 4, md: 6 } }}>
-              {[
-                { num: 1, Icon: PersonAddAltRounded, title: 'Create your account' },
-                { num: 2, Icon: CardMembershipRounded, title: 'Subscribe' },
-                { num: 3, Icon: StorefrontRounded, title: 'Set up your profile' },
-                { num: 4, Icon: PriceChangeRounded, title: 'Set your minimum purchase' },
-              ].map((step, i) => (
+            {/* Steps - same design language as the user landing HowItWorks section:
+                numbered tiles + dashed connector on desktop, vertical timeline on mobile. */}
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3, position: 'relative', alignItems: 'flex-start', justifyContent: 'center', mb: { md: 6 }, textAlign: 'center' }}>
+              <Box sx={{ position: 'absolute', top: 32, left: '12%', right: '12%', height: 0, borderTop: '2px dashed rgba(25,93,230,0.2)', zIndex: 0 }} />
+              {BUSINESS_STEPS.map((step, i) => (
                 <motion.div
                   key={step.num}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.45, delay: 0.1 + i * 0.08 }}
-                  style={{ height: '100%' }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  style={{ flex: 1, maxWidth: 260 }}
                 >
-                  <Box
-                    sx={{
-                      position: 'relative',
-                      height: '100%',
-                      bgcolor: 'background.paper',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: { xs: 2, md: 3 },
-                      p: { xs: 2, md: 3 },
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      transition: 'all 0.3s ease',
-                      '&:hover': { boxShadow: '0 8px 24px rgba(21,101,192,0.12)', borderColor: PRIMARY_MAIN },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: { xs: 48, md: 56 },
-                        height: { xs: 48, md: 56 },
-                        borderRadius: 2.5,
-                        bgcolor: `${PRIMARY_MAIN}0d`,
-                        color: PRIMARY_MAIN,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mb: { xs: 1.5, md: 2 },
-                      }}
-                    >
-                      <step.Icon sx={{ fontSize: { xs: 24, md: 28 } }} />
+                  <Box sx={{ textAlign: 'center', position: 'relative', zIndex: 1, px: 1, mt: i % 2 === 1 ? 5 : 0 }}>
+                    <Box sx={{ width: 64, height: 64, borderRadius: 2, bgcolor: PRIMARY_MAIN, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.4rem', mx: 'auto', mb: 2.5, boxShadow: '0 8px 24px rgba(25,93,230,0.3)' }}>
+                      {step.num}
                     </Box>
-                    <Typography sx={{ fontWeight: 700, color: TEXT_HEADING, fontSize: { xs: '0.88rem', md: '0.95rem' }, textAlign: 'center' }}>
-                      {step.title}
-                    </Typography>
+                    <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2.5, minHeight: 128 }}>
+                      <Typography variant='h6' sx={{ fontWeight: 800, color: TEXT_HEADING, mb: 1, fontSize: '1rem' }}>{step.title}</Typography>
+                      <Typography variant='body2' sx={{ color: TEXT_SECONDARY, lineHeight: 1.7 }}>{step.body}</Typography>
+                    </Box>
                   </Box>
                 </motion.div>
               ))}
             </Box>
+
+            {/* Mobile timeline */}
+            <Stack spacing={2} sx={{ display: { xs: 'flex', md: 'none' }, mb: 4, textAlign: 'left' }}>
+              {BUSINESS_STEPS.map((step, i) => (
+                <motion.div
+                  key={step.num}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                >
+                  <Stack direction='row' spacing={1.5} alignItems='flex-start'>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'stretch' }}>
+                      <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: PRIMARY_MAIN, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1rem', flexShrink: 0, boxShadow: '0 6px 18px rgba(25,93,230,0.3)' }}>
+                        {step.num}
+                      </Box>
+                      {i < BUSINESS_STEPS.length - 1 && (
+                        <Box sx={{ width: 2, flex: 1, bgcolor: 'rgba(25,93,230,0.12)', mt: 0.75, minHeight: 16 }} />
+                      )}
+                    </Box>
+                    <Box sx={{ flex: 1, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2, mb: 0.5 }}>
+                      <Typography variant='h6' sx={{ fontWeight: 800, color: TEXT_HEADING, mb: 0.5, fontSize: '0.95rem' }}>{step.title}</Typography>
+                      <Typography variant='body2' sx={{ color: TEXT_SECONDARY, lineHeight: 1.6, fontSize: '0.875rem' }}>{step.body}</Typography>
+                    </Box>
+                  </Stack>
+                </motion.div>
+              ))}
+            </Stack>
           </Box>
 
           <motion.div
@@ -252,11 +258,8 @@ const BusinessLandingPage = () => {
             transition={{ duration: 0.45, delay: 0.15 }}
           >
             <Box sx={{ bgcolor: BG_SUBTLE, borderRadius: 2, p: { xs: 2.5, md: 3.5 }, textAlign: 'center' }}>
-              <Typography sx={{ color: TEXT_HEADING, fontWeight: 600, fontSize: { xs: '1rem', md: '1.1rem' }, mb: 1 }}>
+              <Typography sx={{ color: TEXT_HEADING, fontWeight: 600, fontSize: { xs: '1rem', md: '1.1rem' } }}>
                 That's it. You're live in the upcoming campaign. Under 10 minutes, start to finish.
-              </Typography>
-              <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
-                Then use our tips and guides to get the most out of it.
               </Typography>
             </Box>
           </motion.div>
