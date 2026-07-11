@@ -26,7 +26,6 @@ import {
   TEXT_SECONDARY,
   BG_SUBTLE,
   BORDER_LIGHT,
-  GOLD_TROPHY,
 } from '../../shared/colors';
 
 const BusinessLandingPage = () => {
@@ -93,10 +92,7 @@ const BusinessLandingPage = () => {
                 mb: { xs: 2, md: 3 },
               }}
             >
-              Turn every customer visit into something they{' '}
-              <Box component='span' sx={{ color: GOLD_TROPHY }}>
-                look forward to.
-              </Box>
+              Drive your business growth through customer excitement.
             </Typography>
           </motion.div>
 
@@ -422,7 +418,7 @@ const BusinessLandingPage = () => {
             transition={{ duration: 0.45, delay: 0.1 }}
           >
             <Typography variant='h2' sx={{ fontWeight: 900, fontSize: { xs: '1.6rem', md: '2.4rem' }, lineHeight: 1.2, mb: { xs: 4, md: 6 } }}>
-              Enterprise marketing. Small-business simple.
+              It's your turn. Bring enterprise-level marketing to your business.
             </Typography>
           </motion.div>
 
