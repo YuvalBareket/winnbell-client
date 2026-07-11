@@ -205,7 +205,7 @@ const RingHero = ({ count, cap, color, isClosed, isMaxed, isLoading }: {
     ? `You had ${count} ${count === 1 ? 'entry' : 'entries'}`
     : count === 0 ? "You're not in yet" : `You're in with ${count} ${count === 1 ? 'entry' : 'entries'}`;
   const sub = isClosed
-    ? 'This campaign has ended. Good luck!'
+    ? 'This campaign has ended. Thanks for playing!'
     : isMaxed ? 'You have the maximum entries for this campaign. Good luck!'
     : count === 0 ? 'Submit a receipt or claim your free weekly entry to get in.'
     : `You have ${remaining} more ${remaining === 1 ? 'entry' : 'entries'} available - don't leave them unclaimed!`;
@@ -385,8 +385,8 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
               <Typography variant='caption' color='text.disabled' sx={{ mt: 0.75, display: 'block', fontWeight: 500 }}>
                 {isClosedDraw
                   ? totalCount === 1
-                    ? 'Your final entry in this campaign. Good luck!'
-                    : 'Your final entries in this campaign. Good luck!'
+                    ? 'Your final entry in this campaign. Thanks for playing!'
+                    : 'Your final entries in this campaign. Thanks for playing!'
                   : isMaxed
                     ? 'You have the maximum entries for this campaign. Good luck!'
                     : totalCount === 0

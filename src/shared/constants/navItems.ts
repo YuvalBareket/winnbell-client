@@ -27,7 +27,7 @@ export interface NavItem {
 
 export const userNavItems: NavItem[] = [
   { label: 'Nearby Partners', Icon: StorefrontOutlined, path: '/nearby' },
-  { label: 'Submit Receipt', Icon: ReceiptLongOutlined, path: '/scan' },
+  { label: 'Entry submission', Icon: ReceiptLongOutlined, path: '/scan' },
   { label: 'My Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
   { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },

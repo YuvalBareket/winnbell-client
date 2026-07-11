@@ -107,7 +107,7 @@ const RedeemPage = () => {
   if (!isPhoneVerifiedLoaded) {
     return (
       <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
-        <AppPageHero title='Submit a receipt' subtitle='Pick the store, then submit your receipt' />
+        <AppPageHero title='Entry submission' subtitle="Two quick steps and you're in this month's draw" />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, pb: 12 }}>
           {riskLevelError ? (
             <>
@@ -147,8 +147,8 @@ const RedeemPage = () => {
     // viewport or mobile browsers rescale it (zoom flash). clip, not hidden - no scroll box.
     <Box sx={{ minHeight: '100dvh', pb: { xs: 12, md: 6 }, overflowX: 'clip' }}>
       <AppPageHero
-        title={isReceiptMode ? 'Submit a receipt' : 'Activate an entry'}
-        subtitle={isReceiptMode ? 'Pick the store, then submit your receipt' : 'Enter your code from the receipt to join the draw'}
+        title={isReceiptMode ? 'Entry submission' : 'Activate an entry'}
+        subtitle={isReceiptMode ? "Two quick steps and you're in this month's draw" : 'Enter your code from the receipt to join the draw'}
         actions={isReceiptMode && isDesktop ? <StepIndicator step={receiptStep2 ? 2 : 1} /> : undefined}
       />
 

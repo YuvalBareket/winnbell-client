@@ -146,7 +146,7 @@ const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact
         {iconChip}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography variant='body2' sx={{ fontWeight: 800, color: PRIMARY_DEEP, lineHeight: 1.2 }}>Claim free weekly entry</Typography>
-          <Typography variant='caption' sx={{ color: PRIMARY_MAIN, opacity: 0.85, display: 'block', lineHeight: 1.3 }}>No purchase needed. Resets Sunday.</Typography>
+          <Typography variant='caption' sx={{ color: PRIMARY_MAIN, opacity: 0.85, display: 'block', lineHeight: 1.3 }}>No purchase needed. Resets Every Sunday.</Typography>
         </Box>
         <ArrowForwardRounded sx={{ color: PRIMARY_MAIN, flexShrink: 0 }} />
       </Box>
@@ -174,7 +174,7 @@ const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact
         </Button>
       </motion.div>
       <Typography sx={{ mt: 1.25, color: PRIMARY_MAIN, opacity: 0.7, fontSize: '0.72rem' }}>
-        Resets Sunday.
+        Resets Every Sunday
       </Typography>
     </Box>
   );
@@ -538,10 +538,12 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </Box>
       )}
 
-      {/* Mobile step bar (desktop shows it in the page header actions) */}
-      {!riskLevel.isDrawCapped && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached && !successDialogOpen && (
+      {/* Mobile step bar for step 2 (desktop shows it in the page header actions).
+          In step 1 the bar renders below the "or pick where you shopped" divider so it
+          sits with the receipt flow it describes, not above the separate free-entry card. */}
+      {!riskLevel.isDrawCapped && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached && !successDialogOpen && selectedLocation && (
         <Box component={motion.div} variants={riseIn} initial='hidden' animate='visible' sx={{ display: { xs: 'block', md: 'none' }, pb: 2}}>
-          <StepIndicator step={selectedLocation ? 2 : 1} />
+          <StepIndicator step={2} />
         </Box>
       )}
 
