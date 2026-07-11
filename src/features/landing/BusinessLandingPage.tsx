@@ -34,7 +34,7 @@ const BusinessLandingPage = () => {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', overflowX: 'clip', zoom: { xs: 0.9, md: 1 } }}>
+    <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', overflowX: 'clip', zoom: { xs: 0.9, md: 1 } }}>
       {/* ── 1. Hero ─────────────────────────────────────────────────────── */}
       <Box
         sx={{

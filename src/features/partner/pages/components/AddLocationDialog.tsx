@@ -116,7 +116,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
           borderRadius: 3, overflow: 'hidden', m: { xs: 1.5, sm: 4 },
           // Header stays fixed; the form body scrolls when the content (fields + plan
           // card) is taller than the viewport, instead of squeezing and clipping.
-          maxHeight: { xs: 'calc(100dvh - 24px)', sm: '90dvh' },
+          maxHeight: { xs: 'calc(var(--dvh100, 100dvh) - 24px)', sm: '90dvh' },
           display: 'flex', flexDirection: 'column',
         },
       }}

@@ -390,7 +390,7 @@ const LoginPage = () => {
 
   if (isDesktop) {
     return (
-      <Box sx={{ display: 'flex', height: '100dvh', overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', height: 'var(--dvh100, 100dvh)', overflow: 'hidden' }}>
         <BrandPanel />
 
         {/* Right: form panel */}
@@ -417,7 +417,7 @@ const LoginPage = () => {
   // ─── Mobile layout (original) ────────────────────────────────────────────────
 
   return (
-    <Box sx={{ height: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
+    <Box sx={{ height: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
       <Box sx={{ p: 2 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'action.hover' }}>
           <ArrowBackIosNew fontSize='small' />

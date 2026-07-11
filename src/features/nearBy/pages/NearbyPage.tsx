@@ -146,7 +146,7 @@ const NearbyPage = () => {
     <Box
       sx={{
         width: '100%',
-        height: { xs: '100dvh', md: '100dvh' },
+        height: { xs: 'var(--dvh100, 100dvh)', md: 'var(--dvh100, 100dvh)' },
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
         overflow: 'hidden',

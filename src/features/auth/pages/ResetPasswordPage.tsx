@@ -299,7 +299,7 @@ const ResetPasswordPage = () => {
 
   if (isDesktop) {
     return (
-      <Box sx={{ display: 'flex', height: '100dvh', overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', height: 'var(--dvh100, 100dvh)', overflow: 'hidden' }}>
         <BrandPanel />
         <Box
           sx={{
@@ -323,7 +323,7 @@ const ResetPasswordPage = () => {
   return (
     <Box
       sx={{
-        minHeight: '100dvh',
+        minHeight: 'var(--dvh100, 100dvh)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

@@ -96,7 +96,7 @@ const RegionBlockedPage = () => {
 
   if (isDesktop) {
     return (
-      <Box sx={{ display: 'flex', height: '100dvh', overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', height: 'var(--dvh100, 100dvh)', overflow: 'hidden' }}>
         <BrandPanel />
 
         {/* Right: content panel */}
@@ -124,7 +124,7 @@ const RegionBlockedPage = () => {
   // ─── Mobile layout ──────────────────────────────────────────────────────────
 
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, px: 2, py: 6, justifyContent: 'center', alignItems: 'center' }}>
+    <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, px: 2, py: 6, justifyContent: 'center', alignItems: 'center' }}>
       <Container maxWidth='xs'>
         {ContentPanel()}
       </Container>

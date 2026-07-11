@@ -118,7 +118,7 @@ const SubscribePage = () => {
   return (
     <Box
       sx={{
-        minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' },
+        minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' },
         pb: 8,
       }}
     >

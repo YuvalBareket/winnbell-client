@@ -26,7 +26,7 @@ const SettingsPage = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8, zoom: { xs: 0.9, md: 1 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: 8, zoom: { xs: 0.9, md: 1 } }}>
       <AppPageHero
         title='Settings'
         subtitle='Manage your account and preferences'

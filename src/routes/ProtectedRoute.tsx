@@ -30,7 +30,7 @@ const ProtectedRoute = () => {
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            minHeight: '100dvh',
+            minHeight: 'var(--dvh100, 100dvh)',
             alignItems: 'center',
             justifyContent: 'center',
             bgcolor: 'background.default',

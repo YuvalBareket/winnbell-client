@@ -47,7 +47,7 @@ const SubscriptionSuccessPage = () => {
 
   if (!sessionId) {
     return (
-      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
         <Paper elevation={0} sx={{ p: 5, borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 420, width: '100%' }}>
           <Stack spacing={3} alignItems='center'>
             <ErrorOutline sx={{ fontSize: 72, color: 'warning.main' }} />
@@ -64,7 +64,7 @@ const SubscriptionSuccessPage = () => {
 
   if (verifying) {
     return (
-      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Stack alignItems='center' spacing={2}>
           <CircularProgress />
           <Typography color='text.secondary' fontWeight={600}>
@@ -77,7 +77,7 @@ const SubscriptionSuccessPage = () => {
 
   if (isPaymentUpdate && isSuccess) {
     return (
-      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
         <Paper elevation={0} sx={{ p: 5, borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 440, width: '100%' }}>
           <Stack spacing={3} alignItems='center'>
             <CheckCircle sx={{ fontSize: 72, color: 'success.main' }} />
@@ -103,7 +103,7 @@ const SubscriptionSuccessPage = () => {
 
   if (isError) {
     return (
-      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
         <Paper elevation={0} sx={{ p: 5, borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 420, width: '100%' }}>
           <Stack spacing={3} alignItems='center'>
             <ErrorOutline sx={{ fontSize: 72, color: 'warning.main' }} />
@@ -141,7 +141,7 @@ const SubscriptionSuccessPage = () => {
   const isFoundingMember = sub?.is_founding ?? false;
 
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
       <Paper elevation={0} sx={{ p: 5, borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 440, width: '100%' }}>
         <Stack spacing={3} alignItems='center'>
           <CheckCircle sx={{ fontSize: 72, color: 'success.main' }} />

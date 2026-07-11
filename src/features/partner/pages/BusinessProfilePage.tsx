@@ -192,13 +192,13 @@ const BusinessProfilePage = () => {
   } as const;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, minHeight: '100dvh', height: { md: '100dvh' }, overflow: { md: 'hidden' }, bgcolor: 'white' }}>
+    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, minHeight: 'var(--dvh100, 100dvh)', height: { md: 'var(--dvh100, 100dvh)' }, overflow: { md: 'hidden' }, bgcolor: 'white' }}>
 
       {/* ══ Brand panel (collapses away on desktop step 2 so the map can take the stage) ══ */}
       <Box
         sx={{
           width: { xs: '100%', md: step === 1 ? 0 : '40%' }, flexShrink: 0, minWidth: 0,
-          height: { xs: 'auto', md: '100dvh' },
+          height: { xs: 'auto', md: 'var(--dvh100, 100dvh)' },
           background: GRADIENT_SIDEBAR, color: 'white', position: 'relative', overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
           px: { xs: 1.5, md: step === 1 ? 0 : '44px' },
@@ -285,7 +285,7 @@ const BusinessProfilePage = () => {
       </Box>
 
       {/* ══ Form panel / Content area ══ */}
-      <Box sx={{ flex: 1, height: { md: '100dvh' }, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <Box sx={{ flex: 1, height: { md: 'var(--dvh100, 100dvh)' }, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <form onSubmit={handleSubmit(submit)} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
           {/* Step 2: Two-panel layout on desktop, single-column on mobile */}
           {step === 1 && (

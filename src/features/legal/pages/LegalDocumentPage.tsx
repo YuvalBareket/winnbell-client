@@ -14,7 +14,7 @@ const LegalDocumentPage = ({ title, lastUpdated, content }: Props) => {
   const navigate = useNavigate();
 
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: BG_PAGE }}>
+    <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', bgcolor: BG_PAGE }}>
       <Box sx={{ p: 2 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'action.hover' }}>
           <ArrowBackIosNew fontSize="small" />

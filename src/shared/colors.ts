@@ -177,4 +177,4 @@ export const APP_HEADER_HEIGHT           = 60;  // AppHeader Toolbar height (mob
 export const BOTTOM_NAV_HEIGHT           = 76;  // BottomNavigation + safe area
 // Viewport minus the bottom nav. Since the app-shell refactor every page renders its own
 // AppPageHero inside the content flow, so no external header is subtracted anymore.
-export const MOBILE_CONTENT_HEIGHT       = 'calc(100dvh - 76px)';
+export const MOBILE_CONTENT_HEIGHT       = 'calc(var(--dvh100, 100dvh) - 76px)';

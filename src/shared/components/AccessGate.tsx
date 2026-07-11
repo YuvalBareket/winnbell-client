@@ -44,7 +44,7 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
   return (
     <Box
       sx={{
-        minHeight: '100dvh',
+        minHeight: 'var(--dvh100, 100dvh)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

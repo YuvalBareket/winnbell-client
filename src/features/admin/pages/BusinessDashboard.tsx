@@ -97,7 +97,7 @@ const BusinessDashboard: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: { xs: 'calc(100dvh - 60px)', md: '100dvh' } }}>
+    <Box sx={{ minHeight: { xs: 'calc(var(--dvh100, 100dvh) - 60px)', md: 'var(--dvh100, 100dvh)' } }}>
       <AppPageHero
         title={sectionTitle[path] ?? 'Admin'}
       />

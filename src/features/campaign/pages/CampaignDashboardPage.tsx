@@ -591,7 +591,7 @@ const CampaignDashboardPage = () => {
   );
 
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: { xs: 12, md: 6 } }}>
       <AppPageHero
         title='Campaign Dashboard'
         subtitle='Monitor your active campaign and entries'

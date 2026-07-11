@@ -376,7 +376,7 @@ Know someone who could use a little extra luck this month? Share your link and i
   // DESKTOP LAYOUT
   if (isDesktop) {
     return (
-      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 6 }}>
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: 6 }}>
         <AppPageHero
           title='Invite Friends'
           subtitle='Share Winnbell and give them a free bonus entry'
@@ -519,7 +519,7 @@ Know someone who could use a little extra luck this month? Share your link and i
 
   // MOBILE LAYOUT
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, zoom: { xs: 0.9, md: 1 }, pb: 4 }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, zoom: { xs: 0.9, md: 1 }, pb: 4 }}>
       <AppPageHero
         title='Invite Friends'
         subtitle='Share Winnbell with friends'

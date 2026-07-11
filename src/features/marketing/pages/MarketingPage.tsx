@@ -76,7 +76,7 @@ const MarketingPage = () => {
   };
 
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8 }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: 8 }}>
 
       {/* Hero entrance - riseIn (full-width, no scale to avoid mobile viewport flash) */}
       <motion.div

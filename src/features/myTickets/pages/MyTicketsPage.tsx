@@ -67,7 +67,7 @@ const MyTicketsPage = () => {
 
   if (isDesktop) {
     return (
-      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 6 }}>
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: 6 }}>
         <AppPageHero
           title={isBusinessUser ? 'Distributed Entries' : 'My Entries'}
           subtitle={isBusinessUser ? 'Track your distributed entries' : 'Your entries for this campaign'}
@@ -136,7 +136,7 @@ const MyTicketsPage = () => {
   return (
     // overflowX clip: entrance translations must never widen the document, or the mobile
     // browser rescales the page (zoom flash). clip, not hidden, so no scroll container.
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, overflowX: 'clip' }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, overflowX: 'clip' }}>
       {/* Hero renders full-size, OUTSIDE the zoom box below. */}
       <AppPageHero
         title={isBusinessUser ? 'Distributed Entries' : 'My Entries'}

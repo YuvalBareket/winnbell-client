@@ -82,7 +82,7 @@ const OfficialRulesPage = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100dvh' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 'var(--dvh100, 100dvh)' }}>
         <CircularProgress />
       </Box>
     );

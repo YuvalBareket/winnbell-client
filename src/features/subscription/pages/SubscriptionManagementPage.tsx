@@ -158,7 +158,7 @@ export default function SubscriptionManagementPage() {
   const canCancel = sub.status !== 'Cancelled' && !sub.cancel_at_period_end;
 
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 10, md: 6 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: { xs: 10, md: 6 } }}>
       <AppPageHero
         title='Campaign Management'
         subtitle='Manage your subscription and campaigns'

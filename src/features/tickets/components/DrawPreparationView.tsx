@@ -57,7 +57,7 @@ const DrawPreparationView = ({
   const progress = (completedCount / taskItems.length) * 100;
 
   return (
-    <Box sx={{ minHeight: isDesktop ? 'auto' : 'calc(100dvh - 138px)', pb: 6 }}>
+    <Box sx={{ minHeight: isDesktop ? 'auto' : 'calc(var(--dvh100, 100dvh) - 138px)', pb: 6 }}>
       <AppPageHero
         title={isSubscribed ? 'Preparing for Your Campaign' : 'Get Your Business Ready'}
         subtitle={isSubscribed

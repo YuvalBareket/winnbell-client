@@ -106,7 +106,7 @@ const RedeemPage = () => {
   // The header renders in every gate state too, so it never pops in after the fact.
   if (!isPhoneVerifiedLoaded) {
     return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column' }}>
         <AppPageHero title='Entry submission' subtitle='Two quick steps to earn your entries' />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, pb: 12 }}>
           {riskLevelError ? (
@@ -131,7 +131,7 @@ const RedeemPage = () => {
 
   if (isAutoActivating) {
     return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column' }}>
         <AppPageHero title='Activate an entry' subtitle='Enter your code from the receipt to join the draw' />
         <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', pb: 12 }}>
           <CircularProgress size={40} sx={{ color: PRIMARY_MAIN }} />
@@ -145,7 +145,7 @@ const RedeemPage = () => {
   return (
     // overflowX clip: entrance springs overshoot; the page must never grow wider than the
     // viewport or mobile browsers rescale it (zoom flash). clip, not hidden - no scroll box.
-    <Box sx={{ minHeight: '100dvh', pb: { xs: 12, md: 6 }, overflowX: 'clip' }}>
+    <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', pb: { xs: 12, md: 6 }, overflowX: 'clip' }}>
       <AppPageHero
         title={isReceiptMode ? 'Entry submission' : 'Activate an entry'}
         subtitle={isReceiptMode ? 'Two quick steps to earn your entries' : 'Enter your code from the receipt to join the draw'}

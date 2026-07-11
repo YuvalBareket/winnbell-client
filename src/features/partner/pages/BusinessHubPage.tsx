@@ -189,7 +189,7 @@ const BusinessHubPage = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' } }}>
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' } }}>
         {/* Hero skeleton */}
         <Box sx={{ background: GRADIENT_HERO, pt: 3, pb: 9, px: 3 }}>
           <Container maxWidth='lg'>
@@ -223,7 +223,7 @@ const BusinessHubPage = () => {
   }
 
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: { xs: 12, md: 6 } }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: { xs: 12, md: 6 } }}>
       <BusinessHeroSection
         business={business}
         header={<AppHeader onMenuOpen={openMenu} onGradient />}

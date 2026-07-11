@@ -443,7 +443,7 @@ const MarketingGuidePage = () => {
   };
 
   return (
-    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: '100dvh' }, pb: 8 }}>
+    <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: 8 }}>
       <motion.div variants={riseIn} initial='hidden' animate='visible'>
         <AppPageHero
           title='Get the most out of Winnbell'

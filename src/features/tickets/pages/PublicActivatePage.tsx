@@ -62,7 +62,7 @@ const PublicActivatePage = () => {
   if (isChecking && code) {
     return (
       <Box sx={{
-        minHeight: '100dvh',
+        minHeight: 'var(--dvh100, 100dvh)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -80,7 +80,7 @@ const PublicActivatePage = () => {
   // ─── 2. No code in URL ───────────────────────────────────────────────────────
   if (!code) {
     return (
-      <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
+      <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
         <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
           <Paper elevation={0} sx={{ maxWidth: 400, width: '100%', borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 4, textAlign: 'center' }}>
             <ErrorOutline sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
@@ -103,7 +103,7 @@ const PublicActivatePage = () => {
 
   // ─── 3. Unauthenticated View (User is NOT logged in) ───────────────────────
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
+    <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: '#f8fafc', px: 3 }}>
       <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
         <Box
           component="img"

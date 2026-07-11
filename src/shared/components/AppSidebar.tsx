@@ -59,7 +59,7 @@ const AppSidebar = () => {
       aria-label='Main navigation'
       sx={{
         width: 260,
-        height: '100dvh',
+        height: 'var(--dvh100, 100dvh)',
         position: 'fixed',
         left: 0, top: 0,
         pb:1,

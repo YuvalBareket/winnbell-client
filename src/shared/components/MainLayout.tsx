@@ -49,7 +49,7 @@ const LayoutShell = () => {
     <Box
       sx={{
         width: '100%',
-        minHeight: '100dvh',
+        minHeight: 'var(--dvh100, 100dvh)',
         // Single flat app background (matches the design handoff) instead of the blue gradient.
         bgcolor: BG_SUBTLE,
         display: 'flex',

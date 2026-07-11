@@ -1,6 +1,10 @@
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // <--- Import this
+import { initViewportUnstick } from './shared/viewportUnstick';
+
+// Heal stale-dvh tab restores (scroll-below-footer bug) - see shared/viewportUnstick.ts
+initViewportUnstick();
 
 // 1. Create the Client
 export const queryClient = new QueryClient({

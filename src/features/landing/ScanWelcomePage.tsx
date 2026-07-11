@@ -70,7 +70,7 @@ const ScanWelcomePage = () => {
   ];
 
   return (
-    <Box sx={{ minHeight: '100dvh', background: GRADIENT_HERO, color: 'white', display: 'flex', flexDirection: 'column', position: 'relative', overflowY: 'auto' }}>
+    <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', background: GRADIENT_HERO, color: 'white', display: 'flex', flexDirection: 'column', position: 'relative', overflowY: 'auto' }}>
       {/* Decorative orbs */}
       <Box sx={{ position: 'absolute', top: '-18%', right: '-8%', width: 400, height: 400, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.05)', filter: 'blur(60px)', pointerEvents: 'none' }} />
       <Box sx={{ position: 'absolute', bottom: '-12%', left: '-8%', width: 320, height: 320, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.04)', filter: 'blur(55px)', pointerEvents: 'none' }} />

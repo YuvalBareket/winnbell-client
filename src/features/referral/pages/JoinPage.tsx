@@ -61,7 +61,7 @@ const JoinPage = () => {
   return (
     <Box
       sx={{
-        minHeight: '100dvh',
+        minHeight: 'var(--dvh100, 100dvh)',
         background: GRADIENT_HERO,
         color: 'white',
         display: 'flex',
