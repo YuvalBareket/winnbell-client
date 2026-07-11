@@ -1,3 +1,5 @@
 *, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; min-height: 100vh; }
+/* Background matches BG_SUBTLE (shared/colors.ts): if any viewport quirk ever exposes
+   area beyond the app shell, it reads as seamless app background, not a white void. */
+body { margin: 0; min-width: 320px; min-height: 100vh; background-color: #f1f5f9; }
 a { text-decoration: inherit; color: inherit; }
