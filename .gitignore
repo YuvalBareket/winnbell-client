@@ -4,6 +4,8 @@ dev-dist/
 build/
 .env
 .env.local
+.env.*
+!.env.example
 .DS_Store
 Thumbs.db
 .vscode/
