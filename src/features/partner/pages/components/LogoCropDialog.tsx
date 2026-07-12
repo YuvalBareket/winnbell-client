@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Cropper from 'react-easy-crop';
 import {
   Dialog,
@@ -106,14 +106,8 @@ const LogoCropDialog: React.FC<LogoCropDialogWithPickerProps> = ({ open, onClose
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // When the parent hands in an already-picked image (its own file input), jump straight to the
-  // cropper instead of showing our internal "choose a file" screen.
-  useEffect(() => {
-    setImageSrc(initialImageSrc || null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-  }, [initialImageSrc]);
+  // State initialized from props directly; the parent keys this component on imageSrc so
+  // re-mounting with a fresh src produces a clean slate without a mirror effect.
 
   const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
     setCroppedAreaPixels(croppedPixels);

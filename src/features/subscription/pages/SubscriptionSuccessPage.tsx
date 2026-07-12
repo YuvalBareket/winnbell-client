@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Typography, Button, Paper, Stack, CircularProgress, Chip } from '@mui/material';
 import { CheckCircle, Storefront, ErrorOutline, WorkspacePremium } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { useAppDispatch } from '../../../store/hook';
 import { setBusinessActive } from '../../../store/slices/authSlice';
@@ -21,13 +21,29 @@ const SubscriptionSuccessPage = () => {
   // fixing a card), not a new subscription purchase.
   const isPaymentUpdate = searchParams.get('purpose') === 'upm';
 
-  const { isPending: verifying, isSuccess, isError, error: verifyError } = useQuery({
-    queryKey: [...queryKeys.subscription.all, 'verify-session', sessionId],
-    queryFn: () => api.post('/business/subscription/verify-session', { sessionId }).then(r => r.data),
-    enabled: !!sessionId,
-    retry: false,
-    staleTime: Infinity,
+  // Verify-session is a side-effecting POST (not a GET), so useMutation is the correct primitive.
+  // The ref guard prevents double-fire across re-renders of ONE component instance.
+  // StrictMode remounts reset refs, so dev fires twice - fine: verify-session is idempotent server-side.
+  const verifyFiredRef = useRef(false);
+  const {
+    mutate: runVerify,
+    isPending: verifying,
+    isSuccess,
+    isError,
+    error: verifyError,
+  } = useMutation({
+    mutationFn: () => api.post('/business/subscription/verify-session', { sessionId }).then(r => r.data),
+    onSuccess: () => dispatch(setBusinessActive()),
   });
+
+  useEffect(() => {
+    if (!sessionId || verifyFiredRef.current) return;
+    verifyFiredRef.current = true;
+    runVerify();
+  // runVerify is stable (useMutation guarantees this); sessionId is constant per page load
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Sold-out founding purchase: the payment was already refunded in full server-side.
   const soldOutRefunded = isAxiosError(verifyError)
     && (verifyError.response?.data as { code?: string } | undefined)?.code === 'FOUNDING_SOLD_OUT_REFUNDED';
@@ -40,10 +56,6 @@ const SubscriptionSuccessPage = () => {
     staleTime: Infinity,
     retry: false,
   });
-
-  useEffect(() => {
-    if (isSuccess) dispatch(setBusinessActive());
-  }, [isSuccess, dispatch]);
 
   if (!sessionId) {
     return (

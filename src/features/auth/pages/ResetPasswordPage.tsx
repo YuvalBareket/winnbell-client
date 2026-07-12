@@ -6,46 +6,14 @@ import {
 import { motion } from 'framer-motion';
 import LoadingScreen from '../../../shared/components/LoadingScreen';
 import { Lock, Visibility, VisibilityOff, CheckCircle, ConfirmationNumber } from '@mui/icons-material';
+import AuthBrandPanel from '../components/AuthBrandPanel';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../shared/lib/supabase';
 import { useRevokeOtherSessions } from '../hooks/useRevokeOtherSessions';
 import {
-  BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
-  SHADOW_PRIMARY_SOFT, SHADOW_PRIMARY_MEDIUM, ALPHA_PRIMARY_10,
+  BG_PAGE, SHADOW_PRIMARY_SOFT, SHADOW_PRIMARY_MEDIUM, ALPHA_PRIMARY_10,
 } from '../../../shared/colors';
 
-const BrandPanel = () => (
-  <Box
-    sx={{
-      width: '50%',
-      background: GRADIENT_HERO,
-      display: { xs: 'none', md: 'flex' },
-      flexDirection: 'column',
-      justifyContent: 'center',
-      p: 6,
-      color: 'white',
-      position: 'relative',
-      overflow: 'hidden',
-    }}
-  >
-    <Box sx={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(60px)' }} />
-    <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: 'rgba(66,165,245,0.2)', filter: 'blur(50px)' }} />
-
-    <Stack direction='row' alignItems='center' spacing={1.5} mb={5}>
-      <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: ALPHA_WHITE_20, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <ConfirmationNumber sx={{ fontSize: 24 }} />
-      </Box>
-      <Typography variant='h5' fontWeight={900} letterSpacing={-0.5}>Winnbell</Typography>
-    </Stack>
-
-    <Typography variant='h3' fontWeight={900} lineHeight={1.15} mb={2}>
-      You Are One Step Away.
-    </Typography>
-    <Typography variant='body1' sx={{ opacity: 0.8, lineHeight: 1.7, maxWidth: 340 }}>
-      Set a strong password to secure your account and get back to winning real prizes.
-    </Typography>
-  </Box>
-);
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
@@ -300,7 +268,11 @@ const ResetPasswordPage = () => {
   if (isDesktop) {
     return (
       <Box sx={{ display: 'flex', height: 'var(--dvh100, 100dvh)', overflow: 'hidden' }}>
-        <BrandPanel />
+        <AuthBrandPanel
+          headline='You Are One Step Away.'
+          tagline='Set a strong password to secure your account and get back to winning real prizes.'
+          bullets={[]}
+        />
         <Box
           sx={{
             width: '50%',

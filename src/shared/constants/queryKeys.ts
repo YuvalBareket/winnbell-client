@@ -6,11 +6,11 @@
  *  - Dynamic keys: factory functions that return tuples
  *  - Parent keys (`all`) let you invalidate an entire domain:
  *      queryClient.invalidateQueries({ queryKey: queryKeys.business.all })
- *    …will also invalidate myDetails, stats, etc.
+ *    ...will also invalidate myDetails, stats, etc.
  */
 
 export const queryKeys = {
-  // ─── Admin ────────────────────────────────────────────────────────────────
+  // --- Admin ---------------------------------------------------------------
   admin: {
     all:        ['admin']                        as const,
     businesses: ['admin', 'businesses']          as const,
@@ -18,9 +18,34 @@ export const queryKeys = {
     drawsAll:   ['admin', 'draws-all']           as const,
     overview:   ['admin', 'overview']            as const,
     users:      ['admin', 'users']               as const,
+    platformSettings:     ['admin', 'platform-settings']    as const,
+    notificationHistory:  ['admin', 'notification-history'] as const,
+    campaignComparison:   ['admin', 'campaign-comparison']  as const,
+    growthAnalytics:      ['admin', 'growth-analytics']     as const,
+    // prefix keys for broad invalidation (no id = invalidates all variants)
+    userDetailAll:     ['admin', 'user-detail']    as const,
+    businessDetailAll: ['admin', 'business-detail'] as const,
+    // per-entity factories
+    drawCandidate:   (drawId: number | null)    => ['admin', 'draw-candidate',   drawId]             as const,
+    drawRejected:    (drawId: number | null)    => ['admin', 'draw-rejected',    drawId]             as const,
+    drawAudit:       (drawId: number | null)    => ['admin', 'draw-audit',       drawId]             as const,
+    drawBusinesses:  (drawId: number | null, search: string, sector: string) =>
+      ['admin', 'draw-businesses', drawId, search, sector] as const,
+    // Prefix form: invalidates every search/sector variant for a draw at once.
+    drawBusinessesAll: (drawId: number | null) => ['admin', 'draw-businesses', drawId] as const,
+    analytics:       (businessId: number | null, drawId: number | null) =>
+      ['admin', 'analytics', businessId, drawId] as const,
+    entryVolume:     (drawId: number | null | undefined, businessId: number | null | undefined) =>
+      ['admin', 'entry-volume', drawId ?? null, businessId ?? null] as const,
+    locations:       (businessId: number | null | undefined, search: string, page: number, limit: number) =>
+      ['admin', 'locations', businessId ?? null, search, page, limit] as const,
+    userDetail:      (userId: number | null)    => ['admin', 'user-detail',      userId]             as const,
+    businessDetail:  (id: number | null)        => ['admin', 'business-detail',  id]                 as const,
+    businessEntries: (businessId: number | null, drawId: number | null, page: number) =>
+      ['admin', 'business-entries', businessId, drawId, page] as const,
   },
 
-  // ─── Business (partner) ───────────────────────────────────────────────────
+  // --- Business (partner) --------------------------------------------------
   business: {
     all:       ['business']                      as const,
     myDetails: ['business', 'my-details']        as const,
@@ -30,20 +55,33 @@ export const queryKeys = {
       ['business', 'stats', locationId ?? 'all', drawId ?? 'all'] as const,
   },
 
-  // ─── Draws (user-facing) ──────────────────────────────────────────────────
+  // --- Draws (user-facing) -------------------------------------------------
   draws: {
     all:     ['draws']            as const,
     active:  ['draws', 'active']  as const,
     history: ['draws', 'history'] as const,
+    result:  (drawId: number) => ['draws', 'result', drawId] as const,
   },
 
-  // ─── Subscription ─────────────────────────────────────────────────────────
+  // --- Campaign (business dashboard) --------------------------------------
+  campaign: {
+    all:     ['campaign']          as const,
+    list:    () => ['campaign', 'list'] as const,
+    header:  (locationId?: number, campaignId?: number) =>
+      ['campaign', 'header', locationId ?? 'all', campaignId ?? 'current'] as const,
+    kpis:    (dateRange: unknown, locationId?: number, campaignId?: number) =>
+      ['campaign', 'kpis', dateRange, locationId ?? 'all', campaignId ?? 'current'] as const,
+    entries: (locationId?: number, campaignId?: number) =>
+      ['campaign', 'entries', locationId ?? 'all', campaignId ?? 'current'] as const,
+  },
+
+  // --- Subscription --------------------------------------------------------
   subscription: {
     all:      ['subscription']             as const,
     invoices: ['subscription', 'invoices'] as const,
   },
 
-  // ─── Tickets ──────────────────────────────────────────────────────────────
+  // --- Tickets -------------------------------------------------------------
   tickets: {
     all:        ['tickets']                                    as const,
     mine:       (drawId?: number, locationId?: number) =>
@@ -52,19 +90,31 @@ export const queryKeys = {
     riskLevel:  ['tickets', 'risk-level']                     as const,
   },
 
-  // ─── Participating businesses (v2 entry) ──────────────────────────────────
+  // --- Participating businesses (v2 entry) ---------------------------------
   participating: {
     all:    ['participating']                        as const,
     search: ['participating', 'locations', 'search'] as const,
   },
 
-  // ─── Nearby ─────────────────────────────────────────────────────────────
+  // --- Nearby --------------------------------------------------------------
   nearby: {
     all:     ['nearby']            as const,
     receipt: ['nearby', 'receipt'] as const,
+    search:  (q: string) => ['nearby', 'search', q] as const,
   },
 
-  // ─── Auth / region ──────────────────────────────────────────────────────
+  // --- Referral ------------------------------------------------------------
+  referral: {
+    link: ['referral', 'link']                        as const,
+    code: (code: string | null) => ['referral', 'code', code] as const,
+  },
+
+  // --- Address autocomplete ------------------------------------------------
+  address: {
+    autocomplete: (q: string) => ['address', 'autocomplete', q] as const,
+  },
+
+  // --- Auth / region -------------------------------------------------------
   region: {
     check: ['region-check'] as const,
   },

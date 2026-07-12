@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isAxiosError } from 'axios';
 import {
   Box, Button, Typography, Paper, Stack, Alert, TextField, CircularProgress,
 } from '@mui/material';
@@ -10,6 +11,7 @@ import {
   PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
   BORDER_LIGHT, BG_DEFAULT, TEXT_PRIMARY, TEXT_SECONDARY, SHADOW_ELEVATED,
 } from '../../../shared/colors';
+import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { ConfirmationNumber } from '@mui/icons-material';
 import AppHeader from '../../../shared/components/AppHeader';
 import AppMenuDrawer from '../../../shared/components/AppMenuDrawer';
@@ -51,15 +53,14 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
       setCode('');
       setResendCooldown(60);
     },
-    onError: (err: any) => {
-      const status = err?.response?.status;
-      const message = err?.response?.data?.message;
+    onError: (err: unknown) => {
+      const status = isAxiosError(err) ? err.response?.status : undefined;
       if (status === 400) {
         setError('Invalid phone number format.');
       } else if (status === 429) {
         setError('Too many requests. Please wait before trying again.');
       } else {
-        setError(message || 'Failed to send code. Please try again.');
+        setError(apiErrorMessage(err, 'Failed to send code. Please try again.'));
       }
     },
   });
@@ -77,9 +78,8 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
         onVerified();
       }
     },
-    onError: (err: any) => {
-      const message = err?.response?.data?.message;
-      setError(message || 'Invalid or expired code. Please try again.');
+    onError: (err: unknown) => {
+      setError(apiErrorMessage(err, 'Invalid or expired code. Please try again.'));
     },
   });
 

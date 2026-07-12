@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { searchParticipatingLocations } from '../../tickets/api/ticketsApi';
 import type { NearbyLocation } from '../types/nearBy.types';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 
 /**
  * Global business search for the map page: finds participating businesses ANYWHERE, not just the
@@ -13,7 +14,7 @@ import type { NearbyLocation } from '../types/nearBy.types';
 export function useBusinessSearch(query: string, enabled: boolean) {
   const q = query.trim();
   return useQuery<NearbyLocation[]>({
-    queryKey: ['businessSearch', q],
+    queryKey: queryKeys.nearby.search(q),
     queryFn: async () => {
       const rows = await searchParticipatingLocations(q);
       return rows

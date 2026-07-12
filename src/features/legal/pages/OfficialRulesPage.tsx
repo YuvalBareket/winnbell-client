@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '../../../shared/api/client';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 import rulesContent from '../content/official-rules.md?raw';
 import LegalDocumentPage from './LegalDocumentPage';
 
@@ -32,19 +33,22 @@ interface DrawInfo {
 
 const OfficialRulesPage = () => {
   const { drawId } = useParams<{ drawId: string }>();
-  const [draw, setDraw] = useState<DrawInfo | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchDraw = drawId
-      ? api.get<DrawInfo>(`/draws/${drawId}`).then(({ data }) => data)
-      : api.get<DrawInfo[]>('/draws/active').then(({ data }) => data[0] ?? null);
-
-    fetchDraw
-      .then((d) => setDraw(d))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [drawId]);
+  const { data: draw = null, isPending: loading } = useQuery<DrawInfo | null>({
+    queryKey: drawId
+      ? [...queryKeys.draws.all, 'rules', drawId]
+      : [...queryKeys.draws.all, 'rules', 'active'],
+    queryFn: async () => {
+      if (drawId) {
+        const { data } = await api.get<DrawInfo>(`/draws/${drawId}`);
+        return data;
+      }
+      const { data } = await api.get<DrawInfo[]>('/draws/active');
+      return data[0] ?? null;
+    },
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
 
   const content = (() => {
     let text = applyStaticSubstitutions(rulesContent);

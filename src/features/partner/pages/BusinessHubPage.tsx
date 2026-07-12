@@ -56,6 +56,7 @@ import LogoCropDialog from './components/LogoCropDialog';
 import MapBusinessPopup from '../../nearBy/components/MapBusinessPopup';
 import type { BusinessLocation } from '../types/business.types';
 import type { NearbyLocation, NearbyLocationDetail } from '../../nearBy/types/nearBy.types';
+import { apiErrorMessage } from '../../../shared/utils/apiError';
 import {
   ALPHA_WHITE_10,
   ALPHA_WHITE_15,
@@ -131,8 +132,7 @@ const BusinessHubPage = () => {
         },
         onError: (err: unknown) => {
           setAddLocationOpen(false);
-          const msg = (err as any)?.response?.data?.message;
-          setSnackbar({ open: true, message: msg || 'Failed to add location. Plan update may have failed.', severity: 'error' });
+          setSnackbar({ open: true, message: apiErrorMessage(err, 'Failed to add location. Plan update may have failed.'), severity: 'error' });
         },
       },
     );
@@ -156,8 +156,7 @@ const BusinessHubPage = () => {
       },
       onError: (err: unknown) => {
         setRemovingLocation(null);
-        const msg = (err as any)?.response?.data?.message;
-        setSnackbar({ open: true, message: msg || 'Failed to remove location. Plan update may have failed.', severity: 'error' });
+        setSnackbar({ open: true, message: apiErrorMessage(err, 'Failed to remove location. Plan update may have failed.'), severity: 'error' });
       },
     });
   };
@@ -428,6 +427,7 @@ const BusinessHubPage = () => {
 
       {cropSrc && (
         <LogoCropDialog
+          key={cropSrc}
           open={!!cropSrc}
           imageSrc={cropSrc}
           onClose={() => setCropSrc(null)}

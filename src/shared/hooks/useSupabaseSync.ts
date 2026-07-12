@@ -15,7 +15,10 @@ export const useSupabaseSync = (retryCount = 0) => {
   const currentUser = useAppSelector(selectCurrentUser);
   const isBusiness = useAppSelector(selectIsBusiness);
 
-  // Keep refs so the onAuthStateChange closure always sees fresh values
+  // Keep refs so the onAuthStateChange closure always sees fresh values.
+  // This effect has no dep array intentionally: it runs after every render to keep the refs
+  // in sync with the latest Redux state without re-subscribing the Supabase listener.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const isAuthenticatedRef = useRef(isAuthenticated);
   const needsResyncRef = useRef(false);
   useEffect(() => {
@@ -230,6 +233,11 @@ export const useSupabaseSync = (retryCount = 0) => {
       controller.abort();
       subscription.unsubscribe();
     };
+    // navigate is EXCLUDED on purpose: React Router recreates it per location change, so
+    // including it would tear down and re-subscribe the Supabase auth listener on every
+    // navigation (and abort any in-flight /auth/sync). dispatch is stable (RTK) but kept
+    // out for the same one-subscription-per-session guarantee.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retryCount]);
 
   // Cross-tab logout: when another tab performs a REAL logout it calls broadcastLogout();

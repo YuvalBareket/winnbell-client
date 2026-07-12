@@ -8,6 +8,7 @@ import {
 } from '@mui/icons-material';
 import type { IDrawResult } from '../types';
 import { formatCurrency } from '../../../shared/utils/date';
+import { winnerFirstName } from '../../../shared/utils/string';
 import { goldShineSx } from './goldShine';
 import {
   PRIMARY_MAIN, PRIMARY_DEEP, GOLD_TROPHY, ACCENT_GOLD, ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
@@ -16,9 +17,6 @@ import {
   SHADOW_CARD,
   ALPHA_AMBER_08, ALPHA_AMBER_04, ALPHA_AMBER_12, ALPHA_AMBER_25,
 } from '../../../shared/colors';
-
-// Show the winner's first name only (keep the surname private, no trailing initials).
-const winnerFirstName = (name?: string | null) => (name ? name.trim().split(/\s+/)[0] : 'A winner');
 
 const StatCard = ({ icon, tint, iconColor, label, value, valueColor, hideOnMobile }: {
   icon: React.ReactNode; tint: string; iconColor: string; label: string; value: string; valueColor?: string; hideOnMobile?: boolean;

@@ -22,6 +22,7 @@ import {
   ALPHA_WHITE_15, ALPHA_WHITE_80,
   TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT, MOBILE_CONTENT_HEIGHT, SHADOW_PRIMARY_MEDIUM,
 } from '../../../shared/colors';
+import { apiErrorMessage } from '../../../shared/utils/apiError';
 import FreeEntrySuccessDialog from '../components/FreeEntrySuccessDialog';
 import { breathe, pressable } from '../../../shared/motion';
 
@@ -61,8 +62,7 @@ const FreeTicketPage: React.FC = () => {
       setClaimedCode(result?.code ?? '');
       setSuccessDialogOpen(true);
     } catch (err) {
-      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setClaimError(message ?? 'Something went wrong. Please try again.');
+      setClaimError(apiErrorMessage(err, 'Something went wrong. Please try again.'));
     }
   };
 

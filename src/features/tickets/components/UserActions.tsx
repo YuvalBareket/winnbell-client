@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from '@mui/icons-material';
 import { GRADIENT_PRIMARY, SHADOW_PRIMARY_SOFT } from '../../../shared/colors';
+import { apiErrorMessage } from '../../../shared/utils/apiError';
 
 interface UserActionsProps {
   code: string;
@@ -56,7 +57,7 @@ const UserActions: React.FC<UserActionsProps> = ({
         error={redeemMutation.isError}
         helperText={
           redeemMutation.isError
-            ? (redeemMutation.error as any).response?.data?.message || 'Invalid code'
+            ? apiErrorMessage(redeemMutation.error, 'Invalid code')
             : ''
         }
         InputProps={{

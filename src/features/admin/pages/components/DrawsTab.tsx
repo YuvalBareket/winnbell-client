@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -63,6 +63,7 @@ import {
   useDrawRejectedWinners,
 } from '../../hooks/useAdmin';
 import { BG_PAGE } from '../../../../shared/colors';
+import { apiErrorMessage } from '../../../../shared/utils/apiError';
 import { BUSINESS_SECTORS } from '../../data';
 import EditDrawModal from './EditDrawModal';
 
@@ -92,11 +93,7 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
   const [confirmRemove, setConfirmRemove] = useState<{ id: number; name: string } | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    setFilterSearch('');
-    setFilterSearchDebounced('');
-    setFilterSector('');
-  }, [drawId]);
+  // Filter state is reset via key={draw.id} on the panel render site (2.16).
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -289,6 +286,14 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const [confirmReopen, setConfirmReopen] = useState<number | null>(null);
   const [reviewDrawId, setReviewDrawId] = useState<number | null>(null);
   const [reviewDismissed, setReviewDismissed] = useState(false);
+  // Derived: auto-detect the first pending-review draw (winner picked but not confirmed).
+  // reviewDismissed prevents the dialog from re-opening after the admin closes it without
+  // confirming (e.g. to consult the history panel first). reviewDrawId (set by explicit
+  // Verify Winner / Campaign Info buttons) always overrides auto-detection.
+  const pendingReviewDraw = !reviewDismissed
+    ? draws?.find((d: any) => d.winner_user_id && !d.winner_confirmed && d.status?.toUpperCase() === 'CLOSED') ?? null
+    : null;
+  const effectiveReviewDrawId = reviewDrawId ?? pendingReviewDraw?.id ?? null;
   const [penaltyChecked, setPenaltyChecked] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectedExpanded, setRejectedExpanded] = useState(false);
@@ -303,22 +308,16 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const deleteDraw = useDeleteDraw();
   const duplicateDraw = useDuplicateDraw();
 
-  const { data: candidate, isLoading: candidateLoading } = useDrawCandidate(reviewDrawId);
-  const { data: rejectedWinners } = useDrawRejectedWinners(reviewDrawId);
-
-  useEffect(() => {
-    if (!draws || reviewDrawId || reviewDismissed) return;
-    const pending = draws.find((d: any) => d.winner_user_id && !d.winner_confirmed && d.status?.toUpperCase() === 'CLOSED');
-    if (pending) setReviewDrawId(pending.id);
-  }, [draws, reviewDrawId, reviewDismissed]);
+  const { data: candidate, isLoading: candidateLoading } = useDrawCandidate(effectiveReviewDrawId);
+  const { data: rejectedWinners } = useDrawRejectedWinners(effectiveReviewDrawId);
 
   const handleOpenDraw = async () => {
     if (!confirmOpen) return;
     try {
       await openDraw.mutateAsync(confirmOpen);
       onSnackSuccess('Campaign opened successfully');
-    } catch (e: any) {
-      onSnackError(e?.response?.data?.message ?? 'Failed to open campaign');
+    } catch (e: unknown) {
+      onSnackError(apiErrorMessage(e, 'Failed to open campaign'));
     }
     setConfirmOpen(null);
   };
@@ -328,8 +327,8 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
     try {
       await closeDraw.mutateAsync(confirmClose);
       onSnackSuccess('Campaign closed successfully');
-    } catch (e: any) {
-      onSnackError(e?.response?.data?.message ?? 'Failed to close campaign');
+    } catch (e: unknown) {
+      onSnackError(apiErrorMessage(e, 'Failed to close campaign'));
     }
     setConfirmClose(null);
   };
@@ -339,8 +338,8 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
     try {
       await reopenDraw.mutateAsync(confirmReopen);
       onSnackSuccess('Campaign reopened successfully');
-    } catch (e: any) {
-      onSnackError(e?.response?.data?.message ?? 'Failed to reopen campaign');
+    } catch (e: unknown) {
+      onSnackError(apiErrorMessage(e, 'Failed to reopen campaign'));
     }
     setConfirmReopen(null);
   };
@@ -353,37 +352,38 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       await pickWinner.mutateAsync({ drawId });
       setReviewDismissed(false);
       setReviewDrawId(drawId);
-    } catch (e: any) {
-      onSnackError(e?.response?.data?.message ?? 'Failed to pick winner');
+    } catch (e: unknown) {
+      onSnackError(apiErrorMessage(e, 'Failed to pick winner'));
     }
   };
 
   const handlePickAnother = async () => {
-    if (!reviewDrawId) return;
+    if (!effectiveReviewDrawId) return;
     const reason = rejectReason.trim();
     if (!reason) { onSnackError('Please enter a reason for disqualifying this winner.'); return; }
     try {
-      await pickWinner.mutateAsync({ drawId: reviewDrawId, applyPenalty: penaltyChecked, reason });
+      await pickWinner.mutateAsync({ drawId: effectiveReviewDrawId, applyPenalty: penaltyChecked, reason });
       setPenaltyChecked(false);
       setRejectReason('');
-    } catch (e: any) {
+    } catch (e: unknown) {
       setReviewDrawId(null);
+      setReviewDismissed(true);
       setRejectReason('');
-      onSnackError(e?.response?.data?.message ?? 'Failed to pick another winner');
+      onSnackError(apiErrorMessage(e, 'Failed to pick another winner'));
     }
   };
 
   const handleVerifyWinner = async () => {
-    if (!reviewDrawId) return;
+    if (!effectiveReviewDrawId) return;
     try {
-      await confirmWinnerMutation.mutateAsync(reviewDrawId);
+      await confirmWinnerMutation.mutateAsync(effectiveReviewDrawId);
       setReviewDrawId(null);
-      // Prevent the auto-open effect from re-opening the dialog before the draws cache
+      // Prevent the derived pendingReviewDraw from re-opening the dialog before the draws cache
       // reflects winner_confirmed = true (otherwise it briefly reopens with no candidate).
       setReviewDismissed(true);
       onSnackSuccess('Winner confirmed successfully');
-    } catch (e: any) {
-      onSnackError(e?.response?.data?.message ?? 'Failed to confirm winner');
+    } catch (e: unknown) {
+      onSnackError(apiErrorMessage(e, 'Failed to confirm winner'));
     }
   };
 
@@ -392,8 +392,8 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
     try {
       await deleteDraw.mutateAsync(confirmDelete);
       onSnackSuccess('Campaign deleted');
-    } catch (e: any) {
-      onSnackError(e?.response?.data?.message ?? 'Failed to delete campaign');
+    } catch (e: unknown) {
+      onSnackError(apiErrorMessage(e, 'Failed to delete campaign'));
     }
     setConfirmDelete(null);
   };
@@ -402,8 +402,8 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
     try {
       await duplicateDraw.mutateAsync(drawId);
       onSnackSuccess('Campaign duplicated as Upcoming');
-    } catch (e: any) {
-      onSnackError(e?.response?.data?.message ?? 'Failed to duplicate campaign');
+    } catch (e: unknown) {
+      onSnackError(apiErrorMessage(e, 'Failed to duplicate campaign'));
     }
   };
 
@@ -505,7 +505,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
               {expandedDrawId === draw.id && (
                 <TableRow>
                   <TableCell colSpan={6} sx={{ p: 0 }}>
-                    <DrawBusinessesPanel drawId={draw.id} drawStatus={draw.status} />
+                    <DrawBusinessesPanel key={draw.id} drawId={draw.id} drawStatus={draw.status} />
                   </TableCell>
                 </TableRow>
               )}
@@ -539,7 +539,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                   {new Date(draw.draw_date).toLocaleDateString()}
                 </Typography>
               </Box>
-              {expandedDrawId === draw.id && <DrawBusinessesPanel drawId={draw.id} drawStatus={draw.status} />}
+              {expandedDrawId === draw.id && <DrawBusinessesPanel key={draw.id} drawId={draw.id} drawStatus={draw.status} />}
               {renderActions(draw)}
             </Stack>
           </CardContent>
@@ -691,7 +691,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
 
       {/* Candidate review */}
       <Dialog
-        open={!!reviewDrawId}
+        open={!!effectiveReviewDrawId}
         onClose={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); setRejectReason(''); }}
         maxWidth='sm'
         fullWidth

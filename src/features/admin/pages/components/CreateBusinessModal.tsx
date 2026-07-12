@@ -1,27 +1,17 @@
 import React, { useState } from 'react';
 import {
-  Modal,
-  Box,
-  Typography,
-  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Button,
   Stack,
+  TextField,
   MenuItem,
+  Box,
 } from '@mui/material';
 import { useCreateBusiness } from '../../hooks/useAdmin';
 import { BUSINESS_SECTORS } from '../../data';
-
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 450,
-  bgcolor: 'background.paper',
-  borderRadius: 2,
-  boxShadow: 24,
-  p: 4,
-};
 
 const CreateBusinessModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
@@ -41,6 +31,18 @@ const CreateBusinessModal: React.FC<{ open: boolean; onClose: () => void }> = ({
     owner_user_id: 1,
   });
 
+  const handleClose = () => {
+    setFormData({
+      name: '',
+      sector: defaultSector,
+      location: '',
+      latitude: '',
+      longitude: '',
+      owner_user_id: 1,
+    });
+    onClose();
+  };
+
   const handleSubmit = () => {
     const payload = {
       ...formData,
@@ -50,26 +52,16 @@ const CreateBusinessModal: React.FC<{ open: boolean; onClose: () => void }> = ({
 
     mutation.mutate(payload, {
       onSuccess: () => {
-        onClose();
-        setFormData({
-          name: '',
-          sector: defaultSector,
-          location: '',
-          latitude: '',
-          longitude: '',
-          owner_user_id: 1,
-        });
+        handleClose();
       },
     });
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
-      <Box sx={style}>
-        <Typography variant='h6' mb={3}>
-          Add New Business
-        </Typography>
-        <Stack spacing={2}>
+    <Dialog open={open} onClose={handleClose} maxWidth='xs' fullWidth>
+      <DialogTitle>Add New Business</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
             label='Business Name'
             fullWidth
@@ -135,22 +127,21 @@ const CreateBusinessModal: React.FC<{ open: boolean; onClose: () => void }> = ({
               }
             />
           </Stack>
-
-          <Box display='flex' justifyContent='flex-end' gap={1} mt={2}>
-            <Button onClick={onClose}>Cancel</Button>
-            <Button
-              variant='contained'
-              onClick={handleSubmit}
-              disabled={
-                mutation.isPending || !formData.latitude || !formData.longitude
-              }
-            >
-              {mutation.isPending ? 'Saving...' : 'Create Business'}
-            </Button>
-          </Box>
         </Stack>
-      </Box>
-    </Modal>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button
+          variant='contained'
+          onClick={handleSubmit}
+          disabled={
+            mutation.isPending || !formData.latitude || !formData.longitude
+          }
+        >
+          {mutation.isPending ? 'Saving...' : 'Create Business'}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

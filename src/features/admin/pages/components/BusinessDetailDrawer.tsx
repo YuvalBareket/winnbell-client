@@ -73,11 +73,12 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
   const imageDecision = useAdminImageDecision();
   const [pendingTicket, setPendingTicket] = useState<number | null>(null);
 
-  // Reset campaign selection when a different business opens
-  useEffect(() => { setSelectedDrawId(ALL); }, [businessId]);
-
-  // Reset entries page when campaign filter changes
-  useEffect(() => { setEntriesPage(1); }, [selectedDrawId]);
+  // Reset both campaign selection and entries page when a different business opens.
+  // Collapsed from two chained effects (3 renders) to one (2 renders).
+  useEffect(() => {
+    setSelectedDrawId(ALL);
+    setEntriesPage(1);
+  }, [businessId]);
 
   const biz = data?.business;
   const locations = data?.locations ?? [];
@@ -158,7 +159,7 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
 
             {/* Status chips */}
             <Stack direction='row' spacing={1} flexWrap='wrap'>
-              <Chip label={biz.subscription_status ?? 'No subscription'} size='small' color={SUB_COLORS[biz.subscription_status] ?? 'default'} />
+              <Chip label={biz.subscription_status ?? 'No subscription'} size='small' color={SUB_COLORS[biz.subscription_status ?? ''] ?? 'default'} />
               <Chip label={biz.in_open_draw ? 'In active campaign' : 'Not in campaign'} size='small' color={biz.in_open_draw ? 'success' : 'default'} variant={biz.in_open_draw ? 'filled' : 'outlined'} />
               <Chip label={biz.entry_mode === 'receipt' ? 'Receipt entry' : biz.entry_mode === 'code' ? 'Code entry' : biz.entry_mode ?? '—'} size='small' variant='outlined' />
             </Stack>
@@ -170,7 +171,7 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                 options={campaignSummary}
                 getOptionLabel={(opt: any) => opt.draw_name}
                 value={campaignSummary.find((c: any) => String(c.draw_id) === selectedDrawId) ?? null}
-                onChange={(_, val) => setSelectedDrawId(val ? String(val.draw_id) : ALL)}
+                onChange={(_, val) => { setSelectedDrawId(val ? String(val.draw_id) : ALL); setEntriesPage(1); }}
                 isOptionEqualToValue={(a: any, b: any) => a.draw_id === b.draw_id}
                 renderInput={(params) => <TextField {...params} label='Campaign' placeholder='All campaigns' />}
                 sx={{ maxWidth: 280 }}

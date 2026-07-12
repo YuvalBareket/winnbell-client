@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import type { PointerEvent } from 'react';
 
 const MOVE_THRESHOLD = 10; // px of finger movement still counted as a tap
@@ -15,11 +15,14 @@ const MOVE_THRESHOLD = 10; // px of finger movement still counted as a tap
  *   <ListItemButton {...useTap(handleNav)} />
  */
 export function useTap(onTap: () => void) {
+  const onTapRef = useRef(onTap);
+  onTapRef.current = onTap;
+
   const start = useRef<{ x: number; y: number } | null>(null);
   const moved = useRef(false);
   const handledByPointer = useRef(false);
 
-  return {
+  return useMemo(() => ({
     onPointerDown: (e: PointerEvent) => {
       start.current = { x: e.clientX, y: e.clientY };
       moved.current = false;
@@ -37,7 +40,7 @@ export function useTap(onTap: () => void) {
     onPointerUp: () => {
       if (start.current && !moved.current) {
         handledByPointer.current = true;
-        onTap();
+        onTapRef.current();
       }
       start.current = null;
     },
@@ -46,7 +49,7 @@ export function useTap(onTap: () => void) {
         handledByPointer.current = false;
         return;
       }
-      onTap();
+      onTapRef.current();
     },
-  };
+  }), []);
 }

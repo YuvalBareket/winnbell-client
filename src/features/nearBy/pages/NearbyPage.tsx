@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import {
   Box,
@@ -28,23 +28,14 @@ import { useNearbyWithZoom } from '../hooks/useNearbyWithZoom';
 import { useBusinessSearch } from '../hooks/useBusinessSearch';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import { useMenuDrawer } from '../../../shared/context/MenuDrawerContext';
+import { useDebounce } from '../../../shared/hooks/useDebounce';
 import { useAppSelector } from '../../../store/hook';
-import { selectCurrentUser } from '../../../store/selectors/authSelectors';
+import { selectCurrentUser, selectUserLocation } from '../../../store/selectors/authSelectors';
 import { getUserInitials } from '../../../shared/utils/string';
-import { formatDistanceMiles } from '../../../shared/utils/distance';
+import { formatDistanceMiles, haversineKm } from '../../../shared/utils/distance';
 import { GRADIENT_PRIMARY } from '../../../shared/colors';
 import TapButton from '../../../shared/components/TapButton';
 import { staggerContainer, pressable, pressableCard, pressableIcon, SPRING_POP } from '../../../shared/motion';
-
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 // Cascade list items with springy pop entrance - overrides popIn with per-item stagger delay
 const listItemVariants = {
@@ -59,7 +50,7 @@ const listItemVariants = {
 
 const NearbyPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   // The location clicked, snapshotted at click time. Used as the popup's basic info so the card
@@ -67,12 +58,6 @@ const NearbyPage = () => {
   const [clickedLocation, setClickedLocation] = useState<NearbyLocation | null>(null);
   const [focusTarget, setFocusTarget] = useState<{ lat: number; lng: number } | null>(null);
   const { openMenu } = useMenuDrawer();
-
-  // Debounce the search box so global search fires at most once per 400ms of typing.
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(searchTerm), 400);
-    return () => clearTimeout(t);
-  }, [searchTerm]);
 
   const user = useAppSelector(selectCurrentUser);
   const initials = getUserInitials(user?.fullName);
@@ -125,7 +110,7 @@ const NearbyPage = () => {
   const { refreshLocation } = useCurrentLocation();
 
   // 2. Pull Location and Fetch Data
-  const { userLocation } = useAppSelector((state) => state.auth);
+  const userLocation = useAppSelector(selectUserLocation);
   const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyWithZoom(selectedSector);
 
   // Global search drives the LIST (finds businesses ANYWHERE, not just the on-screen viewport);
@@ -137,8 +122,11 @@ const NearbyPage = () => {
   const listError = isSearching ? isSearchError : isError;
 
   // 3. Find the specific location object for the popup - may come from nearby OR the search results.
-  const selectedLocation =
-    [...locations, ...searchResults].find((loc) => loc.location_id === selectedLocationId) || null;
+  // Memoized so the concat+find doesn't re-run on every render (map is a hot render path).
+  const selectedLocation = useMemo(
+    () => [...locations, ...searchResults].find((loc) => loc.location_id === selectedLocationId) ?? null,
+    [locations, searchResults, selectedLocationId],
+  );
 
   return (
     <Box

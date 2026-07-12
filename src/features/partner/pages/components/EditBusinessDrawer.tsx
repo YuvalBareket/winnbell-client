@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   Drawer,
   Box,
@@ -43,25 +42,20 @@ const editableSectors = Object.keys(BUSINESS_SECTORS).filter((k) => k !== 'Free'
 const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
   const { mutate: updateBusiness, isPending } = useUpdateBusiness();
 
-  const { control, handleSubmit, reset, watch, setValue } = useForm<UpdateBusinessInput>({
-    defaultValues: {
-      businessSector: '',
-      description: '',
-      terms_text: '',
-      website_url: '',
-    },
+  // `values` reactively resets the form when `business` changes (RHF v7 pattern).
+  // Replaces the reset-in-effect pattern which caused a one-frame stale display on open.
+  const { control, handleSubmit, watch, setValue } = useForm<UpdateBusinessInput>({
+    values: business
+      ? {
+          businessSector: business.sector,
+          description: business.description,
+          terms_text: business.terms_text,
+          website_url: business.website_url ?? '',
+        }
+      : { businessSector: '', description: '', terms_text: '', website_url: '' },
+    // A background refetch of the entity must never wipe what the user is typing.
+    resetOptions: { keepDirtyValues: true },
   });
-
-  useEffect(() => {
-    if (business) {
-      reset({
-        businessSector: business.sector,
-        description: business.description,
-        terms_text: business.terms_text,
-        website_url: business.website_url ?? '',
-      });
-    }
-  }, [business, reset]);
 
   const selectedSector = watch('businessSector');
 

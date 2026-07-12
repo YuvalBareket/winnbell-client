@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { autoCompleteAddress, getAddressCoords } from '../api/addressAutocomplete';
 import type { AddressCoords } from '../api/addressAutocomplete';
 import { useDebounce } from './useDebounce';
+import { queryKeys } from '../constants/queryKeys';
 
 export type AddressOption = {
   label: string;
@@ -17,12 +18,25 @@ export const useAddressAutocomplete = () => {
   const enabled = debouncedInput.length >= 3;
 
   const { data: options = [], isPending, error } = useQuery({
-    queryKey: ['address-autocomplete', debouncedInput],
+    queryKey: queryKeys.address.autocomplete(debouncedInput),
     queryFn: () => autoCompleteAddress(debouncedInput),
     enabled,
     staleTime: 60_000,
     gcTime: 5 * 60_000,
   });
+
+  const fetchCoords = useCallback(async (placeId: string): Promise<AddressCoords> => {
+    setCoordsLoading(true);
+    try {
+      return await getAddressCoords(placeId);
+    } finally {
+      setCoordsLoading(false);
+    }
+  }, []);
+
+  const clear = useCallback(() => {
+    setInputValue('');
+  }, [setInputValue]);
 
   return {
     inputValue,
@@ -34,19 +48,7 @@ export const useAddressAutocomplete = () => {
 
     error: error ?? null,
 
-    fetchCoords: async (placeId: string): Promise<AddressCoords> => {
-      setCoordsLoading(true);
-      try {
-        return await getAddressCoords(placeId);
-      } finally {
-        setCoordsLoading(false);
-      }
-    },
-
-    clear: () => {
-      setInputValue('');
-    },
-
-    refetchNow: () => {},
+    fetchCoords,
+    clear,
   };
 };

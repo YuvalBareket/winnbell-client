@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useCallback, useRef } from 'react';
+import { Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { alpha } from '@mui/material/styles';
 import {
@@ -90,13 +90,6 @@ const FieldLabel = ({ children, hint }: { children: React.ReactNode; hint?: stri
 const BusinessProfilePage = () => {
   const user = useAppSelector(selectCurrentUser);
   const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
-  const navigate = useNavigate();
-
-  // This wizard is only for businesses that still need setup. An owner who already finished
-  // (or a manager) landing here by URL is sent back to their hub instead of a stray setup form.
-  useEffect(() => {
-    if (!requiresBusinessSetup) navigate('/nearby', { replace: true });
-  }, [requiresBusinessSetup, navigate]);
 
   const [step, setStep] = useState(0);
   const [logoDialogOpen, setLogoDialogOpen] = useState(false);
@@ -124,6 +117,18 @@ const BusinessProfilePage = () => {
 
   const { mutate: setupBusiness, isPending } = useBusinessSetup();
   const [setupError, setSetupError] = useState('');
+
+  const handleLogoUploadComplete = useCallback((key: string) => {
+    setUploadedLogoKey(key);
+    setValue('logo_url', key);
+    setLogoDialogOpen(false);
+    setLogoImageSrc(null);
+  }, [setValue]);
+
+  // This wizard is only for businesses that still need setup. An owner who already finished
+  // (or a manager) landing here by URL is sent back to their hub instead of a stray setup form.
+  // Placed after all hook calls to satisfy Rules of Hooks.
+  if (!requiresBusinessSetup) return <Navigate to='/nearby' replace />;
 
   const selectedSector = watch('businessSector');
   const businessName = watch('businessName');
@@ -167,13 +172,6 @@ const BusinessProfilePage = () => {
     remove(index);
     setExpandedIndex((prev) => (prev >= index ? Math.max(0, prev - 1) : prev));
   };
-
-  const handleLogoUploadComplete = useCallback((key: string) => {
-    setUploadedLogoKey(key);
-    setValue('logo_url', key);
-    setLogoDialogOpen(false);
-    setLogoImageSrc(null);
-  }, [setValue]);
 
   // "Add logo" opens the OS file picker straight away; once a file is chosen we jump to the cropper.
   const handleLogoFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -605,7 +603,7 @@ const BusinessProfilePage = () => {
       </Box>
 
       <input ref={logoInputRef} type='file' accept='image/*' onChange={handleLogoFile} style={{ display: 'none' }} />
-      <LogoCropDialog open={logoDialogOpen} imageSrc={logoImageSrc ?? undefined} onClose={() => { setLogoDialogOpen(false); setLogoImageSrc(null); }} onUploadComplete={handleLogoUploadComplete} />
+      <LogoCropDialog key={logoImageSrc ?? 'none'} open={logoDialogOpen} imageSrc={logoImageSrc ?? undefined} onClose={() => { setLogoDialogOpen(false); setLogoImageSrc(null); }} onUploadComplete={handleLogoUploadComplete} />
 
       {/* Setup errors surface as a toast so they are never buried below the fold */}
       <Snackbar

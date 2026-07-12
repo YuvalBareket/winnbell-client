@@ -31,6 +31,17 @@ export const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
+/**
+ * Formats a number as compact USD (K/M suffix). Matches GrowthDashboard behavior.
+ * Examples: 1500 -> "$1.5K", 1_500_000 -> "$1.5M", 999 -> "$999"
+ */
+export const formatCompactCurrency = (val: number): string => {
+  const absVal = Math.abs(val);
+  if (absVal >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
+  if (absVal >= 1_000) return `$${(val / 1_000).toFixed(1)}K`;
+  return `$${val.toLocaleString()}`;
+};
+
 const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /**
@@ -80,10 +91,6 @@ export const formatMonth = (m: string): string => {
 /** Format date string → "5 Mar 2024" */
 export const formatDateShort = (d: string): string =>
   new Date(d).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' });
-
-/** Format number as ILS currency */
-export const formatCurrencyILS = (n: number): string =>
-  new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(n);
 
 export const formatRelativeTime = (dateStr: string): string => {
   const diff = Date.now() - new Date(dateStr).getTime();

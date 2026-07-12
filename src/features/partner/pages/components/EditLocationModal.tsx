@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   Dialog,
   Box,
@@ -20,10 +19,11 @@ import type { BusinessLocation, UpdateLocationInput } from '../../types/business
 import {
   GRADIENT_HERO, GRADIENT_PRIMARY,
   ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
-  PRIMARY_MAIN, ALPHA_PRIMARY_04, ALPHA_PRIMARY_06, ALPHA_PRIMARY_20,
-  TEXT_SECONDARY, TEXT_TERTIARY, BORDER_SUBTLE, BG_SUBTLE,
+  PRIMARY_MAIN, ALPHA_PRIMARY_04, ALPHA_PRIMARY_20,
+  TEXT_SECONDARY, TEXT_TERTIARY, BORDER_SUBTLE,
   SHADOW_PRIMARY_SOFT,
 } from '../../../../shared/colors';
+import { locationFieldSx as fieldSx } from '../../shared/locationFieldSx';
 
 interface Props {
   open: boolean;
@@ -42,62 +42,30 @@ interface FormValues {
 
 const MotionBox = motion(Box);
 
-// Refined premium TextField styling shared across fields
-const fieldSx = {
-  '& .MuiOutlinedInput-root': {
-    bgcolor: BG_SUBTLE,
-    transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
-    '& fieldset': {
-      borderColor: BORDER_SUBTLE,
-      transition: 'border-color 0.2s ease',
-    },
-    '&:hover': {
-      bgcolor: '#ffffff',
-      '& fieldset': { borderColor: ALPHA_PRIMARY_20 },
-    },
-    '&.Mui-focused': {
-      bgcolor: '#ffffff',
-      boxShadow: `0 0 0 4px ${ALPHA_PRIMARY_06}`,
-      '& fieldset': { borderColor: PRIMARY_MAIN, borderWidth: 1.5 },
-    },
-  },
-  '& .MuiInputLabel-root': {
-    fontWeight: 600,
-    '&.Mui-focused': { color: PRIMARY_MAIN, fontWeight: 700 },
-  },
-} as const;
-
 const EditLocationModal = ({ open, onClose, location }: Props) => {
   const { mutate: updateLocation, isPending } = useUpdateLocation();
 
+  // `values` reactively resets the form when `location` changes (RHF v7 pattern).
+  // Replaces the reset-in-effect pattern which caused a one-frame stale display on open.
   const form = useForm<FormValues>({
-    defaultValues: {
-      name: '',
-      address: '',
-      lat: null,
-      lon: null,
-      suite: '',
-      phone: '',
-    },
+    values: location
+      ? {
+          name: location.name,
+          address: location.address,
+          lat: location.latitude ?? null,
+          lon: location.longitude ?? null,
+          suite: location.suite ?? '',
+          phone: location.phone ?? '',
+        }
+      : { name: '', address: '', lat: null, lon: null, suite: '', phone: '' },
+    // A background refetch of the entity must never wipe what the user is typing.
+    resetOptions: { keepDirtyValues: true },
   });
 
   const addressError = form.formState.errors.address?.message;
   const watchedAddress = form.watch('address');
   const watchedLat = form.watch('lat');
   const watchedLon = form.watch('lon');
-
-  useEffect(() => {
-    if (location) {
-      form.reset({
-        name: location.name,
-        address: location.address,
-        lat: location.latitude ?? null,
-        lon: location.longitude ?? null,
-        suite: location.suite ?? '',
-        phone: location.phone ?? '',
-      });
-    }
-  }, [location, form]);
 
   const onSubmit = (values: FormValues) => {
     if (!location) return;

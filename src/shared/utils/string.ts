@@ -1,5 +1,10 @@
 import { PRIMARY_MAIN } from '../colors';
 
+// Show the winner's first name only (keep the surname private). Null-safe, trims whitespace,
+// splits on any run of spaces. Falls back to `fallback` when name is absent.
+export const winnerFirstName = (name?: string | null, fallback = 'A winner'): string =>
+  name ? name.trim().split(/\s+/)[0] : fallback;
+
 /** Get 2-letter initials from a full name */
 export const getUserInitials = (fullName?: string | null): string =>
   fullName

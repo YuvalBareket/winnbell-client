@@ -31,9 +31,10 @@ export function useCurrentLocation() {
 
       dispatch(setUserLocation(coords));
       return coords;
-    } catch (err: any) {
-      if (err?.code !== 1) {
-        console.error('Location error:', err.message);
+    } catch (err: unknown) {
+      const posErr = err instanceof GeolocationPositionError ? err : null;
+      if (posErr === null || posErr.code !== GeolocationPositionError.PERMISSION_DENIED) {
+        console.error('Location error:', posErr ? posErr.message : err);
       }
       return null;
     }

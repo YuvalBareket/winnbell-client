@@ -50,7 +50,7 @@ import {
   CHART_TEAL,
   CHART_TEAL_TINT,
 } from '../../../shared/colors';
-import { formatShortDay } from '../../../shared/utils/date';
+import { formatShortDay, formatCompactCurrency } from '../../../shared/utils/date';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -228,14 +228,6 @@ const GrowthDashboard: React.FC = () => {
     );
   }
 
-  // Format currency
-  const formatCurrency = (val: number) => {
-    const absVal = Math.abs(val);
-    if (absVal >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
-    if (absVal >= 1_000) return `$${(val / 1_000).toFixed(1)}K`;
-    return `$${val.toLocaleString()}`;
-  };
-
   // Revenue trend chart data
   const revenueTrendData = (data.revenue.trend || []).map((item) => ({
     ...item,
@@ -279,8 +271,8 @@ const GrowthDashboard: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
               <HeroKpi
                 label={<InfoLabel label='Monthly Revenue' tooltip='The predictable money businesses pay you every month through subscriptions.' />}
-                value={formatCurrency(data.northStar.mrr)}
-                subtext={`ARR ${formatCurrency(data.revenue.arr)}`}
+                value={formatCompactCurrency(data.northStar.mrr)}
+                subtext={`ARR ${formatCompactCurrency(data.revenue.arr)}`}
               />
             </Grid>
 
@@ -344,14 +336,14 @@ const GrowthDashboard: React.FC = () => {
               <CardContent>
                 <Grid container spacing={2} sx={{ mb: 3 }}>
                   {[
-                    { label: 'MRR', value: formatCurrency(data.revenue.mrr), tooltip: 'The predictable money businesses pay you every month through subscriptions.' },
-                    { label: 'ARR', value: formatCurrency(data.revenue.arr), tooltip: 'MRR multiplied by 12. Your yearly run rate if nothing changed.' },
-                    { label: 'This Month', value: formatCurrency(data.revenue.revenue_this_month), tooltip: 'Actual subscription money collected so far this calendar month.' },
-                    { label: 'Founding (Mo.)', value: formatCurrency(data.revenue.founding_this_month), tooltip: 'Revenue this month from discounted founding-member businesses.' },
-                    { label: 'ARPB', value: formatCurrency(data.revenue.arpb), tooltip: 'Average Revenue Per Business. Monthly revenue divided by paying businesses.' },
+                    { label: 'MRR', value: formatCompactCurrency(data.revenue.mrr), tooltip: 'The predictable money businesses pay you every month through subscriptions.' },
+                    { label: 'ARR', value: formatCompactCurrency(data.revenue.arr), tooltip: 'MRR multiplied by 12. Your yearly run rate if nothing changed.' },
+                    { label: 'This Month', value: formatCompactCurrency(data.revenue.revenue_this_month), tooltip: 'Actual subscription money collected so far this calendar month.' },
+                    { label: 'Founding (Mo.)', value: formatCompactCurrency(data.revenue.founding_this_month), tooltip: 'Revenue this month from discounted founding-member businesses.' },
+                    { label: 'ARPB', value: formatCompactCurrency(data.revenue.arpb), tooltip: 'Average Revenue Per Business. Monthly revenue divided by paying businesses.' },
                     {
                       label: 'LTV Estimate',
-                      value: data.revenue.ltv_estimate !== null ? formatCurrency(data.revenue.ltv_estimate) : 'n/a',
+                      value: data.revenue.ltv_estimate !== null ? formatCompactCurrency(data.revenue.ltv_estimate) : 'n/a',
                       tooltip: 'The rough total money one business pays you over its whole lifetime, before it cancels.',
                     },
                   ].map((item) => (
@@ -382,7 +374,7 @@ const GrowthDashboard: React.FC = () => {
                         <YAxis
                           yAxisId='left'
                           tick={{ fontSize: 11 }}
-                          tickFormatter={formatCurrency}
+                          tickFormatter={formatCompactCurrency}
                         />
                         <YAxis
                           yAxisId='right'
@@ -392,7 +384,7 @@ const GrowthDashboard: React.FC = () => {
                         <RTooltip
                           formatter={(value, name) => {
                             if (name === 'Revenue (left)') {
-                              return [formatCurrency(Number(value)), 'Revenue'];
+                              return [formatCompactCurrency(Number(value)), 'Revenue'];
                             }
                             return [Number(value), 'Businesses'];
                           }}

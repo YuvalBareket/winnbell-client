@@ -27,6 +27,7 @@ import {
   PRIMARY_MAIN, PRIMARY_LIGHT, PRIMARY_DEEP, GRADIENT_PRIMARY, GRADIENT_FREE_CARD,
   ACCENT_GOLD, ACCENT_GOLD_DARK, SUCCESS_GREEN, TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT,
 } from '../../../shared/colors';
+import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { staggerContainer, riseIn, popIn, pressable, pressableCard, breathe, SPRING_SNAPPY } from '../../../shared/motion';
 import EntrySuccessDialog from './EntrySuccessDialog';
 import ReceiptImageUploadField from './ReceiptImageUploadField';
@@ -41,6 +42,18 @@ import { fetchParticipatingLocationById } from '../api/ticketsApi';
 import type { ParticipatingLocation } from '../hooks/useAllParticipatingLocations';
 import type { NearbyLocation, NearbyLocationDetail } from '../../nearBy/types/nearBy.types';
 
+// Safari anti-zoom: 16px keeps mobile Safari from auto-zooming the viewport on focus.
+// Hoisted at module level so the factory is not re-created per render.
+const receiptFieldSx = (accentColor: string) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 2.5,
+    '&.Mui-focused fieldset': { borderColor: accentColor },
+  },
+  // 16px keeps mobile Safari from auto-zooming the viewport on focus.
+  '& .MuiOutlinedInput-input': { fontSize: '16px' },
+  '& .MuiInputLabel-root.Mui-focused': { color: accentColor },
+});
+
 interface ReceiptEntryFormProps {
   primaryColor: string;
   preselectedBusinessId?: number;
@@ -49,7 +62,6 @@ interface ReceiptEntryFormProps {
   onSuccess?: (ticketId: number) => void;
   onError?: (message: string) => void;
   onLocationSelect?: (hasLocation: boolean) => void;
-  onBlockedChange?: (blocked: boolean) => void;
 }
 
 // Accepts either the compact NearbyLocation (name/id) OR the profile detail shape
@@ -187,7 +199,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   onSuccess,
   onError,
   onLocationSelect,
-  onBlockedChange,
 }) => {
   // ──────────────────────────────────────────────────
   // State
@@ -212,6 +223,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [confirmSubmitOpen, setConfirmSubmitOpen] = useState(false);
 
   const debouncedTerm = useDebounce(searchTerm, 350);
+  // Tracks whether the partial-object branch has already auto-selected a location so it
+  // does not re-run on every render. The authoritative-fetch branch intentionally bypasses
+  // this guard so it can UPGRADE an already-set partial object once the real data lands.
+  const hasAutoSelected = useRef(false);
 
   // ──────────────────────────────────────────────────
   // Hooks
@@ -232,42 +247,22 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     staleTime: 5 * 60_000,
   });
 
-  const submitReceiptEntry = useSubmitReceiptEntry({
-    onSuccess: (data) => {
-      setSubmittedCode(data.code ?? null);
-      setSubmittedEntryCount(data.entryCount ?? 1);
-      setSuccessDialogOpen(true);
-      setReceiptIdentifier('');
-      setTransactionAmount('');
-      setErrorMessage('');
-      receiptKeystrokeTimesRef.current = [];
-      setReceiptWasPasted(false);
-      setRequiresImage(false);
-      setReceiptImageUrl(null);
-      onSuccess?.(data.ticketId);
-    },
-    onError: (err) => {
-      const message = err?.response?.data?.message || 'Submission failed. Please try again.';
-      if (message === 'A receipt image is required to submit an entry.') {
-        setRequiresImage(true);
-        setErrorMessage('Please attach a photo of your receipt to continue.');
-      } else {
-        setErrorMessage(message);
-      }
-      onError?.(message);
-    },
+  // The "near you" quick-picks come from the map's nearby endpoint, whose payload is
+  // deliberately budget-capped and carries NO min_transaction_amount. Without it the
+  // entries preview always says 1 while the server computes floor(amount / min).
+  // Resolve the authoritative detail for such picks (same key/cache as the QR path above).
+  const selectedMissingMin = !!selectedLocation && selectedLocation.min_transaction_amount == null;
+  const { data: selectedLocationDetail } = useQuery({
+    queryKey: [...queryKeys.participating.all, 'location', selectedLocation?.location_id],
+    queryFn: () => fetchParticipatingLocationById(selectedLocation!.location_id),
+    enabled: selectedMissingMin,
+    staleTime: 5 * 60_000,
   });
 
-  // Notify parent when a location is selected/cleared
-  useEffect(() => {
-    onLocationSelect?.(!!selectedLocation);
-  }, [selectedLocation, onLocationSelect]);
+  const submitReceiptEntry = useSubmitReceiptEntry();
 
-  // Notify parent when blocked state changes (throttled or daily limit)
-  useEffect(() => {
-    const blocked = riskLevel.isThrottled || riskLevel.isDailyLimitReached || riskLevel.isDrawCapped;
-    onBlockedChange?.(blocked);
-  }, [riskLevel.isThrottled, riskLevel.isDailyLimitReached, riskLevel.isDrawCapped, onBlockedChange]);
+  // onLocationSelect is called inline in handlers and in the auto-select effect above.
+  // onBlockedChange had no consumer in RedeemPage (verified by grep) and has been removed.
 
   // ──────────────────────────────────────────────────
   // Fetch nearby locations on mount (geolocation → React Query)
@@ -304,22 +299,31 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   });
 
   // Auto-select location if preselected (skip if user manually changed the selection).
+  // selectedLocation is intentionally omitted from deps: the authoritative-fetch branch upgrades
+  // regardless of current value, and the partial-object branch uses a ref guard instead of
+  // depending on selectedLocation (which would cause a loop: set -> dep changes -> re-run -> set).
   useEffect(() => {
     if (userChangedLocation.current) return;
     // Authoritative fetched detail wins and UPGRADES an already-set partial object as soon as it
-    // loads (real name + min_transaction_amount), so we do not early-return on selectedLocation here.
+    // loads (real name + min_transaction_amount), so we do not check hasAutoSelected here.
     if (preselectedLocationData) {
       setSelectedLocation(preselectedLocationData);
+      onLocationSelect?.(true);
+      hasAutoSelected.current = true;
       return;
     }
     // Show the object passed directly (e.g. from the NearBy drawer) immediately while the fetch loads.
-    if (preselectedLocation && !selectedLocation) {
+    // Guard with hasAutoSelected so this branch only fires once, not on every parent render.
+    if (preselectedLocation && !hasAutoSelected.current) {
       setSelectedLocation(toParticipating(preselectedLocation));
       setSelectedLocationCapReached(!!('cap_reached' in preselectedLocation && preselectedLocation.cap_reached));
+      onLocationSelect?.(true);
+      hasAutoSelected.current = true;
     }
     // No business-id-only fallback: a business id alone can't identify WHICH branch of a
     // multi-location business the user meant.
-  }, [preselectedLocationData, preselectedLocation, selectedLocation]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preselectedLocationData, preselectedLocation]);
 
   // ──────────────────────────────────────────────────
   // Derived state
@@ -352,6 +356,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     setSelectedLocationCapReached(!!('cap_reached' in location && location.cap_reached));
     setSearchTerm('');
     setErrorMessage('');
+    onLocationSelect?.(true);
   };
 
   const handleChangeLocation = () => {
@@ -364,6 +369,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     setReceiptWasPasted(false);
     setRequiresImage(false);
     setReceiptImageUrl(null);
+    onLocationSelect?.(false);
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -403,6 +409,30 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       receiptImageUrl: receiptImageUrl ?? undefined,
       typingDurationMs,
       receiptInputMethod,
+    }, {
+      onSuccess: (data) => {
+        setSubmittedCode(data.code ?? null);
+        setSubmittedEntryCount(data.entryCount ?? 1);
+        setSuccessDialogOpen(true);
+        setReceiptIdentifier('');
+        setTransactionAmount('');
+        setErrorMessage('');
+        receiptKeystrokeTimesRef.current = [];
+        setReceiptWasPasted(false);
+        setRequiresImage(false);
+        setReceiptImageUrl(null);
+        onSuccess?.(data.ticketId);
+      },
+      onError: (err) => {
+        const message = apiErrorMessage(err, 'Submission failed. Please try again.');
+        if (message === 'A receipt image is required to submit an entry.') {
+          setRequiresImage(true);
+          setErrorMessage('Please attach a photo of your receipt to continue.');
+        } else {
+          setErrorMessage(message);
+        }
+        onError?.(message);
+      },
     });
   };
 
@@ -411,7 +441,11 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // ──────────────────────────────────────────────────
 
   // Entries this receipt would earn (for the desktop summary rail + preview).
-  const previewMin = selectedLocation?.min_transaction_amount ?? null;
+  // Fall back to the fetched authoritative detail when the picked object lacks the minimum
+  // (nearby quick-picks) so the preview always matches the server's entry math.
+  const previewMin = selectedLocation?.min_transaction_amount
+    ?? selectedLocationDetail?.min_transaction_amount
+    ?? null;
   const previewAmt = parseFloat(transactionAmount);
   const previewCount = selectedLocation && previewAmt > 0
     ? (previewMin && previewMin > 0 ? Math.min(Math.floor(previewAmt / previewMin), MAX_ENTRIES_PER_RECEIPT) : 1)
@@ -693,15 +727,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 </InputAdornment>
               ),
             }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2.5,
-                '&.Mui-focused fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
-              },
-              // 16px keeps mobile Safari from auto-zooming the viewport on focus.
-              '& .MuiOutlinedInput-input': { fontSize: '16px' },
-              '& .MuiInputLabel-root.Mui-focused': { color: primaryColor || PRIMARY_MAIN },
-            }}
+            sx={receiptFieldSx(primaryColor || PRIMARY_MAIN)}
           />
 
           {/* Amount */}
@@ -718,15 +744,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 </InputAdornment>
               ),
             }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2.5,
-                '&.Mui-focused fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
-              },
-              // 16px keeps mobile Safari from auto-zooming the viewport on focus.
-              '& .MuiOutlinedInput-input': { fontSize: '16px' },
-              '& .MuiInputLabel-root.Mui-focused': { color: primaryColor || PRIMARY_MAIN },
-            }}
+            sx={receiptFieldSx(primaryColor || PRIMARY_MAIN)}
           />
 
           {/* You'll earn N entries (design amber note). Springs in when the amount first
@@ -776,15 +794,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             InputLabelProps={{ shrink: true }}
             error={purchaseDateTooOld}
             helperText={purchaseDateTooOld ? 'Receipt is older than 7 days and cannot be accepted.' : ''}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2.5,
-                '&.Mui-focused fieldset': { borderColor: primaryColor || PRIMARY_MAIN },
-              },
-              // 16px keeps mobile Safari from auto-zooming the viewport on focus.
-              '& .MuiOutlinedInput-input': { fontSize: '16px' },
-              '& .MuiInputLabel-root.Mui-focused': { color: primaryColor || PRIMARY_MAIN },
-            }}
+            sx={receiptFieldSx(primaryColor || PRIMARY_MAIN)}
           />
 
           {/* Receipt image upload */}

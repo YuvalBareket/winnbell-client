@@ -21,8 +21,17 @@ const midpoint = (a: Pt, b: Pt): Pt => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2
  *
  * Paths are stored in IMAGE-space coordinates, which makes the exported guide
  * independent of whatever zoom the user happened to be at.
+ *
+ * @param controlledImgFile - When provided, the caller owns the imgFile state; the hook
+ *   mirrors it internally rather than managing its own copy. Pass null to reset.
+ * @param onPathCountChange - Optional callback invoked whenever the committed path count
+ *   changes. The hook calls it directly at mutation sites using a stable ref, so the
+ *   callback never needs to be in a dep array.
  */
-export const useCanvasAnnotation = () => {
+export const useCanvasAnnotation = (
+  controlledImgFile?: File | null,
+  onPathCountChange?: (count: number) => void,
+) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,7 +54,18 @@ export const useCanvasAnnotation = () => {
 
   const toolRef = useRef<'draw' | 'pan'>('draw');
 
-  const [imgFile, setImgFile] = useState<File | null>(null);
+  // When controlledImgFile is supplied the caller is the source of truth. The internal
+  // state is only used when the hook manages its own file (e.g. from the internal file input).
+  const [internalImgFile, setInternalImgFile] = useState<File | null>(null);
+  const imgFile = controlledImgFile !== undefined ? controlledImgFile : internalImgFile;
+  const setImgFile = (f: File | null) => setInternalImgFile(f);
+
+  // Stable ref so onPathCountChange can be swapped without re-subscribing any effect.
+  const onPathCountChangeRef = useRef(onPathCountChange);
+  useEffect(() => {
+    onPathCountChangeRef.current = onPathCountChange;
+  }, [onPathCountChange]);
+
   const [pathCount, setPathCount] = useState(0);
   const [zoom, setZoom] = useState(1);          // mirror of scaleRef for the UI
   const [tool, setToolState] = useState<'draw' | 'pan'>('draw');
@@ -196,6 +216,7 @@ export const useCanvasAnnotation = () => {
       pathsRef.current = [];
       currentPathRef.current = [];
       setPathCount(0);
+      onPathCountChangeRef.current?.(0);
       scaleRef.current = 1;
       setZoom(1);
       originRef.current = { x: 0, y: 0 };
@@ -294,6 +315,7 @@ export const useCanvasAnnotation = () => {
           if (currentPathRef.current.length > 1) {
             pathsRef.current = [...pathsRef.current, currentPathRef.current];
             setPathCount(pathsRef.current.length);
+            onPathCountChangeRef.current?.(pathsRef.current.length);
           }
           currentPathRef.current = [];
           redraw();
@@ -346,6 +368,7 @@ export const useCanvasAnnotation = () => {
   const handleUndo = useCallback(() => {
     pathsRef.current = pathsRef.current.slice(0, -1);
     setPathCount(pathsRef.current.length);
+    onPathCountChangeRef.current?.(pathsRef.current.length);
     redraw();
   }, [redraw]);
 
@@ -353,6 +376,7 @@ export const useCanvasAnnotation = () => {
     pathsRef.current = [];
     currentPathRef.current = [];
     setPathCount(0);
+    onPathCountChangeRef.current?.(0);
     redraw();
   }, [redraw]);
 

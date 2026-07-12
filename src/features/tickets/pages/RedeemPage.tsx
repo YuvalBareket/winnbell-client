@@ -19,6 +19,7 @@ import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import PhoneVerificationGate from '../components/PhoneVerificationGate';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import { PRIMARY_MAIN } from '../../../shared/colors';
+import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { riseIn } from '../../../shared/motion';
 import UserActions from '../components/UserActions';
 import RedeemFeedback from '../components/RedeemFeedback';
@@ -74,12 +75,12 @@ const RedeemPage = () => {
     if (pending.startsWith('PROMO')) {
       promoMutation.mutate(pending, {
         onSuccess: () => { setIsAutoActivating(false); setActivatedCode(pending); setSuccessDialogOpen(true); },
-        onError: (err) => { setIsAutoActivating(false); setErrorMessage(err?.response?.data?.message || 'Promotional entry failed.'); setErrorOpen(true); },
+        onError: (err) => { setIsAutoActivating(false); setErrorMessage(apiErrorMessage(err, 'Promotional entry failed.')); setErrorOpen(true); },
       });
     } else {
       redeemMutation.mutate(pending, {
         onSuccess: () => { setIsAutoActivating(false); setActivatedCode(pending); setSuccessDialogOpen(true); },
-        onError: (err) => { setIsAutoActivating(false); setErrorMessage(err?.response?.data?.message || 'Activation failed.'); setErrorOpen(true); },
+        onError: (err) => { setIsAutoActivating(false); setErrorMessage(apiErrorMessage(err, 'Activation failed.')); setErrorOpen(true); },
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -89,7 +90,7 @@ const RedeemPage = () => {
     setScannerOpen(false);
     redeemMutation.mutate(scannedCode, {
       onSuccess: () => { setActivatedCode(scannedCode); setSuccessDialogOpen(true); },
-      onError: (err) => { setErrorMessage(err?.response?.data?.message || 'Invalid or already used entry code.'); setErrorOpen(true); },
+      onError: (err) => { setErrorMessage(apiErrorMessage(err, 'Invalid or already used entry code.')); setErrorOpen(true); },
     });
   };
 
@@ -98,7 +99,7 @@ const RedeemPage = () => {
     const submittedCode = code;
     redeemMutation.mutate(submittedCode, {
       onSuccess: () => { setActivatedCode(submittedCode); setSuccessDialogOpen(true); setCode(''); },
-      onError: (err) => { setErrorMessage(err?.response?.data?.message || 'Invalid or already used entry code.'); setErrorOpen(true); },
+      onError: (err) => { setErrorMessage(apiErrorMessage(err, 'Invalid or already used entry code.')); setErrorOpen(true); },
     });
   };
 

@@ -57,11 +57,6 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
     isFetchingNextPage,
   } = useAdminBusinesses({ limit: LIMIT, search: debouncedSearch });
 
-  // Reset to first page whenever search changes
-  useEffect(() => {
-    setPage(0);
-  }, [debouncedSearch]);
-
   // Infinite scroll for mobile: observe sentinel element
   useEffect(() => {
     if (!isMobile) return;
@@ -93,6 +88,7 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
 
   const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
+    setPage(0);
   }, []);
 
   const subChip = (status: string | null) => {

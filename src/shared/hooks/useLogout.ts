@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hook';
@@ -20,7 +21,7 @@ export const useLogout = () => {
   const accounts = useAppSelector(selectAccounts);
   const activeAccountId = useAppSelector(selectActiveAccountId);
 
-  return async () => {
+  return useCallback(async () => {
     const { queryClient } = await import('../../main');
     // Capture the active account's refresh token BEFORE we drop it, so we can revoke it
     // server-side (F6) — a logged-out token must not stay refreshable for 30 days.
@@ -53,5 +54,5 @@ export const useLogout = () => {
     } catch {
       // signOut failure doesn't affect local logout — Redux and localStorage are already cleared
     }
-  };
+  }, [dispatch, navigate, accounts, activeAccountId]);
 };

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { useUpdateDraw } from '../../hooks/useAdmin';
+import { apiErrorMessage } from '../../../../shared/utils/apiError';
 import type { Draw } from '../../types/admin.types';
 
 interface Props {
@@ -30,19 +31,15 @@ interface FormValues {
 const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onError }) => {
   const updateDraw = useUpdateDraw();
 
-  const { control, handleSubmit, reset, formState: { isDirty } } = useForm<FormValues>({
-    defaultValues: { name: '', prize_amount: '', draw_date: '' },
+  // `values` reactively resets the form whenever `draw` changes (RHF v7 pattern).
+  // This replaces the reset-in-effect pattern which caused a one-frame stale display on open.
+  const { control, handleSubmit, formState: { isDirty } } = useForm<FormValues>({
+    values: draw
+      ? { name: draw.name, prize_amount: String(draw.prize_amount), draw_date: draw.draw_date.slice(0, 10) }
+      : { name: '', prize_amount: '', draw_date: '' },
+    // A background refetch of the entity must never wipe what the user is typing.
+    resetOptions: { keepDirtyValues: true },
   });
-
-  useEffect(() => {
-    if (draw) {
-      reset({
-        name: draw.name,
-        prize_amount: String(draw.prize_amount),
-        draw_date: draw.draw_date.slice(0, 10),
-      });
-    }
-  }, [draw, reset]);
 
   const onSubmit = async (values: FormValues) => {
     if (!draw) return;
@@ -55,8 +52,8 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
       await updateDraw.mutateAsync({ drawId: draw.id, data: payload });
       onSuccess();
       onClose();
-    } catch (e: any) {
-      onError(e?.response?.data?.message ?? 'Failed to update campaign');
+    } catch (e: unknown) {
+      onError(apiErrorMessage(e, 'Failed to update campaign'));
     }
   };
 

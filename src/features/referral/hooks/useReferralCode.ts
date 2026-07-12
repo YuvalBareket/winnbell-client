@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { resolveReferralCode } from '../api/referral.service';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 
 /**
  * Hook to resolve a referral code and fetch the referrer's name for social proof.
@@ -7,7 +8,7 @@ import { resolveReferralCode } from '../api/referral.service';
  */
 export const useReferralCode = (code: string | null) => {
   return useQuery({
-    queryKey: ['referralCode', code],
+    queryKey: queryKeys.referral.code(code),
     queryFn: async () => {
       if (!code) return null;
       try {

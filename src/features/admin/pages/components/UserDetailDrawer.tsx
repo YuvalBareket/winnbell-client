@@ -193,7 +193,7 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                         <TableCell>
                           {e.is_quarantined ? (
                             <Chip
-                              label={QUARANTINE_LABELS[e.quarantine_reason] ?? 'Quarantined'}
+                              label={QUARANTINE_LABELS[e.quarantine_reason ?? ''] ?? 'Quarantined'}
                               size='small'
                               color={e.quarantine_reason === 'ocr_pending' ? 'warning' : 'error'}
                             />

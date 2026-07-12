@@ -1,4 +1,4 @@
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import {
   fetchBusinesses,
   fetchActiveDraws,
@@ -56,6 +56,7 @@ export const useAdminBusinesses = (params: { limit: number; search: string }) =>
     getNextPageParam: (lastPage) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     staleTime: 2 * 60_000,
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -135,8 +136,8 @@ export const usePickWinner = () => {
     onSuccess: (_, { drawId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draw-candidate', drawId] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draw-rejected', drawId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawCandidate(drawId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawRejected(drawId) });
     },
   });
 };
@@ -148,7 +149,8 @@ export const useConfirmWinner = () => {
     onSuccess: (_, drawId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draw-candidate', drawId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawCandidate(drawId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.draws.result(drawId) });
     },
   });
 };
@@ -183,7 +185,7 @@ export const useAdminUsers = (params: {
   riskLevel: string;
 }) => {
   return useInfiniteQuery({
-    queryKey: [...queryKeys.admin.users, { search: params.search, role: params.role, riskLevel: params.riskLevel, limit: params.limit }],
+    queryKey: [...queryKeys.admin.users, params.limit ?? null, params.search ?? '', params.role ?? '', params.riskLevel ?? ''],
     queryFn: async ({ pageParam }) => {
       const { data } = await fetchAllUsers({
         page: pageParam as number,
@@ -198,6 +200,7 @@ export const useAdminUsers = (params: {
     getNextPageParam: (lastPage: AdminUsersPage) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -209,7 +212,7 @@ export const useSetUserRisk = () => {
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.overview });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'user-detail', userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.userDetail(userId) });
     },
   });
 };
@@ -234,7 +237,7 @@ type DrawBusinessesPage = { rows: DrawBusinessRow[]; total: number };
 
 export const useDrawBusinesses = (drawId: number | null, search = '', sector = '') => {
   return useInfiniteQuery({
-    queryKey: ['admin', 'draw-businesses', drawId, search, sector],
+    queryKey: queryKeys.admin.drawBusinesses(drawId, search, sector),
     queryFn: async ({ pageParam = 1 }) => {
       const { data } = await fetchDrawBusinesses(drawId!, pageParam as number, search, sector);
       return data as DrawBusinessesPage;
@@ -246,6 +249,7 @@ export const useDrawBusinesses = (drawId: number | null, search = '', sector = '
     initialPageParam: 1,
     enabled: drawId !== null,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -263,7 +267,7 @@ export const useToggleUserActive = () => {
 
 export const useAdminAnalytics = (businessId?: number | null, drawId?: number | null) => {
   return useQuery({
-    queryKey: ['admin', 'analytics', businessId ?? null, drawId ?? null],
+    queryKey: queryKeys.admin.analytics(businessId ?? null, drawId ?? null),
     queryFn: async () => {
       const { data } = await fetchAdminAnalytics(businessId, drawId);
       return data as AdminAnalytics;
@@ -274,7 +278,7 @@ export const useAdminAnalytics = (businessId?: number | null, drawId?: number | 
 
 export const usePlatformSettings = () => {
   return useQuery({
-    queryKey: ['admin', 'platform-settings'],
+    queryKey: queryKeys.admin.platformSettings,
     queryFn: async () => {
       const { data } = await fetchPlatformSettings();
       return data;
@@ -293,7 +297,7 @@ export const useSavePlatformSettings = () => {
       founding_phase_active?: boolean;
     }) => savePlatformSettings(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'platform-settings'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.platformSettings });
     },
   });
 };
@@ -305,7 +309,7 @@ export const useLocationBreakdown = (params: {
   limit: number;
 }) => {
   return useQuery({
-    queryKey: ['admin', 'locations', params.businessId ?? null, params.search, params.page, params.limit],
+    queryKey: queryKeys.admin.locations(params.businessId, params.search, params.page, params.limit),
     queryFn: async () => {
       const { data } = await fetchLocationBreakdown(params);
       return data as LocationBreakdownPage;
@@ -338,12 +342,43 @@ export const useDeleteDraw = () => {
   });
 };
 
+// Minimal types for the fields actually consumed by UserDetailDrawer
+type AdminUserDetail = {
+  id: number;
+  full_name: string | null;
+  email: string;
+  role: string;
+  is_active: boolean;
+  is_email_verified: boolean;
+  risk_score: number;
+  risk_flags: string[];
+  risk_last_flagged_at: string | null;
+  business_name: string | null;
+  created_at: string;
+  [key: string]: unknown;
+};
+
+type AdminUserEntry = {
+  id: number;
+  draw_name: string | null;
+  business_name: string | null;
+  entry_source: string;
+  activated_at: string | null;
+  is_quarantined: boolean;
+  quarantine_reason: string | null;
+  receipt_image_url: string | null;
+  image_validation_status: string | null;
+  risk_score_delta: number;
+  risk_flags: string[];
+  [key: string]: unknown;
+};
+
 export const useUserDetail = (userId: number | null) => {
   return useQuery({
-    queryKey: ['admin', 'user-detail', userId],
+    queryKey: queryKeys.admin.userDetail(userId),
     queryFn: async () => {
       const { data } = await fetchUserDetail(userId!);
-      return data as { user: any; entries: any[] };
+      return data as { user: AdminUserDetail; entries: AdminUserEntry[] };
     },
     enabled: userId !== null,
     staleTime: 30_000,
@@ -352,7 +387,7 @@ export const useUserDetail = (userId: number | null) => {
 
 export const useEntryVolume = (drawId?: number | null, businessId?: number | null) => {
   return useQuery({
-    queryKey: ['admin', 'entry-volume', drawId ?? null, businessId ?? null],
+    queryKey: queryKeys.admin.entryVolume(drawId, businessId),
     queryFn: async () => {
       const { data } = await fetchEntryVolume({ drawId, businessId });
       return data as { date: string; count: number }[];
@@ -363,7 +398,7 @@ export const useEntryVolume = (drawId?: number | null, businessId?: number | nul
 
 export const useCampaignComparison = () => {
   return useQuery({
-    queryKey: ['admin', 'campaign-comparison'],
+    queryKey: queryKeys.admin.campaignComparison,
     queryFn: async () => {
       const { data } = await fetchCampaignComparison();
       return data as {
@@ -392,7 +427,8 @@ export const useAddBusinessToDraw = () => {
     mutationFn: ({ drawId, businessId }: { drawId: number; businessId: number }) =>
       addBusinessToDraw(drawId, businessId),
     onSuccess: (_, { drawId }) => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draw-businesses', drawId] });
+      // Prefix-invalidate all variants of draw-businesses for this drawId
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawBusinessesAll(drawId) });
     },
   });
 };
@@ -403,7 +439,8 @@ export const useRemoveBusinessFromDraw = () => {
     mutationFn: ({ drawId, businessId }: { drawId: number; businessId: number }) =>
       removeBusinessFromDraw(drawId, businessId),
     onSuccess: (_, { drawId }) => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'draw-businesses', drawId] });
+      // Prefix-invalidate all variants of draw-businesses for this drawId
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawBusinessesAll(drawId) });
     },
   });
 };
@@ -414,22 +451,72 @@ export const useAdminImageDecision = (onSettled?: () => void) => {
     mutationFn: ({ ticketId, decision }: { ticketId: number; decision: 'approve' | 'reject' }) =>
       adminImageDecision(ticketId, decision),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'user-detail'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'business-detail'] });
+      // Prefix-invalidate all user-detail and business-detail variants (no id = broad match)
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.userDetailAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businessDetailAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
       onSettled?.();
     },
   });
 };
 
+// Minimal types for the fields actually consumed by BusinessDetailDrawer
+type AdminBusinessDetail = {
+  name: string;
+  sector: string;
+  description: string | null;
+  logo_url: string | null;
+  subscription_status: string | null;
+  in_open_draw: boolean;
+  entry_mode: string | null;
+  fee_at_entry: number | null;
+  entries_per_location: number | null;
+  min_transaction_amount: number | null;
+  created_at: string;
+  owner_name: string | null;
+  owner_email: string | null;
+  owner_is_active: boolean;
+  owner_risk_score: number;
+  owner_risk_flags: string[];
+  [key: string]: unknown;
+};
+
+type AdminBusinessLocation = {
+  id: number;
+  name: string;
+  address: string | null;
+  is_active: boolean;
+  activated_tickets: number;
+  quarantined_tickets: number;
+  [key: string]: unknown;
+};
+
+type AdminBusinessEntry = {
+  id: number;
+  draw_name: string | null;
+  user_name: string | null;
+  user_email: string | null;
+  location_name: string | null;
+  location_id: number | null;
+  entry_source: string;
+  transaction_amount: number | null;
+  activated_at: string | null;
+  is_quarantined: boolean;
+  quarantine_reason: string | null;
+  receipt_image_url: string | null;
+  image_validation_status: string | null;
+  risk_score_delta: number;
+  [key: string]: unknown;
+};
+
 export const useBusinessDetail = (businessId: number | null) => {
   return useQuery({
-    queryKey: ['admin', 'business-detail', businessId],
+    queryKey: queryKeys.admin.businessDetail(businessId),
     queryFn: async () => {
       const { data } = await fetchBusinessDetail(businessId!);
       return data as {
-        business: any;
-        locations: any[];
+        business: AdminBusinessDetail;
+        locations: AdminBusinessLocation[];
         campaignSummary: { draw_id: number; draw_name: string; count: number; quarantined: number }[];
       };
     },
@@ -440,10 +527,10 @@ export const useBusinessDetail = (businessId: number | null) => {
 
 export const useBusinessEntries = (businessId: number | null, drawId: number | null, page: number) => {
   return useQuery({
-    queryKey: ['admin', 'business-entries', businessId, drawId, page],
+    queryKey: queryKeys.admin.businessEntries(businessId, drawId, page),
     queryFn: async () => {
       const { data } = await fetchBusinessEntries(businessId!, drawId, page);
-      return data as { rows: any[]; total: number };
+      return data as { rows: AdminBusinessEntry[]; total: number };
     },
     enabled: businessId !== null,
     staleTime: 30_000,
@@ -456,14 +543,14 @@ export const useSendNotification = () => {
     mutationFn: (data: { title: string; body: string; url?: string; audience: 'all' | 'users' | 'businesses' }) =>
       sendNotification(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-history'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.notificationHistory });
     },
   });
 };
 
 export const useNotificationHistory = () => {
   return useQuery({
-    queryKey: ['admin', 'notification-history'],
+    queryKey: queryKeys.admin.notificationHistory,
     queryFn: async () => {
       const { data } = await fetchNotificationHistory();
       return data as {
@@ -482,7 +569,7 @@ export const useNotificationHistory = () => {
 
 export const useDrawCandidate = (drawId: number | null) => {
   return useQuery({
-    queryKey: ['admin', 'draw-candidate', drawId],
+    queryKey: queryKeys.admin.drawCandidate(drawId),
     queryFn: async () => {
       const { data } = await fetchDrawCandidate(drawId!);
       return data;
@@ -494,7 +581,7 @@ export const useDrawCandidate = (drawId: number | null) => {
 
 export const useDrawRejectedWinners = (drawId: number | null) => {
   return useQuery({
-    queryKey: ['admin', 'draw-rejected', drawId],
+    queryKey: queryKeys.admin.drawRejected(drawId),
     queryFn: async () => {
       const { data } = await fetchDrawRejectedWinners(drawId!);
       return data as {
@@ -524,10 +611,10 @@ export const useDrawRejectedWinners = (drawId: number | null) => {
 
 export const useDrawAuditLog = (drawId: number | null) => {
   return useQuery({
-    queryKey: ['admin', 'draw-audit', drawId],
+    queryKey: queryKeys.admin.drawAudit(drawId),
     queryFn: async () => {
       const { data } = await fetchDrawAuditLog(drawId!);
-      return data as { id: number; action: string; metadata: any; created_at: string }[];
+      return data as { id: number; action: string; metadata: unknown; created_at: string }[];
     },
     enabled: drawId !== null,
     staleTime: 10_000,
@@ -536,7 +623,7 @@ export const useDrawAuditLog = (drawId: number | null) => {
 
 export const useGrowthAnalytics = () => {
   return useQuery({
-    queryKey: ['admin', 'growth-analytics'],
+    queryKey: queryKeys.admin.growthAnalytics,
     queryFn: async () => {
       const { data } = await fetchGrowthAnalytics();
       return data as GrowthAnalytics;

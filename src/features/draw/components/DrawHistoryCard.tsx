@@ -6,6 +6,7 @@ import {
   CalendarToday, ConfirmationNumberOutlined, EmojiEventsOutlined, HourglassEmptyOutlined, ArticleOutlined,
 } from '@mui/icons-material';
 import { formatCurrency, formatDateShort } from '../../../shared/utils/date';
+import { winnerFirstName as sharedWinnerFirstName } from '../../../shared/utils/string';
 import {
   PRIMARY_MAIN,
   TEXT_SECONDARY,
@@ -23,7 +24,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
   const isClosed = draw.status?.toLowerCase() === 'closed';
   const isOpen = draw.status?.toLowerCase() === 'open';
 
-  const winnerFirstName = draw.winner_name ? draw.winner_name.split(' ')[0] : '';
+  const winnerFirstName = sharedWinnerFirstName(draw.winner_name, '');
 
   // Determine accent color based on state
   let accentColor = '#10b981'; // Default green for winner

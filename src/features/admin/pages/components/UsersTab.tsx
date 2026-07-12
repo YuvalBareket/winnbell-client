@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -42,6 +42,7 @@ import {
   useToggleUserActive,
   useSetUserRisk,
 } from '../../hooks/useAdmin';
+import { useDebounce } from '../../../../shared/hooks/useDebounce';
 import type { AdminUser } from '../../types/admin.types';
 import { BG_PAGE } from '../../../../shared/colors';
 import UserDetailDrawer from './UserDetailDrawer';
@@ -69,20 +70,13 @@ interface Props {
 
 const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) => {
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
   const [role, setRole] = useState('');
   const [riskLevel, setRiskLevel] = useState('');
   const [riskConfirmUser, setRiskConfirmUser] = useState<{ id: number; name: string; action: 'disqualify' | 'clear' } | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [search]);
 
   const {
     data,

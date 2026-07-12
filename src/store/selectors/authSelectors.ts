@@ -75,3 +75,8 @@ export const selectAuthLoading = createSelector(
   [selectAuthState],
   (auth) => auth.loading,
 );
+
+export const selectUserLocation = createSelector(
+  [selectAuthState],
+  (auth) => auth.userLocation,
+);

@@ -1,4 +1,4 @@
-import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import { Box, Button, CircularProgress, Stack, Typography, IconButton, useMediaQuery } from '@mui/material';
 import { CloudUpload, UndoOutlined, DeleteOutlineOutlined, RemoveRounded, AddRounded, EditOutlined, PanToolOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -41,6 +41,9 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
   hideToolbar = false,
   onPathCountChange,
 }, ref) => {
+  // imgFile and onPathCountChange are passed directly into the hook:
+  //   - imgFile: hook mirrors the controlled prop instead of owning state (2.2)
+  //   - onPathCountChange: hook invokes via ref at mutation sites, no notify effect needed (2.17)
   const {
     canvasRef,
     fileInputRef,
@@ -58,7 +61,7 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
     handleUndo,
     handleClearAll,
     getAnnotatedBlob,
-  } = useCanvasAnnotation();
+  } = useCanvasAnnotation(imgFile, onPathCountChange);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -67,16 +70,6 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
   // one-finger-draw / two-finger-pan trick). 'any-pointer: fine' stays true on touchscreen
   // laptops with a mouse, unlike 'pointer: coarse' which reports the primary pointer only.
   const hasFinePointer = useMediaQuery('(any-pointer: fine)');
-
-  // Sync controlled prop into hook state
-  useEffect(() => {
-    setImgFile(imgFile);
-  }, [imgFile, setImgFile]);
-
-  // Let a parent that renders its own toolbar know when Undo/Clear should be enabled.
-  useEffect(() => {
-    onPathCountChange?.(pathCount);
-  }, [pathCount, onPathCountChange]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.files?.[0] ?? null;

@@ -5,9 +5,10 @@ import {
   Checkbox, FormControlLabel, useMediaQuery, useTheme, Snackbar,
 } from '@mui/material';
 import {
-  ArrowBackIosNew, ConfirmationNumber, Mail, Lock, Visibility, VisibilityOff,
-  Login, Google, Storefront, EmojiEvents, CardGiftcard,
+  ArrowBackIosNew, Mail, Lock, Visibility, VisibilityOff,
+  Login, Google,
 } from '@mui/icons-material';
+import AuthBrandPanel from '../components/AuthBrandPanel';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../../../shared/lib/supabase';
@@ -16,67 +17,11 @@ import { useAppSelector } from '../../../store/hook';
 import { selectIsAuthenticated, selectIsAdmin, selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import {
   BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
-  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
   GOOGLE_BLUE, SHADOW_GOOGLE, SHADOW_NEUTRAL_SOFT,
 } from '../../../shared/colors';
 import {
   staggerContainer, popIn, riseIn,
 } from '../../../shared/motion';
-
-// ─── Shared brand panel for desktop ─────────────────────────────────────────
-
-const BrandPanel = () => (
-  <Box
-    sx={{
-      width: '50%',
-      background: GRADIENT_HERO,
-      display: { xs: 'none', md: 'flex' },
-      flexDirection: 'column',
-      justifyContent: 'center',
-      p: 6,
-      color: 'white',
-      position: 'relative',
-      overflow: 'hidden',
-    }}
-  >
-    {/* Decorative orbs */}
-    <Box sx={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(60px)' }} />
-    <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: 'rgba(66,165,245,0.2)', filter: 'blur(50px)' }} />
-
-    {/* Logo */}
-    <Stack direction='row' alignItems='center' spacing={1.5} mb={5}>
-      <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: ALPHA_WHITE_20, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <ConfirmationNumber sx={{ fontSize: 24 }} />
-      </Box>
-      <Typography variant='h5' fontWeight={900} letterSpacing={-0.5}>Winnbell</Typography>
-    </Stack>
-
-    {/* Headline */}
-    <Typography variant='h3' fontWeight={900} lineHeight={1.15} mb={2}>
-      Real Prizes.<br />Every Month.
-    </Typography>
-    <Typography variant='body1' sx={{ opacity: 0.8, mb: 5, lineHeight: 1.7, maxWidth: 340 }}>
-      Join thousands of members supporting local businesses and competing for real monthly prizes. No purchase necessary.
-    </Typography>
-
-    {/* Feature bullets */}
-    <Stack spacing={2.5}>
-      {[
-        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local businesses' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your free weekly entry - no purchase needed' },
-        { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
-      ].map((item, i) => (
-        <Stack key={i} direction='row' alignItems='center' spacing={1.5}>
-          <Box sx={{ width: 34, height: 34, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            {item.icon}
-          </Box>
-          <Typography variant='body2' fontWeight={600} sx={{ opacity: 0.9 }}>{item.text}</Typography>
-        </Stack>
-      ))}
-    </Stack>
-
-  </Box>
-);
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
@@ -391,7 +336,7 @@ const LoginPage = () => {
   if (isDesktop) {
     return (
       <Box sx={{ display: 'flex', height: 'var(--dvh100, 100dvh)', overflow: 'hidden' }}>
-        <BrandPanel />
+        <AuthBrandPanel />
 
         {/* Right: form panel */}
         <Box

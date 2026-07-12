@@ -11,22 +11,14 @@ import {
   Lock, LockOpen, WorkspacePremium, Edit, SwapHoriz, CreditCard,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { isAxiosError } from 'axios';
 import { PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
+import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSkipCampaign } from '../hooks/useSubscription';
 import { updatePaymentMethodApi } from '../api/subscription.api';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
 import { TIER_MAP } from './components/subscribeTiers';
 import PlanCards from './components/PlanCards';
-
-// Extract the server's error text from an unknown thrown value, with a fallback. Reads both
-// conventions the API uses: `{ error }` (stripe/subscription routes) and `{ message }`
-// (business/location routes), so a real reason is always surfaced when one exists.
-const apiErrorMessage = (err: unknown, fallback: string): string => {
-  const data = isAxiosError(err) ? (err.response?.data as { error?: string; message?: string } | undefined) : undefined;
-  return data?.error ?? data?.message ?? fallback;
-};
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   Active:     { bg: 'rgba(46,125,50,0.1)',   color: '#2e7d32' },
@@ -66,25 +58,8 @@ export default function SubscriptionManagementPage() {
   const { data: sub, isLoading, isError } = useSubscription();
   const { data: invoices, isLoading: invoicesLoading } = useSubscriptionInvoices();
 
-  const { mutate: doCancel, isPending: cancelling } = useCancelSubscription({
-    onSuccess: (data) => {
-      setCancelResult(data);
-      setConfirmOpen(false);
-    },
-    onError: (err) => {
-      setCancelError(err.response?.data?.error ?? 'Cancellation failed. Please try again.');
-      setConfirmOpen(false);
-    },
-  });
-
-  const { mutate: doResume, isPending: resuming } = useResumeSubscription({
-    onSuccess: () => {
-      setCancelResult(null);
-    },
-    onError: (err) => {
-      setCancelError(err.response?.data?.error ?? 'Could not resume subscription. Please try again.');
-    },
-  });
+  const { mutate: doCancel, isPending: cancelling } = useCancelSubscription();
+  const { mutate: doResume, isPending: resuming } = useResumeSubscription();
 
   const { mutate: doUpdatePlan, isPending: updatingPlan } = useUpdateSubscriptionPlan();
   const { mutate: doSkipCampaign, isPending: skippingCampaign } = useSkipCampaign();
@@ -530,7 +505,10 @@ export default function SubscriptionManagementPage() {
                               color='primary'
                               size='large'
                               startIcon={resuming ? undefined : <CheckCircle />}
-                              onClick={() => doResume()}
+                              onClick={() => doResume(undefined, {
+                                onSuccess: () => setCancelResult(null),
+                                onError: (err) => { setCancelError(err.response?.data?.error ?? 'Could not resume subscription. Please try again.'); },
+                              })}
                               disabled={resuming}
                               sx={{ borderRadius: 2, fontWeight: 700, py: 1.75 }}
                             >
@@ -1060,7 +1038,10 @@ export default function SubscriptionManagementPage() {
             Keep {sub.is_founding ? 'Membership' : 'Subscription'}
           </Button>
           <Button
-            onClick={() => doCancel()}
+            onClick={() => doCancel(undefined, {
+              onSuccess: (data) => { setCancelResult(data); setConfirmOpen(false); },
+              onError: (err) => { setCancelError(err.response?.data?.error ?? 'Cancellation failed. Please try again.'); setConfirmOpen(false); },
+            })}
             color='error'
             variant='contained'
             disabled={cancelling}

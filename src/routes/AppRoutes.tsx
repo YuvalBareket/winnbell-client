@@ -1,5 +1,5 @@
-import { useEffect, useState, lazy, Suspense, type ReactNode } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, lazy, Suspense, type ReactNode } from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import ErrorBoundary from '../shared/components/ErrorBoundary';
 
@@ -75,7 +75,6 @@ const branded = (node: ReactNode) => (
 );
 
 const AppRoutes = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const isUser = useAppSelector(selectIsRegularUser);
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
@@ -92,13 +91,16 @@ const AppRoutes = () => {
   const { syncError, isLoaded, isSignedIn } = useSupabaseSync(retryCount);
   const retry = () => setRetryCount(c => c + 1);
 
-  // Redirect new business owners to setup after registration
+  // One-shot redirect: when a signed-in owner still needs business setup (flag just synced),
+  // send them to the wizard. Deliberately an EFFECT keyed on the flags, not a render-time
+  // route wall: after redirecting, the owner may still open legal pages linked from the
+  // wizard (/business-agreement etc.) without being bounced back in a loop.
+  const navigate = useNavigate();
   useEffect(() => {
     if (isAuthenticated && requiresBusinessSetup) {
       navigate('/partner/setup-business', { replace: true });
     }
   }, [isAuthenticated, requiresBusinessSetup, navigate]);
-
 
   const routeFallback = (
     <Box sx={{ py: 8, textAlign: 'center' }}>

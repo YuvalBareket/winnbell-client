@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -34,8 +34,12 @@ const SettingsTab: React.FC = () => {
   const [foundingActive, setFoundingActive] = useState<boolean>(true);
   const [foundingCapError, setFoundingCapError] = useState('');
 
+  // Seed the form ONCE from the first server payload. Without the guard, any background
+  // refetch of platformSettings re-fired this and silently wiped unsaved admin edits mid-typing.
+  const didInitForm = useRef(false);
   useEffect(() => {
-    if (platformSettings) {
+    if (platformSettings && !didInitForm.current) {
+      didInitForm.current = true;
       setLocalAllowedStates(platformSettings.allowed_states ?? []);
       setFoundingCap(platformSettings.founding_member_cap ?? 30);
       setFoundingActive(platformSettings.founding_phase_active ?? true);

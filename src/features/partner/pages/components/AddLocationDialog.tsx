@@ -18,9 +18,10 @@ import AddressAutoComplete from '../../../../shared/components/AddressAutoComple
 import {
   GRADIENT_HERO, GRADIENT_PRIMARY, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
   PRIMARY_MAIN, PRIMARY_LIGHT, ALPHA_PRIMARY_04, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10, ALPHA_PRIMARY_20,
-  TEXT_SECONDARY, TEXT_TERTIARY, TEXT_HEADING, BORDER_SUBTLE, BG_SUBTLE,
+  TEXT_SECONDARY, TEXT_TERTIARY, TEXT_HEADING, BORDER_SUBTLE,
   SHADOW_PRIMARY_SOFT, SHADOW_CARD,
 } from '../../../../shared/colors';
+import { locationFieldSx as fieldSx } from '../../shared/locationFieldSx';
 // All color/gradient/shadow values above are theme tokens — no hardcoded colors in this component.
 
 interface AddLocationFormValues {
@@ -48,31 +49,6 @@ interface AddLocationDialogProps {
 }
 
 const MotionBox = motion(Box);
-
-// Refined premium TextField styling shared across fields
-const fieldSx = {
-  '& .MuiOutlinedInput-root': {
-    bgcolor: BG_SUBTLE,
-    transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
-    '& fieldset': {
-      borderColor: BORDER_SUBTLE,
-      transition: 'border-color 0.2s ease',
-    },
-    '&:hover': {
-      bgcolor: '#ffffff',
-      '& fieldset': { borderColor: ALPHA_PRIMARY_20 },
-    },
-    '&.Mui-focused': {
-      bgcolor: '#ffffff',
-      boxShadow: `0 0 0 4px ${ALPHA_PRIMARY_06}`,
-      '& fieldset': { borderColor: PRIMARY_MAIN, borderWidth: 1.5 },
-    },
-  },
-  '& .MuiInputLabel-root': {
-    fontWeight: 600,
-    '&.Mui-focused': { color: PRIMARY_MAIN, fontWeight: 700 },
-  },
-} as const;
 
 const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
   open,
@@ -116,7 +92,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({
           borderRadius: 3, overflow: 'hidden', m: { xs: 1.5, sm: 4 },
           // Header stays fixed; the form body scrolls when the content (fields + plan
           // card) is taller than the viewport, instead of squeezing and clipping.
-          maxHeight: { xs: 'calc(var(--dvh100, 100dvh) - 24px)', sm: '90dvh' },
+          maxHeight: { xs: 'calc(var(--dvh100, 100dvh) - 24px)', sm: 'calc(var(--dvh100, 100dvh) * 0.9)' },
           display: 'flex', flexDirection: 'column',
         },
       }}

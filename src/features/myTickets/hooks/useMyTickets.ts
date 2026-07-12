@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { getMyTickets } from '../api/myTickets.api';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
@@ -21,9 +22,14 @@ export const useMyTickets = (draw_id: number, location_id?: number) => {
 
   const lastPage = query.data?.pages[query.data.pages.length - 1];
 
+  const tickets = useMemo(
+    () => query.data?.pages.flatMap((p) => p.tickets) ?? [],
+    [query.data],
+  );
+
   return {
     ...query,
-    tickets: query.data?.pages.flatMap((p) => p.tickets) ?? [],
+    tickets,
     totalCount: lastPage?.totalCount ?? 0,
     cap: lastPage?.cap ?? null,
     perLocationCap: lastPage?.perLocationCap ?? null,
