@@ -7,7 +7,7 @@ import { store, persistor } from './store/store'; // Import persistor
 import { theme } from './shared/theme';
 import AppRoutes from './routes/AppRoutes';
 import ErrorBoundary from './shared/components/ErrorBoundary';
-// import AccessGate from './shared/components/AccessGate';
+import AccessGate from './shared/components/AccessGate';
 
 // Top-level error boundary that resets on navigation, so a transient render error
 // recovers when the user moves to another route instead of forcing a page refresh.
@@ -18,7 +18,8 @@ function RootBoundary({ children }: { children: ReactNode }) {
 
 function App() {
   return (
-    // <AccessGate>
+    // Renders straight through unless this is the production build (VITE_APP_ENV=production)
+    <AccessGate>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <ThemeProvider theme={theme}>
@@ -31,7 +32,7 @@ function App() {
           </ThemeProvider>
         </PersistGate>
       </Provider>
-    // </AccessGate>
+    </AccessGate>
   );
 }
 

@@ -1,22 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
+import { motion } from 'framer-motion';
 import { PRIMARY_MAIN } from '../colors';
 
 const STORAGE_KEY = 'wb_access_granted';
 const PASSWORD = import.meta.env.VITE_ACCESS_PASSWORD as string;
+// The gate engages only on the production build (VITE_APP_ENV=production is set only in
+// the Vercel production env). Staging/dev builds render straight through. The password
+// guard prevents an unopenable gate if the env var combo is ever misconfigured.
+const GATE_ACTIVE = import.meta.env.VITE_APP_ENV === 'production' && !!PASSWORD;
 
 export default function AccessGate({ children }: { children: React.ReactNode }) {
-  const [granted, setGranted] = useState(true);
+  const [granted, setGranted] = useState(
+    () => !GATE_ACTIVE || localStorage.getItem(STORAGE_KEY) === 'true',
+  );
   const [showInput, setShowInput] = useState(false);
   const [input, setInput] = useState('');
   const [error, setError] = useState(false);
   const [clickCount, setClickCount] = useState(0);
-
-  useEffect(() => {
-    if (localStorage.getItem(STORAGE_KEY) === 'true') {
-      setGranted(true);
-    }
-  }, []);
 
   if (granted) return <>{children}</>;
 
@@ -80,7 +81,10 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
       {/* Hidden password field - revealed on triple-click of "404" */}
       {showInput && (
         <Box
-          component="form"
+          component={motion.form}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
           onSubmit={handleSubmit}
           sx={{
             mt: 5,
