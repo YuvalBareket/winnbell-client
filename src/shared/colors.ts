@@ -49,6 +49,16 @@ export const STATUS_ACTIVATED_TEXT = '#2e7d32';
 export const STATUS_PENDING_BG     = '#fff3e0';
 export const STATUS_PENDING_TEXT   = '#e65100';
 
+// ── Error / Danger (red) ─────────────────────
+export const ERROR_MAIN            = '#d32f2f';
+export const ERROR_LIGHT           = '#ef5350';
+export const ERROR_BG_SUBTLE       = 'rgba(211, 47, 47, 0.02)';
+export const ERROR_ICON_BG         = 'rgba(211, 47, 47, 0.1)';
+export const ERROR_BORDER_LIGHT    = 'rgba(211, 47, 47, 0.3)';
+export const ERROR_BORDER_STRONG   = 'rgba(211, 47, 47, 0.5)';
+export const ERROR_BORDER          = 'rgba(211, 47, 47, 0.2)';
+export const ERROR_HOVER_BG        = 'rgba(211, 47, 47, 0.05)';
+
 // ── Neutral UI ───────────────────────────────
 export const NEUTRAL_INACTIVE_BG   = '#e0e0e0'; // inactive nav FAB
 export const NEUTRAL_INACTIVE_ICON = '#9e9e9e'; // inactive nav icon

@@ -21,11 +21,11 @@ import {
 const StatCard = ({ icon, tint, iconColor, label, value, valueColor, hideOnMobile }: {
   icon: React.ReactNode; tint: string; iconColor: string; label: string; value: string; valueColor?: string; hideOnMobile?: boolean;
 }) => (
-  <Box sx={{ flex: 1, minWidth: 0, display: hideOnMobile ? { xs: 'none', md: 'flex' } : 'flex', alignItems: 'center', gap: 1.75, bgcolor: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, borderRadius: '16px', p: '16px 18px', boxShadow: SHADOW_CARD }}>
-    <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: tint, color: iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</Box>
+  <Box sx={{ flex: 1, minWidth: 0, display: hideOnMobile ? { xs: 'none', md: 'flex' } : 'flex', alignItems: 'center', gap: { xs: 1.25, md: 1.75 }, bgcolor: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, borderRadius: '16px', p: { xs: '12px 14px', md: '16px 18px' }, boxShadow: SHADOW_CARD }}>
+    <Box sx={{ width: { xs: 38, md: 44 }, height: { xs: 38, md: 44 }, borderRadius: '12px', bgcolor: tint, color: iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, '& svg': { fontSize: { xs: 18, md: 22 } } }}>{icon}</Box>
     <Box sx={{ minWidth: 0 }}>
       <Typography sx={{ color: TEXT_TERTIARY, fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</Typography>
-      <Typography noWrap sx={{ color: valueColor ?? TEXT_HEADING, fontSize: '1.35rem', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.15 }}>{value}</Typography>
+      <Typography noWrap sx={{ color: valueColor ?? TEXT_HEADING, fontSize: { xs: '1.05rem', md: '1.35rem' }, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.15 }}>{value}</Typography>
     </Box>
   </Box>
 );

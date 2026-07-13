@@ -24,10 +24,26 @@ interface Props {
 
 type Step = 'phone' | 'otp';
 
+// Format 10 raw digits as "(555) 123-4567"
+const formatPhoneDisplay = (digits: string): string => {
+  if (digits.length === 0) return '';
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+};
+
+// Validate US phone: 10 digits, area code (digit 1) 2-9, exchange (digit 4) 2-9
+const isValidUSPhone = (digits: string): boolean => {
+  if (digits.length !== 10) return false;
+  const areaCode = parseInt(digits[0], 10);
+  const exchange = parseInt(digits[3], 10);
+  return areaCode >= 2 && areaCode <= 9 && exchange >= 2 && exchange <= 9;
+};
+
 const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
   const isPromo = !!pendingCode?.startsWith('PROMO');
   const [step, setStep] = useState<Step>('phone');
-  const [phone, setPhone] = useState('');
+  const [rawPhone, setRawPhone] = useState(''); // 10 digits only
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -84,9 +100,10 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
   });
 
   const handleSendCode = () => {
-    if (!phone.trim()) { setError('Please enter your phone number.'); return; }
+    if (!rawPhone.trim()) { setError('Please enter your phone number.'); return; }
+    if (!isValidUSPhone(rawPhone)) { setError('Enter a valid 10-digit US mobile number.'); return; }
     setError('');
-    sendOtpMutation.mutate(phone);
+    sendOtpMutation.mutate(`+1${rawPhone}`);
   };
 
   const handleVerifyCode = () => {
@@ -96,9 +113,9 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
   };
 
   const handleResend = () => {
-    if (resendCooldown > 0 || !phone) return;
+    if (resendCooldown > 0 || !rawPhone) return;
     setError('');
-    sendOtpMutation.mutate(phone);
+    sendOtpMutation.mutate(`+1${rawPhone}`);
   };
 
   const isLoadingStep1 = sendOtpMutation.isPending;
@@ -130,14 +147,39 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
 
             <TextField
               label='Phone number'
-              placeholder='+1 (555) 000-0000'
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              placeholder='(555) 123-4567'
+              value={formatPhoneDisplay(rawPhone)}
+              onChange={(e) => {
+                // Drop a leading country-code 1 (autofill/paste of "+1..."): a US area code
+                // can never start with 1, so this is always safe.
+                let cleaned = e.target.value.replace(/\D/g, '');
+                if (cleaned.startsWith('1')) cleaned = cleaned.slice(1);
+                setRawPhone(cleaned.slice(0, 10));
+                if (error) setError('');
+              }}
+              onPaste={(e) => {
+                e.preventDefault();
+                let pasted = e.clipboardData.getData('text').replace(/\D/g, '');
+                if (pasted.startsWith('1')) pasted = pasted.slice(1);
+                setRawPhone(pasted.slice(0, 10));
+                if (error) setError('');
+              }}
               onKeyDown={(e) => e.key === 'Enter' && handleSendCode()}
-              inputMode='tel'
+              inputMode='numeric'
+              type='tel'
+              autoComplete='tel-national'
               autoFocus
               fullWidth
-              helperText='US number or international with country code (e.g. +972...)'
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <Box sx={{ pr: 1, color: TEXT_PRIMARY, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      +1
+                    </Box>
+                  ),
+                },
+              }}
+              helperText='US mobile number only'
             />
 
             <Typography variant='caption' sx={{ color: TEXT_SECONDARY, lineHeight: 1.5, mt: 0, pb: 1.5 }}>
@@ -152,10 +194,9 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
               variant='contained'
               size='large'
               onClick={handleSendCode}
-              disabled={isLoadingStep1 || !phone.trim()}
+              disabled={isLoadingStep1}
               endIcon={!isLoadingStep1 && <ArrowForward />}
               sx={{
-                
                 py: 1.5,
                 fontWeight: 700,
                 backgroundColor: PRIMARY_MAIN,
@@ -180,7 +221,7 @@ const PhoneVerificationGate = ({ onVerified, pendingCode }: Props) => {
                 Enter verification code
               </Typography>
               <Typography variant='body2' color='text.secondary'>
-                Code sent to {phone}
+                Code sent to {formatPhoneDisplay(rawPhone)}
               </Typography>
             </Box>
 

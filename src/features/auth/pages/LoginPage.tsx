@@ -62,6 +62,13 @@ const LoginPage = () => {
       setError('Something went wrong signing you in. Please try again.');
     }
   }, [syncError, loading]);
+
+  // Terminal sync failures (deleted account) navigate to /login?deleted=1 WITHOUT setting
+  // syncError. The page is already mounted, so only the query param changes and the submit
+  // spinner would stay on forever - stop it here. The ?deleted=1 alert explains the failure.
+  useEffect(() => {
+    if (accountDeleted && loading) setLoading(false);
+  }, [accountDeleted, loading]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
