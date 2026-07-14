@@ -193,7 +193,6 @@ const PhoneVerifyForm = ({ onVerified }: Props) => {
               inputMode='numeric'
               type='tel'
               autoComplete='tel-national'
-              autoFocus
               fullWidth
               slotProps={{
                 input: {
@@ -261,7 +260,6 @@ const PhoneVerifyForm = ({ onVerified }: Props) => {
               onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
               inputMode='numeric'
-              autoFocus
               fullWidth
               slotProps={{
                 htmlInput: {
