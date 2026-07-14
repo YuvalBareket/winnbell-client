@@ -5,109 +5,27 @@ import {
   useMediaQuery, useTheme, Snackbar,
 } from '@mui/material';
 import {
-  ArrowBackIosNew, Person, Mail, Lock, Visibility, VisibilityOff,
-  Storefront, Google, ConfirmationNumber, EmojiEvents, CardGiftcard, Warning,
+  ArrowBackIosNew, ArrowForward, Person, Mail, Lock, Visibility, VisibilityOff,
+  Storefront, Google, ConfirmationNumber, EmojiEvents, CardGiftcard,
 } from '@mui/icons-material';
 import { useNavigate, useParams, useSearchParams, useLocation, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import AuthBrandPanel from '../components/AuthBrandPanel';
 import { api } from '../../../shared/api/client';
 import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsAuthenticated, selectIsAdmin, selectIsBusiness, selectIsLocationManager as selectIsLocMgr } from '../../../store/selectors/authSelectors';
 import { supabase } from '../../../shared/lib/supabase';
 import {
-  BG_PAGE, TEXT_HEADING, ROLE_MANAGER_BG, ROLE_MANAGER_HOVER, BORDER_LIGHT,
-  SHADOW_PRIMARY_SOFT, GRADIENT_HERO,
-  ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, ALPHA_PRIMARY_20,
-  GOOGLE_BLUE, SHADOW_GOOGLE, SHADOW_NEUTRAL_SOFT,
+  BG_PAGE, TEXT_HEADING, TEXT_TERTIARY, BORDER_LIGHT,
+  ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, ALPHA_WHITE_70,
+  GRADIENT_HERO, GRADIENT_HERO_WARM,
 } from '../../../shared/colors';
+import { authLabelSx, authInputSx, authCtaSx, authGoogleBtnSx } from '../components/authStyles';
 import {
   staggerContainer, popIn, riseIn,
 } from '../../../shared/motion';
 
-// ─── Shared brand panel for desktop ─────────────────────────────────────────
-
-const BrandPanel = ({ isBusinessOwner, isLocationManager }: { isBusinessOwner: boolean; isLocationManager: boolean }) => {
-  const bullets = isBusinessOwner
-    ? [
-        { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Issue entries to your customers instantly' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Run monthly campaigns effortlessly' },
-        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Grow foot traffic and customer loyalty' },
-      ]
-    : isLocationManager
-    ? [
-        { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Scan and validate customer entries' },
-        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Manage your branch operations' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Track performance and engagement' },
-      ]
-    : [
-        { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local businesses' },
-        { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your free weekly entry - no purchase needed' },
-        { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
-      ];
-
-  const headline = isBusinessOwner
-    ? 'Grow Your\nBusiness'
-    : isLocationManager
-    ? 'Manage Your\nBranch'
-    : 'Real Prizes.\nEvery Month.';
-
-  const tagline = isBusinessOwner
-    ? 'Partner with Winnbell. Customers can submit receipts at your location to earn campaign entries - bringing them back month after month.'
-    : isLocationManager
-    ? 'Complete your onboarding to start managing your branch and issuing entries.'
-    : 'Join thousands of members supporting local businesses and competing for real monthly prizes. No purchase necessary.';
-
-  return (
-    <Box
-      sx={{
-        width: '50%',
-        background: GRADIENT_HERO,
-        display: { xs: 'none', md: 'flex' },
-        flexDirection: 'column',
-        justifyContent: 'center',
-        p: 6,
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Decorative orbs */}
-      <Box sx={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, filter: 'blur(60px)' }} />
-      <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 220, height: 220, borderRadius: '50%', bgcolor: ALPHA_PRIMARY_20, filter: 'blur(50px)' }} />
-
-      {/* Logo */}
-      <Stack direction='row' alignItems='center' spacing={1.5} mb={5}>
-        <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: ALPHA_WHITE_20, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <ConfirmationNumber sx={{ fontSize: 24 }} />
-        </Box>
-        <Typography variant='h5' fontWeight={900} letterSpacing={-0.5}>Winnbell</Typography>
-      </Stack>
-
-      {/* Headline */}
-      <Typography variant='h3' fontWeight={900} lineHeight={1.15} mb={2} sx={{ whiteSpace: 'pre-line' }}>
-        {headline}
-      </Typography>
-      <Typography variant='body1' sx={{ opacity: 0.8, mb: 5, lineHeight: 1.7, maxWidth: 340 }}>
-        {tagline}
-      </Typography>
-
-      {/* Feature bullets */}
-      <Stack spacing={2.5}>
-        {bullets.map((item, i) => (
-          <Stack key={i} direction='row' alignItems='center' spacing={1.5}>
-            <Box sx={{ width: 34, height: 34, borderRadius: 2, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              {item.icon}
-            </Box>
-            <Typography variant='body2' fontWeight={600} sx={{ opacity: 0.9 }}>{item.text}</Typography>
-          </Stack>
-        ))}
-      </Stack>
-
- 
-    </Box>
-  );
-};
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
@@ -126,6 +44,7 @@ const RegisterPage = () => {
   const roleLower = role?.toLowerCase();
   const isBusinessOwner = roleLower === 'business' && !inviteToken;
   const isLocationManager = inviteToken !== null;
+  const isBusinessVariant = isBusinessOwner || isLocationManager;
 
   const { isLoaded: syncLoaded } = useSyncStatus();
   const isAuth = useAppSelector(selectIsAuthenticated);
@@ -139,10 +58,6 @@ const RegisterPage = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState(searchParams.get('syncError') ?? '');
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [ageVerified, setAgeVerified] = useState(false);
-  // Business owners sign the business agreement instead - the consumer age/residency
-  // eligibility checkbox does not apply to them.
-  const ageOk = isBusinessOwner || ageVerified;
   // Surface the same rules the submit enforces, but on blur so the user gets feedback early.
   const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({});
   const emailError = touched.email && formData.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
@@ -192,7 +107,7 @@ const RegisterPage = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { setTouched((t) => ({ ...t, email: true })); setError('Enter a valid email address.'); return; }
     if (!formData.password) { setError('Please enter a password.'); return; }
     if (formData.password.length < 8) { setTouched((t) => ({ ...t, password: true })); setError('Password must be at least 8 characters.'); return; }
-    if (!ageOk || !termsAccepted) { setError('Please confirm your eligibility and accept the terms.'); return; }
+    if (!termsAccepted) { setError('Please accept the terms to continue.'); return; }
     setLoading(true);
     setError('');
     try {
@@ -265,24 +180,24 @@ const RegisterPage = () => {
   const FormContent = () => (
     <motion.div variants={staggerContainer} initial="hidden" animate="visible">
       <Stack sx={{ zoom: { xs: 0.85, md: 0.75 } }}>
-        {/* Header */}
-        <motion.div variants={riseIn}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: isDesktop ? 'flex-start' : 'center', mb: 2 }}>
-            <Stack direction='row' alignItems='center' gap={3} mb={1}>
-              {isDesktop && (
+        {/* Header - desktop only; on mobile the gradient band above carries the title */}
+        {isDesktop && (
+          <motion.div variants={riseIn}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mb: '24px' }}>
+              <Stack direction='row' alignItems='center' gap={2} mb='6px'>
                 <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
                   <ArrowBackIosNew fontSize='small' />
                 </IconButton>
-              )}
-              <Typography variant='h4' sx={{ fontWeight: 800, color: TEXT_HEADING, textAlign: isDesktop ? 'left' : 'center' }}>
-                {roleTitle}
+                <Typography sx={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING, textAlign: 'left' }}>
+                  {roleTitle}
+                </Typography>
+              </Stack>
+              <Typography sx={{ fontSize: '14.5px', fontWeight: 500, color: TEXT_TERTIARY, textAlign: 'left' }}>
+                {roleSubtitle}
               </Typography>
-            </Stack>
-            <Typography variant='body2' color='text.secondary' sx={{ textAlign: isDesktop ? 'left' : 'center', px: isDesktop ? 0 : 2 }}>
-              {roleSubtitle}
-            </Typography>
-          </Box>
-        </motion.div>
+            </Box>
+          </motion.div>
+        )}
 
         {regionBlocked && (
           <motion.div variants={popIn}>
@@ -304,14 +219,14 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        <Stack spacing={1.5}>
+        <Stack spacing={1.75}>
           <motion.div variants={popIn}>
             <Box>
-              <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Full Name</Typography>
+              <Typography sx={authLabelSx}>Full Name</Typography>
               <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
+                sx={authInputSx}
                 InputProps={{
-                  startAdornment: (<InputAdornment position='start'><Person sx={{ color: 'text.secondary' }} /></InputAdornment>),
-                  sx: { bgcolor: 'background.paper' },
+                  startAdornment: (<InputAdornment position='start'><Person sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
                 }}
               />
             </Box>
@@ -319,13 +234,13 @@ const RegisterPage = () => {
 
           <motion.div variants={popIn}>
             <Box>
-              <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Email</Typography>
+              <Typography sx={authLabelSx}>Email</Typography>
               <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
                 onBlur={() => setTouched((t) => ({ ...t, email: true }))}
                 error={!!emailError} helperText={emailError}
+                sx={authInputSx}
                 InputProps={{
-                  startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
-                  sx: { bgcolor: 'background.paper' },
+                  startAdornment: (<InputAdornment position='start'><Mail sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
                 }}
               />
             </Box>
@@ -333,68 +248,30 @@ const RegisterPage = () => {
 
           <motion.div variants={popIn}>
             <Box>
-              <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Password</Typography>
+              <Typography sx={authLabelSx}>Password</Typography>
               <TextField fullWidth name='password' value={formData.password} onChange={handleChange}
                 onBlur={() => setTouched((t) => ({ ...t, password: true }))}
                 error={!!passwordError} helperText={passwordError}
                 type={showPassword ? 'text' : 'password'} placeholder='••••••••'
+                sx={authInputSx}
                 InputProps={{
-                  startAdornment: (<InputAdornment position='start'><Lock sx={{ color: 'text.secondary' }} /></InputAdornment>),
+                  startAdornment: (<InputAdornment position='start'><Lock sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
                   endAdornment: (
                     <InputAdornment position='end'>
                       <IconButton onClick={() => setShowPassword(!showPassword)} size='small'>
-                        {showPassword ? <VisibilityOff fontSize='small' /> : <Visibility fontSize='small' />}
+                        {showPassword ? <VisibilityOff sx={{ fontSize: 20, color: TEXT_TERTIARY }} /> : <Visibility sx={{ fontSize: 20, color: TEXT_TERTIARY }} />}
                       </IconButton>
                     </InputAdornment>
                   ),
-                  sx: { bgcolor: 'background.paper' },
                 }}
               />
-            </Box>
-          </motion.div>
-
-          <motion.div variants={popIn}>
-            <Box>
-              <Divider sx={{ mb: 2 }}>
-                <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700 }}>OR</Typography>
-              </Divider>
-              <Button
-                fullWidth
-                variant='contained'
-                startIcon={googleLoading ? <CircularProgress size={20} color='inherit' /> : <Google />}
-                onClick={() => (termsAccepted && ageOk) ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
-                disabled={googleLoading}
-                sx={{
-                  py: 1.5,
-                  textTransform: 'none',
-                  bgcolor: 'background.paper',
-                  color: 'text.primary',
-                  border: `2px solid ${GOOGLE_BLUE}`,
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  boxShadow: SHADOW_NEUTRAL_SOFT,
-                  transition: 'all 0.2s ease-in-out',
-                  opacity: 1,
-                  '&:hover': {
-                    bgcolor: 'background.paper',
-                    boxShadow: SHADOW_GOOGLE,
-                  },
-                  '&:disabled': {
-                    bgcolor: 'background.paper',
-                    color: 'text.primary',
-                    border: `2px solid ${GOOGLE_BLUE}`,
-                    opacity: 1,
-                  },
-                }}>
-                {googleLoading ? 'Signing up...' : 'Continue with Google'}
-              </Button>
             </Box>
           </motion.div>
 
           <motion.div variants={popIn}>
             <Stack spacing={1}>
               <FormControlLabel
-                sx={{ alignItems: 'flex-start', '& .MuiCheckbox-root': { pt: 0 } }}
+                sx={{ alignItems: 'flex-start', py: 1, '& .MuiCheckbox-root': { pt: 0 } }}
                 control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
                 label={
                   isBusinessOwner ? (
@@ -422,47 +299,51 @@ const RegisterPage = () => {
                       <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
                         Privacy Policy
                       </Typography>
+                      , and I confirm that I am a legal U.S. resident.
                     </Typography>
                   )
                 }
               />
 
-              {!isBusinessOwner && (
-                <>
-                  <FormControlLabel
-                    control={<Checkbox checked={ageVerified} onChange={(e) => setAgeVerified(e.target.checked)} size='small' />}
-                    label={<Typography variant='caption' color='text.secondary'>I confirm that I am 18 years of age or older and a legal U.S. resident.</Typography>}
-                  />
-
-                  <Box sx={{ pt: 0.5 }}>
-                    <Typography variant='caption' sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block' }}>
-                      <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
-                      <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
-                    </Typography>
-                  </Box>
-                </>
-              )}
             </Stack>
           </motion.div>
 
           <motion.div variants={popIn}>
-            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted || !ageOk} disableElevation
-              sx={{
-                py: 1.5, fontSize: '1rem', fontWeight: 700,
-                bgcolor: isLocationManager ? ROLE_MANAGER_BG : 'primary.main',
-                boxShadow: SHADOW_PRIMARY_SOFT,
-                '&:hover': { bgcolor: isLocationManager ? ROLE_MANAGER_HOVER : 'primary.dark' },
-              }}
+            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading} disableElevation
+              endIcon={!loading && <ArrowForward sx={{ fontSize: 18 }} />}
+              sx={authCtaSx}
             >
               {loading ? <CircularProgress size={24} color='inherit' /> : 'Create Account'}
             </Button>
           </motion.div>
 
+          <motion.div variants={popIn}>
+            <Box>
+              <Divider sx={{ mb: 2 }}>
+                <Typography sx={{ fontSize: '11px', fontWeight: 700, color: TEXT_TERTIARY, px: 1 }}>OR</Typography>
+              </Divider>
+              <Button
+                fullWidth
+                startIcon={googleLoading ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
+                onClick={() => termsAccepted ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
+                disabled={googleLoading}
+                sx={authGoogleBtnSx}>
+                {googleLoading ? 'Signing up...' : 'Continue with Google'}
+              </Button>
+            </Box>
+          </motion.div>
+
           <Box sx={{ pt: 1, textAlign: 'center' }}>
-            <Typography variant='body2' color='text.secondary' fontWeight={600}>
+            <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY }}>
               Already have an account?{' '}
-              <Typography component='span' onClick={() => navigate(addMode ? '/login?add=1' : inviteToken ? `/login/?token=${inviteToken}` : '/login')}
-                sx={{ color: 'primary.main', fontWeight: 800, cursor: 'pointer' }}>
+              <Typography component='span' onClick={() => {
+                let dest = '/login';
+                if (isBusinessVariant && !inviteToken) dest = '/login/business';
+                if (inviteToken) dest += `?token=${inviteToken}`;
+                if (addMode) dest += `${dest.includes('?') ? '&' : '?'}add=1`;
+                navigate(dest);
+              }}
+                sx={{ fontSize: '13.5px', color: 'primary.main', fontWeight: 800, cursor: 'pointer' }}>
                 Sign In
               </Typography>
             </Typography>
@@ -484,23 +365,54 @@ const RegisterPage = () => {
   // ─── Desktop layout ──────────────────────────────────────────────────────────
 
   if (isDesktop) {
+    const desktopHeadline = isBusinessOwner
+      ? <>Grow Your<br />Business</>
+      : isLocationManager
+      ? <>Manage Your<br />Branch</>
+      : <>Real Prizes.<br />Every Month.</>;
+
+    const desktopTagline = isBusinessOwner
+      ? 'Partner with Winnbell. Customers can submit receipts at your location to earn campaign entries - bringing them back month after month.'
+      : isLocationManager
+      ? 'Complete your onboarding to start managing your branch and issuing entries.'
+      : 'Join thousands of members supporting local businesses and competing for real monthly prizes. No purchase necessary.';
+
+    const desktopBullets = isBusinessOwner
+      ? [
+          { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Issue entries to your customers instantly' },
+          { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Run monthly campaigns effortlessly' },
+          { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Grow foot traffic and customer loyalty' },
+        ]
+      : isLocationManager
+      ? [
+          { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Scan and validate customer entries' },
+          { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Manage your branch operations' },
+          { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Track performance and engagement' },
+        ]
+      : [
+          { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local businesses' },
+          { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your free weekly entry - no purchase needed' },
+          { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
+        ];
+
     return (
       <Box sx={{ display: 'flex', height: 'var(--dvh100, 100dvh)', overflow: 'hidden' }}>
-        <BrandPanel isBusinessOwner={isBusinessOwner} isLocationManager={isLocationManager} />
+        <AuthBrandPanel headline={desktopHeadline} tagline={desktopTagline} bullets={desktopBullets} isBusinessVariant={isBusinessVariant} />
 
         {/* Right: form panel */}
         <Box
           sx={{
-            width: '50%',
+            flex: 1,
             overflowY: 'auto',
             bgcolor: BG_PAGE,
             display: 'flex',
             flexDirection: 'column',
             px: 7,
-            py: 5,
+            py: 6,
+            justifyContent: 'center',
           }}
         >
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 420 }}>
+          <Box sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
             {FormContent()}
           </Box>
         </Box>
@@ -509,16 +421,76 @@ const RegisterPage = () => {
     );
   }
 
-  // ─── Mobile layout (original) ────────────────────────────────────────────────
+  // ─── Mobile layout ──────────────────────────────────────────────────────────
 
   return (
     <Box sx={{ height: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
-      <Box sx={{ px: 1.5, pt: 1, pb: 0}}>
-        <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: '1px solid #E2E8F0' }}>
-          <ArrowBackIosNew fontSize='small' />
-        </IconButton>
+      {/* Gradient header band - mirrors the main layout's AppPageHero: brand row (back arrow +
+          app name) then the title block, radial glow orb (filter:blur breaks the band's
+          rounded-bottom clipping on Android). */}
+      <Box
+        sx={{
+          background: isBusinessVariant ? GRADIENT_HERO_WARM : GRADIENT_HERO,
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: '0 0 28px 28px',
+          px: 1.5,
+          pt: 'calc(env(safe-area-inset-top, 0px) + 10px)',
+          pb: 2.5,
+          // Never let the flex column squeeze the band on short screens - the page scrolls instead.
+          flexShrink: 0,
+        }}
+      >
+        {/* Glow orb */}
+        <Box sx={{ position: 'absolute', top: -110, right: -90, width: 320, height: 320, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`, pointerEvents: 'none' }} />
+
+        {/* Brand row: back arrow + app name (+ business chip) */}
+        <Stack direction='row' alignItems='center' spacing={1.25} sx={{ position: 'relative' }}>
+          <IconButton
+            onClick={() => navigate(-1)}
+            sx={{
+              width: 40, height: 40, color: 'white', bgcolor: ALPHA_WHITE_15,
+              border: `1px solid ${ALPHA_WHITE_20}`, borderRadius: '10px', flexShrink: 0,
+              '&:hover': { bgcolor: ALPHA_WHITE_30 },
+            }}
+          >
+            <ArrowBackIosNew sx={{ fontSize: 18 }} />
+          </IconButton>
+          <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 36, width: 'auto', objectFit: 'contain' }} />
+          {isBusinessVariant && (
+            <Typography
+              component='span'
+              sx={{
+                fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: ALPHA_WHITE_70, border: `1px solid ${ALPHA_WHITE_30}`, borderRadius: '5px',
+                px: 0.75, py: 0.25, lineHeight: 1.4,
+              }}
+            >
+              Business
+            </Typography>
+          )}
+        </Stack>
+
+        {/* Title block */}
+        <Box sx={{ position: 'relative', mt: 1.5, px: 1 }}>
+          <Typography variant='h5' fontWeight={700} sx={{ letterSpacing: '-0.02em' }}>
+            {addMode ? 'Add Account' : isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Partner Program' : 'Join Winnbell'}
+          </Typography>
+          <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.25 }}>
+            {addMode
+              ? 'Create a new account to add to this device.'
+              : isLocationManager
+              ? 'Complete your profile to manage your branch.'
+              : isBusinessOwner
+              ? 'Register your brand to start issuing entries.'
+              : 'Create an account to start winning.'}
+          </Typography>
+        </Box>
       </Box>
-      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 0, pb: 4 }}>
+
+      {/* Form content */}
+      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 3, pb: 4 }}>
         {FormContent()}
       </Container>
       <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />

@@ -275,7 +275,7 @@ const ResetPasswordPage = () => {
         />
         <Box
           sx={{
-            width: '50%',
+            flex: 1,
             overflowY: 'auto',
             bgcolor: BG_PAGE,
             display: 'flex',
@@ -284,7 +284,7 @@ const ResetPasswordPage = () => {
             py: 4,
           }}
         >
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400 }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400, width: '100%', mx: 'auto' }}>
             {success ? SuccessContent() : FormContent()}
           </Box>
         </Box>

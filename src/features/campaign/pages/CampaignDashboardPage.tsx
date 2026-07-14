@@ -614,7 +614,8 @@ const CampaignDashboardPage = () => {
             {noCampaign ? (
               <motion.div variants={popIn}>{isHeaderLoading ? cardSkeleton : noCampaignCard}</motion.div>
             ) : (
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '380px 1fr' }, gap: { xs: 2, md: 2.5 }, alignItems: 'start' }}>
+              // minmax(0,1fr): a plain 1fr track sizes to the entries feed's nowrap min-content and overflows the mobile viewport
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: '380px minmax(0, 1fr)' }, gap: { xs: 2, md: 2.5 }, alignItems: 'start' }}>
                 <motion.div variants={popIn}>{isHeaderLoading ? cardSkeleton : campaignCard}</motion.div>
                 <motion.div variants={riseIn}>{entriesFeed}</motion.div>
               </Box>

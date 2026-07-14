@@ -18,7 +18,6 @@ export const useSupabaseSync = (retryCount = 0) => {
   // Keep refs so the onAuthStateChange closure always sees fresh values.
   // This effect has no dep array intentionally: it runs after every render to keep the refs
   // in sync with the latest Redux state without re-subscribing the Supabase listener.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const isAuthenticatedRef = useRef(isAuthenticated);
   const needsResyncRef = useRef(false);
   useEffect(() => {
@@ -153,17 +152,21 @@ export const useSupabaseSync = (retryCount = 0) => {
         }
 
         if (isFreshLogin) {
-          const pendingLocationId = localStorage.getItem('pendingLocationId');
-          localStorage.removeItem('pendingLocationId');
           if (localStorage.getItem('pendingTicketCode')) {
             navigate('/scan');
           } else if (data.user.role === 'Admin') {
+            localStorage.removeItem('pendingLocationId');
             navigate('/admin');
           } else if (data.user.role === 'Business') {
             // Managers are role='Business' with a location_id; both owners and managers land on /campaign.
-            navigate(data.user.requiresBusinessSetup ? '/partner/setup-business' : '/campaign');
+            // Business setup takes precedence if both are set.
+            localStorage.removeItem('pendingLocationId');
+            navigate(data.user.requiresBusinessSetup ? '/partner/setup-business' : (data.user.requiresProfileSetup ? '/profile-setup' : '/campaign'));
           } else {
-            navigate(pendingLocationId ? `/scan?l=${pendingLocationId}` : '/scan');
+            // Consumer (role='User'). pendingLocationId (QR flyer scan saved before login) is
+            // NOT consumed here - it stays in localStorage until RedeemPage mounts and reads it,
+            // so it survives whatever runs in between (profile setup, SSO callback).
+            navigate(data.user.requiresProfileSetup ? '/profile-setup' : '/scan');
           }
         }
       } catch (err: unknown) {

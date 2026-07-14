@@ -46,7 +46,7 @@ const RegionBlockedPage = () => {
         {/* Right: content panel */}
         <Box
           sx={{
-            width: '50%',
+            flex: 1,
             overflowY: 'auto',
             bgcolor: BG_PAGE,
             display: 'flex',

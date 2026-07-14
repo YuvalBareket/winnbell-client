@@ -33,7 +33,16 @@ const RedeemPage = () => {
   const preselectedBusinessId = (routeLocation.state as { preselectedBusinessId?: number } | null)?.preselectedBusinessId;
   const preselectedLocation = (routeLocation.state as { preselectedLocation?: NearbyLocation } | null)?.preselectedLocation;
   const [searchParams] = useSearchParams();
-  const qrLocationId = searchParams.get('l') ? Number(searchParams.get('l')) : undefined;
+  // QR flyer location: from the URL when scanned while signed in, else from the
+  // pendingLocationId saved before login (same consume-on-mount pattern as pendingTicketCode).
+  const [storedLocationId] = useState(() => {
+    const stored = localStorage.getItem('pendingLocationId');
+    return stored ? Number(stored) : undefined;
+  });
+  useEffect(() => {
+    localStorage.removeItem('pendingLocationId');
+  }, []);
+  const qrLocationId = searchParams.get('l') ? Number(searchParams.get('l')) : storedLocationId;
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 

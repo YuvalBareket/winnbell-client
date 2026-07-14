@@ -10,6 +10,9 @@ export interface User {
   requiresBusinessSetup?: boolean;
   businessIsActive?: boolean;
   businessLogoUrl?: string | null;
+  requiresProfileSetup?: boolean;
+  dateOfBirth?: string | null;
+  gender?: string | null;
   created_at: string;
 }
 

@@ -14,6 +14,11 @@ export const selectIsRequiresBusinessSetup = createSelector(
   [selectAuthState],
   (auth) => auth.user?.requiresBusinessSetup ?? false,
 );
+
+export const selectRequiresProfileSetup = createSelector(
+  [selectAuthState],
+  (auth) => auth.user?.requiresProfileSetup ?? false,
+);
 export const selectBusinessIsActive = createSelector(
   [selectAuthState],
   (auth) => auth.user?.businessIsActive ?? false,

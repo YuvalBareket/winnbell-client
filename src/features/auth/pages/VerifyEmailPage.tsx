@@ -195,7 +195,7 @@ const VerifyEmailPage = () => {
         {/* Right: form panel */}
         <Box
           sx={{
-            width: '50%',
+            flex: 1,
             overflowY: 'auto',
             bgcolor: BG_PAGE,
             display: 'flex',
@@ -209,7 +209,7 @@ const VerifyEmailPage = () => {
               <ArrowBackIosNew fontSize='small' />
             </IconButton>
           </Box>
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400 }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400, width: '100%', mx: 'auto' }}>
             {FormContent()}
           </Box>
         </Box>

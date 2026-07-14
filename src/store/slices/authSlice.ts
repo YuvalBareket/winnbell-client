@@ -37,6 +37,7 @@ function ensureAccounts(state: AuthState): void {
   if (!Array.isArray(state.accounts)) state.accounts = [];
 }
 
+
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -164,6 +165,21 @@ export const authSlice = createSlice({
       const acc = state.accounts?.find((a) => a.user.id === state.activeAccountId);
       if (acc) acc.user.requiresBusinessSetup = false;
     },
+
+    completeProfileSetup: (state, action: PayloadAction<{ dateOfBirth: string; gender: string }>) => {
+      if (state.user) {
+        state.user.requiresProfileSetup = false;
+        state.user.dateOfBirth = action.payload.dateOfBirth;
+        state.user.gender = action.payload.gender;
+      }
+      // keep the saved-account copy in sync
+      const acc = state.accounts?.find((a) => a.user.id === state.activeAccountId);
+      if (acc) {
+        acc.user.requiresProfileSetup = false;
+        acc.user.dateOfBirth = action.payload.dateOfBirth;
+        acc.user.gender = action.payload.gender;
+      }
+    },
     setBusinessActive: (state) => {
       if (state.user) {
         state.user.businessIsActive = true;
@@ -185,6 +201,6 @@ export const authSlice = createSlice({
 
 export const {
   login, addAccount, switchAccount, removeAccount, updateAccountTokens, logout,
-  setLoading, setError, setUserLocation, clearBusinessSetup, setBusinessActive, updateBusinessUser,
+  setLoading, setError, setUserLocation, clearBusinessSetup, completeProfileSetup, setBusinessActive, updateBusinessUser,
 } = authSlice.actions;
 export default authSlice.reducer;

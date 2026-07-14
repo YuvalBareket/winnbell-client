@@ -8,6 +8,7 @@ import {
   selectIsRegularUser,
   selectIsBusiness,
   selectIsRequiresBusinessSetup,
+  selectRequiresProfileSetup,
   selectIsAuthenticated,
   selectIsAdmin,
   selectIsLocationManager,
@@ -60,6 +61,8 @@ const BusinessAnalyticsPage = lazy(() => import('../features/partner/pages/Busin
 const MarketingPage = lazy(() => import('../features/marketing/pages/MarketingPage'));
 const MarketingGuidePage = lazy(() => import('../features/marketing/pages/MarketingGuidePage'));
 const CampaignDashboardPage = lazy(() => import('../features/campaign/pages/CampaignDashboardPage'));
+// Lazy: pulls in @mui/x-date-pickers (DOB picker), which doesn't belong in the initial bundle.
+const ProfileSetupPage = lazy(() => import('../features/auth/pages/ProfileSetupPage'));
 
 // Light fallback for in-app route chunk loading — a gentle spinner, NOT the full-screen
 // branded LoadingScreen (which is reserved for boot + auth/entry pages below).
@@ -82,6 +85,7 @@ const AppRoutes = () => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isAdmin = useAppSelector(selectIsAdmin);
   const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
+  const requiresProfileSetup = useAppSelector(selectRequiresProfileSetup);
 
   // Where to send a user who hits a route their role can't access (their own home).
   const homePath = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/campaign' : '/scan';
@@ -91,16 +95,19 @@ const AppRoutes = () => {
   const { syncError, isLoaded, isSignedIn } = useSupabaseSync(retryCount);
   const retry = () => setRetryCount(c => c + 1);
 
-  // One-shot redirect: when a signed-in owner still needs business setup (flag just synced),
+  // One-shot redirect: when a signed-in user needs business or profile setup (flags just synced),
   // send them to the wizard. Deliberately an EFFECT keyed on the flags, not a render-time
-  // route wall: after redirecting, the owner may still open legal pages linked from the
+  // route wall: after redirecting, the user may still open legal pages linked from the
   // wizard (/business-agreement etc.) without being bounced back in a loop.
+  // Business setup takes precedence if both are set.
   const navigate = useNavigate();
   useEffect(() => {
     if (isAuthenticated && requiresBusinessSetup) {
       navigate('/partner/setup-business', { replace: true });
+    } else if (isAuthenticated && requiresProfileSetup) {
+      navigate('/profile-setup', { replace: true });
     }
-  }, [isAuthenticated, requiresBusinessSetup, navigate]);
+  }, [isAuthenticated, requiresBusinessSetup, requiresProfileSetup, navigate]);
 
   const routeFallback = (
     <Box sx={{ py: 8, textAlign: 'center' }}>
@@ -131,7 +138,7 @@ const AppRoutes = () => {
       <Route path='/start' element={<ScanWelcomePage />} />
       <Route path='/join' element={<JoinPage />} />
       <Route path='/region-blocked' element={<RegionBlockedPage />} />
-      <Route path='/login' element={<RegionGate><LoginPage /></RegionGate>} />
+      <Route path='/login/:role?' element={<RegionGate><LoginPage /></RegionGate>} />
       <Route path='/register/:role?' element={<RegionGate><RegisterPage /></RegionGate>} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
       <Route path='/sso-callback' element={branded(<SSOCallbackPage />)} />
@@ -146,6 +153,8 @@ const AppRoutes = () => {
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>
+        {/* Profile setup - protected but no sidebar layout */}
+        <Route path='/profile-setup' element={branded(<ProfileSetupPage />)} />
         {/* Business setup - protected but no sidebar layout */}
         <Route path='/partner/setup-business' element={<BusinessProfilePage />} />
         <Route element={<MainLayout />}>

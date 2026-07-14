@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Button, Typography, TextField, IconButton, InputAdornment,
-  Paper, Container, Divider, Stack, Alert, CircularProgress,
+  Container, Divider, Stack, Alert, CircularProgress,
   Checkbox, FormControlLabel, useMediaQuery, useTheme, Snackbar,
 } from '@mui/material';
 import {
-  ArrowBackIosNew, Mail, Lock, Visibility, VisibilityOff,
-  Login, Google,
+  ArrowBackIosNew, ArrowForward, Mail, Lock, Visibility, VisibilityOff,
+  Google,
 } from '@mui/icons-material';
 import AuthBrandPanel from '../components/AuthBrandPanel';
-import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../../../shared/lib/supabase';
 import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsAuthenticated, selectIsAdmin, selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import {
-  BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
-  GOOGLE_BLUE, SHADOW_GOOGLE, SHADOW_NEUTRAL_SOFT,
+  BG_PAGE, BORDER_LIGHT, GRADIENT_HERO, GRADIENT_HERO_WARM,
+  ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, ALPHA_WHITE_70,
+  TEXT_TERTIARY, TEXT_HEADING,
 } from '../../../shared/colors';
+import { authLabelSx, authInputSx, authCtaSx, authGoogleBtnSx } from '../components/authStyles';
 import {
   staggerContainer, popIn, riseIn,
 } from '../../../shared/motion';
@@ -27,6 +29,7 @@ import {
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { role } = useParams();
   const [searchParams] = useSearchParams();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
@@ -37,6 +40,8 @@ const LoginPage = () => {
   // "Add account" mode: reached from the account switcher while already signed in. Signs in a
   // SECOND account and keeps the current one, instead of replacing it. See useSupabaseSync.
   const addMode = searchParams.get('add') === '1';
+  // Business variant if role=business or an invite token present
+  const isBusinessVariant = role?.toLowerCase() === 'business' || !!inviteToken;
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -145,25 +150,20 @@ const LoginPage = () => {
   const FormContent = () => (
     <motion.div variants={staggerContainer} initial="hidden" animate="visible">
       <Stack sx={{ zoom: { xs: 0.85, md: 0.75 } }}>
-        {/* Header */}
-        <motion.div variants={riseIn}>
-          <Box sx={{ mb: { xs: 2, md: 3 }, textAlign: isDesktop ? 'left' : 'center' }}>
-            {!isDesktop && (
-              <Paper elevation={4} sx={{ width: 56, height: 56, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, transform: 'rotate(3deg)', mx: 'auto' }}>
-                <img style={{width:'34px'}} src='/winnbell_logo_white.png' />
-              </Paper>
-            )}
-            <Stack direction='row' alignItems='center' gap={3} mb={1} justifyContent={isDesktop ? 'flex-start' : 'center'}>
-              {isDesktop && (
+        {/* Header - desktop only; on mobile the gradient band above carries the title */}
+        {isDesktop && (
+          <motion.div variants={riseIn}>
+            <Box sx={{ mb: '30px', textAlign: 'left' }}>
+              <Stack direction='row' alignItems='center' gap={2} mb='6px'>
                 <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
                   <ArrowBackIosNew fontSize='small' />
                 </IconButton>
-              )}
-              <Typography variant='h4' sx={{ fontWeight: 700 }}>{addMode ? 'Add Account' : 'Welcome Back'}</Typography>
-            </Stack>
-            <Typography variant='body1' color='text.secondary'>{addMode ? 'Sign in to the account you want to add' : 'Sign in to check your entries'}</Typography>
-          </Box>
-        </motion.div>
+                <Typography sx={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>{addMode ? 'Add Account' : 'Welcome Back'}</Typography>
+              </Stack>
+              <Typography sx={{ fontSize: '14.5px', fontWeight: 500, color: TEXT_TERTIARY }}>{addMode ? 'Sign in to the account you want to add' : 'Sign in to check your entries'}</Typography>
+            </Box>
+          </motion.div>
+        )}
 
         {sessionError && (
           <motion.div variants={popIn}>
@@ -202,14 +202,14 @@ const LoginPage = () => {
           </motion.div>
         )}
 
-        <Stack spacing={1.5}>
+        <Stack spacing={2.25}>
           <motion.div variants={popIn}>
             <Box>
-              <Typography variant='subtitle2' sx={{ ml: 1, mb: 0.5, fontWeight: 700 }}>Email</Typography>
+              <Typography sx={authLabelSx}>Email</Typography>
               <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
+                sx={authInputSx}
                 InputProps={{
-                  startAdornment: (<InputAdornment position='start'><Mail sx={{ color: 'text.secondary' }} /></InputAdornment>),
-                  sx: { bgcolor: 'background.paper' },
+                  startAdornment: (<InputAdornment position='start'><Mail sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
                 }}
               />
             </Box>
@@ -217,11 +217,10 @@ const LoginPage = () => {
 
           <motion.div variants={popIn}>
             <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, ml: 1 }}>
-                <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>Password</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: '7px' }}>
+                <Typography sx={{ ...authLabelSx, mb: 0 }}>Password</Typography>
                 <Typography
-                  variant='caption'
-                  sx={{ fontWeight: 700, color: 'primary.main', cursor: 'pointer' }}
+                  sx={{ fontSize: '12.5px', fontWeight: 700, color: 'primary.main', cursor: 'pointer' }}
                   onClick={async () => {
             if (!formData.email) { setError('Enter your email above first, then click Forgot.'); return; }
             setResetState('loading');
@@ -237,56 +236,18 @@ const LoginPage = () => {
               <TextField fullWidth name='password' value={formData.password} onChange={handleChange}
                 type={showPassword ? 'text' : 'password'} placeholder='Enter your password'
                 onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                sx={authInputSx}
                 InputProps={{
-                  startAdornment: (<InputAdornment position='start'><Lock sx={{ color: 'text.secondary' }} /></InputAdornment>),
+                  startAdornment: (<InputAdornment position='start'><Lock sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
                   endAdornment: (
                     <InputAdornment position='end'>
                       <IconButton onClick={() => setShowPassword(!showPassword)} edge='end'>
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? <VisibilityOff sx={{ fontSize: 20, color: TEXT_TERTIARY }} /> : <Visibility sx={{ fontSize: 20, color: TEXT_TERTIARY }} />}
                       </IconButton>
                     </InputAdornment>
                   ),
-                  sx: { bgcolor: 'background.paper' },
                 }}
               />
-            </Box>
-          </motion.div>
-
-          <motion.div variants={popIn}>
-            <Box>
-              <Divider sx={{ mb: 2 }}>
-                <Typography variant='caption' sx={{ color: 'text.disabled', fontWeight: 700, px: 1 }}>OR</Typography>
-              </Divider>
-              <Button
-                fullWidth
-                variant='contained'
-                startIcon={googleLoading ? <CircularProgress size={20} color='inherit' /> : <Google />}
-                onClick={() => termsAccepted ? handleSocialLogin('google') : setToast('Please approve the terms first')}
-                disabled={googleLoading}
-                sx={{
-                  py: 1.5,
-                  textTransform: 'none',
-                  bgcolor: 'background.paper',
-                  color: 'text.primary',
-                  border: `2px solid ${GOOGLE_BLUE}`,
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  boxShadow: SHADOW_NEUTRAL_SOFT,
-                  transition: 'all 0.2s ease-in-out',
-                  opacity: 1,
-                  '&:hover': {
-                    bgcolor: 'background.paper',
-                    boxShadow: SHADOW_GOOGLE,
-                  },
-                  '&:disabled': {
-                    bgcolor: 'background.paper',
-                    color: 'text.primary',
-                    border: `2px solid ${GOOGLE_BLUE}`,
-                    opacity: 1,
-                  },
-                }}>
-                {googleLoading ? 'Signing in...' : 'Continue with Google'}
-              </Button>
             </Box>
           </motion.div>
 
@@ -308,19 +269,41 @@ const LoginPage = () => {
           </motion.div>
 
           <motion.div variants={popIn}>
-            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading || !termsAccepted}
-              endIcon={!loading && <Login />}
-              sx={{ py: 1.5, fontSize: '1rem', fontWeight: 700, boxShadow: SHADOW_PRIMARY_SOFT }}>
+            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading}
+              endIcon={!loading && <ArrowForward sx={{ fontSize: 18 }} />}
+              sx={authCtaSx}>
               {loading ? <CircularProgress size={24} color='inherit' /> : 'Sign In'}
             </Button>
           </motion.div>
+
+          <motion.div variants={popIn}>
+            <Box>
+              <Divider sx={{ mb: 2 }}>
+                <Typography sx={{ fontSize: '11px', fontWeight: 700, color: TEXT_TERTIARY, px: 1 }}>OR</Typography>
+              </Divider>
+              <Button
+                fullWidth
+                startIcon={googleLoading ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
+                onClick={() => termsAccepted ? handleSocialLogin('google') : setToast('Please approve the terms first')}
+                disabled={googleLoading}
+                sx={authGoogleBtnSx}>
+                {googleLoading ? 'Signing in...' : 'Continue with Google'}
+              </Button>
+            </Box>
+          </motion.div>
         </Stack>
 
-        <Box sx={{ mt: 'auto', pt: 2, textAlign: 'center' }}>
-          <Typography variant='body2' color='text.secondary' fontWeight={500}>
+        <Box sx={{ mt: 'auto', pt: 2.5, textAlign: 'center' }}>
+          <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY }}>
             Don't have an account?{' '}
-            <Typography component='span' onClick={() => navigate(addMode ? '/register?add=1' : inviteToken ? `/register/?token=${inviteToken}` : '/register')}
-              sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+            <Typography component='span' onClick={() => {
+              let dest = '/register';
+              if (isBusinessVariant && !inviteToken) dest = '/register/business';
+              if (inviteToken) dest += `?token=${inviteToken}`;
+              if (addMode) dest += `${dest.includes('?') ? '&' : '?'}add=1`;
+              navigate(dest);
+            }}
+              sx={{ fontSize: '13.5px', color: 'primary.main', fontWeight: 800, cursor: 'pointer' }}>
               Create new account
             </Typography>
           </Typography>
@@ -343,21 +326,22 @@ const LoginPage = () => {
   if (isDesktop) {
     return (
       <Box sx={{ display: 'flex', height: 'var(--dvh100, 100dvh)', overflow: 'hidden' }}>
-        <AuthBrandPanel />
+        <AuthBrandPanel isBusinessVariant={isBusinessVariant} />
 
         {/* Right: form panel */}
         <Box
           sx={{
-            width: '50%',
+            flex: 1,
             overflowY: 'auto',
             bgcolor: BG_PAGE,
             display: 'flex',
             flexDirection: 'column',
-            px: 6,
-            py: 4,
+            px: 7,
+            py: 6,
+            justifyContent: 'center',
           }}
         >
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400 }}>
+          <Box sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
             {FormContent()}
           </Box>
         </Box>
@@ -366,16 +350,70 @@ const LoginPage = () => {
     );
   }
 
-  // ─── Mobile layout (original) ────────────────────────────────────────────────
+  // ─── Mobile layout ──────────────────────────────────────────────────────────
 
   return (
     <Box sx={{ height: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
-      <Box sx={{ p: 2 }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'action.hover' }}>
-          <ArrowBackIosNew fontSize='small' />
-        </IconButton>
+      {/* Gradient header band - mirrors the main layout's AppPageHero: brand row (back arrow +
+          app name) then the title block, radial glow orb (filter:blur breaks the band's
+          rounded-bottom clipping on Android). */}
+      <Box
+        sx={{
+          background: isBusinessVariant ? GRADIENT_HERO_WARM : GRADIENT_HERO,
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: '0 0 28px 28px',
+          px: 1.5,
+          pt: 'calc(env(safe-area-inset-top, 0px) + 10px)',
+          pb: 2.5,
+          // Never let the flex column squeeze the band on short screens - the page scrolls instead.
+          flexShrink: 0,
+        }}
+      >
+        {/* Glow orb */}
+        <Box sx={{ position: 'absolute', top: -110, right: -90, width: 320, height: 320, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`, pointerEvents: 'none' }} />
+
+        {/* Brand row: back arrow + app name (+ business chip) */}
+        <Stack direction='row' alignItems='center' spacing={1.25} sx={{ position: 'relative' }}>
+          <IconButton
+            onClick={() => navigate(-1)}
+            sx={{
+              width: 40, height: 40, color: 'white', bgcolor: ALPHA_WHITE_15,
+              border: `1px solid ${ALPHA_WHITE_20}`, borderRadius: '10px', flexShrink: 0,
+              '&:hover': { bgcolor: ALPHA_WHITE_30 },
+            }}
+          >
+            <ArrowBackIosNew sx={{ fontSize: 18 }} />
+          </IconButton>
+          <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 36, width: 'auto', objectFit: 'contain' }} />
+          {isBusinessVariant && (
+            <Typography
+              component='span'
+              sx={{
+                fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: ALPHA_WHITE_70, border: `1px solid ${ALPHA_WHITE_30}`, borderRadius: '5px',
+                px: 0.75, py: 0.25, lineHeight: 1.4,
+              }}
+            >
+              Business
+            </Typography>
+          )}
+        </Stack>
+
+        {/* Title block */}
+        <Box sx={{ position: 'relative', mt: 1.5, px: 1 }}>
+          <Typography variant='h5' fontWeight={700} sx={{ letterSpacing: '-0.02em' }}>
+            {addMode ? 'Add Account' : 'Welcome Back'}
+          </Typography>
+          <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.25 }}>
+            {addMode ? 'Sign in to the account you want to add' : 'Sign in to check your entries'}
+          </Typography>
+        </Box>
       </Box>
-      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 0, pb: 4 }}>
+
+      {/* Form content */}
+      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 3, pb: 4 }}>
         {FormContent()}
       </Container>
       <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
