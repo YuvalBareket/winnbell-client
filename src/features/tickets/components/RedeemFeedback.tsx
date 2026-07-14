@@ -18,6 +18,7 @@ import QRScannerModal from './QRScannerModal';
 import { GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
 import GoldConfetti from '../../../shared/components/GoldConfetti';
+import { useConfettiTaps } from '../../../shared/hooks/useConfettiTaps';
 
 interface RedeemFeedbackProps {
   scannerOpen: boolean;
@@ -46,6 +47,8 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
 }) => {
   const { triggerInstallPrompt } = useInstallPromptTrigger();
   useEffect(() => { if (successDialogOpen) triggerInstallPrompt(); }, [successDialogOpen, triggerInstallPrompt]);
+  // Tap-to-celebrate: taps pop confetti from the tap point (shared across congrats screens).
+  const { fireBurst, confettiBursts } = useConfettiTaps();
   return (
   <>
     <QRScannerModal open={scannerOpen} onScan={handleScanSuccess} onClose={() => setScannerOpen(false)} />
@@ -60,6 +63,7 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
       PaperProps={{ sx: { bgcolor: 'transparent', boxShadow: 'none' } }}
     >
       <Box
+        onClick={fireBurst}
         sx={{
           height: '100%',
           display: 'flex',
@@ -74,6 +78,7 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
         }}
       >
         <GoldConfetti />
+        {confettiBursts}
         <Zoom in={successDialogOpen} timeout={400}>
           <Box
             sx={{
@@ -98,12 +103,12 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
                 variant='contained'
                 size='large'
                 startIcon={<ConfirmationNumber />}
-                onClick={() => { setSuccessDialogOpen(false); navigate('/tickets'); }}
+                onClick={(e) => { e.stopPropagation(); setSuccessDialogOpen(false); navigate('/tickets'); }}
                 sx={{ bgcolor: 'white', color: primaryColor, fontWeight: 800, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
               >
                 View My Entries
               </Button>
-              <Button variant='text' onClick={() => setSuccessDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}>
+              <Button variant='text' onClick={(e) => { e.stopPropagation(); setSuccessDialogOpen(false); }} sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}>
                 Done
               </Button>
             </Stack>

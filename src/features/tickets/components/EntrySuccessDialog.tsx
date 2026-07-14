@@ -4,6 +4,7 @@ import { ConfirmationNumber, EmojiEvents, AddCircleOutline } from '@mui/icons-ma
 import { GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
 import GoldConfetti from '../../../shared/components/GoldConfetti';
+import { useConfettiTaps } from '../../../shared/hooks/useConfettiTaps';
 
 interface Props {
   open: boolean;
@@ -24,6 +25,9 @@ const EntrySuccessDialog: React.FC<Props> = ({
 }) => {
   const { triggerInstallPrompt } = useInstallPromptTrigger();
   useEffect(() => { if (open) triggerInstallPrompt(); }, [open, triggerInstallPrompt]);
+
+  // Tap-to-celebrate: taps pop confetti from the tap point (shared across congrats screens).
+  const { fireBurst, confettiBursts } = useConfettiTaps();
   return (
   <Dialog
     open={open}
@@ -31,13 +35,17 @@ const EntrySuccessDialog: React.FC<Props> = ({
     TransitionComponent={Fade}
     PaperProps={{ sx: { bgcolor: 'transparent', boxShadow: 'none' } }}
   >
-    <Box sx={{
-      height: '100%', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      background: GRADIENT_SUCCESS, px: 4, textAlign: 'center',
-      position: 'relative', overflow: 'hidden',
-    }}>
+    <Box
+      onClick={fireBurst}
+      sx={{
+        height: '100%', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        background: GRADIENT_SUCCESS, px: 4, textAlign: 'center',
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
       <GoldConfetti />
+      {confettiBursts}
       <Zoom in={open} timeout={400}>
         <Box sx={{
           width: 100, height: 100, borderRadius: '50%',
@@ -81,7 +89,7 @@ const EntrySuccessDialog: React.FC<Props> = ({
               variant="contained"
               size="large"
               startIcon={<ConfirmationNumber />}
-              onClick={onViewEntries}
+              onClick={(e) => { e.stopPropagation(); onViewEntries(); }}
               sx={{ bgcolor: 'white', color: primaryColor, fontWeight: 800, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
             >
               View My Entries
@@ -89,7 +97,7 @@ const EntrySuccessDialog: React.FC<Props> = ({
             <Button
               variant="text"
               startIcon={<AddCircleOutline />}
-              onClick={onSubmitAnother}
+              onClick={(e) => { e.stopPropagation(); onSubmitAnother(); }}
               sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}
             >
               Submit Another Receipt

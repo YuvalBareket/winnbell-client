@@ -7,6 +7,7 @@ import AccessTimeRounded from '@mui/icons-material/AccessTimeRounded';
 import { GRADIENT_SUCCESS, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_70 } from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
 import GoldConfetti from '../../../shared/components/GoldConfetti';
+import { useConfettiTaps } from '../../../shared/hooks/useConfettiTaps';
 
 interface Props {
   open: boolean;
@@ -23,6 +24,8 @@ interface Props {
 const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, drawLabel, nextDateLabel, onViewEntries, onSubmitReceipt, onClose }) => {
   const { triggerInstallPrompt } = useInstallPromptTrigger();
   useEffect(() => { if (open) triggerInstallPrompt(); }, [open, triggerInstallPrompt]);
+  // Tap-to-celebrate: taps pop confetti from the tap point (shared across congrats screens).
+  const { fireBurst, confettiBursts } = useConfettiTaps();
   return (
   <Dialog
     open={open}
@@ -30,13 +33,17 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, drawLabel,
     TransitionComponent={Fade}
     PaperProps={{ sx: { bgcolor: 'transparent', boxShadow: 'none' } }}
   >
-    <Box sx={{
-      height: '100%', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      background: GRADIENT_SUCCESS, px: 4, textAlign: 'center',
-      position: 'relative', overflow: 'hidden',
-    }}>
+    <Box
+      onClick={fireBurst}
+      sx={{
+        height: '100%', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        background: GRADIENT_SUCCESS, px: 4, textAlign: 'center',
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
       <GoldConfetti />
+      {confettiBursts}
       <Zoom in={open} timeout={400}>
         <Box sx={{
           width: 96, height: 96, borderRadius: '50%',
@@ -83,7 +90,7 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, drawLabel,
               variant="contained"
               size="large"
               startIcon={<ConfirmationNumberIcon />}
-              onClick={onViewEntries}
+              onClick={(e) => { e.stopPropagation(); onViewEntries(); }}
               sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, py: 1.6, borderRadius: 2.5, textTransform: 'none', '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
             >
               View my entries
@@ -91,7 +98,7 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, drawLabel,
             <Button
               variant="text"
               startIcon={onSubmitReceipt ? <ReceiptLongOutlined sx={{ fontSize: 18 }} /> : undefined}
-              onClick={onSubmitReceipt ?? onClose}
+              onClick={(e) => { e.stopPropagation(); (onSubmitReceipt ?? onClose)(); }}
               sx={{ color: ALPHA_WHITE_70, fontWeight: 700, textTransform: 'none' }}
             >
               {onSubmitReceipt ? 'Submit a receipt' : 'Close'}

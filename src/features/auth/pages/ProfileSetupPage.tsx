@@ -110,7 +110,10 @@ const ProfileSetupPage = () => {
         views={['year', 'month', 'day']}
         value={dob}
         onChange={(value) => setDob(value)}
-        disableFuture
+        // The year grid tops out 17 years back - nobody younger can be eligible, so the
+        // picker opens straight into plausible birth years instead of the current decade.
+        // The 18+ check (client + server) still validates the exact date on submit.
+        maxDate={dayjs().subtract(17, 'year')}
         minDate={dayjs().subtract(120, 'year')}
         slotProps={{
           // x-date-pickers v9 renders its own PickersTextField DOM, so the shared
