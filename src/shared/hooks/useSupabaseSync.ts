@@ -7,6 +7,7 @@ import { login, logout, addAccount } from '../../store/slices/authSlice';
 import { store } from '../../store/store';
 import { syncUserFn } from '../../features/auth/api/auth.api';
 import { onCrossTabLogout } from '../lib/crossTabLogout';
+import { clearOtpSession } from '../../features/tickets/lib/phoneOtpSession';
 
 export const useSupabaseSync = (retryCount = 0) => {
   const dispatch = useAppDispatch();
@@ -251,6 +252,7 @@ export const useSupabaseSync = (retryCount = 0) => {
     return onCrossTabLogout(() => {
       if (!isAuthenticatedRef.current) return;
       dispatch(logout());
+      clearOtpSession(); // tab-scoped phone-OTP session must die with the identity
       import('../../main').then(({ queryClient }) => queryClient.clear()).catch(() => {});
     });
   }, [dispatch]);

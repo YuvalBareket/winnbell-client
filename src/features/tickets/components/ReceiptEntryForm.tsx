@@ -62,6 +62,10 @@ interface ReceiptEntryFormProps {
   onSuccess?: (ticketId: number) => void;
   onError?: (message: string) => void;
   onLocationSelect?: (hasLocation: boolean) => void;
+  // Entry gate hook (phone verification): called with the submit continuation so the parent
+  // can interpose the verify sheet before the entry is created. Runs the action directly
+  // when absent or already satisfied.
+  guardEntryAction?: (proceed: () => void) => void;
 }
 
 // Accepts either the compact NearbyLocation (name/id) OR the profile detail shape
@@ -199,6 +203,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   onSuccess,
   onError,
   onLocationSelect,
+  guardEntryAction,
 }) => {
   // ──────────────────────────────────────────────────
   // State
@@ -381,7 +386,11 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
 
   const handleSubmitClick = () => {
     if (!isFormValid || !selectedLocation) return;
-    setConfirmSubmitOpen(true);
+    // Phone verification interposes here (before the confirm dialog), so by the time the
+    // user confirms, the entry can actually be created.
+    const proceed = () => setConfirmSubmitOpen(true);
+    if (guardEntryAction) guardEntryAction(proceed);
+    else proceed();
   };
 
   const handleConfirmedSubmit = () => {

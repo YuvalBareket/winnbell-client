@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { homePathForUser } from './useAccountSwitcher';
 import { broadcastLogout } from '../lib/crossTabLogout';
 import { logoutFn } from '../../features/auth/api/auth.api';
+import { clearOtpSession } from '../../features/tickets/lib/phoneOtpSession';
 
 /**
  * "Log out" is per-account when more than one account is saved on this device:
@@ -26,6 +27,10 @@ export const useLogout = () => {
     // Capture the active account's refresh token BEFORE we drop it, so we can revoke it
     // server-side (F6) — a logged-out token must not stay refreshable for 30 days.
     const activeRefresh = accounts.find((a) => a.user.id === activeAccountId)?.refreshToken ?? null;
+
+    // The in-flight phone-OTP session is tab-scoped, not account-scoped: any identity change
+    // must drop it or the next user in this tab resumes the previous user's verification.
+    clearOtpSession();
 
     // More than one account saved: log out only the active one, stay signed into the other.
     if (accounts.length > 1 && activeAccountId != null) {

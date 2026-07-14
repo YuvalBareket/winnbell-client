@@ -6,6 +6,7 @@ import { selectAccounts, selectActiveAccountId } from '../../store/selectors/aut
 import { supabase } from '../lib/supabase';
 import { broadcastLogout } from '../lib/crossTabLogout';
 import { logoutFn } from '../../features/auth/api/auth.api';
+import { clearOtpSession } from '../../features/tickets/lib/phoneOtpSession';
 import type { User } from '../../features/auth/types/auth.types';
 
 // Role-aware home for an account (mirrors the redirect logic in AppRoutes/useSupabaseSync).
@@ -43,6 +44,9 @@ export const useAccountSwitcher = () => {
     if (id === activeAccountId) return;
     const target = accounts.find((a) => a.user.id === id);
     if (!target) return;
+    // The in-flight phone-OTP session is tab-scoped: switching identity must drop it so the
+    // next account never resumes the previous account's verification.
+    clearOtpSession();
     await clearQueryCache();
     // Apply the role change synchronously (flushSync) BEFORE navigating: otherwise the
     // current role-gated page (e.g. /campaign) re-renders with the new role and its own
@@ -62,6 +66,7 @@ export const useAccountSwitcher = () => {
     // Capture the removed account's refresh token before dropping it, to revoke it
     // server-side (F6) so a removed device's token cannot be refreshed for 30 days.
     const removedRefresh = accounts.find((a) => a.user.id === id)?.refreshToken ?? null;
+    clearOtpSession(); // identity change - see switchTo
     await clearQueryCache();
 
     if (id === activeAccountId && remaining.length === 0) {

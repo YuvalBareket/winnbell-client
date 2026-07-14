@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Container,
@@ -16,7 +16,9 @@ import { motion } from 'framer-motion';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import { useFreeTicket } from '../hooks/useFreeTicket';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
-import PhoneVerificationGate from '../components/PhoneVerificationGate';
+import { usePhoneVerifySheet } from '../hooks/usePhoneVerifySheet';
+import PhoneVerifySheet from '../components/PhoneVerifySheet';
+import ReferralBonusSuccessDialog from '../components/ReferralBonusSuccessDialog';
 import {
   PRIMARY_MAIN, PRIMARY_DEEP, SUCCESS_GREEN, BG_SURFACE,
   ALPHA_WHITE_15, ALPHA_WHITE_80,
@@ -54,16 +56,31 @@ const FreeTicketPage: React.FC = () => {
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [claimedCode, setClaimedCode] = useState('');
   const [claimError, setClaimError] = useState('');
+  const [showReferralBonusDialog, setShowReferralBonusDialog] = useState(false);
+
+  // Phone verification sheet for soft prompt. The referral-congrats dialog resumes the
+  // pending entry action when dismissed; the callback lives in a ref, not global state.
+  const referralDialogCallbackRef = useRef<(() => void) | null>(null);
+  const { sheetProps, requirePhone } = usePhoneVerifySheet({
+    isPhoneVerified,
+    onPhoneVerifiedChange: () => refetchRiskLevel(),
+    showReferralBonusDialog: (onComplete) => {
+      referralDialogCallbackRef.current = onComplete;
+      setShowReferralBonusDialog(true);
+    },
+  });
 
   const handleActivateClick = async () => {
     setClaimError('');
-    try {
-      const result = await activateAsync(undefined);
-      setClaimedCode(result?.code ?? '');
-      setSuccessDialogOpen(true);
-    } catch (err) {
-      setClaimError(apiErrorMessage(err, 'Something went wrong. Please try again.'));
-    }
+    requirePhone('free', async () => {
+      try {
+        const result = await activateAsync(undefined);
+        setClaimedCode(result?.code ?? '');
+        setSuccessDialogOpen(true);
+      } catch (err) {
+        setClaimError(apiErrorMessage(err, 'Something went wrong. Please try again.'));
+      }
+    });
   };
 
   if (isLoading || !isPhoneVerifiedLoaded) {
@@ -76,11 +93,6 @@ const FreeTicketPage: React.FC = () => {
         </Box>
       </Box>
     );
-  }
-
-  if (!isPhoneVerified) {
-    const pendingCode = localStorage.getItem('pendingTicketCode');
-    return <PhoneVerificationGate onVerified={() => refetchRiskLevel()} pendingCode={pendingCode} />;
   }
 
   const canActivate = !!status?.canActivate;
@@ -133,6 +145,22 @@ const FreeTicketPage: React.FC = () => {
       onSubmitReceipt={() => { setSuccessDialogOpen(false); navigate('/scan'); }}
       onClose={() => setSuccessDialogOpen(false)}
     />
+  );
+
+  // Rendered by BOTH layout branches - the desktop return is a separate tree, and a sheet
+  // rendered only in the mobile branch simply never appears on desktop.
+  const verifySheet = (
+    <>
+      <PhoneVerifySheet {...sheetProps} />
+      <ReferralBonusSuccessDialog
+        open={showReferralBonusDialog}
+        onViewEntries={() => {
+          setShowReferralBonusDialog(false);
+          referralDialogCallbackRef.current?.();
+          referralDialogCallbackRef.current = null;
+        }}
+      />
+    </>
   );
 
   // ── Desktop: two columns (gradient story card + white claim card) ──────────
@@ -206,6 +234,7 @@ const FreeTicketPage: React.FC = () => {
         </Container>
 
         {successDialog}
+        {verifySheet}
       </Box>
     );
   }
@@ -255,6 +284,8 @@ const FreeTicketPage: React.FC = () => {
       </Container>
 
       {successDialog}
+
+      {verifySheet}
     </Box>
   );
 };

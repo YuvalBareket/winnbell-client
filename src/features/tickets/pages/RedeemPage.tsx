@@ -16,8 +16,10 @@ import { useRedeemTicket } from '../hooks/useTickets';
 import { useActivatePromotional } from '../hooks/useActivatePromotional';
 import { useEntryMode } from '../hooks/useEntryMode';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
-import PhoneVerificationGate from '../components/PhoneVerificationGate';
+import { usePhoneVerifySheet } from '../hooks/usePhoneVerifySheet';
 import AppPageHero from '../../../shared/components/AppPageHero';
+import PhoneVerifySheet from '../components/PhoneVerifySheet';
+import ReferralBonusSuccessDialog from '../components/ReferralBonusSuccessDialog';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { riseIn } from '../../../shared/motion';
@@ -55,11 +57,24 @@ const RedeemPage = () => {
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [isAutoActivating, setIsAutoActivating] = useState(() => !!localStorage.getItem('pendingTicketCode'));
   const [receiptStep2, setReceiptStep2] = useState(false);
+  const [showReferralBonusDialog, setShowReferralBonusDialog] = useState(false);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const primaryColor = PRIMARY_MAIN;
 
   // Phone verification status - fetched fresh from server on every page visit
   const { isPhoneVerified, isPhoneVerifiedLoaded, isError: riskLevelError, refetch: refetchRiskLevel } = useMyRiskLevel();
+
+  // Phone verification sheet for soft prompt. The referral-congrats dialog resumes the
+  // pending entry action when dismissed; the callback lives in a ref, not global state.
+  const referralDialogCallbackRef = useRef<(() => void) | null>(null);
+  const { sheetProps, requirePhone } = usePhoneVerifySheet({
+    isPhoneVerified,
+    onPhoneVerifiedChange: () => refetchRiskLevel(),
+    showReferralBonusDialog: (onComplete) => {
+      referralDialogCallbackRef.current = onComplete;
+      setShowReferralBonusDialog(true);
+    },
+  });
 
   // Entry mode (receipt submission vs code activation) - platform setting
   const { data: entryModeData } = useEntryMode();
@@ -73,46 +88,62 @@ const RedeemPage = () => {
   const didAutoActivate = useRef(false);
   useEffect(() => {
     if (!isAuthenticated || !isPhoneVerifiedLoaded || didAutoActivate.current) return;
-    if (!isPhoneVerified) return; // must pass the phone gate first
 
     const pending = localStorage.getItem('pendingTicketCode');
     if (!pending) { setIsAutoActivating(false); return; }
 
     didAutoActivate.current = true;
-    localStorage.removeItem('pendingTicketCode');
 
-    if (pending.startsWith('PROMO')) {
-      promoMutation.mutate(pending, {
-        onSuccess: () => { setIsAutoActivating(false); setActivatedCode(pending); setSuccessDialogOpen(true); },
-        onError: (err) => { setIsAutoActivating(false); setErrorMessage(apiErrorMessage(err, 'Promotional entry failed.')); setErrorOpen(true); },
-      });
-    } else {
-      redeemMutation.mutate(pending, {
-        onSuccess: () => { setIsAutoActivating(false); setActivatedCode(pending); setSuccessDialogOpen(true); },
-        onError: (err) => { setIsAutoActivating(false); setErrorMessage(apiErrorMessage(err, 'Activation failed.')); setErrorOpen(true); },
-      });
+    // The saved code is only CONSUMED when activation actually runs - dismissing the verify
+    // sheet must not lose a scanned code (a reload re-prompts with it instead).
+    const activatePending = () => {
+      localStorage.removeItem('pendingTicketCode');
+      if (pending.startsWith('PROMO')) {
+        promoMutation.mutate(pending, {
+          onSuccess: () => { setIsAutoActivating(false); setActivatedCode(pending); setSuccessDialogOpen(true); },
+          onError: (err) => { setIsAutoActivating(false); setErrorMessage(apiErrorMessage(err, 'Promotional entry failed.')); setErrorOpen(true); },
+        });
+      } else {
+        redeemMutation.mutate(pending, {
+          onSuccess: () => { setIsAutoActivating(false); setActivatedCode(pending); setSuccessDialogOpen(true); },
+          onError: (err) => { setIsAutoActivating(false); setErrorMessage(apiErrorMessage(err, 'Activation failed.')); setErrorOpen(true); },
+        });
+      }
+    };
+
+    if (!isPhoneVerified) {
+      // Unverified: the page renders normally behind the sheet; activation resumes on verify.
+      setIsAutoActivating(false);
+      requirePhone(pending.startsWith('PROMO') ? 'promo' : 'code', activatePending, pending);
+      return;
     }
+
+    activatePending();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isPhoneVerified, isPhoneVerifiedLoaded]);
 
   const handleScanSuccess = (scannedCode: string) => {
     setScannerOpen(false);
-    redeemMutation.mutate(scannedCode, {
-      onSuccess: () => { setActivatedCode(scannedCode); setSuccessDialogOpen(true); },
-      onError: (err) => { setErrorMessage(apiErrorMessage(err, 'Invalid or already used entry code.')); setErrorOpen(true); },
+    requirePhone('code', () => {
+      redeemMutation.mutate(scannedCode, {
+        onSuccess: () => { setActivatedCode(scannedCode); setSuccessDialogOpen(true); },
+        onError: (err) => { setErrorMessage(apiErrorMessage(err, 'Invalid or already used entry code.')); setErrorOpen(true); },
+      });
     });
   };
 
   const handleActivate = () => {
     if (!code || code.length < 5) return;
     const submittedCode = code;
-    redeemMutation.mutate(submittedCode, {
-      onSuccess: () => { setActivatedCode(submittedCode); setSuccessDialogOpen(true); setCode(''); },
-      onError: (err) => { setErrorMessage(apiErrorMessage(err, 'Invalid or already used entry code.')); setErrorOpen(true); },
+    requirePhone('code', () => {
+      redeemMutation.mutate(submittedCode, {
+        onSuccess: () => { setActivatedCode(submittedCode); setSuccessDialogOpen(true); setCode(''); },
+        onError: (err) => { setErrorMessage(apiErrorMessage(err, 'Invalid or already used entry code.')); setErrorOpen(true); },
+      });
     });
   };
 
-  // ─── Gates ──────────────────────────────────────────────────────────────────
+  // ─── Loading gate ───────────────────────────────────────────────────────────
   // The header renders in every gate state too, so it never pops in after the fact.
   if (!isPhoneVerifiedLoaded) {
     return (
@@ -132,11 +163,6 @@ const RedeemPage = () => {
         </Box>
       </Box>
     );
-  }
-
-  if (!isPhoneVerified) {
-    const pendingCode = localStorage.getItem('pendingTicketCode');
-    return <PhoneVerificationGate onVerified={() => refetchRiskLevel()} pendingCode={pendingCode} />;
   }
 
   if (isAutoActivating) {
@@ -170,6 +196,7 @@ const RedeemPage = () => {
             preselectedLocation={preselectedLocation}
             preselectedLocationId={qrLocationId}
             onLocationSelect={setReceiptStep2}
+            guardEntryAction={(proceed) => requirePhone('receipt', proceed)}
           />
         ) : (
           <Box component={motion.div} variants={riseIn} initial='hidden' animate='visible' sx={{ maxWidth: 480, mx: 'auto' }}>
@@ -198,6 +225,17 @@ const RedeemPage = () => {
         setSuccessDialogOpen={setSuccessDialogOpen}
         navigate={navigate}
         primaryColor={primaryColor}
+      />
+
+      <PhoneVerifySheet {...sheetProps} />
+
+      <ReferralBonusSuccessDialog
+        open={showReferralBonusDialog}
+        onViewEntries={() => {
+          setShowReferralBonusDialog(false);
+          referralDialogCallbackRef.current?.();
+          referralDialogCallbackRef.current = null;
+        }}
       />
     </Box>
   );
