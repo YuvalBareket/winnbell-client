@@ -101,7 +101,8 @@ type VvSample = {
   scrollY: number;
   pin: string;        // current --dvh100 pin, if any
   typing: boolean;
-  flag: boolean;      // anomaly detected in this sample
+  flag: boolean;      // raw mismatch in this sample (may be a gesture transient)
+  conf?: boolean;     // mismatch persisted through the confirmation re-sample = real
 };
 
 let fixedProbe: HTMLDivElement | null = null;
@@ -138,11 +139,14 @@ function takeSample(trig: string): VvSample {
     typing: isTyping(),
     flag: false,
   };
-  // Anomalies (only meaningful unzoomed and without the keyboard):
+  // Anomalies (only meaningful unzoomed, without the keyboard, and NOT during an
+  // overscroll gesture - pull-to-refresh rubber-banding shows negative offsets and
+  // legitimately displaces the viewport for a moment; field false positive 2026-07-15):
   // 1. The browser anchors fixed elements somewhere other than the visual viewport
   //    bottom - this is the "floating footer" state made measurable.
   // 2. The existing stale-dvh mismatch.
-  if (s.vvScale === 1 && !s.typing && s.vvH !== null && s.vvTop !== null) {
+  const overscrolled = s.scrollY < -1 || (s.vvTop !== null && s.vvTop < -1);
+  if (s.vvScale === 1 && !s.typing && !overscrolled && s.vvH !== null && s.vvTop !== null) {
     const fixedVsViewport = Math.abs(s.fixedBottom - (s.vvH + s.vvTop));
     const dvhVsViewport = Math.abs(s.dvh - s.vvH);
     s.flag = fixedVsViewport > MISMATCH_PX || dvhVsViewport > MISMATCH_PX;
@@ -150,16 +154,33 @@ function takeSample(trig: string): VvSample {
   return s;
 }
 
+// The real bug is a PERSISTENT state (sticks for minutes); gesture/animation
+// transients last milliseconds. A raw mismatch only turns the badge red if it
+// still mismatches on a confirmation re-sample ~1s later.
+const CONFIRM_MS = 900;
+let confirmPending = false;
+
 function record(trig: string) {
   if (!RECORDER_ON || !fixedProbe) return;
   const s = takeSample(trig);
   const samples = loadSamples();
   samples.push(s);
   saveSamples(samples);
-  if (s.flag) {
-    hasFlagged = true;
-    console.warn(`[viewport] recorder flagged ${trig}: fixedBottom=${s.fixedBottom} vv=${s.vvH}+${s.vvTop} dvh=${s.dvh}`);
-    styleBadge();
+  if (s.flag && !confirmPending) {
+    confirmPending = true;
+    window.setTimeout(() => {
+      confirmPending = false;
+      const c = takeSample('confirm');
+      c.conf = c.flag;
+      const latest = loadSamples();
+      latest.push(c);
+      saveSamples(latest);
+      if (c.conf) {
+        hasFlagged = true;
+        console.warn(`[viewport] recorder CONFIRMED stale anchor: fixedBottom=${c.fixedBottom} vv=${c.vvH}+${c.vvTop} dvh=${c.dvh}`);
+        styleBadge();
+      }
+    }, CONFIRM_MS);
   }
 }
 
@@ -182,7 +203,7 @@ function showPanel() {
     'font:11px/1.5 monospace;overflow:auto;padding:44px 10px 20px;white-space:pre;';
   const samples = loadSamples();
   const text = samples.map(s =>
-    `${s.flag ? '⚠ ' : '  '}${s.t} ${s.trig} inner=${s.innerH} client=${s.clientH} vv=${s.vvH}+${s.vvTop}@${s.vvScale} dvh=${s.dvh} fixed=${s.fixedBottom} scr=${s.scrollY} pin=${s.pin}${s.typing ? ' kb' : ''}`,
+    `${s.conf ? '‼ ' : s.flag ? '⚠ ' : '  '}${s.t} ${s.trig} inner=${s.innerH} client=${s.clientH} vv=${s.vvH}+${s.vvTop}@${s.vvScale} dvh=${s.dvh} fixed=${s.fixedBottom} scr=${s.scrollY} pin=${s.pin}${s.typing ? ' kb' : ''}`,
   ).join('\n') || 'no samples yet';
   const bar = document.createElement('div');
   bar.style.cssText = 'position:fixed;top:calc(env(safe-area-inset-top, 0px) + 6px);right:10px;display:flex;gap:8px;';
@@ -213,7 +234,7 @@ function initRecorder() {
   fixedProbe.style.cssText = 'position:fixed;bottom:0;left:0;width:1px;height:1px;visibility:hidden;pointer-events:none;';
   document.body.appendChild(fixedProbe);
 
-  hasFlagged = loadSamples().some(s => s.flag);
+  hasFlagged = loadSamples().some(s => s.conf);
   badge = document.createElement('button');
   badge.setAttribute('aria-label', 'viewport debug');
   badge.addEventListener('click', () => (panel ? (panel.remove(), (panel = null)) : showPanel()));
