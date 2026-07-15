@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Box, Typography, Stack, Paper, Button,
@@ -88,6 +88,16 @@ const PostersTab = ({
   const [downloading, setDownloading] = useState(false);
 
   const posterRef = useRef<HTMLDivElement>(null);
+
+  // Mobile print keeps its hidden overlay + print CSS mounted until the next
+  // print or unmount; iOS re-renders the preview on any setting change (zoom,
+  // paper size) and needs them still present.
+  const printNodesRef = useRef<HTMLElement[]>([]);
+  const removePrintNodes = () => {
+    printNodesRef.current.forEach((el) => el.remove());
+    printNodesRef.current = [];
+  };
+  useEffect(() => removePrintNodes, []);
 
   // ── Partner sticker (moved here from the Scripts tab) ─────────────────────
   const [stickerIdx, setStickerIdx] = useState(0);
@@ -324,17 +334,16 @@ const PostersTab = ({
         const posterImg = document.createElement('img');
         posterImg.src = imgData;
         overlay.appendChild(posterImg);
+        // Replace any overlay from a previous print, then keep the new one
+        // mounted. Do NOT remove it on afterprint: iOS fires afterprint as soon
+        // as the preview opens, and any setting change (zoom, paper size)
+        // re-renders the preview from the live page - if the print CSS is gone
+        // by then, the preview flips back to the whole app. The overlay is
+        // display:none on screen, so leaving it costs nothing visible.
+        removePrintNodes();
         document.body.appendChild(style);
         document.body.appendChild(overlay);
-
-        const cleanup = () => {
-          overlay.remove();
-          style.remove();
-          window.removeEventListener('afterprint', cleanup);
-        };
-        window.addEventListener('afterprint', cleanup);
-        // Fallback in case afterprint never fires (older mobile browsers).
-        window.setTimeout(cleanup, 60000);
+        printNodesRef.current = [style, overlay];
 
         await new Promise<void>((r) => {
           if (posterImg.complete) r();
