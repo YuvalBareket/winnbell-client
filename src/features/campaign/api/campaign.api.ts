@@ -32,7 +32,7 @@ export type DateRange = 'today' | 'wtd' | 'mtd';
 export interface CampaignEntry {
   ticket_id: number;
   location_name: string;
-  customer_masked: string;
+  receipt_identifier: string | null; // null for free/promo entries
   transaction_amount: number | null;
   entry_source: string;
   entry_count: number; // entries this submission granted (receipt over threshold can earn several)

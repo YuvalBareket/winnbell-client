@@ -26,6 +26,8 @@ import {
   ScheduleOutlined,
   KeyboardArrowDownRounded,
   PlaceOutlined,
+  ReceiptOutlined,
+  CardGiftcardOutlined,
 } from '@mui/icons-material';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import { useNavigate } from 'react-router-dom';
@@ -515,16 +517,18 @@ const CampaignDashboardPage = () => {
               const statusColor = isUnderReview ? STATUS_PENDING_TEXT : STATUS_ACTIVATED_TEXT;
               const statusBorder = isUnderReview ? BORDER_REVIEW : BORDER_APPROVED;
               const statusLabel = isUnderReview ? 'Under review' : 'Approved';
-              const initial = entry.customer_masked.charAt(0).toUpperCase();
+              // The feed identifies the submission (receipt id), never the customer.
+              const title = entry.receipt_identifier ?? `${badge.label} entry`;
+              const RowIcon = entry.entry_source === 'receipt' ? ReceiptOutlined : CardGiftcardOutlined;
               const last = idx === displayEntries.length - 1;
 
               return (
                 <motion.div key={entry.ticket_id} variants={popIn} initial="hidden" animate="visible">
                   {/* Desktop row */}
                   <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '40px minmax(0,1fr) 110px 120px', gap: 2, alignItems: 'center', px: '22px', py: '16px', borderBottom: last ? 'none' : `1px solid ${BG_SUBTLE}` }}>
-                    <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: AVATAR_BLUE_BG, color: PRIMARY_MAIN, fontWeight: 800, fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initial}</Box>
+                    <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: AVATAR_BLUE_BG, color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><RowIcon sx={{ fontSize: 20 }} /></Box>
                     <Box sx={{ minWidth: 0 }}>
-                      <Typography sx={{ fontSize: '14px', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.customer_masked}</Typography>
+                      <Typography sx={{ fontSize: '14px', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</Typography>
                       <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: '3px', minWidth: 0 }}>
                         <Box component="span" sx={{ fontSize: '10.5px', fontWeight: 700, color: badge.color, border: `1px solid ${badge.border}`, borderRadius: '6px', px: '7px', py: '1px', flexShrink: 0 }}>{badge.label}</Box>
                         {entry.entry_count > 1 && (
@@ -543,9 +547,9 @@ const CampaignDashboardPage = () => {
 
                   {/* Mobile row */}
                   <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1.375, px: '14px', py: '12px', borderBottom: last ? 'none' : `1px solid ${BG_SUBTLE}` }}>
-                    <Box sx={{ width: 36, height: 36, borderRadius: '50%', bgcolor: AVATAR_BLUE_BG, color: PRIMARY_MAIN, fontWeight: 800, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{initial}</Box>
+                    <Box sx={{ width: 36, height: 36, borderRadius: '50%', bgcolor: AVATAR_BLUE_BG, color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><RowIcon sx={{ fontSize: 18 }} /></Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontSize: '13.5px', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.customer_masked}</Typography>
+                      <Typography sx={{ fontSize: '13.5px', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</Typography>
                       <Stack direction="row" alignItems="center" spacing={0.875} sx={{ mt: '2px', minWidth: 0 }}>
                         <Box component="span" sx={{ fontSize: '9.5px', fontWeight: 700, color: badge.color, border: `1px solid ${badge.border}`, borderRadius: '5px', px: '6px', py: '1px', flexShrink: 0 }}>{badge.label}</Box>
                         {entry.entry_count > 1 && (
