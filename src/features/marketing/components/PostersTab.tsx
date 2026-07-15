@@ -285,10 +285,44 @@ const PostersTab = ({
       logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
 
       const imgData = canvas.toDataURL('image/png', 1.0);
-      const printWin = window.open('', '_blank');
-      if (printWin) {
-        printWin.document.write(`<html><head><title>Winnbell Poster</title><style>@page{size:letter;margin:0}*{margin:0;padding:0}body{display:flex;justify-content:center;align-items:center}img{width:100vw;height:100vh;object-fit:fill}</style></head><body><img src="${imgData}" onload="window.print();window.close()"/></body></html>`);
-        printWin.document.close();
+
+      // Print via a hidden iframe rather than window.open('_blank'). A popup is
+      // blocked on mobile because this runs after awaits (html2canvas) and is no
+      // longer tied to the tap gesture, so the print dialog never appeared. An
+      // iframe in the current document needs neither a popup nor an active
+      // gesture and prints reliably on desktop and mobile Safari/Chrome.
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('aria-hidden', 'true');
+      iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+      document.body.appendChild(iframe);
+
+      const printDoc = iframe.contentWindow?.document;
+      if (!printDoc) {
+        iframe.remove();
+        throw new Error('Could not open print frame');
+      }
+
+      // Remove the frame once the print dialog has grabbed the content.
+      const cleanupFrame = () => { window.setTimeout(() => iframe.remove(), 1000); };
+      const triggerPrint = () => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } finally {
+          cleanupFrame();
+        }
+      };
+
+      printDoc.open();
+      printDoc.write(`<html><head><title>Winnbell Poster</title><style>@page{size:letter;margin:0}*{margin:0;padding:0}html,body{width:100%;height:100%}img{width:100%;height:100%;object-fit:fill;display:block}</style></head><body><img src="${imgData}"/></body></html>`);
+      printDoc.close();
+
+      const printImg = printDoc.querySelector('img');
+      if (printImg && !printImg.complete) {
+        printImg.onload = triggerPrint;
+        printImg.onerror = triggerPrint;
+      } else {
+        triggerPrint();
       }
     } catch (err) {
       swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
