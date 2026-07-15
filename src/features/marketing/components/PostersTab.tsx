@@ -286,26 +286,62 @@ const PostersTab = ({
 
       const imgData = canvas.toDataURL('image/png', 1.0);
 
-      // Build the exact same US Letter PDF the Download button produces, so Print
-      // outputs the real poster file instead of a rasterized web page.
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      pdf.addImage(imgData, 'PNG', 0, 0, pageW, pageH);
-      // Print the PDF straight from a hidden iframe (popup-free, gesture-free) on
-      // every device, so mobile prints the exact US Letter file to the printer
-      // the same way desktop does.
-      const blobUrl = URL.createObjectURL(pdf.output('blob'));
-      const iframe = document.createElement('iframe');
-      iframe.setAttribute('aria-hidden', 'true');
-      iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
-      iframe.src = blobUrl;
-      iframe.onload = () => {
-        iframe.contentWindow?.focus();
-        iframe.contentWindow?.print();
-        window.setTimeout(() => { iframe.remove(); URL.revokeObjectURL(blobUrl); }, 1000);
-      };
-      document.body.appendChild(iframe);
+      if (isDesktop) {
+        // Desktop: build the exact same US Letter PDF the Download button produces
+        // and print it from a hidden iframe (popup-free, gesture-free).
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+        pdf.addImage(imgData, 'PNG', 0, 0, pageW, pageH);
+        const blobUrl = URL.createObjectURL(pdf.output('blob'));
+        const iframe = document.createElement('iframe');
+        iframe.setAttribute('aria-hidden', 'true');
+        iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+        iframe.src = blobUrl;
+        iframe.onload = () => {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+          window.setTimeout(() => { iframe.remove(); URL.revokeObjectURL(blobUrl); }, 1000);
+        };
+        document.body.appendChild(iframe);
+      } else {
+        // Mobile: iOS/Android cannot print a PDF loaded in an iframe; calling
+        // print() there falls back to printing the whole app page. Instead, print
+        // the main document with print-only CSS that hides the app and shows just
+        // the poster image on a single US Letter page.
+        const overlay = document.createElement('div');
+        overlay.className = 'poster-print-overlay';
+        const style = document.createElement('style');
+        style.textContent = `
+          .poster-print-overlay{display:none}
+          @media print{
+            @page{size:letter portrait;margin:0}
+            body>*:not(.poster-print-overlay){display:none !important}
+            .poster-print-overlay{display:block !important}
+            .poster-print-overlay img{display:block;width:100%;height:auto;page-break-inside:avoid;break-inside:avoid}
+          }
+        `;
+        const posterImg = document.createElement('img');
+        posterImg.src = imgData;
+        overlay.appendChild(posterImg);
+        document.body.appendChild(style);
+        document.body.appendChild(overlay);
+
+        const cleanup = () => {
+          overlay.remove();
+          style.remove();
+          window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
+        // Fallback in case afterprint never fires (older mobile browsers).
+        window.setTimeout(cleanup, 60000);
+
+        await new Promise<void>((r) => {
+          if (posterImg.complete) r();
+          else { posterImg.onload = () => r(); posterImg.onerror = () => r(); }
+        });
+        window.print();
+      }
     } catch (err) {
       swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
       logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
