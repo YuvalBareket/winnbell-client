@@ -46,7 +46,7 @@ const RegisterPage = () => {
   const isLocationManager = inviteToken !== null;
   const isBusinessVariant = isBusinessOwner || isLocationManager;
 
-  const { isLoaded: syncLoaded } = useSyncStatus();
+  const { isLoaded: syncLoaded, isSignedIn, syncError } = useSyncStatus();
   const isAuth = useAppSelector(selectIsAuthenticated);
   const isAdminUser = useAppSelector(selectIsAdmin);
   const isBusinessUser = useAppSelector(selectIsBusiness);
@@ -67,6 +67,22 @@ const RegisterPage = () => {
   const [regionBlocked, setRegionBlocked] = useState(false);
   const [toast, setToast] = useState('');
 
+  // Landed here from /sso-callback after the Google redirect (it navigates back to the page
+  // that started the flow, with ssoReturn in the router state). The pending state is DERIVED,
+  // not stored: it ends by itself when the auth listener reports no session (user cancelled
+  // on the Google screen) or the sync fails; on success the already-authenticated redirect
+  // below unmounts this page into the app.
+  const arrivedFromSso = (location.state as { ssoReturn?: boolean } | null)?.ssoReturn === true;
+  const ssoReturning = arrivedFromSso && !syncError && !(syncLoaded && !isSignedIn);
+
+  // Surface an async sync failure after the Google round-trip as a form error. Reacting to
+  // external async state, so the setState in an effect is intentional.
+  useEffect(() => {
+    if (syncError && arrivedFromSso) {
+      setError('Something went wrong signing you up. Please try again.');
+    }
+  }, [syncError, arrivedFromSso]);
+
   useEffect(() => {
     if (searchParams.get('region_blocked') === '1') {
       setRegionBlocked(true);
@@ -86,6 +102,9 @@ const RegisterPage = () => {
     // Add-account via OAuth: flag BEFORE the redirect so useSupabaseSync appends the new
     // account (keeps the current one) when the session returns on /sso-callback.
     if (addMode) localStorage.setItem('pendingAddAccount', '1');
+    // Where /sso-callback sends the user back to after Google - this page, with the exact
+    // variant/query (business, add=1, invite token) so the pending state resumes in place.
+    sessionStorage.setItem('ssoReturnPath', window.location.pathname + window.location.search);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -96,6 +115,7 @@ const RegisterPage = () => {
       localStorage.removeItem('pendingRole');
       localStorage.removeItem('pendingInviteToken');
       localStorage.removeItem('pendingAddAccount');
+      sessionStorage.removeItem('ssoReturnPath');
       setError(oauthError.message || 'Social login failed');
       setGoogleLoading(false);
     }
@@ -309,7 +329,7 @@ const RegisterPage = () => {
           </motion.div>
 
           <motion.div variants={popIn}>
-            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading} disableElevation
+            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading || googleLoading || ssoReturning} disableElevation
               endIcon={!loading && <ArrowForward sx={{ fontSize: 18 }} />}
               sx={authCtaSx}
             >
@@ -324,11 +344,11 @@ const RegisterPage = () => {
               </Divider>
               <Button
                 fullWidth
-                startIcon={googleLoading ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
+                startIcon={(googleLoading || ssoReturning) ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
                 onClick={() => termsAccepted ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
-                disabled={googleLoading}
+                disabled={googleLoading || ssoReturning || loading}
                 sx={authGoogleBtnSx}>
-                {googleLoading ? 'Signing up...' : 'Continue with Google'}
+                {(googleLoading || ssoReturning) ? 'Signing up...' : 'Continue with Google'}
               </Button>
             </Box>
           </motion.div>
