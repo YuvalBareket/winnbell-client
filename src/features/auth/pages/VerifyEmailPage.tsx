@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
-  Box, Button, Typography, Container, Stack, Alert, CircularProgress, Paper,
+  Box, Typography, Container, Stack, Alert, CircularProgress, Paper,
   IconButton, useMediaQuery, useTheme, TextField,
 } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { MarkEmailRead, ArrowBackIosNew, ArrowForward } from '@mui/icons-material';
 import AuthBrandPanel from '../components/AuthBrandPanel';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -143,7 +144,7 @@ const VerifyEmailPage = () => {
 
           {/* Submit Button */}
           <motion.div variants={popIn}>
-            <Button
+            <AttractButton
               fullWidth
               variant='contained'
               size='large'
@@ -157,7 +158,7 @@ const VerifyEmailPage = () => {
               }}
             >
               {loading ? <CircularProgress size={24} color='inherit' /> : 'Confirm & Continue'}
-            </Button>
+            </AttractButton>
           </motion.div>
 
           {/* Resend Link */}

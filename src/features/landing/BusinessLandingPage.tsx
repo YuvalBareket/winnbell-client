@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Box, Typography, Button, Stack, Container, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import AttractButton from '../../shared/components/AttractButton';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowForward, Storefront, ExpandMore,
@@ -122,7 +123,7 @@ const BusinessLandingPage = () => {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center'>
-              <Button
+              <AttractButton
                 variant='contained'
                 size='large'
                 endIcon={<ArrowForward />}
@@ -140,7 +141,7 @@ const BusinessLandingPage = () => {
                 }}
               >
                 Become a partner
-              </Button>
+              </AttractButton>
               <Button
                 variant='text'
                 endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
@@ -428,7 +429,7 @@ const BusinessLandingPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.15 }}
           >
-            <Button
+            <AttractButton
               variant='contained'
               size='large'
               onClick={() => navigate('/register/Business')}
@@ -444,7 +445,7 @@ const BusinessLandingPage = () => {
               }}
             >
               Create a business account
-            </Button>
+            </AttractButton>
           </motion.div>
         </Container>
       </Box>
@@ -529,7 +530,7 @@ const BusinessLandingPage = () => {
                     <Typography sx={{ color: TEXT_SECONDARY, lineHeight: 1.7, fontSize: { xs: '0.9rem', md: '0.95rem' }, mb: { xs: 2.5, md: 3 } }}>
                       Create your business account, subscribe to the monthly campaigns, set up your profile, and choose your qualifying purchase amount. Most businesses are live in the next campaign within 10 minutes.
                     </Typography>
-                    <Button
+                    <AttractButton
                       variant='contained'
                       size='medium'
                       onClick={() => navigate('/register/Business')}
@@ -541,7 +542,7 @@ const BusinessLandingPage = () => {
                       }}
                     >
                       Become a partner
-                    </Button>
+                    </AttractButton>
                   </Box>
                 </AccordionDetails>
               </Accordion>

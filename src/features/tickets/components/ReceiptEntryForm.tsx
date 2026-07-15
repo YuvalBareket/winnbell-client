@@ -19,6 +19,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import AttractButton from '../../../shared/components/AttractButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AccessTime, Close, EmojiEvents, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
@@ -28,7 +29,7 @@ import {
   ACCENT_GOLD, ACCENT_GOLD_DARK, SUCCESS_GREEN, TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT,
 } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
-import { staggerContainer, riseIn, popIn, pressable, pressableCard, breathe, SPRING_SNAPPY } from '../../../shared/motion';
+import { staggerContainer, riseIn, popIn, pressable, pressableCard, SPRING_SNAPPY } from '../../../shared/motion';
 import EntrySuccessDialog from './EntrySuccessDialog';
 import ReceiptImageUploadField from './ReceiptImageUploadField';
 import BusinessSelector from './BusinessSelector';
@@ -464,8 +465,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
 
   // Once every field is valid the CTA becomes the page's attractor and starts breathing.
   const renderSubmit = () => (
-    <motion.div {...(canSubmit ? { ...breathe, ...pressable } : {})}>
-    <Button
+    <motion.div {...(canSubmit ? { ...pressable } : {})}>
+    <AttractButton
       variant="contained"
       fullWidth
       onClick={handleSubmitClick}
@@ -486,7 +487,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           <span>Submitting...</span>
         </Box>
       ) : 'Submit & get my entries'}
-    </Button>
+    </AttractButton>
     </motion.div>
   );
 
@@ -1010,7 +1011,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           }}
         >
           {/* Primary CTA: Prominent, gradient-inspired button */}
-          <Button
+          <AttractButton
             onClick={handleConfirmedSubmit}
             variant="contained"
             disabled={submitReceiptEntry.isPending}
@@ -1058,7 +1059,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             ) : (
               'Submit Entry'
             )}
-          </Button>
+          </AttractButton>
 
           {/* Secondary action: Subtle, professional */}
           <Button

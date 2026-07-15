@@ -1,4 +1,5 @@
 import { Box, Button, Stack, Typography, CircularProgress, Snackbar, Alert, Container, Paper, useMediaQuery, useTheme } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { ContentCopyOutlined, CheckCircleOutlined, PersonAddOutlined, ShareOutlined, CardGiftcardOutlined } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
@@ -184,7 +185,7 @@ Know someone who could use a little extra luck this month? Share your link and i
             </Box>
 
             {/* Share button */}
-            <Button
+            <AttractButton
               variant="contained"
               fullWidth
               onClick={handleWebShare}
@@ -210,7 +211,7 @@ Know someone who could use a little extra luck this month? Share your link and i
               }}
             >
               Share with friends
-            </Button>
+            </AttractButton>
           </Stack>
         </Paper>
       ) : null}

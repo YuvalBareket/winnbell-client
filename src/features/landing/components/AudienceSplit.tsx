@@ -1,4 +1,5 @@
-import { Box, Typography, Button, Stack, Container } from '@mui/material';
+import { Box, Typography, Stack, Container } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { ConfirmationNumber, Storefront } from '@mui/icons-material';
 import { PRIMARY_MAIN, TEXT_SECONDARY, TEXT_HEADING } from '../../../shared/colors';
 
@@ -42,14 +43,14 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
                 Completely free to join
               </Typography>
             </Stack>
-            <Button
+            <AttractButton
               variant='contained'
               fullWidth
               onClick={() => onNavigate('/register')}
               sx={{ fontWeight: 700, py: 1.4 }}
             >
               Start now
-            </Button>
+            </AttractButton>
           </Box>
 
           {/* For Businesses Card */}
@@ -104,14 +105,14 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
                 Dashboard to manage locations, track entries, and assign branch managers
               </Typography>
             </Stack>
-            <Button
+            <AttractButton
               variant='contained'
               fullWidth
               onClick={() => onNavigate('/register/Business')}
               sx={{ fontWeight: 700, py: 1.4, bgcolor: PRIMARY_MAIN, '&:hover': { bgcolor: '#4F46E5' } }}
             >
               Partner with us
-            </Button>
+            </AttractButton>
           </Box>
         </Box>
       </Container>

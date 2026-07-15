@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { isAxiosError } from 'axios';
 import {
-  Box, Button, Typography, Stack, Alert, TextField, CircularProgress,
+  Box, Typography, Stack, Alert, TextField, CircularProgress,
 } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowForward } from '@mui/icons-material';
 import { useMutation } from '@tanstack/react-query';
@@ -214,7 +215,7 @@ const PhoneVerifyForm = ({ onVerified }: Props) => {
               <a href='/terms' target='_blank' rel='noopener noreferrer' style={{ color: PRIMARY_MAIN }}>Terms of Service</a>
             </Typography>
 
-            <Button
+            <AttractButton
               variant='contained'
               size='large'
               onClick={handleSendCode}
@@ -228,7 +229,7 @@ const PhoneVerifyForm = ({ onVerified }: Props) => {
               }}
             >
               {isLoadingStep1 ? <CircularProgress size={24} color='inherit' /> : 'Send Code'}
-            </Button>
+            </AttractButton>
           </Stack>
         </motion.div>
       ) : (
@@ -269,7 +270,7 @@ const PhoneVerifyForm = ({ onVerified }: Props) => {
               }}
             />
 
-            <Button
+            <AttractButton
               variant='contained'
               size='large'
               onClick={handleVerifyCode}
@@ -283,7 +284,7 @@ const PhoneVerifyForm = ({ onVerified }: Props) => {
               }}
             >
               {isLoadingStep2 ? <CircularProgress size={24} color='inherit' /> : 'Verify'}
-            </Button>
+            </AttractButton>
 
             <Box sx={{ textAlign: 'center', pt: 1 }}>
               <Typography variant='body2' color='text.secondary'>

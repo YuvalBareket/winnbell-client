@@ -3,6 +3,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Box, Button, Typography,
   Stack, Alert, Drawer, TextField, useMediaQuery, useTheme,
 } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -308,7 +309,7 @@ const ProfileEditDialog = ({
           >
             Cancel
           </Button>
-          <Button
+          <AttractButton
             onClick={handleSave}
             variant='contained'
             disabled={loading || dobError !== ''}
@@ -319,7 +320,7 @@ const ProfileEditDialog = ({
             }}
           >
             {loading ? 'Saving...' : 'Save'}
-          </Button>
+          </AttractButton>
         </DialogActions>
       </Dialog>
     );
@@ -353,7 +354,7 @@ const ProfileEditDialog = ({
           >
             Cancel
           </Button>
-          <Button
+          <AttractButton
             onClick={handleSave}
             variant='contained'
             fullWidth
@@ -365,7 +366,7 @@ const ProfileEditDialog = ({
             }}
           >
             {loading ? 'Saving...' : 'Save'}
-          </Button>
+          </AttractButton>
         </Stack>
       </Box>
     </Drawer>

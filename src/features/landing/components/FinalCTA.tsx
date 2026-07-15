@@ -1,4 +1,5 @@
-import { Box, Typography, Button, Container } from '@mui/material';
+import { Box, Typography, Container } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { motion } from 'framer-motion';
 import { ConfirmationNumber, ArrowForward } from '@mui/icons-material';
 import { PRIMARY_MAIN, TEXT_SECONDARY, TEXT_HEADING } from '../../../shared/colors';
@@ -45,7 +46,7 @@ const FinalCTA = ({ onNavigate }: FinalCTAProps) => {
           viewport={{ once: true }}
           transition={{ duration: 0.45, delay: 0.2 }}
         >
-          <Button
+          <AttractButton
             variant='contained'
             size='large'
             endIcon={<ArrowForward />}
@@ -53,7 +54,7 @@ const FinalCTA = ({ onNavigate }: FinalCTAProps) => {
             sx={{ fontWeight: 700, fontSize: { xs: '0.95rem', md: '1.05rem' }, px: { xs: 2.5, md: 5 }, py: { xs: 1.3, md: 1.6 }, width: { xs: '100%', md: 'auto' }, boxShadow: '0 8px 24px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' } }}
           >
             Create free account
-          </Button>
+          </AttractButton>
         </motion.div>
       </Container>
     </Box>

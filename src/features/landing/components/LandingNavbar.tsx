@@ -1,4 +1,5 @@
 import { Box, Button, Stack } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 
 interface LandingNavbarProps {
@@ -37,7 +38,7 @@ const LandingNavbar = ({ onNavigate, variant = 'consumer' }: LandingNavbarProps)
         >
           Log in
         </Button>
-        <Button
+        <AttractButton
           variant='contained'
           onClick={() => onNavigate('/register')}
           sx={{
@@ -48,7 +49,7 @@ const LandingNavbar = ({ onNavigate, variant = 'consumer' }: LandingNavbarProps)
           }}
         >
           Get started
-        </Button>
+        </AttractButton>
       </Stack>
     </Box>
   );

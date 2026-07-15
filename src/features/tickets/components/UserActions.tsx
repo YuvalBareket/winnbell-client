@@ -10,6 +10,7 @@ import {
   Divider,
 } from '@mui/material';
 import TapArea from '../../../shared/components/TapArea';
+import AttractButton from '../../../shared/components/AttractButton';
 import {
   Edit,
   QrCodeScanner,
@@ -78,7 +79,7 @@ const UserActions: React.FC<UserActionsProps> = ({
     </Box>
 
     {/* Activate Ticket Button */}
-    <Button
+    <AttractButton
       variant='contained'
       fullWidth
       onClick={handleActivate}
@@ -101,7 +102,7 @@ const UserActions: React.FC<UserActionsProps> = ({
       }}
     >
       Activate Entry
-    </Button>
+    </AttractButton>
 
     {!hideScan && (
       <>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Box, Typography, Button, Stack, Container } from '@mui/material';
+import { Box, Typography, Stack, Container } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { CalendarMonthRounded, EmojiEventsRounded } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useGetDraws } from '../../draw/hooks/useGetDraws';
@@ -75,7 +76,7 @@ const PrizeSpotlight = ({ onNavigate }: PrizeSpotlightProps) => {
                 </Stack>
               </Stack>
 
-              <Button
+              <AttractButton
                 variant='contained'
                 size='large'
                 onClick={() => onNavigate('/register')}
@@ -92,7 +93,7 @@ const PrizeSpotlight = ({ onNavigate }: PrizeSpotlightProps) => {
                 }}
               >
                 Join this month's campaign
-              </Button>
+              </AttractButton>
 
               <Typography sx={{ color: ALPHA_WHITE_80, fontSize: '0.72rem', bgcolor: ALPHA_WHITE_15, borderRadius: 99, px: 1.5, py: 0.4 }}>
                 Free to join. No purchase necessary.

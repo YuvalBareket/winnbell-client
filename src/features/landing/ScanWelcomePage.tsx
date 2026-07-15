@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Box, Typography, Button, Stack, Container, useMediaQuery, useTheme } from '@mui/material';
+import AttractButton from '../../shared/components/AttractButton';
 import {
   ArrowForward, ReceiptLongOutlined, EmojiEventsOutlined, CardGiftcardOutlined,
 } from '@mui/icons-material';
@@ -151,7 +152,7 @@ const ScanWelcomePage = () => {
               {/* CTAs */}
               <motion.div variants={riseIn}>
                 <Stack spacing={1.25} sx={{ maxWidth: 420 }}>
-                  <Button
+                  <AttractButton
                     variant='contained'
                     size='large'
                     endIcon={<ArrowForward />}
@@ -159,7 +160,7 @@ const ScanWelcomePage = () => {
                     sx={{ fontWeight: 800, fontSize: '1rem', py: 1.5, textTransform: 'none' }}
                   >
                     Create your free account
-                  </Button>
+                  </AttractButton>
                   <Stack direction='row' alignItems='center' justifyContent='space-between'>
                     <Button
                       variant='text'
@@ -246,7 +247,7 @@ const ScanWelcomePage = () => {
           {/* CTAs */}
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.34 }}>
             <Stack spacing={1.25}>
-              <Button
+              <AttractButton
                 variant='contained'
                 size='large'
                 endIcon={<ArrowForward />}
@@ -254,7 +255,7 @@ const ScanWelcomePage = () => {
                 sx={{ bgcolor: 'white', color: PRIMARY_MAIN, fontWeight: 800, fontSize: '1rem', py: 1.5, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' } }}
               >
                 Create your free account
-              </Button>
+              </AttractButton>
               <Button
                 variant='text'
                 onClick={() => navigate('/login')}

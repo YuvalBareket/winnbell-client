@@ -4,12 +4,13 @@ import {
   Container, Divider, Stack, Alert, CircularProgress,
   Checkbox, FormControlLabel, useMediaQuery, useTheme, Snackbar,
 } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import {
   ArrowBackIosNew, ArrowForward, Mail, Lock, Visibility, VisibilityOff,
   Google,
 } from '@mui/icons-material';
 import AuthBrandPanel from '../components/AuthBrandPanel';
-import { useNavigate, useSearchParams, useParams, useLocation, Navigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../../../shared/lib/supabase';
 import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
@@ -29,7 +30,6 @@ import {
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const routerLocation = useLocation();
   const { role } = useParams();
   const [searchParams] = useSearchParams();
   const theme = useTheme();
@@ -52,30 +52,22 @@ const LoginPage = () => {
   const [resetState, setResetState] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
   const [toast, setToast] = useState('');
 
-  const { syncError, isLoaded, isSignedIn } = useSyncStatus();
+  const { syncError, isLoaded } = useSyncStatus();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isAdmin = useAppSelector(selectIsAdmin);
   const isBusinessAdmin = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
-
-  // Landed here from /sso-callback after the Google redirect (it navigates back to the page
-  // that started the flow, with ssoReturn in the router state). The pending state is DERIVED,
-  // not stored: it ends by itself when the auth listener reports no session (user cancelled
-  // on the Google screen) or the sync fails; on success the already-authenticated redirect
-  // below unmounts this page into the app.
-  const arrivedFromSso = (routerLocation.state as { ssoReturn?: boolean } | null)?.ssoReturn === true;
-  const ssoReturning = arrivedFromSso && !syncError && !(isLoaded && !isSignedIn);
 
   // Reflect an async sign-in sync failure (from useSupabaseSync, delivered via context) back
   // on the form: stop the spinner and show an error. This must react to external async state,
   // so the setState here is intentional.
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (syncError && (loading || arrivedFromSso)) {
+    if (syncError && loading) {
       setLoading(false);
       setError('Something went wrong signing you in. Please try again.');
     }
-  }, [syncError, loading, arrivedFromSso]);
+  }, [syncError, loading]);
 
   // Terminal sync failures (deleted account) navigate to /login?deleted=1 WITHOUT setting
   // syncError. The page is already mounted, so only the query param changes and the submit
@@ -95,9 +87,6 @@ const LoginPage = () => {
     // Add-account via OAuth: the flag must be in localStorage BEFORE the redirect so
     // useSupabaseSync appends the new account when the session returns on /sso-callback.
     if (addMode) localStorage.setItem('pendingAddAccount', '1');
-    // Where /sso-callback sends the user back to after Google - this page, with the exact
-    // variant/query (business, add=1, invite token) so the pending state resumes in place.
-    sessionStorage.setItem('ssoReturnPath', window.location.pathname + window.location.search);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -107,7 +96,6 @@ const LoginPage = () => {
     if (oauthError) {
       localStorage.removeItem('pendingInviteToken');
       localStorage.removeItem('pendingAddAccount');
-      sessionStorage.removeItem('ssoReturnPath');
       setError(oauthError.message || 'Social login failed');
       setGoogleLoading(false);
     }
@@ -282,11 +270,11 @@ const LoginPage = () => {
           </motion.div>
 
           <motion.div variants={popIn}>
-            <Button fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading || googleLoading || ssoReturning}
+            <AttractButton fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading}
               endIcon={!loading && <ArrowForward sx={{ fontSize: 18 }} />}
               sx={authCtaSx}>
               {loading ? <CircularProgress size={24} color='inherit' /> : 'Sign In'}
-            </Button>
+            </AttractButton>
           </motion.div>
 
           <motion.div variants={popIn}>
@@ -296,11 +284,11 @@ const LoginPage = () => {
               </Divider>
               <Button
                 fullWidth
-                startIcon={(googleLoading || ssoReturning) ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
+                startIcon={googleLoading ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
                 onClick={() => termsAccepted ? handleSocialLogin('google') : setToast('Please approve the terms first')}
-                disabled={googleLoading || ssoReturning || loading}
+                disabled={googleLoading}
                 sx={authGoogleBtnSx}>
-                {(googleLoading || ssoReturning) ? 'Signing in...' : 'Continue with Google'}
+                {googleLoading ? 'Signing in...' : 'Continue with Google'}
               </Button>
             </Box>
           </motion.div>

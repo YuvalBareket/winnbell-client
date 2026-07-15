@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import {
-  Box, Button, Typography, Stack, Alert,
+  Box, Typography, Stack, Alert,
   useMediaQuery, useTheme, Grid,
 } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { Warning, Female, Male, Transgender, MoreHoriz, CheckCircle } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -315,7 +316,7 @@ const ProfileSetupPage = () => {
                 {/* Action Row - no back button, this step is a gate */}
                 <motion.div variants={popIn}>
                   <Stack direction="row" spacing={2} sx={{ mt: '2px' }}>
-                    <Button
+                    <AttractButton
                       fullWidth
                       onClick={handleSubmit}
                       disabled={mutation.isPending}
@@ -338,7 +339,7 @@ const ProfileSetupPage = () => {
                       }}
                     >
                       {mutation.isPending ? 'Setting up...' : 'Finish setup'}
-                    </Button>
+                    </AttractButton>
                   </Stack>
                 </motion.div>
 
@@ -463,7 +464,7 @@ const ProfileSetupPage = () => {
       {/* CTA - pinned near bottom */}
       <Box sx={{ padding: '24px 22px', flexShrink: 0 }}>
         <motion.div variants={popIn}>
-          <Button
+          <AttractButton
             fullWidth
             onClick={handleSubmit}
             disabled={mutation.isPending}
@@ -486,7 +487,7 @@ const ProfileSetupPage = () => {
             }}
           >
             {mutation.isPending ? 'Setting up...' : 'Finish setup'}
-          </Button>
+          </AttractButton>
           <Typography align="center" sx={{ fontSize: '12.5px', color: TEXT_TERTIARY, fontWeight: 600, mt: '12px' }}>
             You can edit this later in Settings
           </Typography>

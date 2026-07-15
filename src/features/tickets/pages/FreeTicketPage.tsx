@@ -3,11 +3,11 @@ import {
   Box,
   Container,
   Typography,
-  Button,
   CircularProgress,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import CardGiftcardOutlined from '@mui/icons-material/CardGiftcardOutlined';
 import StarRounded from '@mui/icons-material/StarRounded';
 import EventAvailableRounded from '@mui/icons-material/EventAvailableRounded';
@@ -26,7 +26,7 @@ import {
 } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
 import FreeEntrySuccessDialog from '../components/FreeEntrySuccessDialog';
-import { breathe, pressable } from '../../../shared/motion';
+import { pressable } from '../../../shared/motion';
 
 const GRADIENT_FREE = `linear-gradient(155deg, ${PRIMARY_MAIN} 0%, ${PRIMARY_DEEP} 100%)`;
 
@@ -102,11 +102,11 @@ const FreeTicketPage: React.FC = () => {
 
   const claimLabel = isActivating ? 'Claiming...' : canActivate ? 'Claim my free entry' : noCampaign ? 'No active campaign' : 'Claimed this week';
 
-  // The page's one attractor: while claimable the CTA breathes (same pull as the
-  // Submit-a-receipt button on the location profile card), plus press gestures.
+  // Press gestures only - the looping attraction (scale breathe + light sweep) now lives
+  // inside AttractButton itself, so a second framer breathe here would fight it.
   const claimButton = (
-    <motion.div {...(canActivate && !isActivating ? { ...breathe, ...pressable } : {})}>
-      <Button
+    <motion.div {...(canActivate && !isActivating ? { ...pressable } : {})}>
+      <AttractButton
         fullWidth
         variant='contained'
         size='large'
@@ -119,7 +119,7 @@ const FreeTicketPage: React.FC = () => {
         }}
       >
         {claimLabel}
-      </Button>
+      </AttractButton>
     </motion.div>
   );
 

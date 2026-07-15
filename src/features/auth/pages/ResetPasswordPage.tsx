@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
-  Box, Typography, TextField, Button, Alert, CircularProgress,
+  Box, Typography, TextField, Alert, CircularProgress,
   InputAdornment, IconButton, Stack, useMediaQuery, useTheme,
 } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { motion } from 'framer-motion';
 import LoadingScreen from '../../../shared/components/LoadingScreen';
 import { Lock, Visibility, VisibilityOff, CheckCircle, ConfirmationNumber } from '@mui/icons-material';
@@ -213,7 +214,7 @@ const ResetPasswordPage = () => {
           }}
         />
 
-        <Button
+        <AttractButton
           fullWidth
           variant='contained'
           size='large'
@@ -239,7 +240,7 @@ const ResetPasswordPage = () => {
           ) : (
             'Update Password'
           )}
-        </Button>
+        </AttractButton>
 
         <Box sx={{ textAlign: 'center', pt: 1 }}>
           <Typography variant='body2' color='text.secondary'>

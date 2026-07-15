@@ -1,4 +1,5 @@
 import { Box, Typography, Button, Stack, Container } from '@mui/material';
+import AttractButton from '../../../shared/components/AttractButton';
 import { ArrowForward } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15 } from '../../../shared/colors';
@@ -95,7 +96,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center' sx={{ mb: { xs: 2.5, md: 4 } }}>
-            <Button
+            <AttractButton
               variant='contained'
               size='large'
               onClick={() => onNavigate('/register')}
@@ -112,7 +113,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
               }}
             >
               Start collecting entries
-            </Button>
+            </AttractButton>
             <Button
               variant='text'
               endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
