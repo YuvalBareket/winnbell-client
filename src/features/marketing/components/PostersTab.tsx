@@ -314,7 +314,10 @@ const PostersTab = ({
       };
 
       printDoc.open();
-      printDoc.write(`<html><head><title>Winnbell Poster</title><style>@page{size:letter;margin:0}*{margin:0;padding:0}html,body{width:100%;height:100%}img{width:100%;height:100%;object-fit:fill;display:block}</style></head><body><img src="${imgData}"/></body></html>`);
+      // Size the poster by width with auto height (it is already a US Letter
+      // 1:1.294 ratio) so it fills exactly one page. Fixing height to 100%/100vh
+      // makes it a sliver taller than the printable area and spills onto page 2.
+      printDoc.write(`<html><head><title>Winnbell Poster</title><style>@page{size:letter portrait;margin:0}html,body{margin:0;padding:0}img{display:block;width:100%;height:auto;page-break-inside:avoid;break-inside:avoid}</style></head><body><img src="${imgData}"/></body></html>`);
       printDoc.close();
 
       const printImg = printDoc.querySelector('img');
