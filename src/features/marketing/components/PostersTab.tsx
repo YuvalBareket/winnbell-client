@@ -292,40 +292,20 @@ const PostersTab = ({
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       pdf.addImage(imgData, 'PNG', 0, 0, pageW, pageH);
-      const fileName = `winnbell-${selectedId}-poster.pdf`;
-
-      if (!isDesktop) {
-        // Mobile: hand the PDF to the OS share/print sheet. This is the only path
-        // that prints the actual file cleanly on iOS/Android; iframe printing on
-        // phones rasterizes the page and looks bad. Falls back to saving the PDF
-        // when sharing files is unsupported.
-        const file = new File([pdf.output('blob')], fileName, { type: 'application/pdf' });
-        if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({ files: [file], title: 'Winnbell Poster' });
-          } catch (shareErr) {
-            // User dismissed the share sheet - not a failure.
-            if ((shareErr as Error)?.name !== 'AbortError') throw shareErr;
-          }
-        } else {
-          pdf.save(fileName);
-          onToast('Poster saved. Open it to print.');
-        }
-      } else {
-        // Desktop: print the PDF straight from a hidden iframe (popup-free,
-        // gesture-free). Blob-URL PDF printing is reliable on desktop browsers.
-        const blobUrl = URL.createObjectURL(pdf.output('blob'));
-        const iframe = document.createElement('iframe');
-        iframe.setAttribute('aria-hidden', 'true');
-        iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
-        iframe.src = blobUrl;
-        iframe.onload = () => {
-          iframe.contentWindow?.focus();
-          iframe.contentWindow?.print();
-          window.setTimeout(() => { iframe.remove(); URL.revokeObjectURL(blobUrl); }, 1000);
-        };
-        document.body.appendChild(iframe);
-      }
+      // Print the PDF straight from a hidden iframe (popup-free, gesture-free) on
+      // every device, so mobile prints the exact US Letter file to the printer
+      // the same way desktop does.
+      const blobUrl = URL.createObjectURL(pdf.output('blob'));
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('aria-hidden', 'true');
+      iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+      iframe.src = blobUrl;
+      iframe.onload = () => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        window.setTimeout(() => { iframe.remove(); URL.revokeObjectURL(blobUrl); }, 1000);
+      };
+      document.body.appendChild(iframe);
     } catch (err) {
       swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
       logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
