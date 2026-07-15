@@ -4,7 +4,7 @@ import CheckRounded from '@mui/icons-material/CheckRounded';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import AccessTimeRounded from '@mui/icons-material/AccessTimeRounded';
-import { GRADIENT_SUCCESS, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_70 } from '../../../shared/colors';
+import { GRADIENT_SUCCESS, ALPHA_WHITE_10, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_70, ALPHA_WHITE_90 } from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
 import GoldConfetti from '../../../shared/components/GoldConfetti';
 import { useConfettiTaps } from '../../../shared/hooks/useConfettiTaps';
@@ -91,7 +91,7 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, drawLabel,
               size="large"
               startIcon={<ConfirmationNumberIcon />}
               onClick={(e) => { e.stopPropagation(); onViewEntries(); }}
-              sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, py: 1.6, borderRadius: 2.5, textTransform: 'none', '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+              sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, py: 1.6, borderRadius: 2.5, textTransform: 'none', '&:hover': { bgcolor: ALPHA_WHITE_90 } }}
             >
               View my entries
             </Button>

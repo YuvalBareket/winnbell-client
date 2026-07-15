@@ -15,7 +15,7 @@ import {
   ConfirmationNumber,
 } from '@mui/icons-material';
 import QRScannerModal from './QRScannerModal';
-import { GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
+import { GRADIENT_SUCCESS, GOLD_TROPHY, ALPHA_WHITE_90 } from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
 import GoldConfetti from '../../../shared/components/GoldConfetti';
 import { useConfettiTaps } from '../../../shared/hooks/useConfettiTaps';
@@ -104,7 +104,7 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
                 size='large'
                 startIcon={<ConfirmationNumber />}
                 onClick={(e) => { e.stopPropagation(); setSuccessDialogOpen(false); navigate('/tickets'); }}
-                sx={{ bgcolor: 'white', color: primaryColor, fontWeight: 800, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                sx={{ bgcolor: 'white', color: primaryColor, fontWeight: 800, py: 1.8, px: 4, '&:hover': { bgcolor: ALPHA_WHITE_90 } }}
               >
                 View My Entries
               </Button>

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Box, Button, Dialog, Fade, Stack, Typography, Zoom } from '@mui/material';
 import { ConfirmationNumber, EmojiEvents, AddCircleOutline } from '@mui/icons-material';
-import { GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
+import { GRADIENT_SUCCESS, GOLD_TROPHY, ALPHA_WHITE_90 } from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
 import GoldConfetti from '../../../shared/components/GoldConfetti';
 import { useConfettiTaps } from '../../../shared/hooks/useConfettiTaps';
@@ -90,7 +90,7 @@ const EntrySuccessDialog: React.FC<Props> = ({
               size="large"
               startIcon={<ConfirmationNumber />}
               onClick={(e) => { e.stopPropagation(); onViewEntries(); }}
-              sx={{ bgcolor: 'white', color: primaryColor, fontWeight: 800, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+              sx={{ bgcolor: 'white', color: primaryColor, fontWeight: 800, py: 1.8, px: 4, '&:hover': { bgcolor: ALPHA_WHITE_90 } }}
             >
               View My Entries
             </Button>
