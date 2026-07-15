@@ -18,21 +18,23 @@ function RootBoundary({ children }: { children: ReactNode }) {
 
 function App() {
   return (
-    // Renders straight through unless this is the production build (VITE_APP_ENV=production)
-    <AccessGate>
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <BrowserRouter>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <BrowserRouter>
+            {/* Inside the router so it re-checks the path on every navigation: the pre-launch
+                gate (production only) shows a 404 for the app but lets the public landing + legal
+                pages through. Renders straight through on non-production builds. */}
+            <AccessGate>
               <RootBoundary>
                 <AppRoutes />
               </RootBoundary>
-            </BrowserRouter>
-          </ThemeProvider>
-        </PersistGate>
-      </Provider>
-    </AccessGate>
+            </AccessGate>
+          </BrowserRouter>
+        </ThemeProvider>
+      </PersistGate>
+    </Provider>
   );
 }
 

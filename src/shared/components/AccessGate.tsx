@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Box, TextField, Button, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { PRIMARY_MAIN } from '../colors';
@@ -10,7 +11,18 @@ const PASSWORD = import.meta.env.VITE_ACCESS_PASSWORD as string;
 // guard prevents an unopenable gate if the env var combo is ever misconfigured.
 const GATE_ACTIVE = import.meta.env.VITE_APP_ENV === 'production' && !!PASSWORD;
 
+// Pages that stay publicly reachable even while the pre-launch gate is armed: the marketing
+// landing plus the legal pages. Google's OAuth brand-verification reviewer must be able to open
+// the homepage, privacy policy, and terms, and these are safe to expose. The app itself (login,
+// register, every authed screen) stays gated, and the server ACCESS_LOCKED flag still blocks any
+// signup/login. This lives inside the router, so it re-evaluates on every client-side navigation.
+const PUBLIC_PATHS = new Set(['/', '/privacy', '/terms']);
+
 export default function AccessGate({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  const normalizedPath = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+  const isPublicPath = PUBLIC_PATHS.has(normalizedPath);
+
   const [granted, setGranted] = useState(
     () => !GATE_ACTIVE || localStorage.getItem(STORAGE_KEY) === 'true',
   );
@@ -19,7 +31,7 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
   const [error, setError] = useState(false);
   const [clickCount, setClickCount] = useState(0);
 
-  if (granted) return <>{children}</>;
+  if (granted || isPublicPath) return <>{children}</>;
 
   // Triple-click the "404" text to reveal password field
   const handleSecretClick = () => {
