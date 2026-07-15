@@ -19,21 +19,23 @@ export const ConfettiPop = ({ x, y, pieces }: { x: number; y: number; pieces: Po
     {pieces.map((p, i) => (
       <motion.div
         key={i}
-        initial={{ x: 0, y: 0, rotate: 0, opacity: 1, scale: 1 }}
+        initial={{ x: 0, y: 0, rotate: 0, opacity: 1 }}
         animate={{
           x: p.dx,
-          // Rise first, hang at the top, then float down - light like paper, not a stone.
+          // Rise first, hang at the top, then float all the way down; the fade only starts
+          // low in the fall, so the flecks are visible for most of the journey.
           y: [0, -p.lift, p.fall],
           rotate: p.spin,
-          opacity: [1, 1, 1, 0],
-          scale: [1, 1, 0.8],
+          opacity: [1, 1, 0],
         }}
         transition={{
           duration: p.duration,
           ease: 'easeOut',
           // The vertical arc gets per-segment easing so the fleck decelerates INTO the apex
           // and eases OUT of it - a rounded turn instead of a sharp bounce at the top.
-          y: { duration: p.duration, times: [0, 0.21, 1], ease: ['easeOut', 'easeInOut'] },
+          y: { duration: p.duration, times: [0, 0.14, 1], ease: ['easeOut', 'easeInOut'] },
+          // Hold full opacity until the last stretch of the drop, then fade out low.
+          opacity: { duration: p.duration, times: [0, 0.8, 1], ease: 'easeOut' },
         }}
         style={{
           position: 'absolute',

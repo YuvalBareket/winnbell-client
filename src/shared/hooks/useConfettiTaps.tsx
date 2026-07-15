@@ -12,8 +12,8 @@ import { makePopPieces, type PopPiece } from '../components/confettiPieces';
  * fleck has finished - spamming taps can never accumulate nodes or cause lag.
  */
 const MAX_BURSTS = 4;
-// Slightly past the longest fleck's flight (makePopPieces caps duration at ~2.6s).
-const BURST_LIFETIME_MS = 2700;
+// Slightly past the longest fleck's flight (makePopPieces caps duration at ~3.7s).
+const BURST_LIFETIME_MS = 3900;
 
 export const useConfettiTaps = () => {
   const [bursts, setBursts] = useState<Array<{ id: number; x: number; y: number; pieces: PopPiece[] }>>([]);

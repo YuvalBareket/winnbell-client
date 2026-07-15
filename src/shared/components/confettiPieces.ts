@@ -47,13 +47,14 @@ export const makePopPieces = (): PopPiece[] =>
     return {
       dx: Math.cos(angle) * distance,
       lift: 40 + Math.random() * 100,
-      // Gentle descent: the flecks drift down like paper, they don't drop like stones.
-      fall: 50 + Math.random() * 80,
+      // Long descent: far enough to carry the flecks off the bottom of the screen from any
+      // realistic tap point - they leave the screen instead of fading mid-air.
+      fall: 420 + Math.random() * 280,
       size: 5 + Math.random() * 6,
       color: COLORS[i % COLORS.length],
       spin: -540 + Math.random() * 1080,
-      // Snappy pop up (~a fifth of the flight), then the same unhurried float down as before.
-      duration: 1.4 + Math.random() * 0.75,
+      // Snappy pop up, then a long unhurried float all the way down.
+      duration: 2.6 + Math.random() * 1.1,
       round: i % 3 === 0,
     };
   });
