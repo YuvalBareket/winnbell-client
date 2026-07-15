@@ -17,7 +17,7 @@ import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { staggerContainer, riseIn, popIn } from '../../../shared/motion';
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, ALPHA_WHITE_70,
-  TEXT_HEADING, TEXT_TERTIARY, SUCCESS_GREEN, ALPHA_GREEN_10,
+  TEXT_HEADING, TEXT_TERTIARY, BORDER_LIGHT, SUCCESS_GREEN, ALPHA_GREEN_10,
 } from '../../../shared/colors';
 
 // Must match CONTACT_TOPICS on the server exactly.
@@ -220,9 +220,14 @@ const ContactPage = () => {
             {sent ? successCard : (
               <>
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-                  <Typography sx={{ fontWeight: 900, fontSize: '2rem', letterSpacing: '-0.03em', color: TEXT_HEADING, mb: 0.5 }}>
-                    Send us a message
-                  </Typography>
+                  <Stack direction='row' alignItems='center' gap={2} sx={{ mb: 0.5 }}>
+                    <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
+                      <ArrowBackIosNew fontSize='small' />
+                    </IconButton>
+                    <Typography sx={{ fontWeight: 900, fontSize: '2rem', letterSpacing: '-0.03em', color: TEXT_HEADING }}>
+                      Send us a message
+                    </Typography>
+                  </Stack>
                   <Typography sx={{ color: TEXT_TERTIARY, fontSize: '14.5px', mb: 3.5 }}>
                     Fill in the form and send it our way.
                   </Typography>
