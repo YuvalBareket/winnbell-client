@@ -6,12 +6,14 @@ import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
+  Checkbox,
   CircularProgress,
   Collapse,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   IconButton,
   InputAdornment,
   Skeleton,
@@ -45,6 +47,9 @@ import type { NearbyLocation, NearbyLocationDetail } from '../../nearBy/types/ne
 
 // Safari anti-zoom: 16px keeps mobile Safari from auto-zooming the viewport on focus.
 // Hoisted at module level so the factory is not re-created per render.
+// Device-level "don't show again" for the before-you-submit confirmation dialog.
+const SKIP_SUBMIT_CONFIRM_KEY = 'skipSubmitConfirm';
+
 const receiptFieldSx = (accentColor: string) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 2.5,
@@ -227,6 +232,9 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [submittedEntryCount, setSubmittedEntryCount] = useState<number>(1);
   const [exampleOpen, setExampleOpen] = useState(false);
   const [confirmSubmitOpen, setConfirmSubmitOpen] = useState(false);
+  // "Don't show again" for the before-you-submit dialog: device-level preference,
+  // saved only when the user actually submits with the box checked.
+  const [skipConfirmChecked, setSkipConfirmChecked] = useState(false);
 
   const debouncedTerm = useDebounce(searchTerm, 350);
   // Tracks whether the partial-object branch has already auto-selected a location so it
@@ -389,7 +397,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     if (!isFormValid || !selectedLocation) return;
     // Phone verification interposes here (before the confirm dialog), so by the time the
     // user confirms, the entry can actually be created.
-    const proceed = () => setConfirmSubmitOpen(true);
+    const proceed = () => {
+      if (localStorage.getItem(SKIP_SUBMIT_CONFIRM_KEY) === '1') handleConfirmedSubmit();
+      else setConfirmSubmitOpen(true);
+    };
     if (guardEntryAction) guardEntryAction(proceed);
     else proceed();
   };
@@ -397,6 +408,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const handleConfirmedSubmit = () => {
     if (!isFormValid || !selectedLocation) return;
 
+    // Persist "don't show again" only on a real submit, never on Go Back.
+    if (skipConfirmChecked) localStorage.setItem(SKIP_SUBMIT_CONFIRM_KEY, '1');
     setErrorMessage('');
     setConfirmSubmitOpen(false);
     const amount = parseFloat(transactionAmount);
@@ -999,6 +1012,27 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           >
             Make sure your details are accurate. Submitting false or altered information will result in a permanent ban.
           </Typography>
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={skipConfirmChecked}
+                onChange={(e) => setSkipConfirmChecked(e.target.checked)}
+                size="small"
+                sx={{ py: 0.5 }}
+              />
+            }
+            label="Don't show this again"
+            sx={{
+              mt: 2,
+              ml: -0.75,
+              '& .MuiFormControlLabel-label': {
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                color: 'text.secondary',
+              },
+            }}
+          />
         </DialogContent>
 
         {/* Action buttons with clear hierarchy */}
