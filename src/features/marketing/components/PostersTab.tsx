@@ -286,46 +286,45 @@ const PostersTab = ({
 
       const imgData = canvas.toDataURL('image/png', 1.0);
 
-      // Print via a hidden iframe rather than window.open('_blank'). A popup is
-      // blocked on mobile because this runs after awaits (html2canvas) and is no
-      // longer tied to the tap gesture, so the print dialog never appeared. An
-      // iframe in the current document needs neither a popup nor an active
-      // gesture and prints reliably on desktop and mobile Safari/Chrome.
-      const iframe = document.createElement('iframe');
-      iframe.setAttribute('aria-hidden', 'true');
-      iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
-      document.body.appendChild(iframe);
+      // Build the exact same US Letter PDF the Download button produces, so Print
+      // outputs the real poster file instead of a rasterized web page.
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      pdf.addImage(imgData, 'PNG', 0, 0, pageW, pageH);
+      const fileName = `winnbell-${selectedId}-poster.pdf`;
 
-      const printDoc = iframe.contentWindow?.document;
-      if (!printDoc) {
-        iframe.remove();
-        throw new Error('Could not open print frame');
-      }
-
-      // Remove the frame once the print dialog has grabbed the content.
-      const cleanupFrame = () => { window.setTimeout(() => iframe.remove(), 1000); };
-      const triggerPrint = () => {
-        try {
+      if (!isDesktop) {
+        // Mobile: hand the PDF to the OS share/print sheet. This is the only path
+        // that prints the actual file cleanly on iOS/Android; iframe printing on
+        // phones rasterizes the page and looks bad. Falls back to saving the PDF
+        // when sharing files is unsupported.
+        const file = new File([pdf.output('blob')], fileName, { type: 'application/pdf' });
+        if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: 'Winnbell Poster' });
+          } catch (shareErr) {
+            // User dismissed the share sheet - not a failure.
+            if ((shareErr as Error)?.name !== 'AbortError') throw shareErr;
+          }
+        } else {
+          pdf.save(fileName);
+          onToast('Poster saved. Open it to print.');
+        }
+      } else {
+        // Desktop: print the PDF straight from a hidden iframe (popup-free,
+        // gesture-free). Blob-URL PDF printing is reliable on desktop browsers.
+        const blobUrl = URL.createObjectURL(pdf.output('blob'));
+        const iframe = document.createElement('iframe');
+        iframe.setAttribute('aria-hidden', 'true');
+        iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+        iframe.src = blobUrl;
+        iframe.onload = () => {
           iframe.contentWindow?.focus();
           iframe.contentWindow?.print();
-        } finally {
-          cleanupFrame();
-        }
-      };
-
-      printDoc.open();
-      // Size the poster by width with auto height (it is already a US Letter
-      // 1:1.294 ratio) so it fills exactly one page. Fixing height to 100%/100vh
-      // makes it a sliver taller than the printable area and spills onto page 2.
-      printDoc.write(`<html><head><title>Winnbell Poster</title><style>@page{size:letter portrait;margin:0}html,body{margin:0;padding:0}img{display:block;width:100%;height:auto;page-break-inside:avoid;break-inside:avoid}</style></head><body><img src="${imgData}"/></body></html>`);
-      printDoc.close();
-
-      const printImg = printDoc.querySelector('img');
-      if (printImg && !printImg.complete) {
-        printImg.onload = triggerPrint;
-        printImg.onerror = triggerPrint;
-      } else {
-        triggerPrint();
+          window.setTimeout(() => { iframe.remove(); URL.revokeObjectURL(blobUrl); }, 1000);
+        };
+        document.body.appendChild(iframe);
       }
     } catch (err) {
       swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
