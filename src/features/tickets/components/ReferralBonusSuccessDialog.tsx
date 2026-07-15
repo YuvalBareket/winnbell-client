@@ -1,8 +1,12 @@
 import { useEffect } from 'react';
 import { Box, Button, Dialog, Fade, Typography, Zoom } from '@mui/material';
 import { ConfirmationNumber, CardGiftcard } from '@mui/icons-material';
-import { GRADIENT_SUCCESS, GOLD_TROPHY } from '../../../shared/colors';
+import {
+  GRADIENT_SUCCESS, GOLD_TROPHY, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_70,
+} from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
+import GoldConfetti from '../../../shared/components/GoldConfetti';
+import { useConfettiTaps } from '../../../shared/hooks/useConfettiTaps';
 
 interface Props {
   open: boolean;
@@ -15,6 +19,8 @@ const ReferralBonusSuccessDialog: React.FC<Props> = ({
 }) => {
   const { triggerInstallPrompt } = useInstallPromptTrigger();
   useEffect(() => { if (open) triggerInstallPrompt(); }, [open, triggerInstallPrompt]);
+  // Tap-to-celebrate: taps pop confetti from the tap point (shared across congrats screens).
+  const { fireBurst, confettiBursts } = useConfettiTaps();
   return (
   <Dialog
     open={open}
@@ -22,17 +28,23 @@ const ReferralBonusSuccessDialog: React.FC<Props> = ({
     TransitionComponent={Fade}
     PaperProps={{ sx: { bgcolor: 'transparent', boxShadow: 'none' } }}
   >
-    <Box sx={{
-      height: '100%', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      background: GRADIENT_SUCCESS, px: 4, textAlign: 'center',
-    }}>
+    <Box
+      onClick={fireBurst}
+      sx={{
+        height: '100%', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        background: GRADIENT_SUCCESS, px: 4, textAlign: 'center',
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
+      <GoldConfetti />
+      {confettiBursts}
       <Zoom in={open} timeout={400}>
         <Box sx={{
           width: 100, height: 100, borderRadius: '50%',
-          bgcolor: 'rgba(255,255,255,0.15)',
+          bgcolor: ALPHA_WHITE_15,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          mb: 3, border: '2px solid rgba(255,255,255,0.3)',
+          mb: 3, border: `2px solid ${ALPHA_WHITE_20}`,
         }}>
           <CardGiftcard sx={{ fontSize: 52, color: GOLD_TROPHY }} />
         </Box>
@@ -42,15 +54,15 @@ const ReferralBonusSuccessDialog: React.FC<Props> = ({
           <Typography variant="h3" fontWeight={800} sx={{ color: 'white', mb: 1 }}>
             You're In!
           </Typography>
-          <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, lineHeight: 1.6 }}>
+          <Typography variant="body1" sx={{ color: ALPHA_WHITE_70, mb: 4, lineHeight: 1.6 }}>
             Your free bonus entry is locked in for this month's draw. Good luck!
           </Typography>
           <Button
             variant="contained"
             size="large"
             startIcon={<ConfirmationNumber />}
-            onClick={onViewEntries}
-            sx={{ bgcolor: 'white', color: '#1565c0', fontWeight: 800, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+            onClick={(e) => { e.stopPropagation(); onViewEntries(); }}
+            sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, py: 1.8, px: 4, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
           >
             View My Entries
           </Button>

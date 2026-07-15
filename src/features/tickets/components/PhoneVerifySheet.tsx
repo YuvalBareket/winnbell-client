@@ -9,7 +9,7 @@ import {
   ALPHA_WHITE_15, ALPHA_WHITE_30,
 } from '../../../shared/colors';
 
-type Context = 'free' | 'receipt' | 'code' | 'promo' | 'generic';
+type Context = 'free' | 'receipt' | 'code' | 'promo' | 'referral' | 'generic';
 
 interface Props {
   open: boolean;
@@ -35,6 +35,10 @@ const contextConfig = {
   promo: {
     title: 'We saved your promo entry',
     message: 'Your code is safe with us. Confirm your phone once and your entry activates automatically.',
+  },
+  referral: {
+    title: 'Your welcome entry is waiting',
+    message: 'We saved a bonus entry for you. Confirm your phone once and it goes right into the draw.',
   },
   generic: {
     title: 'Confirm your phone',

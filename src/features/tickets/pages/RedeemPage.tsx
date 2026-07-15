@@ -62,7 +62,7 @@ const RedeemPage = () => {
   const primaryColor = PRIMARY_MAIN;
 
   // Phone verification status - fetched fresh from server on every page visit
-  const { isPhoneVerified, isPhoneVerifiedLoaded, isError: riskLevelError, refetch: refetchRiskLevel } = useMyRiskLevel();
+  const { isPhoneVerified, isPhoneVerifiedLoaded, welcomeBonusPending, isError: riskLevelError, refetch: refetchRiskLevel } = useMyRiskLevel();
 
   // Phone verification sheet for soft prompt. The referral-congrats dialog resumes the
   // pending entry action when dismissed; the callback lives in a ref, not global state.
@@ -121,6 +121,22 @@ const RedeemPage = () => {
     activatePending();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isPhoneVerified, isPhoneVerifiedLoaded]);
+
+  // Invited signup (referral link / location flyer) with an unclaimed welcome entry: the bonus
+  // is only granted at phone-verify time, and since the old full-page verify gate is gone,
+  // nothing else would prompt a fresh invitee. Open the sheet proactively so they claim it.
+  // A pending scanned code takes priority - the effect above already prompts, and verifying
+  // through ANY context grants the welcome bonus in the same transaction.
+  const didPromptWelcome = useRef(false);
+  useEffect(() => {
+    if (!isAuthenticated || !isPhoneVerifiedLoaded || didPromptWelcome.current) return;
+    if (isPhoneVerified || !welcomeBonusPending) return;
+    if (localStorage.getItem('pendingTicketCode')) return;
+
+    didPromptWelcome.current = true;
+    requirePhone('referral');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isPhoneVerified, isPhoneVerifiedLoaded, welcomeBonusPending]);
 
   const handleScanSuccess = (scannedCode: string) => {
     setScannerOpen(false);

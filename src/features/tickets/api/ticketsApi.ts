@@ -97,6 +97,9 @@ export interface RiskLevelResponse {
   dailyCount: number;
   dailyLimit: number;
   isPhoneVerified: boolean;
+  // Invited signup (referral link or location flyer) whose welcome entry has not been granted
+  // yet - it is granted at phone-verify time, so the client prompts verification to claim it.
+  welcomeBonusPending: boolean;
 }
 
 export const getMyRiskLevel = (): Promise<RiskLevelResponse> =>
