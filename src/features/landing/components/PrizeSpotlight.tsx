@@ -76,7 +76,7 @@ const PrizeSpotlight = ({ onNavigate }: PrizeSpotlightProps) => {
                 </Stack>
               </Stack>
 
-              <AttractButton
+              <AttractButton onLightBackground
                 variant='contained'
                 size='large'
                 onClick={() => onNavigate('/register')}

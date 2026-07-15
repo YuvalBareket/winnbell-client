@@ -1,14 +1,16 @@
 import { forwardRef } from 'react';
 import { Button, type ButtonProps } from '@mui/material';
-import { ALPHA_WHITE_30 } from '../colors';
+import { ALPHA_WHITE_30, ALPHA_PRIMARY_10 } from '../colors';
 
 // The app's generic call-to-action button, two-part "light attraction":
-//  - a gentle scale up / scale down breathe (works on ANY button color), and
-//  - a slow streak of light sweeping across every few seconds (visible on colored
-//    and gradient CTAs; harmlessly invisible on white ones).
+//  - a gentle scale up / scale down breathe, and
+//  - a slow streak of light sweeping across every few seconds.
 // The two loops run on different durations so they drift out of phase and read as
 // organic rather than mechanical. This is the motion-language "attractor" in its
 // lightest form - unlike `breathe`, it is safe on several buttons per page.
+//
+// `onLightBackground`: white/light buttons need a primary-tinted streak (a white
+// streak is invisible on white) - set it on the landing pages' white CTAs.
 //
 // Pure CSS on the GPU (transform/opacity only), so it costs nothing per instance.
 // Both loops stop on hover (once the pointer is on the button the attraction has
@@ -36,7 +38,6 @@ const attractSx = {
     bottom: 0,
     left: 0,
     width: '45%',
-    background: `linear-gradient(90deg, transparent, ${ALPHA_WHITE_30}, transparent)`,
     animation: 'attract-sweep 5.6s ease-in-out infinite',
     pointerEvents: 'none',
   },
@@ -50,11 +51,32 @@ const attractSx = {
   },
 } as const;
 
-const AttractButton = forwardRef<HTMLButtonElement, ButtonProps>(function AttractButton(
-  { sx, ...props },
+const sweepOnDarkSx = {
+  '&::after': { background: `linear-gradient(90deg, transparent, ${ALPHA_WHITE_30}, transparent)` },
+} as const;
+
+const sweepOnLightSx = {
+  '&::after': { background: `linear-gradient(90deg, transparent, ${ALPHA_PRIMARY_10}, transparent)` },
+} as const;
+
+interface AttractButtonProps extends ButtonProps {
+  /** Set on white/light CTAs (landing hero, navbar): tints the light streak with the
+   *  brand primary so it stays visible - the default white streak only shows on
+   *  colored/gradient backgrounds. */
+  onLightBackground?: boolean;
+}
+
+const AttractButton = forwardRef<HTMLButtonElement, AttractButtonProps>(function AttractButton(
+  { sx, onLightBackground = false, ...props },
   ref,
 ) {
-  return <Button ref={ref} {...props} sx={[attractSx, ...(Array.isArray(sx) ? sx : [sx])]} />;
+  return (
+    <Button
+      ref={ref}
+      {...props}
+      sx={[attractSx, onLightBackground ? sweepOnLightSx : sweepOnDarkSx, ...(Array.isArray(sx) ? sx : [sx])]}
+    />
+  );
 });
 
 export default AttractButton;

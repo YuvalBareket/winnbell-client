@@ -96,7 +96,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center' sx={{ mb: { xs: 2.5, md: 4 } }}>
-            <AttractButton
+            <AttractButton onLightBackground
               variant='contained'
               size='large'
               onClick={() => onNavigate('/register')}

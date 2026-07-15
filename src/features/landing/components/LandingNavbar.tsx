@@ -38,7 +38,7 @@ const LandingNavbar = ({ onNavigate, variant = 'consumer' }: LandingNavbarProps)
         >
           Log in
         </Button>
-        <AttractButton
+        <AttractButton onLightBackground
           variant='contained'
           onClick={() => onNavigate('/register')}
           sx={{

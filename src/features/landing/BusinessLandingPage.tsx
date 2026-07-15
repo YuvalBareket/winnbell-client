@@ -123,7 +123,7 @@ const BusinessLandingPage = () => {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center'>
-              <AttractButton
+              <AttractButton onLightBackground
                 variant='contained'
                 size='large'
                 endIcon={<ArrowForward />}
@@ -429,7 +429,7 @@ const BusinessLandingPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.15 }}
           >
-            <AttractButton
+            <AttractButton onLightBackground
               variant='contained'
               size='large'
               onClick={() => navigate('/register/Business')}
