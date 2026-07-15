@@ -31,8 +31,9 @@ interface AppPageHeroProps {
 }
 
 // Notification + menu (avatar) buttons - shared by hero and floating variants. On the gradient
-// they render white; the avatar opens the single app menu drawer via context.
-const HeroActions = ({ onGradient = true }: { onGradient?: boolean }) => {
+// they render white; the avatar opens the single app menu drawer via context. Exported so
+// pages with a bespoke header (e.g. Settings) keep the SAME notification + menu actions.
+export const HeroActions = ({ onGradient = true }: { onGradient?: boolean }) => {
   const user = useAppSelector(selectCurrentUser);
   const initials = getUserInitials(user?.fullName);
   const { subscribe, unsubscribe, isPending, isSupported, isSubscribed } = useNotifications();

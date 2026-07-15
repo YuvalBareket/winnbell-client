@@ -180,6 +180,13 @@ export const authSlice = createSlice({
         acc.user.gender = action.payload.gender;
       }
     },
+    updateProfileName: (state, action: PayloadAction<{ fullName: string }>) => {
+      if (state.user) {
+        state.user.fullName = action.payload.fullName;
+      }
+      const acc = state.accounts?.find((a) => a.user.id === state.activeAccountId);
+      if (acc) acc.user.fullName = action.payload.fullName;
+    },
     setBusinessActive: (state) => {
       if (state.user) {
         state.user.businessIsActive = true;
@@ -201,6 +208,6 @@ export const authSlice = createSlice({
 
 export const {
   login, addAccount, switchAccount, removeAccount, updateAccountTokens, logout,
-  setLoading, setError, setUserLocation, clearBusinessSetup, completeProfileSetup, setBusinessActive, updateBusinessUser,
+  setLoading, setError, setUserLocation, clearBusinessSetup, completeProfileSetup, updateProfileName, setBusinessActive, updateBusinessUser,
 } = authSlice.actions;
 export default authSlice.reducer;

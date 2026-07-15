@@ -40,6 +40,11 @@ export const ROLE_MANAGER_HOVER = '#1E293B';   // location manager hover
 export const BORDER_LIGHT       = '#dbe4ef';   // social buttons, input borders (slight teal tint)
 export const BORDER_OVERLAY     = 'rgba(0,0,0,0.1)';
 export const BORDER_SUBTLE      = '#e7edf4';   // very light dividers (warm cream border)
+export const BORDER_MUTED       = '#cbd5e1';   // muted borders / list-row chevrons (slate 300)
+export const BG_ROW_SUBTLE      = '#f8fafb';   // settings section strips + row press states (near-white)
+export const PRIMARY_TINT       = '#eef4fd';   // light-blue icon tile background (on white cards)
+export const ERROR_BG_TINT      = '#fef2f2';   // danger button fill (solid light red)
+export const ERROR_BORDER_TINT  = '#f1c9c9';   // danger button border (solid light red)
 
 // ── Status - Activated (green) ───────────────
 export const STATUS_ACTIVATED_BG   = '#e8f5e9';
