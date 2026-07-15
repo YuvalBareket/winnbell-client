@@ -22,13 +22,13 @@ import {
   ReceiptLongOutlined,
   PrivacyTipOutlined,
   GavelOutlined,
+  MailOutline,
   ArticleOutlined,
   ChevronRight,
   EmojiEventsOutlined,
   AdminPanelSettingsOutlined,
   SettingsOutlined,
   CampaignOutlined,
-  HelpOutlineOutlined,
   DashboardOutlined,
   PeopleOutlined,
   NotificationsOutlined,
@@ -51,7 +51,6 @@ import {
   ALPHA_PRIMARY_06,
 } from '../colors';
 import { getUserInitials, getRoleLabel } from '../utils/string';
-import HowItWorksModal from '../../features/help/components/HowItWorksModal';
 import GetAppOutlinedIcon from '@mui/icons-material/GetAppOutlined';
 import { useInstallPromptTrigger } from '../../features/install/InstallPromptContext';
 import AccountSwitcher from './AccountSwitcher';
@@ -82,7 +81,6 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   // Available whenever the user can switch (2 accounts) OR add one (under the cap), so a
   // single-account user can still reach "Add account".
   const showSwitcher = accounts.length > 1 || canAddAccount;
-  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   // Mobile uses an inline expansion (not a nested Menu, which the Drawer's focus trap blocks).
   const [switcherExpanded, setSwitcherExpanded] = useState(false);
   const { canInstall, openInstallDialog } = useInstallPromptTrigger();
@@ -90,11 +88,6 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
 
   const handleNav = (path: string) => {
     navigate(path);
-    onClose();
-  };
-
-  const handleHowItWorks = () => {
-    setHowItWorksOpen(true);
     onClose();
   };
 
@@ -138,6 +131,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
       ];
 
   const legalItems: NavItem[] = [
+    { label: 'Contact us', icon: <MailOutline />, path: '/contact' },
     { label: 'Terms of Service', icon: <GavelOutlined />, path: '/terms' },
     { label: 'Privacy Policy', icon: <PrivacyTipOutlined />, path: '/privacy' },
     ...((isBusiness || isManager) ? [{ label: 'Business Agreement', icon: <ArticleOutlined />, path: '/business-agreement' }] : []),
@@ -356,22 +350,6 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
                 />
               </TapListItemButton>
             )}
-            <TapListItemButton
-              onTap={handleHowItWorks}
-              sx={{
-                borderRadius: 2.5, mb: 0.2, py: itemPy, px: 1.5,
-                transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: 'rgba(0,0,0,0.03)', transform: 'translateX(3px)' },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 34, color: TEXT_TERTIARY, '& svg': { fontSize: { xs: 20, sm: 24 } } }}>
-                <HelpOutlineOutlined />
-              </ListItemIcon>
-              <ListItemText
-                primary='How It Works'
-                primaryTypographyProps={{ fontWeight: 500, fontSize: { xs: '0.82rem', sm: '0.84rem' }, color: 'text.secondary' }}
-              />
-            </TapListItemButton>
             {legalItems.map((item) => (
               <TapListItemButton
                 key={item.path}
@@ -425,8 +403,6 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
       </Box>
     </Drawer>
 
-    {/* How It Works Modal */}
-    <HowItWorksModal open={howItWorksOpen} onClose={() => setHowItWorksOpen(false)} />
     </Fragment>
   );
 };

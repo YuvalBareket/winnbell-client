@@ -22,6 +22,8 @@ interface AuthBrandPanelProps {
   tagline?: string;
   bullets?: BulletItem[];
   isBusinessVariant?: boolean;
+  /** Optional extra content under the tagline/bullets (e.g. the contact page's email chip). */
+  footer?: React.ReactNode;
 }
 
 const AuthBrandPanel: React.FC<AuthBrandPanelProps> = ({
@@ -33,6 +35,7 @@ const AuthBrandPanel: React.FC<AuthBrandPanelProps> = ({
   tagline = 'Join thousands of members supporting local businesses and competing for real monthly prizes. No purchase necessary.',
   bullets = DEFAULT_BULLETS,
   isBusinessVariant = false,
+  footer,
 }) => (
   <Box
     sx={{
@@ -92,6 +95,8 @@ const AuthBrandPanel: React.FC<AuthBrandPanelProps> = ({
           ))}
         </Stack>
       )}
+
+      {footer && <Box sx={{ mt: 3.5 }}>{footer}</Box>}
     </Box>
   </Box>
 );

@@ -16,7 +16,7 @@ const GATE_ACTIVE = import.meta.env.VITE_APP_ENV === 'production' && !!PASSWORD;
 // the homepage, privacy policy, and terms, and these are safe to expose. The app itself (login,
 // register, every authed screen) stays gated, and the server ACCESS_LOCKED flag still blocks any
 // signup/login. This lives inside the router, so it re-evaluates on every client-side navigation.
-const PUBLIC_PATHS = new Set(['/', '/privacy', '/terms']);
+const PUBLIC_PATHS = new Set(['/', '/privacy', '/terms', '/contact']);
 
 export default function AccessGate({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();

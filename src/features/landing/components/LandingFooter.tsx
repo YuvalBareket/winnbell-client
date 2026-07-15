@@ -20,7 +20,7 @@ const LandingFooter = ({ onNavigate }: LandingFooterProps) => {
     >
       <Box component='img' src='/winnbell_app_name.svg' alt='Winnbell' sx={{ height: { xs: 20, md: 28 }, width: 'auto', objectFit: 'contain' }} />
       <Stack direction='row' spacing={{ xs: 2, md: 2.5 }} alignItems='center'>
-        {[{ label: 'Terms', path: '/terms' }, { label: 'Privacy', path: '/privacy' }].map(({ label, path }) => (
+        {[{ label: 'Terms', path: '/terms' }, { label: 'Privacy', path: '/privacy' }, { label: 'Contact', path: '/contact' }].map(({ label, path }) => (
           <Typography key={label} component='a' onClick={() => onNavigate(path)} variant='caption' sx={{ color: TEXT_SECONDARY, cursor: 'pointer', textDecoration: 'none', fontWeight: 500, fontSize: { xs: '0.7rem', md: '0.875rem' }, '&:hover': { color: PRIMARY_MAIN } }}>
             {label}
           </Typography>
