@@ -987,7 +987,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               fontWeight: 500,
             }}
           >
-            Every winning receipt is reviewed by hand before we award a prize.
+            Every winning receipt is reviewed by our team before we award a prize.
           </Typography>
           <Typography
             variant="body2"

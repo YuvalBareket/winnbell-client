@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Button, Typography, TextField, IconButton, InputAdornment, Container,
   Stack, Alert, CircularProgress, Divider, Checkbox, FormControlLabel,
-  useMediaQuery, useTheme, Snackbar,
+  useMediaQuery, useTheme,
 } from '@mui/material';
 import AttractButton from '../../../shared/components/AttractButton';
 import {
@@ -66,7 +66,6 @@ const RegisterPage = () => {
   const passwordError = touched.password && formData.password !== '' && formData.password.length < 8
     ? 'Password must be at least 8 characters.' : '';
   const [regionBlocked, setRegionBlocked] = useState(false);
-  const [toast, setToast] = useState('');
 
   useEffect(() => {
     if (searchParams.get('region_blocked') === '1') {
@@ -81,6 +80,7 @@ const RegisterPage = () => {
 
   const handleSocialSignUp = async (provider: 'google' | 'apple') => {
     setGoogleLoading(true);
+    setError('');
     const roleFormatted = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User';
     localStorage.setItem('pendingRole', roleFormatted);
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
@@ -326,7 +326,7 @@ const RegisterPage = () => {
               <Button
                 fullWidth
                 startIcon={googleLoading ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
-                onClick={() => termsAccepted ? handleSocialSignUp('google') : setToast('Please approve the terms first')}
+                onClick={() => termsAccepted ? handleSocialSignUp('google') : setError('Please approve the terms first.')}
                 disabled={googleLoading}
                 sx={authGoogleBtnSx}>
                 {googleLoading ? 'Signing up...' : 'Continue with Google'}
@@ -417,7 +417,6 @@ const RegisterPage = () => {
             {FormContent()}
           </Box>
         </Box>
-        <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
       </Box>
     );
   }
@@ -494,7 +493,6 @@ const RegisterPage = () => {
       <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 3, pb: 4 }}>
         {FormContent()}
       </Container>
-      <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
     </Box>
   );
 };

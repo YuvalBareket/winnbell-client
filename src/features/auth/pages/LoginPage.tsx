@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Button, Typography, TextField, IconButton, InputAdornment,
   Container, Divider, Stack, Alert, CircularProgress,
-  Checkbox, FormControlLabel, useMediaQuery, useTheme, Snackbar,
+  Checkbox, FormControlLabel, useMediaQuery, useTheme,
 } from '@mui/material';
 import AttractButton from '../../../shared/components/AttractButton';
 import {
@@ -50,7 +50,6 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [resetState, setResetState] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
-  const [toast, setToast] = useState('');
 
   const { syncError, isLoaded } = useSyncStatus();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -83,6 +82,7 @@ const LoginPage = () => {
 
   const handleSocialLogin = async (provider: 'google') => {
     setGoogleLoading(true);
+    setError('');
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
     // Add-account via OAuth: the flag must be in localStorage BEFORE the redirect so
     // useSupabaseSync appends the new account when the session returns on /sso-callback.
@@ -285,7 +285,7 @@ const LoginPage = () => {
               <Button
                 fullWidth
                 startIcon={googleLoading ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
-                onClick={() => termsAccepted ? handleSocialLogin('google') : setToast('Please approve the terms first')}
+                onClick={() => termsAccepted ? handleSocialLogin('google') : setError('Please approve the terms first.')}
                 disabled={googleLoading}
                 sx={authGoogleBtnSx}>
                 {googleLoading ? 'Signing in...' : 'Continue with Google'}
@@ -346,7 +346,6 @@ const LoginPage = () => {
             {FormContent()}
           </Box>
         </Box>
-        <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
       </Box>
     );
   }
@@ -417,7 +416,6 @@ const LoginPage = () => {
       <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 3, pb: 4 }}>
         {FormContent()}
       </Container>
-      <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} message={toast} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
     </Box>
   );
 };
