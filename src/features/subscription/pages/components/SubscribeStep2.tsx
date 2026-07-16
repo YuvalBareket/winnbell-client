@@ -17,6 +17,7 @@ interface Props {
   isSaving: boolean;
   onSave: (blob: Blob) => void;
   onBack?: () => void;
+  onSkip?: () => void;
 }
 
 const SubscribeStep2 = ({
@@ -25,6 +26,7 @@ const SubscribeStep2 = ({
   isSaving,
   onSave,
   onBack,
+  onSkip,
 }: Props) => {
   const editorRef = useRef<CanvasEditorHandle>(null);
   const [pathCount, setPathCount] = useState(0);
@@ -47,8 +49,8 @@ const SubscribeStep2 = ({
 
   return (
     <Box sx={{ px: { xs: 0, md: 4 }, pt: { xs: 0.5, md: 4 }, pb: { xs: 2, md: 4 } }}>
-      {/* Heading + subtitle. No "skip" here - the receipt guide is required so customers
-          always know which number to enter. */}
+      {/* Heading + subtitle. The receipt guide is skippable - never block a business on the
+          way to payment. The preparation view keeps nudging until they add it. */}
       <Stack direction='row' alignItems='center' spacing={0.5} sx={{ mb: 0.5 }}>
         {onBack && (
           <IconButton onClick={onBack} size='small' aria-label='Back' sx={{ ml: -0.75, color: TEXT_SECONDARY }}>
@@ -85,7 +87,7 @@ const SubscribeStep2 = ({
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: '1fr 340px' },
               gridTemplateAreas: {
-                xs: '"howto" "image" "controls"',
+                xs: '"howto" "skip" "image" "controls"',
                 md: '"image howto" "image controls"',
               },
               // Desktop: How-to row hugs its content, controls row takes the remaining
@@ -95,6 +97,28 @@ const SubscribeStep2 = ({
               alignItems: 'start',
             }}
           >
+            {/* Skip link - mobile only, above the upload card so it is visible without
+                scrolling past the tall image frame. Desktop shows it in the controls column. */}
+            {onSkip && (
+              <Typography
+                onClick={onSkip}
+                sx={{
+                  gridArea: 'skip',
+                  display: { xs: 'block', md: 'none' },
+                  textAlign: 'center',
+                  fontSize: '12.5px',
+                  color: TEXT_TERTIARY,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    opacity: 0.7,
+                  },
+                }}
+              >
+                I'll do it later
+              </Typography>
+            )}
+
             {/* Canvas editor in frame */}
             <Box
               sx={{
@@ -227,6 +251,27 @@ const SubscribeStep2 = ({
                     New photo
                   </Button>
                 </Stack>
+              )}
+
+              {/* Skip link - desktop only (mobile shows it above the upload card).
+                  Continues to the plan step; the receipt example can be added later. */}
+              {onSkip && (
+                <Typography
+                  onClick={onSkip}
+                  sx={{
+                    display: { xs: 'none', md: 'block' },
+                    textAlign: 'center',
+                    fontSize: '12.5px',
+                    color: TEXT_TERTIARY,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      opacity: 0.7,
+                    },
+                  }}
+                >
+                  I'll do it later
+                </Typography>
               )}
             </Stack>
           </Box>

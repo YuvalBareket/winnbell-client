@@ -3,6 +3,7 @@ import {
   Box, Container,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppPageHero from '../../../shared/components/AppPageHero';
@@ -13,6 +14,7 @@ import {
 } from '../../../shared/colors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { getUploadUrl, updateCampaignSettingsApi } from '../../partner/api/business.api';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 import StepIndicator from './components/StepIndicator';
 import SubscribeStep1 from './components/SubscribeStep1';
 import SubscribeStep2 from './components/SubscribeStep2';
@@ -23,6 +25,7 @@ import SubscribeStep3 from './components/SubscribeStep3';
 
 const SubscribePage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: businessData } = useBusinessData();
   const locationCount = businessData?.locations?.filter(l => l.is_active).length ?? null;
 
@@ -63,6 +66,9 @@ const SubscribePage = () => {
       await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
       // Step 1 already saved the threshold; the receipt example is independent, so only send the image.
       await updateCampaignSettingsApi({ receipt_example_image_url: publicUrl });
+      // Refresh cached business details so the receipt gate and Business Hub see the new image
+      // even if the user leaves the flow before checkout.
+      queryClient.invalidateQueries({ queryKey: queryKeys.business.myDetails });
       setImgFile(null);
       setStep(3);
     } catch (err) {
@@ -166,6 +172,7 @@ const SubscribePage = () => {
                       isSaving={isSaving}
                       onSave={handleSaveReceipt}
                       onBack={() => setStep(1)}
+                      onSkip={() => { setImgFile(null); setStep(3); }}
                     />
                   </motion.div>
                 )}

@@ -117,6 +117,10 @@ const BusinessProfilePage = () => {
 
   const { mutate: setupBusiness, isPending } = useBusinessSetup();
   const [setupError, setSetupError] = useState('');
+  // Set synchronously on submit, BEFORE any mutation/redux state changes. React Query's
+  // isSuccess is notified in a microtask, so the redux-triggered re-render (flag cleared in
+  // the hook's onSuccess) can arrive while isSuccess still reads false - a local flag can't miss.
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const handleLogoUploadComplete = useCallback((key: string) => {
     setUploadedLogoKey(key);
@@ -128,7 +132,10 @@ const BusinessProfilePage = () => {
   // This wizard is only for businesses that still need setup. An owner who already finished
   // (or a manager) landing here by URL is sent back to their hub instead of a stray setup form.
   // Placed after all hook calls to satisfy Rules of Hooks.
-  if (!requiresBusinessSetup) return <Navigate to='/nearby' replace />;
+  // hasSubmitted guard: on submit success the redux flag flips false BEFORE the hook's
+  // navigate('/subscribe') transition commits (router navigations are low-priority), so
+  // without it this redirect hijacks the wizard's own hand-off and lands on /nearby.
+  if (!requiresBusinessSetup && !hasSubmitted) return <Navigate to='/nearby' replace />;
 
   const selectedSector = watch('businessSector');
   const businessName = watch('businessName');
@@ -139,13 +146,19 @@ const BusinessProfilePage = () => {
 
   const submit = (data: BusinessSetupInput) => {
     setSetupError('');
+    setHasSubmitted(true);
     setupBusiness(data, {
       // Show the server's actual validation message (e.g. "Website URL is not a valid
       // URL") - err.message on an HTTP error is just "Request failed with status 400".
-      onError: (err: unknown) => setSetupError(
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-          ?? (err instanceof Error ? err.message : 'Something went wrong. Please try again.'),
-      ),
+      onError: (err: unknown) => {
+        // Re-arm the not-needed redirect guard: hasSubmitted only suppresses it during a
+        // successful submit's hand-off to /subscribe.
+        setHasSubmitted(false);
+        setSetupError(
+          (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+            ?? (err instanceof Error ? err.message : 'Something went wrong. Please try again.'),
+        );
+      },
     });
   };
 

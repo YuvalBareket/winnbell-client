@@ -14,6 +14,9 @@ interface DrawPreparationViewProps {
   subscription: SubscriptionDetails | undefined;
   hasDescription: boolean;
   hasLocations: boolean;
+  hasReceiptExample?: boolean;
+  /** The business is enrolled in a live campaign but the dashboard is gated (missing receipt example). */
+  inActiveCampaign?: boolean;
   isDesktop: boolean;
   isManager?: boolean;
   isSubscribed?: boolean;
@@ -23,6 +26,8 @@ const DrawPreparationView = ({
   subscription,
   hasDescription,
   hasLocations,
+  hasReceiptExample = false,
+  inActiveCampaign = false,
   isDesktop,
   isManager = false,
   isSubscribed = true,
@@ -42,25 +47,41 @@ const DrawPreparationView = ({
   const planLabel = hasExistingPlan ? 'Reactivate your campaign plan' : 'Subscribe to a campaign plan';
   const planPath = hasExistingPlan ? '/subscription/manage' : '/subscribe';
 
-  const drawDate = subscription?.draw_date ? new Date(subscription.draw_date) : null;
+  // A business that subscribed mid-campaign has no draw_entry yet (enrollment happens when
+  // the admin opens the next campaign), so draw_* are null. Fall back to the upcoming
+  // campaign it will join (next_campaign_*) so the card shows a real name, date and prize.
+  // Only when it WILL actually join: a cancelling business (effectivelySubscribed false) or
+  // one that opted out of the next campaign must not see it presented as theirs.
+  const showNextCampaign = effectivelySubscribed && !subscription?.skip_next_campaign;
+  const drawName = subscription?.draw_name ?? (showNextCampaign ? subscription?.next_campaign_name : null) ?? null;
+  const drawDateValue = subscription?.draw_date ?? (showNextCampaign ? subscription?.next_campaign_date : null) ?? null;
+  const prizeValue = subscription?.prize_amount ?? (showNextCampaign ? subscription?.next_campaign_prize : null) ?? null;
+
+  const drawDate = drawDateValue ? new Date(drawDateValue) : null;
   const daysUntil = drawDate
     ? Math.ceil((drawDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
-  const prizeAmount = subscription?.prize_amount
-    ? `$${Number(subscription.prize_amount).toFixed(0)}`
+  const prizeAmount = prizeValue
+    ? `$${Number(prizeValue).toFixed(0)}`
     : null;
 
   const checklist = effectivelySubscribed
     ? [
         { label: 'Subscription active', done: true },
-        { label: `Registered for ${subscription?.draw_name ?? 'upcoming campaign'}`, done: true },
+        inActiveCampaign
+          ? { label: `${drawName ?? 'Your campaign'} is live`, done: true }
+          : { label: `Registered for ${drawName ?? 'upcoming campaign'}`, done: true },
+        { label: 'Add a receipt example for your customers', done: hasReceiptExample, path: '/nearby' },
         { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
         { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
-        { label: 'Go live on the map when campaign opens', done: false, info: true },
+        inActiveCampaign
+          ? { label: 'Your campaign dashboard opens once your receipt example is set', done: false, info: true }
+          : { label: 'Go live on the map when campaign opens', done: false, info: true },
       ]
     : [
         { label: planLabel, done: false, path: planPath },
+        { label: 'Add a receipt example for your customers', done: hasReceiptExample, path: '/nearby' },
         { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
         { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
         { label: 'Go live on the map when your campaign opens', done: false, info: true },
@@ -72,8 +93,12 @@ const DrawPreparationView = ({
   return (
     <Box sx={{ minHeight: isDesktop ? 'auto' : 'calc(var(--dvh100, 100dvh) - 138px)', pb: 6 }}>
       <AppPageHero
-        title={effectivelySubscribed ? 'Preparing for Your Campaign' : 'Get Your Business Ready'}
-        subtitle={effectivelySubscribed
+        title={inActiveCampaign
+          ? 'Your Campaign Is Live'
+          : effectivelySubscribed ? 'Preparing for Your Campaign' : 'Get Your Business Ready'}
+        subtitle={inActiveCampaign
+          ? 'One more step - add a receipt example so customers know which number to enter'
+          : effectivelySubscribed
           ? "You're registered - your business goes live when the campaign opens"
           : 'A few quick steps to get your business live on Winnbell'}
       />
@@ -89,9 +114,9 @@ const DrawPreparationView = ({
           >
             <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
             <Box sx={{ background: GRADIENT_HERO, p: 3, color: 'white' }}>
-              <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>{effectivelySubscribed ? 'Registered Campaign' : 'Upcoming Campaign'}</Typography>
+              <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>{inActiveCampaign ? 'Live Campaign' : effectivelySubscribed ? 'Registered Campaign' : 'Upcoming Campaign'}</Typography>
               <Typography variant='h6' fontWeight={800} sx={{ mt: 0.5 }}>
-                {subscription?.draw_name ?? 'Upcoming Monthly Campaign'}
+                {drawName ?? 'Upcoming Monthly Campaign'}
               </Typography>
               {drawDate && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
@@ -103,7 +128,8 @@ const DrawPreparationView = ({
               )}
             </Box>
             <Box sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+              {/* Days-to-go / prize stats - desktop only */}
+              <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2, mb: 3 }}>
                 {daysUntil !== null && (
                   <Box sx={{ flex: 1, textAlign: 'center', p: 2, bgcolor: 'rgba(25,93,230,0.05)', borderRadius: 2 }}>
                     <Typography variant='h4' fontWeight={800} color='primary'>{daysUntil}</Typography>
@@ -119,7 +145,9 @@ const DrawPreparationView = ({
               </Box>
               <Box sx={{ p: 2, bgcolor: 'rgba(25,93,230,0.04)', borderRadius: 2, border: '1px solid rgba(25,93,230,0.1)' }}>
                 <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-                  Once the campaign is live, customers can submit receipts from your store through the Winnbell app to earn campaign entries. Members also receive one free entry per week regardless of any purchase, once your campaign is live.
+                  {inActiveCampaign
+                    ? 'Your campaign is live. Customers can submit receipts from your store through the Winnbell app to earn campaign entries, and members also receive one free entry per week regardless of any purchase.'
+                    : 'Once the campaign is live, customers can submit receipts from your store through the Winnbell app to earn campaign entries. Members also receive one free entry per week regardless of any purchase, once your campaign is live.'}
                 </Typography>
               </Box>
             </Box>
@@ -143,7 +171,7 @@ const DrawPreparationView = ({
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                   {(effectivelySubscribed
                     ? [
-                        { title: 'Registered for the campaign', desc: `Your business is set for ${subscription?.draw_name ?? 'the upcoming campaign'}.` },
+                        { title: 'Registered for the campaign', desc: `Your business is set for ${drawName ?? 'the upcoming campaign'}.` },
                         { title: 'Campaign opens', desc: 'When it goes live, customers can submit receipts from your location to enter.' },
                         { title: 'Entries appear here', desc: 'Every entry from your location shows up on this page to track.' },
                       ]
@@ -219,7 +247,15 @@ const DrawPreparationView = ({
 
               <Divider sx={{ my: 3 }} />
               <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7 }}>
-                <strong>Entry generation opens when the campaign starts.</strong> In the meantime, make sure your profile is complete so customers can find you on the map and know what you offer.
+                {inActiveCampaign ? (
+                  <>
+                    <strong>Your campaign is live and collecting entries.</strong> Add a receipt example so customers know exactly which number to enter. Your campaign dashboard opens as soon as it is set.
+                  </>
+                ) : (
+                  <>
+                    <strong>Entry generation opens when the campaign starts.</strong> In the meantime, make sure your profile is complete so customers can find you on the map and know what you offer.
+                  </>
+                )}
               </Typography>
               </Paper>
             )}

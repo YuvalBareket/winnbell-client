@@ -158,14 +158,22 @@ const CampaignDashboardPage = () => {
   // No campaign state
   const noCampaign = !headerData?.has_campaign;
 
+  const hasReceiptExample = !!bizData?.receipt_example_image_url;
+  // An owner who skipped the receipt example during subscribe is still enrolled and active
+  // (they paid), but keeps seeing the preparation view instead of the dashboard until they
+  // add it. Managers are not gated - they cannot upload the receipt example.
+  const ownerMissingReceipt = isBusiness && !!bizData && !hasReceiptExample;
+
   // A business with no campaigns yet (just subscribed, waiting for the next draw to open, or
   // not subscribed at all) sees the preparation / "getting ready" view instead of an empty dashboard.
-  if (!campaignsLoading && campaigns.length === 0) {
+  if (!campaignsLoading && (campaigns.length === 0 || ownerMissingReceipt)) {
     return (
       <DrawPreparationView
         subscription={subscription ?? undefined}
         hasDescription={hasDescription}
         hasLocations={hasLocations}
+        hasReceiptExample={hasReceiptExample}
+        inActiveCampaign={campaigns.length > 0}
         isDesktop={isDesktop}
         isManager={isManager}
         isSubscribed={businessIsActive}
