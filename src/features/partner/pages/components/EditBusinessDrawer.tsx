@@ -13,7 +13,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { Close, LanguageOutlined } from '@mui/icons-material';
+import { Close, LanguageOutlined, StorefrontOutlined } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { AnimatePresence, motion } from 'framer-motion';
 import { BUSINESS_SECTORS } from '../../../admin/data';
@@ -28,6 +28,7 @@ import {
 } from '../../../../shared/colors';
 
 interface BusinessSnapshot {
+  name: string;
   sector: string;
   description: string;
   terms_text: string;
@@ -52,12 +53,13 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
   const { control, handleSubmit, watch, setValue } = useForm<UpdateBusinessInput>({
     values: business
       ? {
+          businessName: business.name,
           businessSector: business.sector,
           description: business.description,
           terms_text: business.terms_text,
           website_url: business.website_url ?? '',
         }
-      : { businessSector: '', description: '', terms_text: '', website_url: '' },
+      : { businessName: '', businessSector: '', description: '', terms_text: '', website_url: '' },
     // A background refetch of the entity must never wipe what the user is typing.
     resetOptions: { keepDirtyValues: true },
   });
@@ -93,6 +95,46 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
       <Box sx={{ px: 3, pt: 3, pb: 5, overflowY: 'auto' }}>
         <Stack spacing={2.5} component='form' onSubmit={handleSubmit(onSubmit)}>
 
+          {/* Business name + industry share a row on desktop; stacked on mobile. */}
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2.5, alignItems: 'flex-start' }}>
+            <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
+              {/* Business name - the public name shown to customers */}
+              <Typography
+                variant='body2'
+                fontWeight={700}
+                color='text.secondary'
+                mb={1.5}
+                sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}
+              >
+                Business name
+              </Typography>
+              <Controller
+                name='businessName'
+                control={control}
+                rules={{ required: 'Business name is required' }}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    placeholder="e.g. Joe's Coffee"
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position='start'>
+                          <StorefrontOutlined sx={{ color: PRIMARY_MAIN, fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                    // Label is an external caption above, so name the input for a11y / testing.
+                    inputProps={{ 'aria-label': 'Business name' }}
+                    sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
+                  />
+                )}
+              />
+            </Box>
+
+            <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
           {/* Sector picker with shrink animation */}
           <Controller
             name='businessSector'
@@ -121,7 +163,8 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                       <Paper
                         elevation={0}
                         sx={{
-                          p: 2,
+                          height: 56, // match the Business name TextField (outlined, medium)
+                          px: 2,
                           borderRadius: 2,
                           border: '2px solid',
                           borderColor: PRIMARY_MAIN,
@@ -140,14 +183,9 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                           >
                             {BUSINESS_SECTORS[selectedSector].icon}
                           </motion.div>
-                          <Box>
-                            <Typography variant='body2' fontWeight={700} color='primary.main'>
-                              {BUSINESS_SECTORS[selectedSector].label}
-                            </Typography>
-                            <Typography variant='caption' color='text.secondary'>
-                              Selected industry
-                            </Typography>
-                          </Box>
+                          <Typography variant='body2' fontWeight={700} color='primary.main'>
+                            {BUSINESS_SECTORS[selectedSector].label}
+                          </Typography>
                         </Box>
                         <Typography
                           variant='caption'
@@ -220,6 +258,8 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
               </Box>
             )}
           />
+            </Box>
+          </Box>
 
           <Controller
             name='description'

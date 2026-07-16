@@ -27,6 +27,7 @@ export interface UpdateLocationInput {
 }
 
 export interface UpdateBusinessInput {
+  businessName: string;
   businessSector: string;
   description: string;
   terms_text: string;
