@@ -1,5 +1,6 @@
 import {
   Drawer,
+  Dialog,
   Box,
   Typography,
   TextField,
@@ -9,6 +10,8 @@ import {
   CircularProgress,
   IconButton,
   InputAdornment,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { Close, LanguageOutlined } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
@@ -40,6 +43,8 @@ interface Props {
 const editableSectors = Object.keys(BUSINESS_SECTORS).filter((k) => k !== 'Free');
 
 const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const { mutate: updateBusiness, isPending } = useUpdateBusiness();
 
   // `values` reactively resets the form when `business` changes (RHF v7 pattern).
@@ -63,22 +68,14 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
     updateBusiness(values, { onSuccess: onClose });
   };
 
-  return (
-    <Drawer
-      anchor='bottom'
-      open={open}
-      onClose={onClose}
-      PaperProps={{
-        sx: {
-          borderRadius: '20px 20px 0 0',
-          maxHeight: '90vh',
-          overflow: 'hidden',
-        },
-      }}
-    >
+  const content = (
+    <>
       {/* Gradient header */}
-      <Box sx={{ background: GRADIENT_HERO, px: 3, pt: 2, pb: 3, color: 'white' }}>
-        <Box sx={{ width: 40, height: 4, bgcolor: ALPHA_WHITE_30, borderRadius: 2, mx: 'auto', mb: 2.5 }} />
+      <Box sx={{ background: GRADIENT_HERO, px: 3, pt: isDesktop ? 3 : 2, pb: 3, color: 'white' }}>
+        {/* Drag handle - only meaningful on the bottom sheet */}
+        {!isDesktop && (
+          <Box sx={{ width: 40, height: 4, bgcolor: ALPHA_WHITE_30, borderRadius: 2, mx: 'auto', mb: 2.5 }} />
+        )}
         <Stack direction='row' alignItems='flex-start' justifyContent='space-between'>
           <Box>
             <Typography variant='h6' fontWeight={800}>Business Settings</Typography>
@@ -288,6 +285,44 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
           </Stack>
         </Stack>
       </Box>
+    </>
+  );
+
+  // Desktop: centered dialog (a bottom sheet looks out of place on wide screens).
+  // Mobile: bottom drawer.
+  if (isDesktop) {
+    return (
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth='sm'
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            overflow: 'hidden',
+          },
+        }}
+      >
+        {content}
+      </Dialog>
+    );
+  }
+
+  return (
+    <Drawer
+      anchor='bottom'
+      open={open}
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          borderRadius: '20px 20px 0 0',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+        },
+      }}
+    >
+      {content}
     </Drawer>
   );
 };
