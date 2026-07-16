@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -25,6 +25,8 @@ import {
   PeopleAltOutlined,
   ScheduleOutlined,
   KeyboardArrowDownRounded,
+  KeyboardArrowLeftRounded,
+  KeyboardArrowRightRounded,
   PlaceOutlined,
   ReceiptOutlined,
   CardGiftcardOutlined,
@@ -95,7 +97,9 @@ const CampaignDashboardPage = () => {
   const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
   const [campaignAnchor, setCampaignAnchor] = useState<HTMLElement | null>(null);
   const [locationAnchor, setLocationAnchor] = useState<HTMLElement | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  // Desktop entries are paginated (one page at a time via Back/Next); mobile keeps infinite scroll.
+  const [entriesPage, setEntriesPage] = useState(0);
+  const entriesTopRef = useRef<HTMLDivElement | null>(null);
 
   const { data: bizData } = useBusinessData(true);
   const locations = (bizData?.locations ?? []).filter((l) => l.is_active) as BusinessLocation[];
@@ -129,31 +133,38 @@ const CampaignDashboardPage = () => {
     fetchNextPage,
   } = useCampaignEntries(locationIdForQuery, campaignIdForQuery);
 
-  // Latest paging state, read by the observer callback so it never uses stale closure values.
-  const pagingState = useRef({ hasNextPage, isFetchingNextPage, isEntriesLoading, fetchNextPage });
+  const loadedPages = entriesData?.pages ?? [];
+  const allEntries = loadedPages.flatMap((p) => p.items);
+  // Entries are paginated (one page at a time via Back/Next) on every viewport.
+  const displayEntries = loadedPages[entriesPage]?.items ?? [];
+  const canGoBack = entriesPage > 0;
+  const canGoNext = entriesPage < loadedPages.length - 1 || hasNextPage;
+
+  // Any filter change gives the entries query a fresh cache entry that starts at page 0,
+  // so the page cursor must snap back to the first page too.
   useEffect(() => {
-    pagingState.current = { hasNextPage, isFetchingNextPage, isEntriesLoading, fetchNextPage };
-  });
+    setEntriesPage(0);
+  }, [locationIdForQuery, campaignIdForQuery]);
 
-  // Infinite scroll via a CALLBACK REF so the IntersectionObserver attaches EXACTLY when the
-  // sentinel mounts. The previous useRef + useEffect version ran before the conditionally-rendered
-  // sentinel existed, so observe() was never called and only the first page ever loaded.
-  const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
-    observerRef.current?.disconnect();
-    if (!node) return;
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        const s = pagingState.current;
-        if (entries[0]?.isIntersecting && s.hasNextPage && !s.isFetchingNextPage && !s.isEntriesLoading) {
-          s.fetchNextPage();
-        }
-      },
-      { rootMargin: '250px', threshold: 0 },
-    );
-    observerRef.current.observe(node);
-  }, []);
+  // Bring the top of the entries card back into view when the page changes, so a new page
+  // always starts from its first row instead of wherever the last page was scrolled to.
+  const scrollEntriesToTop = () =>
+    entriesTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const displayEntries = entriesData?.pages.flatMap((p) => p.items) ?? [];
+  const goToNextPage = async () => {
+    if (entriesPage < loadedPages.length - 1) {
+      setEntriesPage((p) => p + 1);
+    } else if (hasNextPage && !isFetchingNextPage) {
+      // fetchNextPage resolves once the page is appended, so advancing after it is safe.
+      await fetchNextPage();
+      setEntriesPage((p) => p + 1);
+    }
+    scrollEntriesToTop();
+  };
+  const goToPrevPage = () => {
+    setEntriesPage((p) => Math.max(0, p - 1));
+    scrollEntriesToTop();
+  };
 
   // No campaign state
   const noCampaign = !headerData?.has_campaign;
@@ -482,13 +493,16 @@ const CampaignDashboardPage = () => {
   );
 
   // ── Entries feed ─────────────────────────────────────────────
-  const liveText = displayEntries[0]?.created_at ? `Live · updated ${formatRelativeTime(displayEntries[0].created_at)}` : 'Live';
+  const liveText = allEntries[0]?.created_at ? `Live · updated ${formatRelativeTime(allEntries[0].created_at)}` : 'Live';
   // Only surface which location an entry came from when viewing all locations of a multi-branch
   // business (redundant when a single location is filtered, or for a location manager).
   const showEntryLocation = !isManager && selectedLocation === '' && locations.length > 1;
 
   const entriesFeed = (
     <>
+      {/* Scroll anchor: Back/Next paging scrolls this into view so a new page starts at the top.
+          scrollMarginTop keeps the anchor clear of the page header. */}
+      <Box ref={entriesTopRef} sx={{ scrollMarginTop: { xs: 72, md: 88 } }} />
       {/* Mobile shows a section label above the card; desktop puts the header inside the card. */}
       {!isDesktop && (
         <Typography sx={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: TEXT_TERTIARY, mb: 1.25 }}>
@@ -511,7 +525,7 @@ const CampaignDashboardPage = () => {
               </Box>
             ))}
           </Stack>
-        ) : displayEntries.length === 0 ? (
+        ) : allEntries.length === 0 ? (
           <Box sx={{ p: 5, textAlign: 'center' }}>
             <CampaignOutlined sx={{ fontSize: 44, color: 'text.disabled', mb: 1.5 }} />
             <Typography sx={{ fontSize: '15px', fontWeight: 700, color: TEXT_HEADING }}>No entries yet</Typography>
@@ -577,9 +591,32 @@ const CampaignDashboardPage = () => {
               );
             })}
 
-            {hasNextPage && (
-              <Box ref={loadMoreRef} sx={{ py: 2, textAlign: 'center' }}>
-                {isFetchingNextPage && <CircularProgress size={28} />}
+            {/* Explicit Back / Next paging on every viewport (no infinite scroll) */}
+            {(canGoBack || canGoNext) && (
+              <Box sx={{ px: { xs: '14px', md: '22px' }, py: '13px', borderTop: `1px solid ${CHART_GRID}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography sx={{ fontSize: '12px', fontWeight: 600, color: TEXT_TERTIARY }}>Page {entriesPage + 1}</Typography>
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!canGoBack}
+                    onClick={goToPrevPage}
+                    startIcon={<KeyboardArrowLeftRounded />}
+                    sx={{ textTransform: 'none', fontWeight: 700, borderColor: BORDER_SUBTLE, color: TEXT_SECONDARY }}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!canGoNext || isFetchingNextPage}
+                    onClick={goToNextPage}
+                    endIcon={isFetchingNextPage ? <CircularProgress size={14} color="inherit" /> : <KeyboardArrowRightRounded />}
+                    sx={{ textTransform: 'none', fontWeight: 700, borderColor: BORDER_SUBTLE, color: TEXT_SECONDARY }}
+                  >
+                    Next
+                  </Button>
+                </Stack>
               </Box>
             )}
           </Box>
