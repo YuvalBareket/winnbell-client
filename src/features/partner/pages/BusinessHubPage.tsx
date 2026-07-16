@@ -22,6 +22,7 @@ import {
   PreviewOutlined,
   AccountBalanceWalletOutlined,
   ArrowForwardOutlined,
+  RocketLaunchOutlined,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -298,11 +299,16 @@ const BusinessHubPage = () => {
             )}
           </AnimatePresence>
 
-          {/* Profile Preview button - entrance only; the card itself is not clickable */}
-          <motion.div variants={popIn}>
+          {/* Profile preview + marketing links. Same row on desktop, stacked on mobile.
+              The cards are entrance-only; the actions live in their buttons. */}
+          <Box
+            component={motion.div}
+            variants={popIn}
+            sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}
+          >
             <Paper
               elevation={0}
-              sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
+              sx={{ flex: 1, p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
             >
               <Box>
                 <Typography variant='body2' fontWeight={700}>Public Profile Preview</Typography>
@@ -318,7 +324,26 @@ const BusinessHubPage = () => {
                 Preview
               </Button>
             </Paper>
-          </motion.div>
+
+            <Paper
+              elevation={0}
+              sx={{ flex: 1, p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
+            >
+              <Box>
+                <Typography variant='body2' fontWeight={700}>Get the Most Out of Winnbell</Typography>
+                <Typography variant='caption' color='text.secondary'>Ready-made materials to promote your campaign</Typography>
+              </Box>
+              <Button
+                variant='outlined'
+                size='small'
+                startIcon={<RocketLaunchOutlined />}
+                onClick={() => navigate('/marketing/guide')}
+                sx={{ fontWeight: 700, textTransform: 'none', flexShrink: 0 }}
+              >
+                Explore
+              </Button>
+            </Paper>
+          </Box>
 
           {/* Campaign card */}
           <motion.div variants={riseIn}>
