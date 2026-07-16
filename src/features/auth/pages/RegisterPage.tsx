@@ -380,7 +380,7 @@ const RegisterPage = () => {
 
     const desktopBullets = isBusinessOwner
       ? [
-          { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Issue entries to your customers instantly' },
+          { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Customers can earn entries instantly' },
           { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Run monthly campaigns effortlessly' },
           { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Grow foot traffic and customer loyalty' },
         ]
