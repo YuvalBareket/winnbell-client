@@ -111,7 +111,7 @@ export async function captureNodeToBlob(node: HTMLElement, scale = 2, format: 'p
   }
 }
 
-const triggerBlobDownload = (blob: Blob, filename: string) => {
+export const triggerBlobDownload = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.download = filename;
@@ -126,29 +126,25 @@ export async function downloadNodeAsPng(node: HTMLElement, filename: string, sca
   triggerBlobDownload(blob, filename);
 }
 
-// ── Capture a DOM node and hand it to the native share sheet when available ──
-// A web page cannot write into the phone's gallery directly; the closest thing is
-// the OS share sheet (navigator.share with a file), where "Save Image" stores it
-// in Photos/Gallery and Instagram can be targeted directly. preferShare should be
-// true only on touch devices - desktop share dialogs are worse than a download.
-// Falls back to a normal download whenever sharing is unavailable or fails.
-export async function saveNodeImage(
-  node: HTMLElement, filename: string, scale = 2, format: 'png' | 'jpeg' = 'png', preferShare = false,
-): Promise<'shared' | 'downloaded' | 'cancelled'> {
-  const blob = await captureNodeToBlob(node, scale, format);
-  if (preferShare && typeof navigator.canShare === 'function') {
-    const file = new File([blob], filename, { type: format === 'jpeg' ? 'image/jpeg' : 'image/png' });
-    if (navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file] });
-        return 'shared';
-      } catch (err) {
-        // User closed the sheet: not an error, and do not double-deliver a download
-        if (err instanceof Error && err.name === 'AbortError') return 'cancelled';
-        // Any other failure (e.g. lost user-activation window): fall back to download
-      }
-    }
+// ── Hand an image blob to the native share sheet ─────────────────────────────
+// A web page cannot write into the phone's gallery directly; the OS share sheet
+// (navigator.share with a file) is the way - "Save Image" stores it in Photos and
+// Instagram/WhatsApp can be targeted directly.
+// 'blocked' means the browser refused because the user-activation window expired
+// (e.g. a slow capture ran before this call) - the caller should ask for a fresh
+// tap and share the SAME blob immediately on it, not silently download.
+export async function shareImageBlob(
+  blob: Blob, filename: string, format: 'png' | 'jpeg' = 'png',
+): Promise<'shared' | 'cancelled' | 'unsupported' | 'blocked'> {
+  if (typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return 'unsupported';
+  const file = new File([blob], filename, { type: format === 'jpeg' ? 'image/jpeg' : 'image/png' });
+  if (!navigator.canShare({ files: [file] })) return 'unsupported';
+  try {
+    await navigator.share({ files: [file] });
+    return 'shared';
+  } catch (err) {
+    // User closed the sheet: not an error and nothing further to deliver
+    if (err instanceof Error && err.name === 'AbortError') return 'cancelled';
+    return 'blocked';
   }
-  triggerBlobDownload(blob, filename);
-  return 'downloaded';
 }

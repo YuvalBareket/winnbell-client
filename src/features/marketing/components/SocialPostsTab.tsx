@@ -1,22 +1,24 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Box, Typography, Stack, Paper, Button, CircularProgress, useMediaQuery, useTheme,
 } from '@mui/material';
-import { FileDownload, ContentCopy } from '@mui/icons-material';
+import { FileDownload, ContentCopy, IosShare } from '@mui/icons-material';
 import {
   GRADIENT_POST_NAVY, GRADIENT_POST_LIGHT, GRADIENT_POST_ORANGE, GRADIENT_POST_PURPLE,
   GRADIENT_DRAW_CARD, GRADIENT_SUCCESS_GREEN, GRADIENT_PRIMARY,
   GOLD_TROPHY, ACCENT_GOLD_LIGHT, ALPHA_WHITE_80,
   PRIMARY_MAIN, TEXT_HEADING, TEXT_SECONDARY, BORDER_SUBTLE,
 } from '../../../shared/colors';
-import { saveNodeImage } from '../utils/capture';
+import { captureNodeToBlob, shareImageBlob, triggerBlobDownload } from '../utils/capture';
 
 interface SocialPostsTabProps {
   businessName: string;
   scanUrl: string;
   canDownload: boolean;
   onRequireLocation: () => void;
+  /** Parent's location-picker dialog state, used to resume a click after picking */
+  locationPickerOpen: boolean;
   onToast: (msg: string) => void;
 }
 
@@ -191,6 +193,7 @@ const SocialPostsTab = ({
   scanUrl,
   canDownload,
   onRequireLocation,
+  locationPickerOpen,
   onToast,
 }: SocialPostsTabProps) => {
   const theme = useTheme();
@@ -224,34 +227,79 @@ const SocialPostsTab = ({
   const baseScale = isMobile ? 0.48 : 0.55;
   const previewScale = paneW ? Math.min(baseScale, paneW / currentRatio.w) : baseScale;
 
-  const handleSaveImage = async () => {
-    if (!canDownload) { onRequireLocation(); return; }
+  // Touch devices get the native share sheet ("Save Image" to gallery, or straight
+  // to Instagram/WhatsApp); desktop gets a plain download.
+  const isTouchDevice = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+
+  // The rendered image is cached per design so a re-tap can call navigator.share
+  // instantly. Browsers only allow share() close to a real tap; the first tap may
+  // burn its activation on the slow html2canvas capture ('blocked' below), in
+  // which case the next tap shares the cached blob with no delay.
+  const captureKey = JSON.stringify([selectedRatio, selectedStyle, headline, tagline, subtext, scanUrl, businessName]);
+  const blobCacheRef = useRef<{ key: string; blob: Blob } | null>(null);
+
+  const doSaveImage = useCallback(async () => {
     setSavingImage(true);
     try {
-      if (imageRef.current) {
-        // 3x: the story master is 440px wide, so 2x exported under Instagram's
-        // 1080px and phones upscaled it soft. 3x = 1320px, sharp on every feed.
-        // JPEG keeps the gradient backgrounds small without visible quality loss.
-        // On touch devices the native share sheet opens instead of a download, so
-        // the owner can "Save Image" to the gallery or share straight to Instagram.
-        const preferShare = window.matchMedia('(pointer: coarse)').matches;
-        const result = await saveNodeImage(imageRef.current, `winnbell-post-${selectedRatio}.jpg`, 3, 'jpeg', preferShare);
-        if (result === 'downloaded') onToast('Image downloaded!');
+      if (!imageRef.current) return;
+      // 3x: the story master is 440px wide, so 2x exported under Instagram's
+      // 1080px and phones upscaled it soft. 3x = 1320px, sharp on every feed.
+      // JPEG keeps the gradient backgrounds small without visible quality loss.
+      let blob = blobCacheRef.current?.key === captureKey ? blobCacheRef.current.blob : null;
+      if (!blob) {
+        blob = await captureNodeToBlob(imageRef.current, 3, 'jpeg');
+        blobCacheRef.current = { key: captureKey, blob };
       }
+      const filename = `winnbell-post-${selectedRatio}.jpg`;
+      if (isTouchDevice) {
+        const result = await shareImageBlob(blob, filename, 'jpeg');
+        if (result === 'shared' || result === 'cancelled') return;
+        if (result === 'blocked') {
+          // The capture consumed the tap's activation window. The blob is cached
+          // now, so the next tap opens the share sheet instantly.
+          onToast('Your image is ready. Tap Post image once more.');
+          return;
+        }
+        // 'unsupported': no share sheet in this browser - deliver as a download
+      }
+      triggerBlobDownload(blob, filename);
+      onToast('Image downloaded!');
     } catch (err) {
       console.error(err);
-      onToast('Download failed. Please try again.');
+      onToast('Could not create the image. Please try again.');
     } finally {
       setSavingImage(false);
     }
-  };
+  }, [captureKey, selectedRatio, isTouchDevice, onToast]);
 
-  const handleCopyLink = () => {
-    if (!canDownload) { onRequireLocation(); return; }
+  const doCopyLink = useCallback(() => {
     navigator.clipboard.writeText(scanUrl).then(() => {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2500);
     });
+  }, [scanUrl]);
+
+  // A click before a location is chosen opens the picker; the intended action is
+  // remembered and resumes as soon as the picker closes with a location chosen.
+  // Closing the picker without choosing forgets the click.
+  const [pendingAction, setPendingAction] = useState<null | 'save' | 'copy'>(null);
+  useEffect(() => {
+    if (locationPickerOpen || !pendingAction) return;
+    const action = pendingAction;
+    setPendingAction(null);
+    if (!canDownload) return;
+    if (action === 'save') void doSaveImage();
+    else doCopyLink();
+  }, [locationPickerOpen, canDownload, pendingAction, doSaveImage, doCopyLink]);
+
+  const handleSaveImage = () => {
+    if (!canDownload) { setPendingAction('save'); onRequireLocation(); return; }
+    void doSaveImage();
+  };
+
+  const handleCopyLink = () => {
+    if (!canDownload) { setPendingAction('copy'); onRequireLocation(); return; }
+    doCopyLink();
   };
 
   // Compute preview dimensions based on ratio
@@ -382,7 +430,7 @@ const SocialPostsTab = ({
         >
           {[
             'Pick a size and a color, then write your message or keep ours.',
-            'Download the image and copy your link with the buttons below.',
+            'Share or download the image and copy your link with the buttons below.',
             'Post it. Add a link sticker on stories, or put the link in your caption or bio.',
           ].map((text, idx) => (
             <Stack key={idx} direction='row' spacing={1.25} alignItems='flex-start'>
@@ -665,7 +713,7 @@ const SocialPostsTab = ({
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                 <Button
                   variant='contained'
-                  startIcon={savingImage ? <CircularProgress size={16} color='inherit' /> : <FileDownload sx={{ fontSize: 16 }} />}
+                  startIcon={savingImage ? <CircularProgress size={16} color='inherit' /> : (isTouchDevice ? <IosShare sx={{ fontSize: 16 }} /> : <FileDownload sx={{ fontSize: 16 }} />)}
                   onClick={handleSaveImage}
                   disabled={savingImage}
                   sx={{
@@ -679,7 +727,7 @@ const SocialPostsTab = ({
                     py: 1.2,
                   }}
                 >
-                  {savingImage ? 'Saving...' : 'Download image'}
+                  {savingImage ? 'Preparing...' : (isTouchDevice ? 'Post image' : 'Download image')}
                 </Button>
 
                 <Button

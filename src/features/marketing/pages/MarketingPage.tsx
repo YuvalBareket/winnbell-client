@@ -214,6 +214,7 @@ const MarketingPage = () => {
             scanUrl={scanUrl}
             canDownload={!!effectiveLocationId}
             onRequireLocation={() => setLocPickerOpen(true)}
+            locationPickerOpen={locPickerOpen}
             onToast={setSnackbar}
           />
         )}
