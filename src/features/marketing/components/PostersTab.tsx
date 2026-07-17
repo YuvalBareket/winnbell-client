@@ -14,6 +14,7 @@ import {
   PRIMARY_MAIN, BRAND_ICON_BLUE, BRAND_NAVY, SHADOW_CARD,
 } from '../../../shared/colors';
 import { svgToPngDataUrl, downloadNodeAsPng } from '../utils/capture';
+import { useLocationGatedActions } from '../hooks/useLocationGatedActions';
 
 // Sticker color themes
 const STICKER_THEMES = [
@@ -67,6 +68,8 @@ interface PostersTabProps {
   effectiveLocationId: number | null;
   onToast: (msg: string) => void;
   onRequireLocation: () => void;
+  /** Parent's location-picker dialog state, used to resume a click after picking */
+  locationPickerOpen: boolean;
   copied: boolean;
   onCopy: () => void;
   minAmountLabel?: string | null;
@@ -78,6 +81,7 @@ const PostersTab = ({
   effectiveLocationId,
   onToast,
   onRequireLocation,
+  locationPickerOpen,
   copied,
   onCopy,
   minAmountLabel,
@@ -341,6 +345,20 @@ const PostersTab = ({
     }
   };
 
+  // Location gate: any action clicked before a location is chosen opens the
+  // picker and resumes automatically once a location is picked.
+  const runGated = useLocationGatedActions({
+    ready: !!effectiveLocationId,
+    pickerOpen: locationPickerOpen,
+    requestLocation: onRequireLocation,
+    actions: {
+      download: () => { void handleDownload(); },
+      print: () => { void handlePrint(); },
+      copy: onCopy,
+      sticker: () => { void handleDownloadSticker(); },
+    },
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -450,78 +468,60 @@ const PostersTab = ({
 
               {/* Right column: Download/Print/Copy controls */}
               <Box sx={{ flexShrink: 0, width: { xs: '100%', md: 360 }, alignSelf: 'flex-start', p: { xs: 2, md: 2.5 }, borderRadius: 2, border: '1px solid', borderColor: 'divider', boxShadow: SHADOW_CARD }}>
-                {/* Download + Print + Copy */}
+                {/* Download + Print + Copy. All gated: with no location chosen the
+                    picker opens and the clicked action resumes after the pick. */}
                 <Stack spacing={1.5}>
-                  {effectiveLocationId ? (
-                    <>
-                      <Stack direction={{ xs: 'column', md: 'column' }} spacing={1.5}>
-                        <Button
-                          fullWidth
-                          variant='contained'
-                          size='large'
-                          startIcon={downloading ? undefined : <FileDownload />}
-                          onClick={handleDownload}
-                          disabled={downloading}
-                          sx={{
-                            py: 1.4,
-                            fontWeight: 800,
-                            fontSize: '0.95rem',
-                            textTransform: 'none',
-                          }}
-                        >
-                          {downloading ? <><CircularProgress size={18} color='inherit' sx={{ mr: 1 }} />Generating...</> : 'Download PDF'}
-                        </Button>
-                        <Button
-                          fullWidth
-                          variant='outlined'
-                          size='large'
-                          startIcon={<Print />}
-                          onClick={handlePrint}
-                          disabled={downloading}
-                          sx={{
-                            py: 1.4,
-                            fontWeight: 800,
-                            fontSize: '0.95rem',
-                            textTransform: 'none',
-                          }}
-                        >
-                          Print
-                        </Button>
-                      </Stack>
-                      <Button
-                        fullWidth
-                        variant='outlined'
-                        size='small'
-                        startIcon={<ContentCopy fontSize='small' />}
-                        onClick={onCopy}
-                        sx={{
-                          py: 1.1,
-                          fontWeight: 700,
-                          textTransform: 'none',
-                          borderColor: copied ? 'success.main' : 'divider',
-                          color: copied ? 'success.main' : 'text.secondary',
-                          '&:hover': { borderColor: 'primary.main', color: 'primary.main', bgcolor: `${PRIMARY_MAIN}06` },
-                        }}
-                      >
-                        {copied ? 'Copied!' : 'Copy scan link'}
-                      </Button>
-                    </>
-                  ) : (
+                  <Stack direction={{ xs: 'column', md: 'column' }} spacing={1.5}>
                     <Button
                       fullWidth
-                      variant='outlined'
+                      variant='contained'
                       size='large'
-                      onClick={onRequireLocation}
+                      startIcon={downloading ? undefined : <FileDownload />}
+                      onClick={() => runGated('download')}
+                      disabled={downloading}
                       sx={{
                         py: 1.4,
-                        fontWeight: 700,
+                        fontWeight: 800,
                         fontSize: '0.95rem',
                         textTransform: 'none',
                       }}
                     >
-                      Choose a location to download
+                      {downloading ? <><CircularProgress size={18} color='inherit' sx={{ mr: 1 }} />Generating...</> : 'Download PDF'}
                     </Button>
-                  )}
+                    <Button
+                      fullWidth
+                      variant='outlined'
+                      size='large'
+                      startIcon={<Print />}
+                      onClick={() => runGated('print')}
+                      disabled={downloading}
+                      sx={{
+                        py: 1.4,
+                        fontWeight: 800,
+                        fontSize: '0.95rem',
+                        textTransform: 'none',
+                      }}
+                    >
+                      Print
+                    </Button>
+                  </Stack>
+                  <Button
+                    fullWidth
+                    variant='outlined'
+                    size='small'
+                    startIcon={<ContentCopy fontSize='small' />}
+                    onClick={() => runGated('copy')}
+                    sx={{
+                      py: 1.1,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                      borderColor: copied ? 'success.main' : 'divider',
+                      color: copied ? 'success.main' : 'text.secondary',
+                      '&:hover': { borderColor: 'primary.main', color: 'primary.main', bgcolor: `${PRIMARY_MAIN}06` },
+                    }}
+                  >
+                    {copied ? 'Copied!' : 'Copy scan link'}
+                  </Button>
                 </Stack>
               </Box>
             </Stack>
@@ -572,27 +572,16 @@ const PostersTab = ({
                   </Stack>
                 </Box>
 
-                {effectiveLocationId ? (
-                  <Button
-                    variant='contained'
-                    size='large'
-                    startIcon={downloadingSticker ? undefined : <FileDownload />}
-                    onClick={handleDownloadSticker}
-                    disabled={downloadingSticker}
-                    sx={{ py: 1.2, fontWeight: 800, fontSize: '0.9rem', textTransform: 'none', alignSelf: { xs: 'stretch', md: 'flex-start' }, px: { md: 4 } }}
-                  >
-                    {downloadingSticker ? <><CircularProgress size={18} color='inherit' sx={{ mr: 1 }} />Generating...</> : 'Download sticker'}
-                  </Button>
-                ) : (
-                  <Button
-                    variant='outlined'
-                    size='large'
-                    onClick={onRequireLocation}
-                    sx={{ py: 1.2, fontWeight: 700, fontSize: '0.9rem', textTransform: 'none', alignSelf: { xs: 'stretch', md: 'flex-start' }, px: { md: 4 } }}
-                  >
-                    Choose a location to download
-                  </Button>
-                )}
+                <Button
+                  variant='contained'
+                  size='large'
+                  startIcon={downloadingSticker ? undefined : <FileDownload />}
+                  onClick={() => runGated('sticker')}
+                  disabled={downloadingSticker}
+                  sx={{ py: 1.2, fontWeight: 800, fontSize: '0.9rem', textTransform: 'none', alignSelf: { xs: 'stretch', md: 'flex-start' }, px: { md: 4 } }}
+                >
+                  {downloadingSticker ? <><CircularProgress size={18} color='inherit' sx={{ mr: 1 }} />Generating...</> : 'Download sticker'}
+                </Button>
               </Stack>
 
               {/* Sticker preview */}

@@ -202,6 +202,7 @@ const MarketingPage = () => {
             effectiveLocationId={effectiveLocationId}
             onToast={setSnackbar}
             onRequireLocation={() => setLocPickerOpen(true)}
+            locationPickerOpen={locPickerOpen}
             copied={copied}
             onCopy={handleCopyScanUrl}
             minAmountLabel={businessData?.min_transaction_amount ? `${formatCurrency(Number(businessData.min_transaction_amount))}` : null}
@@ -229,6 +230,7 @@ const MarketingPage = () => {
             effectiveLocationId={effectiveLocationId}
             onToast={setSnackbar}
             onRequireLocation={() => setLocPickerOpen(true)}
+            locationPickerOpen={locPickerOpen}
           />
         )}
       </Container>

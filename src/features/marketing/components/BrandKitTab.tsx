@@ -12,12 +12,15 @@ import {
 } from '../../../shared/colors';
 import { downloadNodeAsPng } from '../utils/capture';
 import { LEGAL_TEXT } from './posterConstants';
+import { useLocationGatedActions } from '../hooks/useLocationGatedActions';
 
 interface BrandKitTabProps {
   scanUrl: string;
   effectiveLocationId: number | null;
   onToast: (msg: string) => void;
   onRequireLocation: () => void;
+  /** Parent's location-picker dialog state, used to resume a click after picking */
+  locationPickerOpen: boolean;
 }
 
 const BrandKitTab = ({
@@ -25,6 +28,7 @@ const BrandKitTab = ({
   effectiveLocationId,
   onToast,
   onRequireLocation,
+  locationPickerOpen,
 }: BrandKitTabProps) => {
   const navigate = useNavigate();
   const [downloadingQr, setDownloadingQr] = useState(false);
@@ -46,6 +50,18 @@ const BrandKitTab = ({
       setDownloadingQr(false);
     }
   };
+
+  // Location gate: clicking Download with no location chosen opens the picker
+  // and the download resumes automatically once a location is picked (the QR
+  // mounts on that same render, so the capture sees it).
+  const runGated = useLocationGatedActions({
+    ready: !!effectiveLocationId,
+    pickerOpen: locationPickerOpen,
+    requestLocation: onRequireLocation,
+    actions: {
+      qr: () => { void handleDownloadQr(); },
+    },
+  });
 
   const handleCopyLegal = () => {
     navigator.clipboard.writeText(LEGAL_TEXT).then(() => {
@@ -119,48 +135,34 @@ const BrandKitTab = ({
                     </Box>
 
                     {effectiveLocationId && (
-                      <>
-                        <Box
-                          ref={qrRef}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            bgcolor: '#fff',
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            borderRadius: 2,
-                            p: 2,
-                          }}
-                        >
-                          <QRCodePlain value={scanUrl} size={150} level='H' fgColor={TEXT_HEADING} />
-                        </Box>
-
-                        <Button
-                          fullWidth
-                          variant='contained'
-                          size='small'
-                          startIcon={downloadingQr ? <CircularProgress size={16} color='inherit' /> : <FileDownload sx={{ fontSize: 16 }} />}
-                          onClick={handleDownloadQr}
-                          disabled={downloadingQr}
-                          sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.85rem' }}
-                        >
-                          {downloadingQr ? 'Generating...' : 'Download'}
-                        </Button>
-                      </>
-                    )}
-
-                    {!effectiveLocationId && (
-                      <Button
-                        fullWidth
-                        variant='outlined'
-                        size='small'
-                        onClick={onRequireLocation}
-                        sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.85rem' }}
+                      <Box
+                        ref={qrRef}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: '#fff',
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 2,
+                          p: 2,
+                        }}
                       >
-                        Choose a location
-                      </Button>
+                        <QRCodePlain value={scanUrl} size={150} level='H' fgColor={TEXT_HEADING} />
+                      </Box>
                     )}
+
+                    <Button
+                      fullWidth
+                      variant='contained'
+                      size='small'
+                      startIcon={downloadingQr ? <CircularProgress size={16} color='inherit' /> : <FileDownload sx={{ fontSize: 16 }} />}
+                      onClick={() => runGated('qr')}
+                      disabled={downloadingQr}
+                      sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.85rem' }}
+                    >
+                      {downloadingQr ? 'Generating...' : 'Download'}
+                    </Button>
                   </Stack>
                 </Paper>
               </motion.div>

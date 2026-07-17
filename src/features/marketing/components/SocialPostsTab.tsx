@@ -11,6 +11,7 @@ import {
   PRIMARY_MAIN, TEXT_HEADING, TEXT_SECONDARY, BORDER_SUBTLE,
 } from '../../../shared/colors';
 import { captureNodeToBlob, shareImageBlob, triggerBlobDownload } from '../utils/capture';
+import { useLocationGatedActions } from '../hooks/useLocationGatedActions';
 
 interface SocialPostsTabProps {
   businessName: string;
@@ -231,12 +232,34 @@ const SocialPostsTab = ({
   // to Instagram/WhatsApp); desktop gets a plain download.
   const isTouchDevice = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
-  // The rendered image is cached per design so a re-tap can call navigator.share
-  // instantly. Browsers only allow share() close to a real tap; the first tap may
-  // burn its activation on the slow html2canvas capture ('blocked' below), in
-  // which case the next tap shares the cached blob with no delay.
+  // The rendered image is cached per design, and on touch devices it is captured
+  // in the BACKGROUND (debounced) as the design settles. navigator.share only
+  // works close to a real tap, and the html2canvas capture is slow enough to burn
+  // that window - pre-capturing means the tap shares instantly on the first try.
   const captureKey = JSON.stringify([selectedRatio, selectedStyle, headline, tagline, subtext, scanUrl, businessName]);
   const blobCacheRef = useRef<{ key: string; blob: Blob } | null>(null);
+  const pendingCaptureRef = useRef<{ key: string; promise: Promise<Blob> } | null>(null);
+
+  const startCapture = useCallback((key: string, node: HTMLElement) => {
+    const promise = captureNodeToBlob(node, 3, 'jpeg').then((blob) => {
+      blobCacheRef.current = { key, blob };
+      return blob;
+    });
+    pendingCaptureRef.current = { key, promise };
+    promise.catch(() => {}).finally(() => {
+      if (pendingCaptureRef.current?.key === key) pendingCaptureRef.current = null;
+    });
+    return promise;
+  }, []);
+
+  useEffect(() => {
+    if (!isTouchDevice) return;
+    if (blobCacheRef.current?.key === captureKey || pendingCaptureRef.current?.key === captureKey) return;
+    const t = window.setTimeout(() => {
+      if (imageRef.current) startCapture(captureKey, imageRef.current).catch(() => {});
+    }, 900);
+    return () => window.clearTimeout(t);
+  }, [captureKey, isTouchDevice, startCapture]);
 
   const doSaveImage = useCallback(async () => {
     setSavingImage(true);
@@ -246,17 +269,21 @@ const SocialPostsTab = ({
       // 1080px and phones upscaled it soft. 3x = 1320px, sharp on every feed.
       // JPEG keeps the gradient backgrounds small without visible quality loss.
       let blob = blobCacheRef.current?.key === captureKey ? blobCacheRef.current.blob : null;
-      if (!blob) {
-        blob = await captureNodeToBlob(imageRef.current, 3, 'jpeg');
-        blobCacheRef.current = { key: captureKey, blob };
+      if (!blob && pendingCaptureRef.current) {
+        // A background capture is running (this design or a stale one): wait for it
+        // rather than mutating the same DOM node from two captures at once.
+        try { await pendingCaptureRef.current.promise; } catch { /* retried below */ }
+        blob = blobCacheRef.current?.key === captureKey ? blobCacheRef.current.blob : null;
       }
+      if (!blob) blob = await startCapture(captureKey, imageRef.current);
       const filename = `winnbell-post-${selectedRatio}.jpg`;
       if (isTouchDevice) {
         const result = await shareImageBlob(blob, filename, 'jpeg');
         if (result === 'shared' || result === 'cancelled') return;
         if (result === 'blocked') {
-          // The capture consumed the tap's activation window. The blob is cached
-          // now, so the next tap opens the share sheet instantly.
+          // Rare: the tap's activation expired before share() (e.g. the user
+          // tapped while a fresh design was still rendering). The blob is cached
+          // now, so one more tap opens the share sheet instantly.
           onToast('Your image is ready. Tap Post image once more.');
           return;
         }
@@ -270,7 +297,7 @@ const SocialPostsTab = ({
     } finally {
       setSavingImage(false);
     }
-  }, [captureKey, selectedRatio, isTouchDevice, onToast]);
+  }, [captureKey, selectedRatio, isTouchDevice, onToast, startCapture]);
 
   const doCopyLink = useCallback(() => {
     navigator.clipboard.writeText(scanUrl).then(() => {
@@ -279,28 +306,20 @@ const SocialPostsTab = ({
     });
   }, [scanUrl]);
 
-  // A click before a location is chosen opens the picker; the intended action is
-  // remembered and resumes as soon as the picker closes with a location chosen.
-  // Closing the picker without choosing forgets the click.
-  const [pendingAction, setPendingAction] = useState<null | 'save' | 'copy'>(null);
-  useEffect(() => {
-    if (locationPickerOpen || !pendingAction) return;
-    const action = pendingAction;
-    setPendingAction(null);
-    if (!canDownload) return;
-    if (action === 'save') void doSaveImage();
-    else doCopyLink();
-  }, [locationPickerOpen, canDownload, pendingAction, doSaveImage, doCopyLink]);
+  // Location gate: clicking before a location is chosen opens the picker and the
+  // same action resumes automatically once a location is picked.
+  const runGated = useLocationGatedActions({
+    ready: canDownload,
+    pickerOpen: locationPickerOpen,
+    requestLocation: onRequireLocation,
+    actions: {
+      save: () => { void doSaveImage(); },
+      copy: doCopyLink,
+    },
+  });
 
-  const handleSaveImage = () => {
-    if (!canDownload) { setPendingAction('save'); onRequireLocation(); return; }
-    void doSaveImage();
-  };
-
-  const handleCopyLink = () => {
-    if (!canDownload) { setPendingAction('copy'); onRequireLocation(); return; }
-    doCopyLink();
-  };
+  const handleSaveImage = () => runGated('save');
+  const handleCopyLink = () => runGated('copy');
 
   // Compute preview dimensions based on ratio
   const previewW = currentRatio.w * previewScale;
