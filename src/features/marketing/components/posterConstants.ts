@@ -16,13 +16,7 @@ export const THUMB_SCALE_MOBILE = 0.19;
 export const THUMB_W_MOBILE = Math.round(POSTER_W * THUMB_SCALE_MOBILE); // ~61px
 export const THUMB_H_MOBILE = Math.round(POSTER_H * THUMB_SCALE_MOBILE); // ~86px
 
-export const HEADLINES = [
-  "Don't miss this month's campaign",
-  'You are one scan away',
-  'Scan now. See what you unlock.',
-];
-
 export const LEGAL_TEXT =
   'This business participates in campaigns operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Alternative free entry method available on the platform. 18+. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com';
 
-export interface PosterProps { businessName: string; scanUrl: string; headline: string; minAmountLabel?: string | null }
+export interface PosterProps { businessName: string; scanUrl: string; minAmountLabel?: string | null }

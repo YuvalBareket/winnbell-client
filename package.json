@@ -28,6 +28,7 @@
     "html5-qrcode": "^2.3.8",
     "jspdf": "^4.2.1",
     "pdfjs-dist": "^6.1.200",
+    "qrcode-generator": "^2.0.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-easy-crop": "^5.5.7",

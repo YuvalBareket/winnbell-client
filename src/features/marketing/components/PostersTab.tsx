@@ -25,17 +25,19 @@ import {
   POSTER_W, POSTER_H,
   THUMB_SCALE, THUMB_W, THUMB_H,
   THUMB_SCALE_MOBILE, THUMB_W_MOBILE, THUMB_H_MOBILE,
-  HEADLINES,
 } from './posterConstants';
 import {
-  PosterClassic, PosterDark, PosterFresh, PosterPink,
+  PosterBlue, PosterEmerald, PosterCream, PosterSunset,
 } from './PosterTemplates';
 
+// Capture scale for PDF/print: 8 x 320px over an 8.5in US Letter page ~= 300 DPI.
+const PDF_SCALE = 8;
+
 const TEMPLATES = [
-  { id: 'classic', label: 'Classic Blue',  Component: PosterClassic },
-  { id: 'dark',    label: 'Dark Premium',  Component: PosterDark },
-  { id: 'fresh',   label: 'Fresh Green',   Component: PosterFresh },
-  { id: 'pink',    label: 'Light Pink',    Component: PosterPink },
+  { id: 'blue',    label: 'Bold Blue',    Component: PosterBlue },
+  { id: 'cream',   label: 'Cream Gold',   Component: PosterCream },
+  { id: 'emerald', label: 'Emerald',      Component: PosterEmerald },
+  { id: 'sunset',  label: 'Sunset Pink',  Component: PosterSunset },
 ];
 
 // Convert an <img src="...svg"> element to a PNG data URL at 2x rendered size.
@@ -83,8 +85,7 @@ const PostersTab = ({
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
-  const [selectedId, setSelectedId] = useState('classic');
-  const [headline, setHeadline] = useState(HEADLINES[0]);
+  const [selectedId, setSelectedId] = useState('blue');
   const [downloading, setDownloading] = useState(false);
 
   const posterRef = useRef<HTMLDivElement>(null);
@@ -170,10 +171,11 @@ const PostersTab = ({
     }
 
     try {
-      // 1. Convert every SVG inside the poster to a PNG img
+      // 1. Convert every SVG inside the poster to a PNG img. Rasterize at the same
+      //    scale as the final capture so the QR stays sharp at print resolution.
       const svgEls = Array.from(posterRef.current.querySelectorAll<SVGSVGElement>('svg'));
       for (const svg of svgEls) {
-        const pngUrl = await svgToPngDataUrl(svg, 3);
+        const pngUrl = await svgToPngDataUrl(svg, PDF_SCALE);
         const img = document.createElement('img');
         img.src = pngUrl;
         const w = svg.clientWidth || Number(svg.getAttribute('width') ?? 150);
@@ -191,20 +193,20 @@ const PostersTab = ({
       );
       for (const imgEl of svgImgEls) {
         const originalSrc = imgEl.src;
-        const pngUrl = await svgImgToPngDataUrl(imgEl, 2);
+        const pngUrl = await svgImgToPngDataUrl(imgEl, PDF_SCALE);
         imgEl.src = pngUrl;
         // Wait one microtask so the browser applies the new src before capture.
         await new Promise<void>((r) => { const t = new Image(); t.onload = () => r(); t.onerror = () => r(); t.src = pngUrl; });
         logoSwaps.push({ img: imgEl, originalSrc });
       }
 
-      // 2. Capture poster canvas - use explicit pixel dimensions to avoid shadow bleed
+      // 2. Capture poster canvas - PDF_SCALE x 320px over an 8.5in page ~= 300 DPI print
       const canvas = await html2canvas(posterRef.current, {
-        scale: 3,
+        scale: PDF_SCALE,
         width: POSTER_W,
         height: POSTER_H,
         useCORS: true,
-        backgroundColor: null,
+        backgroundColor: '#ffffff',
         logging: false,
         imageTimeout: 0,
       });
@@ -216,12 +218,13 @@ const PostersTab = ({
       });
       logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
 
-      // 4. Build PDF - US Letter, image fills entire page
-      const imgData = canvas.toDataURL('image/png', 1.0);
+      // 4. Build PDF - US Letter, image fills entire page. JPEG, not PNG: the gradient
+      //    backgrounds make PNGs huge (multi-MB) while JPEG at 0.92 is visually identical.
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      pdf.addImage(imgData, 'PNG', 0, 0, pageW, pageH);
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
       pdf.save(`winnbell-${selected.id}-poster.pdf`);
       onToast('Poster downloaded!');
     } catch (err) {
@@ -259,7 +262,7 @@ const PostersTab = ({
     try {
       const svgEls = Array.from(posterRef.current.querySelectorAll<SVGSVGElement>('svg'));
       for (const svg of svgEls) {
-        const pngUrl = await svgToPngDataUrl(svg, 3);
+        const pngUrl = await svgToPngDataUrl(svg, PDF_SCALE);
         const img = document.createElement('img');
         img.src = pngUrl;
         const w = svg.clientWidth || Number(svg.getAttribute('width') ?? 150);
@@ -275,18 +278,18 @@ const PostersTab = ({
       );
       for (const imgEl of svgImgEls) {
         const originalSrc = imgEl.src;
-        const pngUrl = await svgImgToPngDataUrl(imgEl, 2);
+        const pngUrl = await svgImgToPngDataUrl(imgEl, PDF_SCALE);
         imgEl.src = pngUrl;
         await new Promise<void>((r) => { const t = new Image(); t.onload = () => r(); t.onerror = () => r(); t.src = pngUrl; });
         logoSwaps.push({ img: imgEl, originalSrc });
       }
 
       const canvas = await html2canvas(posterRef.current, {
-        scale: 3,
+        scale: PDF_SCALE,
         width: POSTER_W,
         height: POSTER_H,
         useCORS: true,
-        backgroundColor: null,
+        backgroundColor: '#ffffff',
         logging: false,
         imageTimeout: 0,
       });
@@ -294,7 +297,7 @@ const PostersTab = ({
       swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
       logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
 
-      const imgData = canvas.toDataURL('image/png', 1.0);
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
 
       if (isDesktop) {
         // Desktop: build the exact same US Letter PDF the Download button produces
@@ -302,7 +305,7 @@ const PostersTab = ({
         const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
-        pdf.addImage(imgData, 'PNG', 0, 0, pageW, pageH);
+        pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
         const blobUrl = URL.createObjectURL(pdf.output('blob'));
         const iframe = document.createElement('iframe');
         iframe.setAttribute('aria-hidden', 'true');
@@ -420,7 +423,7 @@ const PostersTab = ({
                               pointerEvents: 'none',
                             }}
                           >
-                            <Thumb businessName={businessName} scanUrl={scanUrl} headline={headline} minAmountLabel={minAmountLabel} />
+                            <Thumb businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} />
                           </Box>
                           {isActive && (
                             <Box sx={{
@@ -462,7 +465,7 @@ const PostersTab = ({
                         {TEMPLATES.find(t => t.id === selectedId)?.Component
                           ? (() => {
                             const Comp = TEMPLATES.find(t => t.id === selectedId)!.Component;
-                            return <Comp businessName={businessName} scanUrl={scanUrl} headline={headline} minAmountLabel={minAmountLabel} />;
+                            return <Comp businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} />;
                           })()
                           : null
                         }
@@ -472,38 +475,8 @@ const PostersTab = ({
                 </Box>
               </Box>
 
-              {/* Right column: Headline picker + Download/Print/Copy controls */}
+              {/* Right column: Download/Print/Copy controls */}
               <Box sx={{ flexShrink: 0, width: { xs: '100%', md: 360 }, alignSelf: 'flex-start', p: { xs: 2, md: 2.5 }, borderRadius: 2, border: '1px solid', borderColor: 'divider', boxShadow: SHADOW_CARD }}>
-                {/* Headline picker */}
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    Headline text
-                  </Typography>
-                  <Stack spacing={1}>
-                    {HEADLINES.map((h) => {
-                      const active = h === headline;
-                      return (
-                        <Box
-                          key={h}
-                          onClick={() => setHeadline(h)}
-                          sx={{
-                            px: 1.5, py: 1, borderRadius: 2, cursor: 'pointer',
-                            border: '1px solid',
-                            borderColor: active ? 'primary.main' : 'divider',
-                            bgcolor: active ? `${PRIMARY_MAIN}08` : 'transparent',
-                            transition: 'all 0.15s',
-                            '&:hover': { borderColor: 'primary.main', bgcolor: `${PRIMARY_MAIN}06` },
-                          }}
-                        >
-                          <Typography variant='body2' fontWeight={active ? 700 : 500} color={active ? 'primary.main' : 'text.primary'} sx={{ lineHeight: 1.4 }}>
-                            {h}
-                          </Typography>
-                        </Box>
-                      );
-                    })}
-                  </Stack>
-                </Box>
-
                 {/* Download + Print + Copy */}
                 <Stack spacing={1.5}>
                   {effectiveLocationId ? (
