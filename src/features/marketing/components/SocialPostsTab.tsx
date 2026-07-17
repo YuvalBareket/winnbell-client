@@ -10,7 +10,7 @@ import {
   GOLD_TROPHY, ACCENT_GOLD_LIGHT, ALPHA_WHITE_80,
   PRIMARY_MAIN, TEXT_HEADING, TEXT_SECONDARY, BORDER_SUBTLE,
 } from '../../../shared/colors';
-import { downloadNodeAsPng } from '../utils/capture';
+import { saveNodeImage } from '../utils/capture';
 
 interface SocialPostsTabProps {
   businessName: string;
@@ -229,8 +229,14 @@ const SocialPostsTab = ({
     setSavingImage(true);
     try {
       if (imageRef.current) {
-        await downloadNodeAsPng(imageRef.current, `winnbell-post-${selectedRatio}.png`, 2);
-        onToast('Image downloaded!');
+        // 3x: the story master is 440px wide, so 2x exported under Instagram's
+        // 1080px and phones upscaled it soft. 3x = 1320px, sharp on every feed.
+        // JPEG keeps the gradient backgrounds small without visible quality loss.
+        // On touch devices the native share sheet opens instead of a download, so
+        // the owner can "Save Image" to the gallery or share straight to Instagram.
+        const preferShare = window.matchMedia('(pointer: coarse)').matches;
+        const result = await saveNodeImage(imageRef.current, `winnbell-post-${selectedRatio}.jpg`, 3, 'jpeg', preferShare);
+        if (result === 'downloaded') onToast('Image downloaded!');
       }
     } catch (err) {
       console.error(err);
@@ -286,8 +292,9 @@ const SocialPostsTab = ({
           <DecorLayer w={w} h={h} main={style.decorMain} />
         </Box>
 
-        {/* Header - Wordmark */}
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
+        {/* Header - Wordmark. On story the logo drops below Instagram's username
+            overlay (~top 13% of a story is covered by the poster's own handle). */}
+        <Box sx={{ position: 'relative', zIndex: 1, mt: isStory ? '76px' : 0 }}>
           <Box
             component='img'
             src={isDarkText ? '/winnbell_app_name.svg' : '/winnbell_app_name_white.svg'}
@@ -375,7 +382,7 @@ const SocialPostsTab = ({
         >
           {[
             'Pick a size and a color, then write your message or keep ours.',
-            'Download the PNG and copy your link with the buttons below.',
+            'Download the image and copy your link with the buttons below.',
             'Post it. Add a link sticker on stories, or put the link in your caption or bio.',
           ].map((text, idx) => (
             <Stack key={idx} direction='row' spacing={1.25} alignItems='flex-start'>
@@ -672,7 +679,7 @@ const SocialPostsTab = ({
                     py: 1.2,
                   }}
                 >
-                  {savingImage ? 'Saving...' : 'Download PNG'}
+                  {savingImage ? 'Saving...' : 'Download image'}
                 </Button>
 
                 <Button

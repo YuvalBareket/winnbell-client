@@ -13,7 +13,7 @@ import QRCodePlain from 'react-qr-code';
 import {
   PRIMARY_MAIN, BRAND_ICON_BLUE, BRAND_NAVY, SHADOW_CARD,
 } from '../../../shared/colors';
-import { svgToPngDataUrl } from '../utils/capture';
+import { svgToPngDataUrl, downloadNodeAsPng } from '../utils/capture';
 
 // Sticker color themes
 const STICKER_THEMES = [
@@ -109,39 +109,12 @@ const PostersTab = ({
   const handleDownloadSticker = async () => {
     if (!stickerRef.current) return;
     setDownloadingSticker(true);
-    const swaps: Array<{ svg: SVGSVGElement; img: HTMLImageElement }> = [];
-
     try {
-      const svgEls = Array.from(stickerRef.current.querySelectorAll<SVGSVGElement>('svg'));
-      for (const svg of svgEls) {
-        const pngUrl = await svgToPngDataUrl(svg, 3);
-        const img = document.createElement('img');
-        img.src = pngUrl;
-        const w = svg.clientWidth || Number(svg.getAttribute('width') ?? 150);
-        const h = svg.clientHeight || Number(svg.getAttribute('height') ?? 150);
-        img.style.cssText = `width:${w}px;height:${h}px;display:block;`;
-        svg.parentNode!.insertBefore(img, svg);
-        svg.style.display = 'none';
-        swaps.push({ svg, img });
-      }
-
-      const canvas = await html2canvas(stickerRef.current, {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: null,
-        logging: false,
-        imageTimeout: 0,
-      });
-
-      swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
-
-      const link = document.createElement('a');
-      link.download = 'winnbell-sticker.png';
-      link.href = canvas.toDataURL('image/png', 1.0);
-      link.click();
+      // Shared capture util: also swaps the svg wordmark img, which html2canvas
+      // otherwise leaves blank in the exported sticker.
+      await downloadNodeAsPng(stickerRef.current, 'winnbell-sticker.png', 3);
       onToast('Sticker downloaded!');
     } catch (err) {
-      swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
       console.error(err);
       onToast('Download failed. Please try again.');
     } finally {
