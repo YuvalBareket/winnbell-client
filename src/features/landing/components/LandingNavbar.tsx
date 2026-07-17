@@ -40,7 +40,7 @@ const LandingNavbar = ({ onNavigate, variant = 'consumer' }: LandingNavbarProps)
         </Button>
         <AttractButton onLightBackground
           variant='contained'
-          onClick={() => onNavigate('/register')}
+          onClick={() => onNavigate(variant === 'business' ? '/register/Business' : '/register')}
           sx={{
             bgcolor: 'white', color: PRIMARY_MAIN, fontWeight: 700,
             px: { xs: 1.5, md: 2.5 }, py: { xs: 0.75, md: 1 }, boxShadow: 'none',
