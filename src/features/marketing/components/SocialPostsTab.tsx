@@ -37,7 +37,97 @@ interface StylePreset {
   textPrimary: string;
   textAccent: string;
   fineprint: string;
+  decorMain: string;       // festive decoration layer colors
 }
+
+// ── Festive decoration layer ─────────────────────────────────────────────────
+// Confetti, sparkles, rings and prize icons scattered behind the text so the
+// post reads as "there's a draw!". One inline SVG: the PNG download pipeline
+// rasterizes inner SVGs natively, so the export matches the preview exactly.
+const SPARKLE_PATH = 'M12 0 L14.6 9.4 24 12 14.6 14.6 12 24 9.4 14.6 0 12 9.4 9.4 Z';
+const TROPHY_PATH = 'M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2M5 8V7h2v3.82C5.84 10.4 5 9.3 5 8m14 0c0 1.3-.84 2.4-2 2.82V7h2z';
+const GIFT_PATH = 'M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2m-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1M9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1m11 15H4v-2h16zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20z';
+const TICKET_PATH = 'M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-1.99.89-1.99 2v4c1.1 0 1.99.9 1.99 2s-.89 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2m-9 7.5h-2v-2h2zm0-4.5h-2v-2h2zm0-4.5h-2v-2h2z';
+const PARTY_PATH = 'm2 22 14-5-9-9zm12.53-9.47 5.59-5.59c.49-.49 1.28-.49 1.77 0l.59.59 1.06-1.06-.59-.59c-1.07-1.07-2.82-1.07-3.89 0l-5.59 5.59zm-4.47-5.65-.59.59 1.06 1.06.59-.59c1.07-1.07 1.07-2.82 0-3.89l-.59-.59-1.06 1.07.59.59c.48.48.48 1.28 0 1.76m7 5-1.59 1.59 1.06 1.06 1.59-1.59c.49-.49 1.28-.49 1.77 0l1.61 1.61 1.06-1.06-1.61-1.61c-1.08-1.07-2.82-1.07-3.89 0m-2-6-3.59 3.59 1.06 1.06 3.59-3.59c1.07-1.07 1.07-2.82 0-3.89l-1.59-1.59-1.06 1.06 1.59 1.59c.48.49.48 1.29 0 1.77';
+
+const BELL_PATH = 'M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2m6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1z';
+
+// Festive multi-color gradients used to fill the decoration shapes/icons
+const DECOR_GRADS: Array<[string, string, string]> = [
+  ['dgGold', '#fbe9b8', '#c5a047'],
+  ['dgPink', '#ff8fb0', '#ec5a76'],
+  ['dgTeal', '#5eead4', '#10b981'],
+  ['dgSky', '#63b8ff', '#1565c0'],
+  ['dgOrange', '#ffd54f', '#ff8a3d'],
+  ['dgPurple', '#c4b5fd', '#8b5cf6'],
+];
+
+const DecorLayer = ({ w, h, main }: { w: number; h: number; main: string }) => {
+  // Renders a 24-unit icon path at (x,y) with the given pixel size and rotation
+  const icon = (d: string, x: number, y: number, size: number, deg: number, fill: string, op: number) => (
+    <g transform={`translate(${x},${y}) scale(${size / 24}) rotate(${deg} 12 12)`}>
+      <path d={d} fill={fill} opacity={op} />
+    </g>
+  );
+  // Small rotated confetti rect
+  const confetti = (x: number, y: number, deg: number, fill: string, op: number) => (
+    <rect x={x} y={y} width={10} height={4.5} rx={2.25} fill={fill} opacity={op} transform={`rotate(${deg} ${x + 5} ${y + 2.25})`} />
+  );
+  const g = (name: string) => `url(#${name})`;
+
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: 'block' }}>
+      <defs>
+        {DECOR_GRADS.map(([id, from, to]) => (
+          <linearGradient key={id} id={id} x1='0' y1='0' x2='1' y2='1'>
+            <stop offset='0%' stopColor={from} />
+            <stop offset='100%' stopColor={to} />
+          </linearGradient>
+        ))}
+      </defs>
+
+      {/* soft blobs + rings, one per corner zone */}
+      <circle cx={w * 0.95} cy={h * 0.04} r={w * 0.17} fill={g('dgGold')} opacity={0.22} />
+      <circle cx={w * 0.03} cy={h * 0.97} r={w * 0.14} fill={g('dgPink')} opacity={0.2} />
+      <circle cx={w * 0.06} cy={h * 0.3} r={w * 0.055} stroke={g('dgTeal')} strokeWidth={3.5} fill='none' opacity={0.5} />
+      <circle cx={w * 0.9} cy={h * 0.85} r={w * 0.045} stroke={g('dgOrange')} strokeWidth={3} fill='none' opacity={0.55} />
+      <circle cx={w * 0.55} cy={h * 0.03} r={w * 0.03} stroke={g('dgPink')} strokeWidth={2.5} fill='none' opacity={0.45} />
+
+      {/* prize icons, spread clockwise around the frame edges */}
+      {icon(PARTY_PATH, w * 0.06, h * 0.14, w * 0.1, -8, g('dgOrange'), 0.75)}
+      {icon(TROPHY_PATH, w * 0.79, h * 0.1, w * 0.12, 12, g('dgGold'), 0.85)}
+      {icon(TICKET_PATH, w * 0.88, h * 0.42, w * 0.085, -18, g('dgPink'), 0.7)}
+      {icon(GIFT_PATH, w * 0.82, h * 0.87, w * 0.1, 10, g('dgTeal'), 0.7)}
+      {icon(BELL_PATH, w * 0.3, h * 0.9, w * 0.08, -14, g('dgGold'), 0.65)}
+
+      {/* sparkles at the gaps between icons */}
+      {icon(SPARKLE_PATH, w * 0.33, h * 0.1, w * 0.05, 15, g('dgGold'), 0.85)}
+      {icon(SPARKLE_PATH, w * 0.95, h * 0.26, w * 0.035, 0, g('dgPink'), 0.75)}
+      {icon(SPARKLE_PATH, w * 0.03, h * 0.74, w * 0.04, 20, g('dgTeal'), 0.8)}
+      {icon(SPARKLE_PATH, w * 0.13, h * 0.82, w * 0.05, 10, g('dgOrange'), 0.8)}
+      {icon(SPARKLE_PATH, w * 0.6, h * 0.9, w * 0.032, 0, g('dgPurple'), 0.7)}
+      {icon(SPARKLE_PATH, w * 0.68, h * 0.06, w * 0.028, 25, main, 0.55)}
+
+      {/* confetti spread across the whole frame */}
+      {confetti(w * 0.16, h * 0.05, 25, g('dgPink'), 0.75)}
+      {confetti(w * 0.47, h * 0.1, -15, g('dgTeal'), 0.7)}
+      {confetti(w * 0.93, h * 0.15, 60, g('dgPurple'), 0.7)}
+      {confetti(w * 0.03, h * 0.22, -35, g('dgGold'), 0.7)}
+      {confetti(w * 0.94, h * 0.6, -30, g('dgTeal'), 0.7)}
+      {confetti(w * 0.08, h * 0.7, -20, g('dgPurple'), 0.65)}
+      {confetti(w * 0.45, h * 0.94, 45, g('dgPink'), 0.7)}
+      {confetti(w * 0.72, h * 0.92, -45, g('dgOrange'), 0.7)}
+
+      {/* tiny dots filling the remaining gaps */}
+      <circle cx={w * 0.58} cy={h * 0.14} r={3.5} fill={g('dgPink')} opacity={0.7} />
+      <circle cx={w * 0.9} cy={h * 0.33} r={3} fill={g('dgGold')} opacity={0.7} />
+      <circle cx={w * 0.22} cy={h * 0.95} r={3.5} fill={g('dgSky')} opacity={0.65} />
+      <circle cx={w * 0.04} cy={h * 0.09} r={3} fill={g('dgPink')} opacity={0.6} />
+      <circle cx={w * 0.75} cy={h * 0.04} r={2.5} fill={main} opacity={0.5} />
+      <circle cx={w * 0.96} cy={h * 0.73} r={3} fill={g('dgGold')} opacity={0.65} />
+    </svg>
+  );
+};
 
 const STYLE_PRESETS: StylePreset[] = [
   {
@@ -47,6 +137,7 @@ const STYLE_PRESETS: StylePreset[] = [
     textPrimary: '#fff',
     textAccent: ACCENT_GOLD_LIGHT,
     fineprint: ALPHA_WHITE_80,
+    decorMain: '#fff',
   },
   {
     id: 'light',
@@ -55,6 +146,7 @@ const STYLE_PRESETS: StylePreset[] = [
     textPrimary: TEXT_HEADING,
     textAccent: PRIMARY_MAIN,
     fineprint: TEXT_SECONDARY,
+    decorMain: PRIMARY_MAIN,
   },
   {
     id: 'orange',
@@ -63,6 +155,7 @@ const STYLE_PRESETS: StylePreset[] = [
     textPrimary: '#fff',
     textAccent: ALPHA_WHITE_80,
     fineprint: ALPHA_WHITE_80,
+    decorMain: '#fff',
   },
   {
     id: 'purple',
@@ -71,6 +164,7 @@ const STYLE_PRESETS: StylePreset[] = [
     textPrimary: '#fff',
     textAccent: ALPHA_WHITE_80,
     fineprint: ALPHA_WHITE_80,
+    decorMain: '#fff',
   },
   {
     id: 'draw',
@@ -79,6 +173,7 @@ const STYLE_PRESETS: StylePreset[] = [
     textPrimary: '#fff',
     textAccent: GOLD_TROPHY,
     fineprint: ALPHA_WHITE_80,
+    decorMain: '#fff',
   },
   {
     id: 'success',
@@ -87,6 +182,7 @@ const STYLE_PRESETS: StylePreset[] = [
     textPrimary: '#fff',
     textAccent: '#fff',
     fineprint: ALPHA_WHITE_80,
+    decorMain: '#fff',
   },
 ];
 
@@ -185,6 +281,11 @@ const SocialPostsTab = ({
           transition: 'background .25s ease',
         }}
       >
+        {/* Festive background decorations (behind all text) */}
+        <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          <DecorLayer w={w} h={h} main={style.decorMain} />
+        </Box>
+
         {/* Header - Wordmark */}
         <Box sx={{ position: 'relative', zIndex: 1 }}>
           <Box
