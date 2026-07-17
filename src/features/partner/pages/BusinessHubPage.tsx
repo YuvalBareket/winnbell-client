@@ -22,7 +22,8 @@ import {
   PreviewOutlined,
   AccountBalanceWalletOutlined,
   ArrowForwardOutlined,
-  RocketLaunchOutlined,
+  MenuBookRounded,
+  ArrowForwardRounded,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -69,6 +70,9 @@ import {
   TEXT_SECONDARY,
   TEXT_TERTIARY,
   TEXT_HEADING,
+  ACCENT_GOLD_DARK,
+  ACCENT_GOLD_LIGHT,
+  PRIMARY_MAIN,
 } from '../../../shared/colors';
 
 const BusinessHubPage = () => {
@@ -300,50 +304,80 @@ const BusinessHubPage = () => {
           </AnimatePresence>
 
           {/* Profile preview + marketing links. Same row on desktop, stacked on mobile.
-              The cards are entrance-only; the actions live in their buttons. */}
-          <Box
-            component={motion.div}
-            variants={popIn}
-            sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}
-          >
-            <Paper
-              elevation={0}
-              sx={{ flex: 1, p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
-            >
-              <Box>
-                <Typography variant='body2' fontWeight={700}>Public Profile Preview</Typography>
-                <Typography variant='caption' color='text.secondary'>See how customers find you on the Winnbell map</Typography>
-              </Box>
-              <Button
-                variant='outlined'
-                size='small'
-                startIcon={<PreviewOutlined />}
+              Styled as clickable doc-cards matching the marketing page pattern. */}
+          <motion.div variants={popIn}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
+              <Paper
+                elevation={0}
                 onClick={() => setPreviewOpen(true)}
-                sx={{ fontWeight: 700, textTransform: 'none', flexShrink: 0 }}
+                sx={{
+                  minWidth: 0,
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.75,
+                  px: 2,
+                  py: 1.5,
+                  borderRadius: 2.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  '&:hover': {
+                    borderColor: PRIMARY_MAIN,
+                    boxShadow: `0 6px 18px -8px ${PRIMARY_MAIN}55`,
+                    transform: 'translateY(-1px)',
+                    '& .doc-arrow': { transform: 'translateX(3px)', color: PRIMARY_MAIN },
+                  },
+                  '&:active': { transform: 'scale(0.99)' },
+                }}
               >
-                Preview
-              </Button>
-            </Paper>
+                <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: `${PRIMARY_MAIN}12`, color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <PreviewOutlined sx={{ fontSize: 20 }} />
+                </Box>
+                <Stack sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography noWrap sx={{ fontSize: '0.875rem', fontWeight: 800 }}>Public Profile Preview</Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', lineHeight: 1.4 }}>See how customers find you on the Winnbell map</Typography>
+                </Stack>
+                <ArrowForwardRounded className='doc-arrow' sx={{ fontSize: 18, color: 'text.disabled', flexShrink: 0, transition: 'all 0.18s ease' }} />
+              </Paper>
 
-            <Paper
-              elevation={0}
-              sx={{ flex: 1, p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}
-            >
-              <Box>
-                <Typography variant='body2' fontWeight={700}>Get the Most Out of Winnbell</Typography>
-                <Typography variant='caption' color='text.secondary'>Ready-made materials to promote your campaign</Typography>
-              </Box>
-              <Button
-                variant='outlined'
-                size='small'
-                startIcon={<RocketLaunchOutlined />}
+              <Paper
+                elevation={0}
                 onClick={() => navigate('/marketing/guide')}
-                sx={{ fontWeight: 700, textTransform: 'none', flexShrink: 0 }}
+                sx={{
+                  minWidth: 0,
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.75,
+                  px: 2,
+                  py: 1.5,
+                  borderRadius: 2.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  '&:hover': {
+                    borderColor: ACCENT_GOLD_DARK,
+                    boxShadow: `0 6px 18px -8px ${ACCENT_GOLD_DARK}55`,
+                    transform: 'translateY(-1px)',
+                    '& .doc-arrow': { transform: 'translateX(3px)', color: ACCENT_GOLD_DARK },
+                  },
+                  '&:active': { transform: 'scale(0.99)' },
+                }}
               >
-                Explore
-              </Button>
-            </Paper>
-          </Box>
+                <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: ACCENT_GOLD_LIGHT, color: ACCENT_GOLD_DARK, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <MenuBookRounded sx={{ fontSize: 20 }} />
+                </Box>
+                <Stack sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography noWrap sx={{ fontSize: '0.875rem', fontWeight: 800 }}>Get the Most Out of Winnbell</Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', lineHeight: 1.4 }}>Ready-made materials to promote your campaign</Typography>
+                </Stack>
+                <ArrowForwardRounded className='doc-arrow' sx={{ fontSize: 18, color: 'text.disabled', flexShrink: 0, transition: 'all 0.18s ease' }} />
+              </Paper>
+            </Box>
+          </motion.div>
 
           {/* Campaign card */}
           <motion.div variants={riseIn}>
