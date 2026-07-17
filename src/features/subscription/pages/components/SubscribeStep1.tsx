@@ -10,7 +10,9 @@ import {
   BORDER_SUBTLE,
   BG_SUBTLE,
   STATUS_ACTIVATED_TEXT,
+  ERROR_MAIN,
 } from '../../../../shared/colors';
+import { MIN_RECEIPT_THRESHOLD } from '../../../../shared/constants/entries';
 
 interface Props {
   thresholdInput: string;
@@ -34,6 +36,7 @@ const SubscribeStep1 = ({
   onSkip,
 }: Props) => {
   const displayValue = parsedThreshold ?? (thresholdInput ? parseFloat(thresholdInput) : 0);
+  const belowMinimum = thresholdInput.trim() !== '' && displayValue > 0 && displayValue < MIN_RECEIPT_THRESHOLD;
 
   return (
     <Box sx={{ px: { xs: 0, md: 5 }, pt: { xs: 0.5, md: 5 }, pb: { xs: 2, md: 5 } }}>
@@ -127,16 +130,18 @@ const SubscribeStep1 = ({
             />
           </Box>
 
-          {/* Helper text */}
+          {/* Helper text; turns into an inline error while the amount is below the allowed minimum */}
           <Typography
             sx={{
               fontSize: '12px',
-              color: TEXT_TERTIARY,
-              fontWeight: 500,
+              color: belowMinimum ? ERROR_MAIN : TEXT_TERTIARY,
+              fontWeight: belowMinimum ? 700 : 500,
               mb: 3.5,
             }}
           >
-            Set the minimum receipt amount required to earn an entry.
+            {belowMinimum
+              ? `The minimum must be at least $${MIN_RECEIPT_THRESHOLD}.`
+              : `Set the minimum receipt amount required to earn an entry ($${MIN_RECEIPT_THRESHOLD} or more).`}
           </Typography>
 
           {/* Error message */}

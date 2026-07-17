@@ -15,6 +15,7 @@ import {
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { getUploadUrl, updateCampaignSettingsApi } from '../../partner/api/business.api';
 import { queryKeys } from '../../../shared/constants/queryKeys';
+import { MIN_RECEIPT_THRESHOLD } from '../../../shared/constants/entries';
 import StepIndicator from './components/StepIndicator';
 import SubscribeStep1 from './components/SubscribeStep1';
 import SubscribeStep2 from './components/SubscribeStep2';
@@ -38,7 +39,7 @@ const SubscribePage = () => {
 
 
   const parsedThreshold = thresholdInput.trim() === '' ? null : parseFloat(thresholdInput);
-  const isThresholdValid = parsedThreshold !== null && !isNaN(parsedThreshold) && parsedThreshold > 0;
+  const isThresholdValid = parsedThreshold !== null && !isNaN(parsedThreshold) && parsedThreshold >= MIN_RECEIPT_THRESHOLD;
 
   const handleThresholdContinue = async () => {
     if (!isThresholdValid) return;

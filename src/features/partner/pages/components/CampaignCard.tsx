@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { BusinessData } from '../../types/business.types';
 import { PRIMARY_MAIN, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10 } from '../../../../shared/colors';
 import { formatCurrency } from '../../../../shared/utils/date';
+import { MIN_RECEIPT_THRESHOLD } from '../../../../shared/constants/entries';
 import { getUploadUrl } from '../../api/business.api';
 
 // ────────────────────────────────────────────────────────────
@@ -127,7 +128,8 @@ const CampaignCard = ({
     return val;
   }, [thresholdValue]);
 
-  const isThresholdValid = thresholdValue.trim() !== '' && previewThreshold !== null;
+  const isThresholdValid = thresholdValue.trim() !== '' && previewThreshold !== null && previewThreshold >= MIN_RECEIPT_THRESHOLD;
+  const thresholdBelowMinimum = previewThreshold !== null && previewThreshold < MIN_RECEIPT_THRESHOLD;
 
   const displayThreshold = editingThreshold ? previewThreshold : business.min_transaction_amount;
 
@@ -313,7 +315,10 @@ const CampaignCard = ({
                           </InputAdornment>
                         ),
                       }}
-                      helperText='Customers must spend at least this amount per receipt to earn an entry.'
+                      error={thresholdBelowMinimum}
+                      helperText={thresholdBelowMinimum
+                        ? `The minimum must be at least $${MIN_RECEIPT_THRESHOLD}.`
+                        : `Customers must spend at least this amount per receipt to earn an entry ($${MIN_RECEIPT_THRESHOLD} minimum).`}
                       sx={{
                         '& .MuiOutlinedInput-root': { bgcolor: 'white' },
                         '& .MuiFormHelperText-root': { mx: 0, mt: 0.75, lineHeight: 1.4 },
