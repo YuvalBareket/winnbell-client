@@ -77,6 +77,9 @@ const DecorLayer = ({ w, h, main }: { w: number; h: number; main: string }) => {
     <rect x={x} y={y} width={10} height={4.5} rx={2.25} fill={fill} opacity={op} transform={`rotate(${deg} ${x + 5} ${y + 2.25})`} />
   );
   const g = (name: string) => `url(#${name})`;
+  // Story drops the wordmark ~84px down (below Instagram's username overlay), so
+  // the party popper moves up into the freed top-left corner instead of under it.
+  const story = h > w;
 
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: 'block' }}>
@@ -97,7 +100,7 @@ const DecorLayer = ({ w, h, main }: { w: number; h: number; main: string }) => {
       <circle cx={w * 0.55} cy={h * 0.03} r={w * 0.03} stroke={g('dgPink')} strokeWidth={2.5} fill='none' opacity={0.45} />
 
       {/* prize icons, spread clockwise around the frame edges */}
-      {icon(PARTY_PATH, w * 0.06, h * 0.14, w * 0.1, -8, g('dgOrange'), 0.75)}
+      {icon(PARTY_PATH, w * 0.06, h * (story ? 0.035 : 0.14), w * 0.1, -8, g('dgOrange'), 0.75)}
       {icon(TROPHY_PATH, w * 0.79, h * 0.1, w * 0.12, 12, g('dgGold'), 0.85)}
       {icon(TICKET_PATH, w * 0.88, h * 0.42, w * 0.085, -18, g('dgPink'), 0.7)}
       {icon(GIFT_PATH, w * 0.82, h * 0.87, w * 0.1, 10, g('dgTeal'), 0.7)}
@@ -361,7 +364,7 @@ const SocialPostsTab = ({
 
         {/* Header - Wordmark. On story the logo drops below Instagram's username
             overlay (~top 13% of a story is covered by the poster's own handle). */}
-        <Box sx={{ position: 'relative', zIndex: 1, mt: isStory ? '76px' : 0 }}>
+        <Box sx={{ position: 'relative', zIndex: 1, mt: isStory ? '84px' : 0 }}>
           <Box
             component='img'
             src={isDarkText ? '/winnbell_app_name.svg' : '/winnbell_app_name_white.svg'}
@@ -408,6 +411,21 @@ const SocialPostsTab = ({
             </Typography>
           )}
         </Box>
+
+        {/* Story only: white pill marking where the Instagram link sticker goes -
+            the owner places the real tappable sticker on top of it when posting */}
+        {isStory && (
+          <Box sx={{ position: 'absolute', bottom: 130, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 1 }}>
+            <Box sx={{ bgcolor: '#fff', borderRadius: '999px', px: '18px', py: '10px', display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <svg viewBox='0 0 24 24' width={16} height={16} fill={PRIMARY_MAIN}>
+                <path d='M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5' />
+              </svg>
+              <Typography sx={{ fontWeight: 800, fontSize: 14, color: PRIMARY_MAIN, lineHeight: 1 }}>
+                Put your link here
+              </Typography>
+            </Box>
+          </Box>
+        )}
 
         {/* Footer - Fine print (matches the QR sticker's legal disclosure) */}
         <Box sx={{ position: 'relative', zIndex: 1 }}>
