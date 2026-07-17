@@ -164,9 +164,13 @@ const LayoutA = ({ businessName, scanUrl, minAmountLabel, t }: PosterProps & { t
           </Typography>
           <ArrowUpIcon color={t.accent} size={13} />
         </Box>
-        <Typography sx={{ fontFamily: SANS, fontSize: '7px', color: 'rgba(255,255,255,.8)', fontWeight: 600, mt: '6px' }}>
-          Free to enter · no app to download
-          {minAmountLabel ? ` · receipts of ${minAmountLabel}+ enter the draw` : ''}
+        <Typography sx={{ fontFamily: SANS, fontSize: '7px', color: 'rgba(255,255,255,.82)', fontWeight: 600, mt: '6px', textAlign: 'center' }}>
+          {minAmountLabel
+            ? `Spend ${minAmountLabel} or more · scan the QR code · submit your purchase`
+            : 'Scan the QR code · submit your purchase'}
+        </Typography>
+        <Typography sx={{ fontFamily: SANS, fontSize: '7.5px', color: 'white', fontWeight: 700, mt: '3px', textAlign: 'center' }}>
+          Enter this month's cash prize draw.
         </Typography>
         <Typography sx={{
           fontFamily: SANS, fontSize: '5px', color: 'rgba(255,255,255,.5)', fontWeight: 500,
@@ -190,7 +194,6 @@ interface ThemeB {
   onUsColor: string;       // solid fallback for the gradient "on us." text
   step3Bg: string;         // gradient circle for step 3
   accent: string;          // brackets + arrow
-  reassureText: string;
 }
 
 const LayoutB = ({ businessName, scanUrl, minAmountLabel, t }: PosterProps & { t: ThemeB }) => (
@@ -231,23 +234,23 @@ const LayoutB = ({ businessName, scanUrl, minAmountLabel, t }: PosterProps & { t
           fontFamily: SANS, fontSize: '7px', fontWeight: 800, letterSpacing: '0.2em',
           textTransform: 'uppercase', color: t.eyebrowColor, mb: '5px',
         }}>
-          A lucky start
+          How it works
         </Typography>
         <Typography sx={{ fontFamily: SANS, fontSize: 31, lineHeight: 0.98, fontWeight: 800, letterSpacing: '-1.1px', color: '#0f2747' }}>
-          Your first<br />entry is <Box component='span' sx={{ color: t.onUsColor }}>on us.</Box>
+          Enter this month's<br /><Box component='span' sx={{ color: t.onUsColor }}>cash prize draw.</Box>
         </Typography>
         <Typography sx={{ fontFamily: SANS, fontSize: '8.5px', lineHeight: 1.55, color: '#475569', fontWeight: 500, maxWidth: 215, mt: '9px' }}>
-          Join Winnbell here and we'll drop a <Box component='b' sx={{ color: '#0f2747' }}>free entry</Box> into
-          this month's draw. Scan to see what's up for grabs.
+          It takes <Box component='b' sx={{ color: '#0f2747' }}>seconds</Box> at the register,
+          no app to download. Winners are drawn monthly.
         </Typography>
       </Box>
 
       {/* Steps 1-2-3 */}
       <Box sx={{ position: 'relative', display: 'flex', gap: '6px', mt: '14px' }}>
         {[
-          { n: '1', label: 'Scan the code', bg: '#0f2747' },
-          { n: '2', label: 'Join in seconds', bg: '#0f2747' },
-          { n: '3', label: 'Your entry lands free', bg: t.step3Bg },
+          { n: '1', label: minAmountLabel ? `Spend ${minAmountLabel} or more` : 'Make a purchase', bg: '#0f2747' },
+          { n: '2', label: 'Scan the QR code', bg: '#0f2747' },
+          { n: '3', label: 'Submit your purchase', bg: t.step3Bg },
         ].map((s) => (
           <Box key={s.n} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '4px' }}>
             <Box sx={{
@@ -282,8 +285,7 @@ const LayoutB = ({ businessName, scanUrl, minAmountLabel, t }: PosterProps & { t
             <ArrowRightIcon color={t.accent} size={11} />
           </Box>
           <Typography sx={{ fontFamily: SANS, fontSize: '7px', color: '#475569', fontWeight: 500, lineHeight: 1.45, mt: '3px' }}>
-            {t.reassureText}
-            {minAmountLabel ? ` Receipts of ${minAmountLabel}+ enter the draw.` : ''}
+            Submit your purchase and get your entry to this month's draw.
           </Typography>
           <Typography sx={{ fontFamily: SANS, fontSize: '5px', color: '#94a3b8', fontWeight: 500, mt: '5px', lineHeight: 1.35 }}>
             {LEGAL_TEXT}
@@ -309,7 +311,7 @@ export const PosterBlue = (p: PosterProps) => (
 // ── Template 2: Emerald (design 2a) ───────────────────────────────────────────
 export const PosterEmerald = (p: PosterProps) => (
   <LayoutA {...p} t={{
-    bg: 'linear-gradient(200deg, #5eead4 0%, #34d399 28%, #10b981 55%, #0a6e5c 80%, #053b3a 100%)',
+    bg: 'linear-gradient(200deg, #2fc492 0%, #12a374 25%, #0c7f57 50%, #07573f 78%, #03291f 100%)',
     accent: '#fbe9b8',
     winColor: '#e0c47f',
     pillBg: 'rgba(255,255,255,.14)',
@@ -330,7 +332,6 @@ export const PosterCream = (p: PosterProps) => (
     onUsColor: '#b2913b',
     step3Bg: 'linear-gradient(135deg, #c5a047, #a0822f)',
     accent: '#c5a047',
-    reassureText: 'Free to enter · no app to download · winners drawn monthly.',
   }} />
 );
 
@@ -346,6 +347,5 @@ export const PosterSunset = (p: PosterProps) => (
     onUsColor: '#f57493',
     step3Bg: 'linear-gradient(135deg, #ffa9be, #ec5a76)',
     accent: '#ec5a76',
-    reassureText: 'Free to enter · no app · winners drawn monthly.',
   }} />
 );
