@@ -38,7 +38,7 @@ export const useUploadReceiptImage = () => {
 
   const upload = async (file: File): Promise<string | null> => {
     if (file.size > MAX_SIZE_BYTES) {
-      setError('Image must be under 10 MB.');
+      setError('File must be under 10 MB.');
       return null;
     }
 
@@ -46,7 +46,16 @@ export const useUploadReceiptImage = () => {
     setIsUploading(true);
 
     try {
-      const webpFile = await convertToWebP(file);
+      // PDFs (e.g. emailed receipts) are rendered to an image first so the rest of
+      // the pipeline (WebP upload, review views, OCR) stays image-only. The PDF
+      // engine is lazy-loaded - only users who actually pick a PDF download it.
+      const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+      let imageFile = file;
+      if (isPdf) {
+        const { pdfFirstPageToImage } = await import('../../../shared/lib/pdfToImage');
+        imageFile = await pdfFirstPageToImage(file);
+      }
+      const webpFile = await convertToWebP(imageFile);
       // The exact size is signed into the upload URL server-side (hard cap enforcement)
       const { uploadUrl, publicUrl } = await getReceiptUploadUrl(webpFile.size);
 
@@ -58,7 +67,7 @@ export const useUploadReceiptImage = () => {
 
       return publicUrl;
     } catch {
-      setError('Failed to upload image. Please try again.');
+      setError('Failed to upload the file. Please try a different image or PDF.');
       return null;
     } finally {
       setIsUploading(false);

@@ -24,11 +24,13 @@ const ReceiptImageUploadField: React.FC<Props> = ({
 
   return (
     <Box>
+      {/* No `capture` attr: mobile browsers then offer camera, photo library, AND
+          files in one chooser instead of forcing the camera. PDFs are rendered to
+          an image by the upload hook. */}
       <input
         id="receipt-image-input"
         type="file"
-        accept="image/*"
-        capture="environment"
+        accept="image/*,application/pdf"
         style={{ display: 'none' }}
         onChange={async (e) => {
           const file = e.target.files?.[0];
@@ -89,8 +91,8 @@ const ReceiptImageUploadField: React.FC<Props> = ({
               <CloudUpload sx={{ color: primaryColor || PRIMARY_MAIN, fontSize: 22 }} />
             </Box>
             <Box>
-              <Typography variant="body2" sx={{ fontWeight: 700 }}>Attach receipt photo</Typography>
-              <Typography variant="caption" color="text.secondary">Tap to take a photo of your receipt</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>Attach your receipt</Typography>
+              <Typography variant="caption" color="text.secondary">Take a photo, or upload an image or PDF</Typography>
             </Box>
           </>
         )}
