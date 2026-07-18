@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Box, Typography, Stack, Alert,
   useMediaQuery, useTheme, Grid,
+  Select, MenuItem,
 } from '@mui/material';
 import AttractButton from '../../../shared/components/AttractButton';
 import { Warning, Female, Male, Transgender, MoreHoriz, CheckCircle } from '@mui/icons-material';
@@ -11,7 +12,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAppDispatch, useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import { completeProfileSetup } from '../../../store/slices/authSlice';
@@ -24,6 +25,7 @@ import {
   ALPHA_WHITE_15, SHADOW_PRIMARY_MEDIUM,
 } from '../../../shared/colors';
 import { staggerContainer, popIn, riseIn } from '../../../shared/motion';
+import { US_STATES } from '../../../shared/constants/usStates';
 
 const GENDERS = ['Female', 'Male', 'Non-binary', 'Prefer not to say'] as const;
 type Gender = typeof GENDERS[number];
@@ -38,6 +40,7 @@ const GENDER_ICONS: Record<Gender, typeof Female> = {
 interface ProfileSetupRequest {
   dateOfBirth: string;
   gender: string;
+  state: string;
 }
 
 const ProfileSetupPage = () => {
@@ -51,7 +54,20 @@ const ProfileSetupPage = () => {
 
   const [dob, setDob] = useState<Dayjs | null>(null);
   const [selectedGender, setSelectedGender] = useState<Gender | ''>('');
+  const [selectedState, setSelectedState] = useState('');
   const [submitError, setSubmitError] = useState('');
+
+  // States where Winnbell operates (platform setting). Empty list = no restriction,
+  // in which case every U.S. state is offered.
+  const { data: regionConfig } = useQuery({
+    queryKey: ['auth', 'region-config'],
+    queryFn: async () => (await api.get<{ allowed_states: string[] }>('/auth/region-config')).data,
+    staleTime: 10 * 60_000,
+  });
+  const allowedCodes = regionConfig?.allowed_states ?? [];
+  const stateOptions = allowedCodes.length > 0
+    ? US_STATES.filter((s) => allowedCodes.includes(s.code))
+    : US_STATES;
 
   // Derived: age check runs on every render, no effect needed.
   const dobError = dob !== null && dob.isValid() && dayjs().diff(dob, 'year') < 18
@@ -82,12 +98,17 @@ const ProfileSetupPage = () => {
       return;
     }
 
+    if (!selectedState) {
+      setSubmitError('Please select your state.');
+      return;
+    }
+
     const dateOfBirth = dob.format('YYYY-MM-DD');
     mutation.mutate(
-      { dateOfBirth, gender: selectedGender },
+      { dateOfBirth, gender: selectedGender, state: selectedState },
       {
         onSuccess: () => {
-          dispatch(completeProfileSetup({ dateOfBirth, gender: selectedGender }));
+          dispatch(completeProfileSetup({ dateOfBirth, gender: selectedGender, state: selectedState }));
           navigate(homeDest, { replace: true });
         },
         onError: (error: unknown) => {
@@ -138,6 +159,38 @@ const ProfileSetupPage = () => {
         }}
       />
     </LocalizationProvider>
+  );
+
+  // State of residence: only states where Winnbell operates are offered.
+  const statePicker = (
+    <Select
+      value={selectedState}
+      onChange={(e) => setSelectedState(e.target.value)}
+      displayEmpty
+      fullWidth
+      renderValue={(code) => {
+        if (!code) return <Box component='span' sx={{ color: TEXT_TERTIARY }}>Select your state</Box>;
+        return US_STATES.find((s) => s.code === code)?.name ?? code;
+      }}
+      MenuProps={{ PaperProps: { sx: { maxHeight: 320, borderRadius: '12px' } } }}
+      sx={{
+        bgcolor: 'white',
+        borderRadius: '12px',
+        fontSize: '14.5px',
+        fontWeight: 600,
+        color: TEXT_HEADING,
+        '& .MuiOutlinedInput-notchedOutline': { borderColor: BORDER_LIGHT, borderWidth: '1px' },
+        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: BORDER_LIGHT },
+        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY_MAIN, borderWidth: '1.5px' },
+        '&.Mui-focused': { boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}` },
+      }}
+    >
+      {stateOptions.map((s) => (
+        <MenuItem key={s.code} value={s.code} sx={{ fontSize: '14px', fontWeight: 600 }}>
+          {s.name}
+        </MenuItem>
+      ))}
+    </Select>
   );
 
   // Gender cards: icon tile + label, gradient tile and soft ring when selected.
@@ -213,7 +266,7 @@ const ProfileSetupPage = () => {
         <AuthBrandPanel
           isBusinessVariant={isLocationManager}
           headline="Almost in."
-          tagline="Two quick details so we can confirm you're eligible and tailor draws to you."
+          tagline="A few quick details so we can confirm you're eligible and tailor draws to you."
           bullets={[]}
         />
 
@@ -268,20 +321,37 @@ const ProfileSetupPage = () => {
                   </motion.div>
                 )}
 
-                {/* Date of Birth */}
+                {/* Date of birth + state of residence, side by side */}
                 <motion.div variants={popIn}>
                   <Box>
-                    <Typography
-                      sx={{
-                        fontSize: '12.5px',
-                        fontWeight: 700,
-                        color: TEXT_SECONDARY,
-                        marginBottom: '8px',
-                      }}
-                    >
-                      Date of birth
-                    </Typography>
-                    {dobPicker}
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
+                          sx={{
+                            fontSize: '12.5px',
+                            fontWeight: 700,
+                            color: TEXT_SECONDARY,
+                            marginBottom: '8px',
+                          }}
+                        >
+                          Date of birth
+                        </Typography>
+                        {dobPicker}
+                      </Box>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
+                          sx={{
+                            fontSize: '12.5px',
+                            fontWeight: 700,
+                            color: TEXT_SECONDARY,
+                            marginBottom: '8px',
+                          }}
+                        >
+                          State of residence
+                        </Typography>
+                        {statePicker}
+                      </Box>
+                    </Box>
                     <Typography variant="caption" sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block', mt: 1 }}>
                       <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
                       <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
@@ -427,10 +497,6 @@ const ProfileSetupPage = () => {
                   Date of birth
                 </Typography>
                 {dobPicker}
-                <Typography variant="caption" sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block', mt: 1 }}>
-                  <Warning sx={{ fontSize: 13, verticalAlign: 'text-bottom', mr: 0.5 }} />
-                  <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
-                </Typography>
                 {dobError && (
                   <motion.div variants={popIn}>
                     <Alert severity="error" sx={{ mt: 1.5 }}>
@@ -438,6 +504,27 @@ const ProfileSetupPage = () => {
                     </Alert>
                   </motion.div>
                 )}
+              </Box>
+            </motion.div>
+
+            {/* State of residence */}
+            <motion.div variants={popIn}>
+              <Box>
+                <Typography
+                  sx={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: TEXT_SECONDARY,
+                    marginBottom: '8px',
+                  }}
+                >
+                  State of residence
+                </Typography>
+                {statePicker}
+                <Typography variant="caption" sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block', mt: 1 }}>
+                  <Warning sx={{ fontSize: 13, verticalAlign: 'text-bottom', mr: 0.5 }} />
+                  <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
+                </Typography>
               </Box>
             </motion.div>
 

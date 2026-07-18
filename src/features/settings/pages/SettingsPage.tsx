@@ -627,21 +627,24 @@ export default function SettingsPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Handlers
-  const handleProfileSave = async (data: { fullName: string; dateOfBirth: string | null; gender: string | null }) => {
+  const handleProfileSave = async (data: { fullName: string; dateOfBirth: string | null; gender: string | null; state: string | null }) => {
     setEditLoading(true);
     try {
-      // Name (all roles) and DOB/gender (consumers/managers) go to separate endpoints; only
-      // send each when it actually changed. DOB/gender runs FIRST: it is the one the server
-      // still re-validates (18+/whitelist), so if it rejects we bail before touching the name,
-      // avoiding a partial save where the name changed but the error implies nothing did.
-      if (data.dateOfBirth && data.gender) {
+      // Name (all roles) and DOB/gender/state (consumers/managers) go to separate endpoints;
+      // only send each when it actually changed. Profile fields run FIRST: they are the ones
+      // the server still re-validates (18+/whitelist/allowed states), so if it rejects we bail
+      // before touching the name, avoiding a partial save where the name changed but the error
+      // implies nothing did.
+      if (data.dateOfBirth && data.gender && data.state) {
         await api.post('/auth/profile-setup', {
           dateOfBirth: data.dateOfBirth,
           gender: data.gender,
+          state: data.state,
         });
         dispatch(completeProfileSetup({
           dateOfBirth: data.dateOfBirth,
           gender: data.gender,
+          state: data.state,
         }));
       }
       if (data.fullName && data.fullName !== user?.fullName) {
@@ -701,6 +704,7 @@ export default function SettingsPage() {
         currentFullName={user?.fullName || ''}
         currentDateOfBirth={user?.dateOfBirth || null}
         currentGender={user?.gender || null}
+        currentState={user?.state || null}
         showProfileFields={user?.role === 'User' || user?.dateOfBirth != null || user?.gender != null}
         loading={editLoading}
       />

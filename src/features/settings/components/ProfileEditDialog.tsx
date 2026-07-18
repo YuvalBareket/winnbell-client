@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Box, Button, Typography,
-  Stack, Alert, Drawer, TextField, useMediaQuery, useTheme,
+  Stack, Alert, Drawer, TextField, Select, MenuItem, useMediaQuery, useTheme,
 } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import AttractButton from '../../../shared/components/AttractButton';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -11,6 +12,8 @@ import dayjs, { Dayjs } from 'dayjs';
 import { motion } from 'framer-motion';
 import { Female, Male, Transgender, MoreHoriz, CheckCircle } from '@mui/icons-material';
 import { popIn } from '../../../shared/motion';
+import { api } from '../../../shared/api/client';
+import { US_STATES } from '../../../shared/constants/usStates';
 import {
   TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT, PRIMARY_MAIN, ERROR_MAIN, BG_SURFACE,
   ALPHA_PRIMARY_06, ALPHA_PRIMARY_10, GRADIENT_CTA, SHADOW_CARD,
@@ -29,10 +32,11 @@ const GENDER_ICONS: Record<Gender, typeof Female> = {
 interface ProfileEditDialogProps {
   open: boolean;
   onClose: () => void;
-  onSave: (data: { fullName: string; dateOfBirth: string | null; gender: string | null }) => Promise<void>;
+  onSave: (data: { fullName: string; dateOfBirth: string | null; gender: string | null; state: string | null }) => Promise<void>;
   currentFullName: string;
   currentDateOfBirth: string | null;
   currentGender: string | null;
+  currentState: string | null;
   // Whether to collect date of birth + gender. Consumers/managers yes; owners/admins name-only.
   showProfileFields: boolean;
   loading?: boolean;
@@ -45,6 +49,7 @@ const ProfileEditDialog = ({
   currentFullName,
   currentDateOfBirth,
   currentGender,
+  currentState,
   showProfileFields,
   loading = false,
 }: ProfileEditDialogProps) => {
@@ -54,7 +59,33 @@ const ProfileEditDialog = ({
   const [fullName, setFullName] = useState(currentFullName ?? '');
   const [dob, setDob] = useState<Dayjs | null>(currentDateOfBirth ? dayjs(currentDateOfBirth) : null);
   const [gender, setGender] = useState<Gender | ''>(currentGender as Gender || '');
+  const [stateCode, setStateCode] = useState(currentState ?? '');
   const [error, setError] = useState('');
+
+  // Re-seed the fields from the CURRENT user every time the dialog opens. The dialog
+  // stays mounted across account switches and profile saves, so the useState
+  // initializers alone would show a previous session's values.
+  useEffect(() => {
+    if (!open) return;
+    setFullName(currentFullName ?? '');
+    setDob(currentDateOfBirth ? dayjs(currentDateOfBirth) : null);
+    setGender(currentGender as Gender || '');
+    setStateCode(currentState ?? '');
+    setError('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // States where Winnbell operates; empty list = no restriction (offer all).
+  const { data: regionConfig } = useQuery({
+    queryKey: ['auth', 'region-config'],
+    queryFn: async () => (await api.get<{ allowed_states: string[] }>('/auth/region-config')).data,
+    staleTime: 10 * 60_000,
+    enabled: showProfileFields,
+  });
+  const allowedCodes = regionConfig?.allowed_states ?? [];
+  const stateOptions = allowedCodes.length > 0
+    ? US_STATES.filter((s) => allowedCodes.includes(s.code) || s.code === stateCode)
+    : US_STATES;
 
   // Client-side 18+ validation
   const dobError = dob !== null && dob.isValid() && dayjs().diff(dob, 'year') < 18
@@ -81,6 +112,10 @@ const ProfileEditDialog = ({
         setError('Please select a gender.');
         return;
       }
+      if (!stateCode) {
+        setError('Please select your state.');
+        return;
+      }
     }
 
     try {
@@ -88,6 +123,7 @@ const ProfileEditDialog = ({
         fullName: fullName.trim(),
         dateOfBirth: showProfileFields && dob ? dob.format('YYYY-MM-DD') : null,
         gender: showProfileFields ? gender : null,
+        state: showProfileFields ? stateCode : null,
       });
       onClose();
     } catch (err: unknown) {
@@ -102,6 +138,7 @@ const ProfileEditDialog = ({
       setFullName(currentFullName ?? '');
       setDob(currentDateOfBirth ? dayjs(currentDateOfBirth) : null);
       setGender(currentGender as Gender || '');
+      setStateCode(currentState ?? '');
       setError('');
       onClose();
     }
@@ -260,6 +297,51 @@ const ProfileEditDialog = ({
             {dobError}
           </Typography>
         )}
+      </Box>
+      )}
+
+      {/* State of residence - only states where Winnbell operates */}
+      {showProfileFields && (
+      <Box>
+        <Typography
+          sx={{
+            fontSize: '12.5px',
+            fontWeight: 700,
+            color: TEXT_SECONDARY,
+            marginBottom: '10px',
+          }}
+        >
+          State of residence
+        </Typography>
+        <Select
+          value={stateCode}
+          onChange={(e) => setStateCode(e.target.value)}
+          displayEmpty
+          fullWidth
+          disabled={loading}
+          renderValue={(code) => {
+            if (!code) return <Box component='span' sx={{ color: TEXT_SECONDARY }}>Select your state</Box>;
+            return US_STATES.find((s) => s.code === code)?.name ?? code;
+          }}
+          MenuProps={{ PaperProps: { sx: { maxHeight: 320, borderRadius: '12px' } } }}
+          sx={{
+            bgcolor: BG_SURFACE,
+            borderRadius: '12px',
+            fontSize: '14.5px',
+            fontWeight: 600,
+            color: TEXT_HEADING,
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: BORDER_LIGHT, borderWidth: '1px' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: BORDER_LIGHT },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY_MAIN, borderWidth: '1.5px' },
+            '&.Mui-focused': { boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}` },
+          }}
+        >
+          {stateOptions.map((s) => (
+            <MenuItem key={s.code} value={s.code} sx={{ fontSize: '14px', fontWeight: 600 }}>
+              {s.name}
+            </MenuItem>
+          ))}
+        </Select>
       </Box>
       )}
 

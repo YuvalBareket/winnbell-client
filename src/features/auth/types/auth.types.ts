@@ -13,6 +13,8 @@ export interface User {
   requiresProfileSetup?: boolean;
   dateOfBirth?: string | null;
   gender?: string | null;
+  /** Self-declared U.S. state of residence (2-letter code) from profile setup */
+  state?: string | null;
   created_at: string;
 }
 

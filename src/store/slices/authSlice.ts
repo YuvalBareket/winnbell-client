@@ -166,11 +166,12 @@ export const authSlice = createSlice({
       if (acc) acc.user.requiresBusinessSetup = false;
     },
 
-    completeProfileSetup: (state, action: PayloadAction<{ dateOfBirth: string; gender: string }>) => {
+    completeProfileSetup: (state, action: PayloadAction<{ dateOfBirth: string; gender: string; state: string }>) => {
       if (state.user) {
         state.user.requiresProfileSetup = false;
         state.user.dateOfBirth = action.payload.dateOfBirth;
         state.user.gender = action.payload.gender;
+        state.user.state = action.payload.state;
       }
       // keep the saved-account copy in sync
       const acc = state.accounts?.find((a) => a.user.id === state.activeAccountId);
@@ -178,6 +179,7 @@ export const authSlice = createSlice({
         acc.user.requiresProfileSetup = false;
         acc.user.dateOfBirth = action.payload.dateOfBirth;
         acc.user.gender = action.payload.gender;
+        acc.user.state = action.payload.state;
       }
     },
     updateProfileName: (state, action: PayloadAction<{ fullName: string }>) => {
