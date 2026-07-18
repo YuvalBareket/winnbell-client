@@ -14,16 +14,12 @@ import {
   EmojiEvents,
   ConfirmationNumber,
 } from '@mui/icons-material';
-import QRScannerModal from './QRScannerModal';
 import { GRADIENT_SUCCESS, GOLD_TROPHY, ALPHA_WHITE_90 } from '../../../shared/colors';
 import { useInstallPromptTrigger } from '../../install/InstallPromptContext';
 import GoldConfetti from '../../../shared/components/GoldConfetti';
 import { useConfettiTaps } from '../../../shared/hooks/useConfettiTaps';
 
 interface RedeemFeedbackProps {
-  scannerOpen: boolean;
-  setScannerOpen: (open: boolean) => void;
-  handleScanSuccess: (code: string) => void;
   errorOpen: boolean;
   setErrorOpen: (open: boolean) => void;
   errorMessage: string;
@@ -34,9 +30,6 @@ interface RedeemFeedbackProps {
 }
 
 const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
-  scannerOpen,
-  setScannerOpen,
-  handleScanSuccess,
   errorOpen,
   setErrorOpen,
   errorMessage,
@@ -51,7 +44,6 @@ const RedeemFeedback: React.FC<RedeemFeedbackProps> = ({
   const { fireBurst, confettiBursts } = useConfettiTaps();
   return (
   <>
-    <QRScannerModal open={scannerOpen} onScan={handleScanSuccess} onClose={() => setScannerOpen(false)} />
     <Snackbar open={errorOpen} autoHideDuration={5000} onClose={() => setErrorOpen(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
       <Alert severity='error' variant='filled' onClose={() => setErrorOpen(false)}>{errorMessage}</Alert>
     </Snackbar>

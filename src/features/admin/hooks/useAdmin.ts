@@ -468,7 +468,6 @@ type AdminBusinessDetail = {
   logo_url: string | null;
   subscription_status: string | null;
   in_open_draw: boolean;
-  entry_mode: string | null;
   fee_at_entry: number | null;
   entries_per_location: number | null;
   min_transaction_amount: number | null;

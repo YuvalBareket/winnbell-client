@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   Box,
   Button,
@@ -37,11 +37,15 @@ const PublicActivatePage = () => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const { isLoaded } = useSyncStatus();
 
-  // Local loading state to prevent the "Login UI Flash" while Redux initializes
-  const [isChecking, setIsChecking] = useState(true);
+  // Promo QRs are the only scannable entry codes - the business-generated code
+  // entry mode was removed, so anything else in ?code= is treated as an invalid link.
+  const rawCode = searchParams.get('code')?.trim().toUpperCase() ?? null;
+  const code = rawCode?.startsWith('PROMO') ? rawCode : null;
 
-  const code = searchParams.get('code')?.trim().toUpperCase() ?? null;
-  const isPromo = code?.startsWith('PROMO') ?? false;
+  // Loading gate (prevents the "Login UI Flash"): derived, not state - keep showing
+  // the loader until Redux/Supabase sync settles, and while redirecting to /scan.
+  const isChecking = !isLoaded || (!!code && isAuthenticated);
+
   useEffect(() => {
     // 1. If we have a code, save it immediately
     if (code) {
@@ -53,8 +57,6 @@ const PublicActivatePage = () => {
 
     if (code && isAuthenticated) {
       navigate('/scan', { replace: true });
-    } else {
-      setIsChecking(false);
     }
   }, [code, isAuthenticated, isLoaded, navigate]);
 
@@ -86,7 +88,7 @@ const PublicActivatePage = () => {
             <ErrorOutline sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
             <Typography variant='h6' fontWeight={800} mb={1}>Invalid Link</Typography>
             <Typography variant='body2' color='text.secondary'>
-              This link doesn't contain a valid entry code. Please scan the QR code on your receipt again.
+              This link doesn't contain a valid promo code. Please scan the promotion's QR code again.
             </Typography>
             <Button
               variant="contained"
@@ -120,15 +122,15 @@ const PublicActivatePage = () => {
               <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: ALPHA_WHITE_15, border: `2px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
                 <CheckCircle sx={{ fontSize: 32 }} />
               </Box>
-              <Typography variant='h6' fontWeight={800}>{isPromo ? 'Promotional Entry!' : 'Entry Scanned!'}</Typography>
-              <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>{isPromo ? 'Sign in to claim your free campaign entry' : 'Sign in to activate your entry'}</Typography>
+              <Typography variant='h6' fontWeight={800}>Promotional Entry!</Typography>
+              <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>Sign in to claim your free campaign entry</Typography>
             </Box>
           </motion.div>
 
           <Box sx={{ px: 3, pt: 3, pb: 3, textAlign: 'center' }}>
             <motion.div variants={popIn}>
               <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                {isPromo ? 'Promo Code' : 'Your entry code'}
+                Promo Code
               </Typography>
 
               <Box sx={{ mt: 1, mb: 2.5, ml: 0.5, display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: `${PRIMARY_MAIN}10`, border: `1px solid ${PRIMARY_MAIN}30`, borderRadius: 2, px: 2.5, py: 1 }}>
@@ -145,9 +147,7 @@ const PublicActivatePage = () => {
               </Typography>
 
               <Typography variant='body2' color='text.secondary' sx={{ mb: 3, lineHeight: 1.6 }}>
-                {isPromo
-                  ? "Create a free account or sign in. We'll enter you into the current campaign automatically."
-                  : "Create a free account or sign in. We'll activate your entry automatically as soon as you're in."}
+                Create a free account or sign in. We'll enter you into the current campaign automatically.
               </Typography>
             </motion.div>
 
@@ -183,9 +183,7 @@ const PublicActivatePage = () => {
 
             <motion.div variants={popIn}>
               <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 2 }}>
-                {isPromo
-                  ? 'Your promo code is saved. We\'ll enter you into the campaign the moment you sign in.'
-                  : 'Your entry code is saved. It will activate the moment you sign in.'}
+                Your promo code is saved. We'll enter you into the campaign the moment you sign in.
               </Typography>
             </motion.div>
           </Box>

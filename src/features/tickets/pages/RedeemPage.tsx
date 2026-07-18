@@ -7,14 +7,11 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { motion } from 'framer-motion';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 import { selectIsAuthenticated } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
-import { useRedeemTicket } from '../hooks/useTickets';
 import { useActivatePromotional } from '../hooks/useActivatePromotional';
-import { useEntryMode } from '../hooks/useEntryMode';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import { usePhoneVerifySheet } from '../hooks/usePhoneVerifySheet';
 import AppPageHero from '../../../shared/components/AppPageHero';
@@ -22,13 +19,12 @@ import PhoneVerifySheet from '../components/PhoneVerifySheet';
 import ReferralBonusSuccessDialog from '../components/ReferralBonusSuccessDialog';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
-import { riseIn } from '../../../shared/motion';
-import UserActions from '../components/UserActions';
 import RedeemFeedback from '../components/RedeemFeedback';
 import ReceiptEntryForm, { StepIndicator } from '../components/ReceiptEntryForm';
 
 // The /scan route is guarded by `isUser` in AppRoutes, so this page only ever renders for
-// regular users. It is the consumer "Submit a receipt" / "Activate a code" screen.
+// regular users. It is the consumer "Submit a receipt" screen (receipt is the only entry
+// mode; promo QR codes still auto-activate here after login).
 const RedeemPage = () => {
   const navigate = useNavigate();
   const routeLocation = useLocation();
@@ -49,11 +45,8 @@ const RedeemPage = () => {
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
   // State
-  const [code, setCode] = useState('');
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [scannerOpen, setScannerOpen] = useState(false);
-  const [, setActivatedCode] = useState<string | null>(null);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [isAutoActivating, setIsAutoActivating] = useState(() => !!localStorage.getItem('pendingTicketCode'));
   const [receiptStep2, setReceiptStep2] = useState(false);
@@ -76,15 +69,12 @@ const RedeemPage = () => {
     },
   });
 
-  // Entry mode (receipt submission vs code activation) - platform setting
-  const { data: entryModeData } = useEntryMode();
-  const entryMode = entryModeData?.entry_mode ?? 'receipt';
-
   // Mutations
-  const redeemMutation = useRedeemTicket();
   const promoMutation = useActivatePromotional();
 
-  // Auto-activate pending code from QR scan flow (saved by PublicActivatePage before login)
+  // Auto-activate a pending promo code from the QR flow (saved by PublicActivatePage
+  // before login). Promo QRs are the only scannable entry codes - the business-generated
+  // code entry mode was removed; any stale non-promo pending code is simply discarded.
   const didAutoActivate = useRef(false);
   useEffect(() => {
     if (!isAuthenticated || !isPhoneVerifiedLoaded || didAutoActivate.current) return;
@@ -94,27 +84,26 @@ const RedeemPage = () => {
 
     didAutoActivate.current = true;
 
+    if (!pending.startsWith('PROMO')) {
+      localStorage.removeItem('pendingTicketCode');
+      setIsAutoActivating(false);
+      return;
+    }
+
     // The saved code is only CONSUMED when activation actually runs - dismissing the verify
     // sheet must not lose a scanned code (a reload re-prompts with it instead).
     const activatePending = () => {
       localStorage.removeItem('pendingTicketCode');
-      if (pending.startsWith('PROMO')) {
-        promoMutation.mutate(pending, {
-          onSuccess: () => { setIsAutoActivating(false); setActivatedCode(pending); setSuccessDialogOpen(true); },
-          onError: (err) => { setIsAutoActivating(false); setErrorMessage(apiErrorMessage(err, 'Promotional entry failed.')); setErrorOpen(true); },
-        });
-      } else {
-        redeemMutation.mutate(pending, {
-          onSuccess: () => { setIsAutoActivating(false); setActivatedCode(pending); setSuccessDialogOpen(true); },
-          onError: (err) => { setIsAutoActivating(false); setErrorMessage(apiErrorMessage(err, 'Activation failed.')); setErrorOpen(true); },
-        });
-      }
+      promoMutation.mutate(pending, {
+        onSuccess: () => { setIsAutoActivating(false); setSuccessDialogOpen(true); },
+        onError: (err) => { setIsAutoActivating(false); setErrorMessage(apiErrorMessage(err, 'Promotional entry failed.')); setErrorOpen(true); },
+      });
     };
 
     if (!isPhoneVerified) {
       // Unverified: the page renders normally behind the sheet; activation resumes on verify.
       setIsAutoActivating(false);
-      requirePhone(pending.startsWith('PROMO') ? 'promo' : 'code', activatePending, pending);
+      requirePhone('promo', activatePending, pending);
       return;
     }
 
@@ -137,27 +126,6 @@ const RedeemPage = () => {
     requirePhone('referral');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isPhoneVerified, isPhoneVerifiedLoaded, welcomeBonusPending]);
-
-  const handleScanSuccess = (scannedCode: string) => {
-    setScannerOpen(false);
-    requirePhone('code', () => {
-      redeemMutation.mutate(scannedCode, {
-        onSuccess: () => { setActivatedCode(scannedCode); setSuccessDialogOpen(true); },
-        onError: (err) => { setErrorMessage(apiErrorMessage(err, 'Invalid or already used entry code.')); setErrorOpen(true); },
-      });
-    });
-  };
-
-  const handleActivate = () => {
-    if (!code || code.length < 5) return;
-    const submittedCode = code;
-    requirePhone('code', () => {
-      redeemMutation.mutate(submittedCode, {
-        onSuccess: () => { setActivatedCode(submittedCode); setSuccessDialogOpen(true); setCode(''); },
-        onError: (err) => { setErrorMessage(apiErrorMessage(err, 'Invalid or already used entry code.')); setErrorOpen(true); },
-      });
-    });
-  };
 
   // ─── Loading gate ───────────────────────────────────────────────────────────
   // The header renders in every gate state too, so it never pops in after the fact.
@@ -184,7 +152,7 @@ const RedeemPage = () => {
   if (isAutoActivating) {
     return (
       <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column' }}>
-        <AppPageHero title='Activate an entry' subtitle='Enter your code from the receipt to join the draw' />
+        <AppPageHero title='Activating your entry' subtitle='One moment, your promotional entry is going in' />
         <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', pb: 12 }}>
           <CircularProgress size={40} sx={{ color: PRIMARY_MAIN }} />
         </Box>
@@ -192,48 +160,28 @@ const RedeemPage = () => {
     );
   }
 
-  const isReceiptMode = entryMode === 'receipt';
-
   return (
     // overflowX clip: entrance springs overshoot; the page must never grow wider than the
     // viewport or mobile browsers rescale it (zoom flash). clip, not hidden - no scroll box.
     <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', pb: { xs: 12, md: 6 }, overflowX: 'clip' }}>
       <AppPageHero
-        title={isReceiptMode ? 'Entry submission' : 'Activate an entry'}
-        subtitle={isReceiptMode ? 'Two quick steps to earn your entries' : 'Enter your code from the receipt to join the draw'}
-        actions={isReceiptMode && isDesktop ? <StepIndicator step={receiptStep2 ? 2 : 1} /> : undefined}
+        title='Entry submission'
+        subtitle='Two quick steps to earn your entries'
+        actions={isDesktop ? <StepIndicator step={receiptStep2 ? 2 : 1} /> : undefined}
       />
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 2.5 } }}>
-        {isReceiptMode ? (
-          <ReceiptEntryForm
-            primaryColor={primaryColor}
-            preselectedBusinessId={preselectedBusinessId}
-            preselectedLocation={preselectedLocation}
-            preselectedLocationId={qrLocationId}
-            onLocationSelect={setReceiptStep2}
-            guardEntryAction={(proceed) => requirePhone('receipt', proceed)}
-          />
-        ) : (
-          <Box component={motion.div} variants={riseIn} initial='hidden' animate='visible' sx={{ maxWidth: 480, mx: 'auto' }}>
-            <UserActions
-              code={code}
-              setCode={setCode}
-              redeemMutation={redeemMutation}
-              handleActivate={handleActivate}
-              setScannerOpen={setScannerOpen}
-              navigate={navigate}
-              primaryColor={primaryColor}
-              hideScan={isDesktop}
-            />
-          </Box>
-        )}
+        <ReceiptEntryForm
+          primaryColor={primaryColor}
+          preselectedBusinessId={preselectedBusinessId}
+          preselectedLocation={preselectedLocation}
+          preselectedLocationId={qrLocationId}
+          onLocationSelect={setReceiptStep2}
+          guardEntryAction={(proceed) => requirePhone('receipt', proceed)}
+        />
       </Container>
 
       <RedeemFeedback
-        scannerOpen={scannerOpen}
-        setScannerOpen={setScannerOpen}
-        handleScanSuccess={handleScanSuccess}
         errorOpen={errorOpen}
         setErrorOpen={setErrorOpen}
         errorMessage={errorMessage}

@@ -1,10 +1,4 @@
 import { api } from '../../../shared/api/client';
-import type { EntryMode } from '../../partner/types/business.types';
-
-export const redeemTicket = async (code: string) => {
-  const { data } = await api.post('/tickets/redeem', { code });
-  return data;
-};
 
 export const activateFreeTicket = async () => {
   const { data } = await api.post('/tickets/activate-free');
@@ -21,29 +15,6 @@ export const getFreeTicketStatus = async (): Promise<FreeTicketStatusResponse> =
   const { data } = await api.get<FreeTicketStatusResponse>(`/tickets/free-status`);
   return data;
 };
-
-export const generateBusinessTicket = async (locationId: number): Promise<{ success: boolean; code: string }> => {
-  const response = await api.post<{ success: boolean; code: string }>('/tickets/generate', {
-    location_id: locationId,
-  });
-  return response.data;
-};
-
-export interface ParticipatingBusiness {
-  id: number;
-  name: string;
-  sector: string;
-  logo_url: string | null;
-  entry_mode: EntryMode;
-}
-
-export interface ParticipatingBusinessesResponse {
-  entry_mode: EntryMode;
-  businesses: ParticipatingBusiness[];
-}
-
-export const getParticipatingBusinesses = (): Promise<ParticipatingBusinessesResponse> =>
-  api.get('/business/participating').then(r => r.data);
 
 export interface ParticipatingLocation {
   location_id: number;

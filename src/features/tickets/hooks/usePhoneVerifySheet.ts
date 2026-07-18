@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type PhoneVerifySheet from '../components/PhoneVerifySheet';
 
-type Context = 'free' | 'receipt' | 'code' | 'promo' | 'referral' | 'generic';
+type Context = 'free' | 'receipt' | 'promo' | 'referral' | 'generic';
 
 type SheetProps = React.ComponentProps<typeof PhoneVerifySheet>;
 

@@ -35,8 +35,9 @@ interface Props {
   onClose: () => void;
 }
 
+// 'code' stays only to label legacy tickets from the removed code entry mode.
 const SOURCE_LABELS: Record<string, string> = {
-  code: 'Code', receipt: 'Receipt', free: 'Free', promo: 'Promo',
+  code: 'Code', receipt: 'Receipt', free: 'Free', promo: 'Promo', referral: 'Referral',
 };
 
 const QUARANTINE_LABELS: Record<string, string> = {
@@ -161,7 +162,6 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
             <Stack direction='row' spacing={1} flexWrap='wrap'>
               <Chip label={biz.subscription_status ?? 'No subscription'} size='small' color={SUB_COLORS[biz.subscription_status ?? ''] ?? 'default'} />
               <Chip label={biz.in_open_draw ? 'In active campaign' : 'Not in campaign'} size='small' color={biz.in_open_draw ? 'success' : 'default'} variant={biz.in_open_draw ? 'filled' : 'outlined'} />
-              <Chip label={biz.entry_mode === 'receipt' ? 'Receipt entry' : biz.entry_mode ?? '—'} size='small' variant='outlined' />
             </Stack>
 
             {/* Campaign selector */}

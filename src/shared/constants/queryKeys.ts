@@ -49,7 +49,6 @@ export const queryKeys = {
   business: {
     all:       ['business']                      as const,
     myDetails: ['business', 'my-details']        as const,
-    mode:      ['business', 'mode']              as const,
     activity:  ['business', 'activity']          as const,
     stats: (locationId?: number | null, drawId?: number | null) =>
       ['business', 'stats', locationId ?? 'all', drawId ?? 'all'] as const,

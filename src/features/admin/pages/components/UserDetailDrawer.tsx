@@ -29,11 +29,13 @@ interface Props {
   onClose: () => void;
 }
 
+// 'code' stays only to label legacy tickets from the removed code entry mode.
 const SOURCE_LABELS: Record<string, string> = {
   code: 'Code',
   receipt: 'Receipt',
   free: 'Free',
   promo: 'Promo',
+  referral: 'Referral',
 };
 
 const QUARANTINE_LABELS: Record<string, string> = {

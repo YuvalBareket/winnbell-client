@@ -52,10 +52,6 @@ export interface BusinessLocation {
   phone?: string | null;
 }
 
-// 'code' = MVP: business generates codes, customers activate them
-// 'receipt' = v2: customers self-submit receipt identifier + amount
-export type EntryMode = 'code' | 'receipt';
-
 export interface BusinessData {
   id: number;
   name: string;
@@ -67,7 +63,6 @@ export interface BusinessData {
   website_url?: string | null;
   is_subscribed: boolean;
   is_participating: boolean;
-  entry_mode: EntryMode;
   entry_cap: number | null;              // NULL = falls back to global cap
   min_transaction_amount: number;        // always present; minimum required per receipt
   pending_min_transaction_amount: number | null; // set when changed during active campaign

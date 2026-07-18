@@ -79,11 +79,13 @@ export const useSupabaseSync = (retryCount = 0) => {
       // referral link > promo code > location flyer > direct. Server sets it on fresh signup only.
       const pendingTicketCode = localStorage.getItem('pendingTicketCode');
       const pendingLocationId = localStorage.getItem('pendingLocationId');
+      // Non-PROMO pendingTicketCode values are stale leftovers from the removed code
+      // entry mode and must not classify the signup as a location flyer arrival.
       const acquisitionSource = pendingReferralCode
         ? 'referral'
         : (pendingTicketCode && pendingTicketCode.startsWith('PROMO'))
           ? 'promo_code'
-          : (pendingLocationId || pendingTicketCode)
+          : pendingLocationId
             ? 'location_flyer'
             : 'direct';
 
