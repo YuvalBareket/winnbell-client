@@ -89,7 +89,9 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
       if (cancelled || !containerRef.current) return;
 
       const map = new Map(containerRef.current, {
-        center: { lat: 27.9944, lng: -81.7603 },
+        // Fort Lauderdale: last-resort default, shown only until (or unless) a real
+        // location arrives - browser geolocation first, IP-derived approximation second.
+        center: { lat: 26.1224, lng: -80.1373 },
         zoom: 12,
         styles: CLEAN_STYLES,
         disableDefaultUI: true,
