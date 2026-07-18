@@ -1,20 +1,140 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
-  Box, Typography, Container, Stack, Alert, CircularProgress, Paper,
-  IconButton, useMediaQuery, useTheme, TextField,
+  Box, Typography, Stack, Alert, CircularProgress,
+  useMediaQuery, useTheme,
 } from '@mui/material';
 import AttractButton from '../../../shared/components/AttractButton';
-import { MarkEmailRead, ArrowBackIosNew, ArrowForward } from '@mui/icons-material';
+import { ArrowForward, Refresh, LockOutlined } from '@mui/icons-material';
 import AuthBrandPanel from '../components/AuthBrandPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../../shared/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import {
-  BG_PAGE, BORDER_LIGHT, SHADOW_PRIMARY_SOFT,
+  BG_PAGE, BORDER_LIGHT, PRIMARY_MAIN, ALPHA_PRIMARY_10,
+  TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY,
+  GRADIENT_HERO, GRADIENT_CTA, ALPHA_WHITE_15, SHADOW_PRIMARY_MEDIUM,
 } from '../../../shared/colors';
 import {
   staggerContainer, popIn, riseIn,
 } from '../../../shared/motion';
+
+const CODE_LENGTH = 6;
+const RESEND_COOLDOWN_SECONDS = 45;
+
+// ─── Six-box code input (per-box states: filled / focused / empty) ───────────
+interface CodeBoxesProps {
+  code: string;
+  setCode: (code: string) => void;
+  onComplete?: () => void;
+  /** Design differs slightly per breakpoint: box shape, radius, gap, digit size */
+  compact?: boolean;
+  disabled?: boolean;
+}
+
+const CodeBoxes = ({ code, setCode, onComplete, compact = false, disabled = false }: CodeBoxesProps) => {
+  const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+
+  const focusBox = (index: number) => {
+    const clamped = Math.max(0, Math.min(index, CODE_LENGTH - 1));
+    inputsRef.current[clamped]?.focus();
+  };
+
+  // Writes the code and moves focus to the first empty box (or the last box when full)
+  const applyCode = (next: string) => {
+    setCode(next);
+    if (next.length >= CODE_LENGTH) {
+      focusBox(CODE_LENGTH - 1);
+      onComplete?.();
+    } else {
+      focusBox(next.length);
+    }
+  };
+
+  const handleChange = (index: number, raw: string) => {
+    const digits = raw.replace(/\D/g, '');
+    if (!digits) return;
+    // Typing OR pasting: splice the digits in from this box forward
+    const next = (code.slice(0, index) + digits).slice(0, CODE_LENGTH);
+    applyCode(next);
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      if (code.length === 0) return;
+      const removeAt = index < code.length ? index : code.length - 1;
+      const next = code.slice(0, removeAt) + code.slice(removeAt + 1);
+      setCode(next);
+      focusBox(removeAt);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      focusBox(index - 1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      focusBox(index + 1);
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, CODE_LENGTH);
+    if (digits) applyCode(digits);
+  };
+
+  return (
+    <Box sx={{ display: 'flex', gap: compact ? '8px' : '10px', justifyContent: 'space-between' }}>
+      {Array.from({ length: CODE_LENGTH }, (_, i) => {
+        const digit = code[i] ?? '';
+        const filled = digit !== '';
+        const focused = focusedIndex === i;
+        // Design states: focused = strong navy border; filled = blue border + soft ring;
+        // empty = light border.
+        const border = focused
+          ? `1.8px solid ${TEXT_HEADING}`
+          : filled
+            ? `1.5px solid ${PRIMARY_MAIN}`
+            : `1px solid ${BORDER_LIGHT}`;
+        return (
+          <Box
+            key={i}
+            component='input'
+            ref={(el: HTMLInputElement | null) => { inputsRef.current[i] = el; }}
+            type='text'
+            inputMode='numeric'
+            autoComplete={i === 0 ? 'one-time-code' : 'off'}
+            autoFocus={i === 0}
+            disabled={disabled}
+            value={digit}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(i, e.target.value)}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(i, e)}
+            onPaste={handlePaste}
+            onFocus={(e: React.FocusEvent<HTMLInputElement>) => { setFocusedIndex(i); e.target.select(); }}
+            onBlur={() => setFocusedIndex((prev) => (prev === i ? null : prev))}
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              aspectRatio: compact ? '1 / 1.15' : '1 / 1.08',
+              bgcolor: 'white',
+              border,
+              borderRadius: compact ? '12px' : '13px',
+              boxShadow: filled && !focused ? `0 0 0 3px ${ALPHA_PRIMARY_10}` : 'none',
+              textAlign: 'center',
+              fontSize: compact ? '24px' : '26px',
+              fontWeight: 800,
+              color: TEXT_HEADING,
+              fontFamily: 'inherit',
+              caretColor: PRIMARY_MAIN,
+              outline: 'none',
+              p: 0,
+              transition: 'border-color 0.12s ease, box-shadow 0.12s ease',
+            }}
+          />
+        );
+      })}
+    </Box>
+  );
+};
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
@@ -23,14 +143,14 @@ const VerifyEmailPage = () => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
-
   // Read email that RegisterPage stored before navigating here
   const pendingEmail = localStorage.getItem('pendingEmail') || '';
 
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [resendCooldown, setResendCooldown] = useState(0);
+  // The code was just sent by the register step, so the resend timer starts running
+  const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS);
 
   // Guard: no pendingEmail means user navigated here directly or session expired
   useEffect(() => {
@@ -49,7 +169,7 @@ const VerifyEmailPage = () => {
   }, [resendCooldown]);
 
   const handleVerify = async () => {
-    if (code.length < 6 || !pendingEmail) return;
+    if (code.length < CODE_LENGTH || !pendingEmail || loading) return;
     setLoading(true);
     setError('');
 
@@ -93,105 +213,100 @@ const VerifyEmailPage = () => {
         return;
       }
       setCode('');
-      setResendCooldown(30);
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
     } catch {
       setError('Failed to resend code.');
     }
   };
 
-  // ─── Form content (shared between mobile & desktop) ──────────────────────
+  // "Wrong address?" restarts registration with a fresh email
+  const handleChangeEmail = () => {
+    localStorage.removeItem('pendingEmail');
+    navigate('/register', { replace: true });
+  };
 
-  const FormContent = () => (
-    <motion.div variants={staggerContainer} initial="hidden" animate="visible">
-      <Stack sx={{ zoom: { xs: 0.85, md: 0.85 } }}>
-        {/* Header */}
-        <motion.div variants={riseIn}>
-          <Box sx={{ mb: { xs: 6, md: 5 }, textAlign: isDesktop ? 'left' : 'center' }}>
-            {!isDesktop && (
-              <Paper elevation={4} sx={{ width: 80, height: 80, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, mx: 'auto' }}>
-                <MarkEmailRead sx={{ color: 'white', fontSize: 40 }} />
-              </Paper>
-            )}
-            <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>Verify your email</Typography>
-            <Typography variant='body1' color='text.secondary'>
-              Enter the 6-digit code we sent to{pendingEmail ? ` ${pendingEmail}` : ' your email address'}.
-            </Typography>
-          </Box>
+  const cooldownLabel = `${Math.floor(resendCooldown / 60)}:${String(resendCooldown % 60).padStart(2, '0')}`;
+
+  // ─── Shared pieces ─────────────────────────────────────────────────────────
+
+  const errorAlert = (
+    <AnimatePresence mode='wait'>
+      {error && (
+        <motion.div variants={popIn} key='error' exit={{ opacity: 0, y: -10, transition: { duration: 0.18 } }}>
+          <Alert severity='error' sx={{ borderRadius: 2 }}>{error}</Alert>
         </motion.div>
-
-        <AnimatePresence mode="wait">
-          {error && (
-            <motion.div variants={popIn} key="error" exit={{ opacity: 0, y: -10, transition: { duration: 0.18 } }}>
-              <Alert severity='error' sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <Stack spacing={3}>
-          <motion.div variants={popIn}>
-            <TextField
-              label='Verification code'
-              placeholder='Enter 6-digit code'
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
-              inputMode='numeric'
-              autoFocus
-              fullWidth
-              inputProps={{ maxLength: 6, style: { letterSpacing: '0.3em', fontSize: '1.25rem' } }}
-            />
-          </motion.div>
-
-          {/* Submit Button */}
-          <motion.div variants={popIn}>
-            <AttractButton
-              fullWidth
-              variant='contained'
-              size='large'
-              onClick={handleVerify}
-              disabled={loading || code.length < 6}
-              endIcon={!loading && <ArrowForward />}
-              sx={{
-                py: 2,
-                fontWeight: 700,
-                boxShadow: SHADOW_PRIMARY_SOFT,
-              }}
-            >
-              {loading ? <CircularProgress size={24} color='inherit' /> : 'Confirm & Continue'}
-            </AttractButton>
-          </motion.div>
-
-          {/* Resend Link */}
-          <motion.div variants={popIn}>
-            <Box sx={{ textAlign: 'center', pt: 1 }}>
-              <Typography variant='body2' color='text.secondary'>
-                Didn't receive a code?{' '}
-                <Typography
-                  component='span'
-                  variant='body2'
-                  sx={{
-                    color: resendCooldown > 0 ? 'text.secondary' : 'primary.main',
-                    fontWeight: 700,
-                    cursor: resendCooldown > 0 ? 'default' : 'pointer',
-                  }}
-                  onClick={handleResend}
-                >
-                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
-                </Typography>
-              </Typography>
-            </Box>
-          </motion.div>
-        </Stack>
-      </Stack>
-    </motion.div>
+      )}
+    </AnimatePresence>
   );
 
-  // ─── Desktop layout ──────────────────────────────────────────────────────────
+  const verifyButton = (
+    <AttractButton
+      fullWidth
+      onClick={handleVerify}
+      disabled={loading || code.length < CODE_LENGTH}
+      sx={{
+        borderRadius: isDesktop ? '13px' : '14px',
+        padding: isDesktop ? '15px' : '16px',
+        fontSize: '15px',
+        fontWeight: 800,
+        color: 'white',
+        background: GRADIENT_CTA,
+        boxShadow: SHADOW_PRIMARY_MEDIUM,
+        textTransform: 'none',
+        gap: 1,
+        '&:hover:not(:disabled)': { background: GRADIENT_CTA, opacity: 0.95 },
+        '&:disabled': { opacity: 0.6 },
+      }}
+    >
+      {loading
+        ? <CircularProgress size={22} color='inherit' />
+        : <>Verify &amp; continue <ArrowForward sx={{ fontSize: 18 }} /></>}
+    </AttractButton>
+  );
+
+  const resendRow = (
+    <Box
+      onClick={handleResend}
+      sx={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+        fontSize: '13.5px', color: TEXT_TERTIARY, fontWeight: 600,
+        cursor: resendCooldown > 0 ? 'default' : 'pointer',
+      }}
+    >
+      <Refresh sx={{ fontSize: 16, color: resendCooldown > 0 ? TEXT_TERTIARY : PRIMARY_MAIN }} />
+      {resendCooldown > 0 ? (
+        <Typography sx={{ font: 'inherit' }}>
+          Resend code in <Box component='span' sx={{ color: TEXT_HEADING, fontWeight: 700 }}>{cooldownLabel}</Box>
+        </Typography>
+      ) : (
+        <Typography sx={{ font: 'inherit', color: PRIMARY_MAIN, fontWeight: 800 }}>Resend code</Typography>
+      )}
+    </Box>
+  );
+
+  const changeEmailRow = (
+    <Typography sx={{ textAlign: 'center', fontSize: '13.5px', color: TEXT_TERTIARY, fontWeight: 600 }}>
+      Wrong address?{' '}
+      <Box
+        component='span'
+        onClick={handleChangeEmail}
+        sx={{ color: PRIMARY_MAIN, fontWeight: 800, cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+      >
+        Change email
+      </Box>
+    </Typography>
+  );
+
+  // ─── Desktop layout ────────────────────────────────────────────────────────
 
   if (isDesktop) {
     return (
       <Box sx={{ display: 'flex', height: 'var(--dvh100, 100dvh)', overflow: 'hidden' }}>
-        <AuthBrandPanel />
+        <AuthBrandPanel
+          headline={<>Check your<br />inbox.</>}
+          tagline="One quick step to secure your account. We've sent a code that expires in 10 minutes."
+          bullets={[{ icon: <LockOutlined sx={{ fontSize: 18 }} />, text: 'Keeps your entries & wins safe' }]}
+        />
 
         {/* Right: form panel */}
         <Box
@@ -201,35 +316,90 @@ const VerifyEmailPage = () => {
             bgcolor: BG_PAGE,
             display: 'flex',
             flexDirection: 'column',
+            justifyContent: 'center',
             px: 7,
-            py: 5,
+            py: 6,
           }}
         >
-          <Box sx={{ mb: 4 }}>
-            <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}` }}>
-              <ArrowBackIosNew fontSize='small' />
-            </IconButton>
-          </Box>
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400, width: '100%', mx: 'auto' }}>
-            {FormContent()}
-          </Box>
+          <motion.div variants={staggerContainer} initial='hidden' animate='visible'>
+            <Box sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
+              <motion.div variants={riseIn}>
+                <Typography sx={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>
+                  Verify your email
+                </Typography>
+              </motion.div>
+              <motion.div variants={riseIn}>
+                <Typography sx={{ fontSize: '14.5px', color: TEXT_TERTIARY, fontWeight: 500, mt: '6px', mb: '30px' }}>
+                  Enter the 6-digit code we sent to{' '}
+                  <Box component='span' sx={{ color: TEXT_HEADING, fontWeight: 700 }}>{pendingEmail || 'your email address'}</Box>.
+                </Typography>
+              </motion.div>
+
+              <Stack spacing={'20px'}>
+                {errorAlert}
+                <motion.div variants={popIn}>
+                  <CodeBoxes code={code} setCode={setCode} disabled={loading} />
+                </motion.div>
+                <motion.div variants={popIn}>{verifyButton}</motion.div>
+                <motion.div variants={popIn}>{resendRow}</motion.div>
+                <motion.div variants={popIn}>{changeEmailRow}</motion.div>
+              </Stack>
+            </Box>
+          </motion.div>
         </Box>
       </Box>
     );
   }
 
-  // ─── Mobile layout ────────────────────────────────────────────────────────
+  // ─── Mobile layout ─────────────────────────────────────────────────────────
 
   return (
-    <Box sx={{ height: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE, overflowY: 'auto' }}>
-      <Box sx={{ p: 2 }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'action.hover' }}>
-          <ArrowBackIosNew fontSize='small' />
-        </IconButton>
+    <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column', bgcolor: BG_PAGE }}>
+      {/* Gradient header band, rounded bottom - same language as the profile-setup band */}
+      <Box
+        sx={{
+          background: GRADIENT_HERO,
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: '0 0 28px 28px',
+          px: '26px',
+          pt: 'calc(env(safe-area-inset-top, 0px) + 22px)',
+          pb: '30px',
+          flexShrink: 0,
+        }}
+      >
+        {/* Glow orb */}
+        <Box sx={{ position: 'absolute', top: -70, right: -50, width: 200, height: 200, borderRadius: '50%', background: ALPHA_WHITE_15, filter: 'blur(46px)', pointerEvents: 'none' }} />
+        <Typography sx={{ position: 'relative', fontSize: '24px', fontWeight: 800, letterSpacing: '-0.02em' }}>
+          Verify your email
+        </Typography>
+        <Typography sx={{ position: 'relative', fontSize: '13px', color: 'rgba(255,255,255,.8)', fontWeight: 500, mt: '5px' }}>
+          Code sent to {pendingEmail || 'your email address'}
+        </Typography>
       </Box>
-      <Container maxWidth='xs' sx={{ flex: 1, display: 'flex', flexDirection: 'column', pt: 4, pb: 4 }}>
-        {FormContent()}
-      </Container>
+
+      {/* Content */}
+      <Box sx={{ flex: 1, p: '28px 22px', display: 'flex', flexDirection: 'column' }}>
+        <motion.div variants={staggerContainer} initial='hidden' animate='visible'>
+          <Stack spacing={'20px'}>
+            {errorAlert}
+            <motion.div variants={popIn}>
+              <Box>
+                <Typography sx={{ fontSize: '12px', fontWeight: 700, color: TEXT_SECONDARY, mb: '12px' }}>
+                  Enter your 6-digit code
+                </Typography>
+                <CodeBoxes code={code} setCode={setCode} compact disabled={loading} />
+              </Box>
+            </motion.div>
+            <motion.div variants={popIn}>{verifyButton}</motion.div>
+            <motion.div variants={popIn}>{resendRow}</motion.div>
+          </Stack>
+        </motion.div>
+        <Box sx={{ mt: 'auto', pt: 3, pb: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
+          {changeEmailRow}
+        </Box>
+      </Box>
     </Box>
   );
 };
