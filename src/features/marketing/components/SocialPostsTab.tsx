@@ -239,7 +239,8 @@ const SocialPostsTab = ({
   // in the BACKGROUND (debounced) as the design settles. navigator.share only
   // works close to a real tap, and the html2canvas capture is slow enough to burn
   // that window - pre-capturing means the tap shares instantly on the first try.
-  const captureKey = JSON.stringify([selectedRatio, selectedStyle, headline, tagline, subtext, scanUrl, businessName]);
+  // Only inputs that are actually rendered into the image; the scan link is not.
+  const captureKey = JSON.stringify([selectedRatio, selectedStyle, headline, tagline, subtext]);
   const blobCacheRef = useRef<{ key: string; blob: Blob } | null>(null);
   const pendingCaptureRef = useRef<{ key: string; promise: Promise<Blob> } | null>(null);
 
@@ -309,19 +310,19 @@ const SocialPostsTab = ({
     });
   }, [scanUrl]);
 
-  // Location gate: clicking before a location is chosen opens the picker and the
-  // same action resumes automatically once a location is picked.
+  // Location gate: only the scan LINK is location-specific (it carries ?l=<id>).
+  // The post image itself has no location data, so sharing/downloading it never
+  // asks for a location.
   const runGated = useLocationGatedActions({
     ready: canDownload,
     pickerOpen: locationPickerOpen,
     requestLocation: onRequireLocation,
     actions: {
-      save: () => { void doSaveImage(); },
       copy: doCopyLink,
     },
   });
 
-  const handleSaveImage = () => runGated('save');
+  const handleSaveImage = () => { void doSaveImage(); };
   const handleCopyLink = () => runGated('copy');
 
   // Compute preview dimensions based on ratio
