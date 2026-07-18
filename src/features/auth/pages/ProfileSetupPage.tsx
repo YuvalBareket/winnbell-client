@@ -27,13 +27,13 @@ import {
 import { staggerContainer, popIn, riseIn } from '../../../shared/motion';
 import { US_STATES } from '../../../shared/constants/usStates';
 
-const GENDERS = ['Female', 'Male', 'Non-binary', 'Prefer not to say'] as const;
+const GENDERS = ['Female', 'Male', 'Other', 'Prefer not to say'] as const;
 type Gender = typeof GENDERS[number];
 
 const GENDER_ICONS: Record<Gender, typeof Female> = {
   'Female': Female,
   'Male': Male,
-  'Non-binary': Transgender,
+  'Other': Transgender,
   'Prefer not to say': MoreHoriz,
 };
 

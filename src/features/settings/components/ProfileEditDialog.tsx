@@ -19,13 +19,13 @@ import {
   ALPHA_PRIMARY_06, ALPHA_PRIMARY_10, GRADIENT_CTA, SHADOW_CARD,
 } from '../../../shared/colors';
 
-const GENDERS = ['Female', 'Male', 'Non-binary', 'Prefer not to say'] as const;
+const GENDERS = ['Female', 'Male', 'Other', 'Prefer not to say'] as const;
 type Gender = typeof GENDERS[number];
 
 const GENDER_ICONS: Record<Gender, typeof Female> = {
   'Female': Female,
   'Male': Male,
-  'Non-binary': Transgender,
+  'Other': Transgender,
   'Prefer not to say': MoreHoriz,
 };
 

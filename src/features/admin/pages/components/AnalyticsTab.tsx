@@ -204,7 +204,6 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                   <Stack spacing={1.5}>
                     {[
                       { label: 'Receipt', key: 'receipt' as const, color: '#2e7d32' },
-                      { label: 'Code (QR)', key: 'code' as const, color: '#1976d2' },
                       { label: 'Free / AMOE', key: 'free' as const, color: '#f57c00' },
                       { label: 'Promo', key: 'promo' as const, color: '#7b1fa2' },
                       { label: 'Referral', key: 'referral' as const, color: CHART_TEAL },

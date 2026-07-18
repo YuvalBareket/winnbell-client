@@ -93,7 +93,6 @@ export interface LocationBreakdownRow {
   activated: number;
   quarantined: number;
   receipt_tickets: number;
-  code_tickets: number;
   avg_transaction: number | null;
   pct_just_above_threshold: number | null;
 }
@@ -108,7 +107,6 @@ export interface LocationBreakdownPage {
 
 export interface AdminAnalytics {
   entrySourceMix: {
-    code: number;
     receipt: number;
     free: number;
     promo: number;
