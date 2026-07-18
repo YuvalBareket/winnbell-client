@@ -29,7 +29,7 @@ interface AuthBrandPanelProps {
 const AuthBrandPanel: React.FC<AuthBrandPanelProps> = ({
   headline = (
     <>
-      Real Prizes.<br />Every Month.
+      Cash Prizes.<br />Every Month.
     </>
   ),
   tagline = 'Join thousands of members supporting local businesses and competing for real monthly prizes. No purchase necessary.',

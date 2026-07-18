@@ -370,7 +370,7 @@ const RegisterPage = () => {
       ? <>Grow Your<br />Business</>
       : isLocationManager
       ? <>Manage Your<br />Branch</>
-      : <>Real Prizes.<br />Every Month.</>;
+      : <>Cash Prizes.<br />Every Month.</>;
 
     const desktopTagline = isBusinessOwner
       ? 'Partner with Winnbell. Customers can submit receipts at your location to earn campaign entries - bringing them back month after month.'
