@@ -19,7 +19,7 @@ import {
 } from '../../../shared/motion';
 
 const CODE_LENGTH = 6;
-const RESEND_COOLDOWN_SECONDS = 45;
+const RESEND_COOLDOWN_SECONDS = 60;
 
 // ─── Six-box code input (per-box states: filled / focused / empty) ───────────
 interface CodeBoxesProps {
