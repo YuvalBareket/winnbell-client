@@ -47,7 +47,7 @@ const RegisterPage = () => {
   const isLocationManager = inviteToken !== null;
   const isBusinessVariant = isBusinessOwner || isLocationManager;
 
-  const { isLoaded: syncLoaded } = useSyncStatus();
+  const { isLoaded: syncLoaded, isSignedIn, syncError } = useSyncStatus();
   const isAuth = useAppSelector(selectIsAuthenticated);
   const isAdminUser = useAppSelector(selectIsAdmin);
   const isBusinessUser = useAppSelector(selectIsBusiness);
@@ -58,6 +58,13 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState(searchParams.get('syncError') ?? '');
+  // Just returned from the Google OAuth round-trip (router state set by SSOCallbackPage).
+  // Purely derived, no effects: the button shows pending until the sync either signs the
+  // user in (the authed redirect below fires) or resolves signed-out / errored (released,
+  // so no spinner can ever stick - cancelled at Google, deleted account, region block).
+  const cameFromSso = !!(location.state as { ssoReturn?: boolean } | null)?.ssoReturn;
+  const googlePending = googleLoading
+    || (cameFromSso && !syncError && !error && !(syncLoaded && !isSignedIn));
   const [termsAccepted, setTermsAccepted] = useState(false);
   // Surface the same rules the submit enforces, but on blur so the user gets feedback early.
   const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({});
@@ -87,6 +94,9 @@ const RegisterPage = () => {
     // Add-account via OAuth: flag BEFORE the redirect so useSupabaseSync appends the new
     // account (keeps the current one) when the session returns on /sso-callback.
     if (addMode) localStorage.setItem('pendingAddAccount', '1');
+    // SSOCallbackPage returns here (instead of flashing the landing page) and this page
+    // shows the Google button pending until the sync finishes and the authed redirect fires.
+    sessionStorage.setItem('ssoReturnPath', window.location.pathname + window.location.search);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -97,6 +107,7 @@ const RegisterPage = () => {
       localStorage.removeItem('pendingRole');
       localStorage.removeItem('pendingInviteToken');
       localStorage.removeItem('pendingAddAccount');
+      sessionStorage.removeItem('ssoReturnPath');
       setError(oauthError.message || 'Social login failed');
       setGoogleLoading(false);
     }
@@ -208,9 +219,9 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        {location.state?.message && (
+        {typeof (location.state as { message?: unknown } | null)?.message === 'string' && (
           <motion.div variants={popIn}>
-            <Alert severity='warning' sx={{ mb: 2, borderRadius: 2 }}>{location.state.message}</Alert>
+            <Alert severity='warning' sx={{ mb: 2, borderRadius: 2 }}>{(location.state as { message: string }).message}</Alert>
           </motion.div>
         )}
 
@@ -310,7 +321,7 @@ const RegisterPage = () => {
           </motion.div>
 
           <motion.div variants={popIn}>
-            <AttractButton fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading} disableElevation
+            <AttractButton fullWidth variant='contained' size='large' onClick={handleSubmit} disabled={loading || googlePending} disableElevation
               endIcon={!loading && <ArrowForward sx={{ fontSize: 18 }} />}
               sx={authCtaSx}
             >
@@ -325,11 +336,11 @@ const RegisterPage = () => {
               </Divider>
               <Button
                 fullWidth
-                startIcon={googleLoading ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
+                startIcon={googlePending ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
                 onClick={() => termsAccepted ? handleSocialSignUp('google') : setError('Please approve the terms first.')}
-                disabled={googleLoading}
+                disabled={googlePending || loading}
                 sx={authGoogleBtnSx}>
-                {googleLoading ? 'Signing up...' : 'Continue with Google'}
+                {googlePending ? 'Signing up...' : 'Continue with Google'}
               </Button>
             </Box>
           </motion.div>
