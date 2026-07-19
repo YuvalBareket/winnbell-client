@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Typography, Button, Paper, Stack, CircularProgress, Chip } from '@mui/material';
-import { CheckCircle, Storefront, ErrorOutline, WorkspacePremium } from '@mui/icons-material';
+import { CheckCircle, Storefront, ErrorOutline, WorkspacePremium, ReceiptLongOutlined, LocalAtmOutlined } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
@@ -198,13 +198,35 @@ const SubscriptionSuccessPage = () => {
             )}
           </AnimatePresence>
 
+          {/* Post-payment setup: the subscribe flow no longer collects these up front.
+              Both live in the Business Hub and stay editable at any time. */}
+          <Box sx={{ width: '100%', textAlign: 'left', bgcolor: 'action.hover', borderRadius: 2, p: 2 }}>
+            <Typography variant='caption' fontWeight={800} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.6, display: 'block', mb: 1.25 }}>
+              Finish your campaign setup
+            </Typography>
+            <Stack spacing={1.25}>
+              <Stack direction='row' spacing={1.25} alignItems='flex-start'>
+                <LocalAtmOutlined sx={{ fontSize: 20, color: 'primary.main', mt: '1px', flexShrink: 0 }} />
+                <Typography variant='body2' color='text.secondary' lineHeight={1.5}>
+                  <strong>Set your minimum spend per receipt.</strong> It starts at $20 - adjust it to fit your store.
+                </Typography>
+              </Stack>
+              <Stack direction='row' spacing={1.25} alignItems='flex-start'>
+                <ReceiptLongOutlined sx={{ fontSize: 20, color: 'primary.main', mt: '1px', flexShrink: 0 }} />
+                <Typography variant='body2' color='text.secondary' lineHeight={1.5}>
+                  <strong>Add a receipt example.</strong> Show customers where to find the receipt number.
+                </Typography>
+              </Stack>
+            </Stack>
+          </Box>
+
           <Button
             variant='contained' size='large'
             startIcon={<Storefront />}
             onClick={() => navigate('/nearby')}
             sx={{ py: 1.75, px: 4, fontWeight: 800 }}
           >
-            Go to Dashboard
+            Finish setup in Business Hub
           </Button>
         </Stack>
       </Paper>

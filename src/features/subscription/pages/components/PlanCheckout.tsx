@@ -45,7 +45,7 @@ interface Props {
 const FOUNDING_ENTRIES = 1000;
 const FOUNDING_PRICE   = 1200;
 
-const SubscribeStep3 = ({
+const PlanCheckout = ({
   selectedTier, setSelectedTier,
   locationCount, loading, foundingLoading, error,
   onSubscribe, onFoundingSubscribe, onSkip, onBack,
@@ -543,4 +543,4 @@ const SubscribeStep3 = ({
   );
 };
 
-export default SubscribeStep3;
+export default PlanCheckout;

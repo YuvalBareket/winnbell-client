@@ -184,6 +184,7 @@ const CampaignDashboardPage = () => {
         hasDescription={hasDescription}
         hasLocations={hasLocations}
         hasReceiptExample={hasReceiptExample}
+        minSpend={bizData?.min_transaction_amount ?? null}
         inActiveCampaign={campaigns.length > 0}
         isDesktop={isDesktop}
         isManager={isManager}

@@ -15,6 +15,9 @@ interface DrawPreparationViewProps {
   hasDescription: boolean;
   hasLocations: boolean;
   hasReceiptExample?: boolean;
+  /** Current minimum spend per receipt. Always has a value ($20 default), so the
+      checklist row shows the amount as a reminder to review it rather than a task. */
+  minSpend?: number | null;
   /** The business is enrolled in a live campaign but the dashboard is gated (missing receipt example). */
   inActiveCampaign?: boolean;
   isDesktop: boolean;
@@ -27,6 +30,7 @@ const DrawPreparationView = ({
   hasDescription,
   hasLocations,
   hasReceiptExample = false,
+  minSpend = null,
   inActiveCampaign = false,
   isDesktop,
   isManager = false,
@@ -66,13 +70,26 @@ const DrawPreparationView = ({
     ? `$${Number(prizeValue).toFixed(0)}`
     : null;
 
-  const checklist = effectivelySubscribed
+  // The threshold always has a value ($20 default set at signup), so the row shows as
+  // done once business data loads; it is a review reminder, not an open task.
+  type ChecklistItem = { label: string; done: boolean; path?: string; info?: boolean; alwaysClickable?: boolean };
+  const minSpendItem: ChecklistItem = {
+    label: 'Set your minimum amount to spend',
+    done: minSpend != null,
+    path: '/nearby',
+    // Stays clickable even when checked: the $20 default counts as "set", but the
+    // owner should still be able to jump to the hub and adjust it.
+    alwaysClickable: true,
+  };
+
+  const checklist: ChecklistItem[] = effectivelySubscribed
     ? [
         { label: 'Subscription active', done: true },
         inActiveCampaign
           ? { label: `${drawName ?? 'Your campaign'} is live`, done: true }
           : { label: `Registered for ${drawName ?? 'upcoming campaign'}`, done: true },
         { label: 'Add a receipt example for your customers', done: hasReceiptExample, path: '/nearby' },
+        minSpendItem,
         { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
         { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
         inActiveCampaign
@@ -82,6 +99,7 @@ const DrawPreparationView = ({
     : [
         { label: planLabel, done: false, path: planPath },
         { label: 'Add a receipt example for your customers', done: hasReceiptExample, path: '/nearby' },
+        minSpendItem,
         { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
         { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
         { label: 'Go live on the map when your campaign opens', done: false, info: true },
@@ -217,18 +235,20 @@ const DrawPreparationView = ({
                 sx={{ mb: 3, height: 6, borderRadius: 2, bgcolor: 'action.hover', '& .MuiLinearProgress-bar': { borderRadius: 2 } }}
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {checklist.map((item, i) => (
+                {checklist.map((item, i) => {
+                  const clickable = !!item.path && (!item.done || item.alwaysClickable);
+                  return (
                   <Box
                     key={i}
-                    onClick={() => !item.done && item.path && navigate(item.path)}
+                    onClick={() => clickable && navigate(item.path!)}
                     sx={{
                       display: 'flex', alignItems: 'center', gap: 1.5,
                       p: 1.5, borderRadius: 2,
                       bgcolor: item.done ? 'rgba(46,125,50,0.04)' : item.info ? 'rgba(25,93,230,0.03)' : 'rgba(0,0,0,0.02)',
                       border: '1px solid',
                       borderColor: item.done ? 'rgba(46,125,50,0.15)' : item.info ? 'rgba(25,93,230,0.12)' : 'divider',
-                      cursor: !item.done && item.path ? 'pointer' : 'default',
-                      '&:hover': !item.done && item.path ? { bgcolor: 'rgba(25,93,230,0.04)' } : {},
+                      cursor: clickable ? 'pointer' : 'default',
+                      '&:hover': clickable ? { bgcolor: 'rgba(25,93,230,0.04)' } : {},
                       transition: 'background 0.15s',
                     }}
                   >
@@ -240,9 +260,10 @@ const DrawPreparationView = ({
                     <Typography variant='body2' fontWeight={600} color={item.done ? 'text.primary' : item.info ? 'primary.main' : 'text.secondary'} flex={1}>
                       {item.label}
                     </Typography>
-                    {!item.done && item.path && <OpenInNew sx={{ fontSize: 14, color: 'text.disabled' }} />}
+                    {clickable && <OpenInNew sx={{ fontSize: 14, color: 'text.disabled' }} />}
                   </Box>
-                ))}
+                  );
+                })}
               </Box>
 
               <Divider sx={{ my: 3 }} />

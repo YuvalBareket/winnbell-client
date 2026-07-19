@@ -3,9 +3,7 @@ import {
   Box, Container,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import { api } from '../../../shared/api/client';
 import { isStripeCheckoutUrl } from '../../../shared/utils/url';
@@ -13,73 +11,19 @@ import {
   MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
-import { getUploadUrl, updateCampaignSettingsApi } from '../../partner/api/business.api';
-import { queryKeys } from '../../../shared/constants/queryKeys';
-import { MIN_RECEIPT_THRESHOLD } from '../../../shared/constants/entries';
-import StepIndicator from './components/StepIndicator';
-import SubscribeStep1 from './components/SubscribeStep1';
-import SubscribeStep2 from './components/SubscribeStep2';
-import SubscribeStep3 from './components/SubscribeStep3';
-
+import PlanCheckout from './components/PlanCheckout';
 
 // ── Main page ─────────────────────────────────────────────────────────────────
+// Single step: pick a plan and pay. The campaign settings (minimum spend, receipt
+// example) start from sensible defaults ($20 minimum) and are collected AFTER
+// payment - the success page points at the Business Hub, where both are editable
+// at any time.
 
 const SubscribePage = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { data: businessData } = useBusinessData();
   const locationCount = businessData?.locations?.filter(l => l.is_active).length ?? null;
 
-  const [step, setStep] = useState(1);
-
-  // ── STEP 1 ─────────────────────────────────────────────────────────────────
-  const [thresholdInput, setThresholdInput] = useState('');
-  const [savingThreshold, setSavingThreshold] = useState(false);
-  const [thresholdError, setThresholdError] = useState('');
-
-
-  const parsedThreshold = thresholdInput.trim() === '' ? null : parseFloat(thresholdInput);
-  const isThresholdValid = parsedThreshold !== null && !isNaN(parsedThreshold) && parsedThreshold >= MIN_RECEIPT_THRESHOLD;
-
-  const handleThresholdContinue = async () => {
-    if (!isThresholdValid) return;
-    setSavingThreshold(true);
-    setThresholdError('');
-    try {
-      await updateCampaignSettingsApi({ min_transaction_amount: parsedThreshold });
-      setStep(2);
-    } catch (err) {
-      console.error('Failed to save threshold:', err);
-      setThresholdError('Failed to save settings. Please check your connection and try again.');
-    } finally {
-      setSavingThreshold(false);
-    }
-  };
-
-  // ── STEP 2 - canvas marker ─────────────────────────────────────────────────
-  const [imgFile, setImgFile] = useState<File | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleSaveReceipt = async (blob: Blob) => {
-    setIsSaving(true);
-    try {
-      const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg', blob.size);
-      await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
-      // Step 1 already saved the threshold; the receipt example is independent, so only send the image.
-      await updateCampaignSettingsApi({ receipt_example_image_url: publicUrl });
-      // Refresh cached business details so the receipt gate and Business Hub see the new image
-      // even if the user leaves the flow before checkout.
-      queryClient.invalidateQueries({ queryKey: queryKeys.business.myDetails });
-      setImgFile(null);
-      setStep(3);
-    } catch (err) {
-      console.error('Failed to save receipt example:', err);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // ── STEP 3 ─────────────────────────────────────────────────────────────────
   const [selectedTier, setSelectedTier] = useState(2500); // Growth (most popular)
   const [loading, setLoading] = useState(false);
   const [foundingLoading, setFoundingLoading] = useState(false);
@@ -132,71 +76,20 @@ const SubscribePage = () => {
       <AppPageHero
         title='Grow Your Business'
         subtitle='A simple monthly subscription that brings customers back'
-        actions={
-          <Box sx={{ display: { xs: 'none', md: 'block' }, width: '100%', minWidth: { lg: 460 } }}>
-            <StepIndicator currentStep={step} />
-          </Box>
-        }
       />
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>
-        {/* Step indicator - mobile only (desktop shows it in the header); sits on the bg, no card */}
-        <Box sx={{ display: { xs: 'block', md: 'none' },  mb: 0 }}>
-          <StepIndicator currentStep={step} />
-        </Box>
-
-              {/* Step body - animated per step */}
-              <AnimatePresence mode='wait'>
-
-                {/* ── Step 1 ── */}
-                {step === 1 && (
-                  <motion.div key='step-1' initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
-                    <SubscribeStep1
-                      thresholdInput={thresholdInput}
-                      setThresholdInput={setThresholdInput}
-                      isThresholdValid={isThresholdValid}
-                      parsedThreshold={parsedThreshold}
-                      savingThreshold={savingThreshold}
-                      errorMessage={thresholdError}
-                      onContinue={handleThresholdContinue}
-                      onSkip={() => navigate('/nearby')}
-                    />
-                  </motion.div>
-                )}
-
-                {/* ── Step 2 ── */}
-                {step === 2 && (
-                  <motion.div key='step-2' initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
-                    <SubscribeStep2
-                      imgFile={imgFile}
-                      setImgFile={setImgFile}
-                      isSaving={isSaving}
-                      onSave={handleSaveReceipt}
-                      onBack={() => setStep(1)}
-                      onSkip={() => { setImgFile(null); setStep(3); }}
-                    />
-                  </motion.div>
-                )}
-
-                {/* ── Step 3 ── */}
-                {step === 3 && (
-                  <motion.div key='step-3' initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
-                    <SubscribeStep3
-                      selectedTier={selectedTier}
-                      setSelectedTier={setSelectedTier}
-                      locationCount={locationCount}
-                      loading={loading}
-                      foundingLoading={foundingLoading}
-                      error={error}
-                      onSubscribe={handleSubscribe}
-                      onFoundingSubscribe={handleFoundingSubscribe}
-                      onSkip={() => navigate('/nearby')}
-                      onBack={() => setStep(2)}
-                    />
-                  </motion.div>
-                )}
-
-        </AnimatePresence>
+        <PlanCheckout
+          selectedTier={selectedTier}
+          setSelectedTier={setSelectedTier}
+          locationCount={locationCount}
+          loading={loading}
+          foundingLoading={foundingLoading}
+          error={error}
+          onSubscribe={handleSubscribe}
+          onFoundingSubscribe={handleFoundingSubscribe}
+          onSkip={() => navigate('/nearby')}
+        />
       </Container>
     </Box>
   );
