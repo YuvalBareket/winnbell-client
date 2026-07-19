@@ -668,7 +668,7 @@ const GrowthDashboard: React.FC = () => {
                           { pct: data.engagement.multi_business_pct, label: 'Multi-Business Users', tooltip: 'Share of players active across two or more businesses. Higher shows network effect.', color: CHART_BLUE },
                           { pct: data.engagement.over_20_pct, label: 'Over 20 Entries', tooltip: 'Share of players who collected more than 20 tickets. Your power users.', color: CHART_GREEN },
                           { pct: data.engagement.at_30_pct, label: 'At 30 Entry Cap', tooltip: 'Share of players who hit the 30-ticket ceiling.' },
-                          { pct: data.engagement.amoe_only_pct, label: 'AMOE Only', tooltip: 'Share of players who only used the free weekly entry.' },
+                          { pct: data.engagement.amoe_only_pct, label: 'AMOE Only', tooltip: 'Share of players who only used the weekly entry.' },
                         ].map((item) => (
                           <Box key={item.label}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>

@@ -204,7 +204,7 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                   <Stack spacing={1.5}>
                     {[
                       { label: 'Receipt', key: 'receipt' as const, color: '#2e7d32' },
-                      { label: 'Free / AMOE', key: 'free' as const, color: '#f57c00' },
+                      { label: 'Weekly / AMOE', key: 'free' as const, color: '#f57c00' },
                       { label: 'Promo', key: 'promo' as const, color: '#7b1fa2' },
                       { label: 'Referral', key: 'referral' as const, color: CHART_TEAL },
                     ].map((source) => {
@@ -238,7 +238,7 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
               <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                    <Typography variant='subtitle1' fontWeight={700}>Free Weekly Entries (AMOE)</Typography>
+                    <Typography variant='subtitle1' fontWeight={700}>Weekly Entries (AMOE)</Typography>
                     {analyticsDrawFilter && (
                       <Tooltip title='Filtered by selected campaign.' placement='top'>
                         <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
@@ -247,7 +247,7 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                   </Box>
                   <Stack spacing={1.5}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='body2' color='text.secondary'>Free Entries</Typography>
+                      <Typography variant='body2' color='text.secondary'>Weekly Entries</Typography>
                       <Chip label={(analytics?.entrySourceMix?.free ?? 0).toLocaleString()} size='small' color='success' />
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

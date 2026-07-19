@@ -72,13 +72,14 @@ import type { BusinessLocation } from '../../partner/types/business.types';
 const compactCurrency = (n: number) =>
   n >= 1000 ? `$${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : formatCurrency(n);
 
-// Source badge (Receipt / Free / Promo) colours - text + light border, matching the design.
+// Source badge (Receipt / Weekly / Promo) colours - text + light border, matching the design.
+// 'free' stays the internal source value; the label avoids "free" so no entry kind reads as paid.
 const sourceBadge = (source: string) => {
   switch (source.toLowerCase()) {
     case 'receipt':
       return { label: 'Receipt', color: PRIMARY_MAIN, border: BORDER_RECEIPT };
     case 'free':
-      return { label: 'Free', color: STATUS_ACTIVATED_TEXT, border: BORDER_APPROVED };
+      return { label: 'Weekly', color: STATUS_ACTIVATED_TEXT, border: BORDER_APPROVED };
     case 'promo':
       return { label: 'Promo', color: ACCENT_GOLD_DARK, border: BORDER_PROMO };
     default:

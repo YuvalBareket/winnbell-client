@@ -95,7 +95,7 @@ const UserTicketRow = ({ ticket, index, onLocationClick }: { ticket: UserTicket;
             noWrap
             sx={{ fontWeight: 700, lineHeight: 1.25, fontSize: '0.95rem', color: TEXT_HEADING }}
           >
-            {ticket.business_name || 'Free weekly entry'}
+            {ticket.business_name || 'Weekly entry'}
           </Typography>
           {/* One muted line: location . date . time (location omitted for free entries). */}
           <Typography
@@ -207,7 +207,7 @@ const RingHero = ({ count, cap, color, isClosed, isMaxed, isLoading }: {
   const sub = isClosed
     ? 'This campaign has ended. Thanks for playing!'
     : isMaxed ? 'You have the maximum entries for this campaign. Good luck!'
-    : count === 0 ? 'Submit a receipt or claim your free weekly entry to get in.'
+    : count === 0 ? 'Submit a receipt or claim your weekly entry to get in.'
     : `You have ${remaining} more ${remaining === 1 ? 'entry' : 'entries'} available - don't leave them unclaimed!`;
   return (
     <motion.div variants={riseIn} initial='hidden' animate='visible'>
@@ -390,7 +390,7 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
                   : isMaxed
                     ? 'You have the maximum entries for this campaign. Good luck!'
                     : totalCount === 0
-                      ? 'Submit receipts, use promo codes, or claim your free weekly entry.'
+                      ? 'Submit receipts, use promo codes, or claim your weekly entry.'
                       : `You have ${CAP - totalCount} more entries available - don't leave them unclaimed!`}
               </Typography>
             )}
@@ -568,7 +568,7 @@ const EmptyStateAnimated = ({ isClosed, onAction }: { isClosed: boolean; onActio
     <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
       {isClosed
         ? 'This campaign has ended and you were not entered in it.'
-        : 'Claim your free weekly entry or submit a receipt at a local business'}
+        : 'Claim your weekly entry or submit a receipt at a local business'}
     </Typography>
     {/* CTA only makes sense for the CURRENT campaign - a closed draw can't be entered. */}
     {!isClosed && (

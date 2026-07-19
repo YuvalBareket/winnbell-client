@@ -21,7 +21,7 @@ interface Props {
 
 const contextConfig = {
   free: {
-    title: 'Your free entry is waiting',
+    title: 'Your weekly entry is waiting',
     message: 'Confirm your phone once and it\'s yours. That\'s it, you\'ll never be asked again.',
   },
   receipt: {

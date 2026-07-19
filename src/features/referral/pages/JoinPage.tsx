@@ -60,8 +60,8 @@ const JoinPage = () => {
     },
     {
       icon: <CardGiftcardOutlined />,
-      title: 'Earn your free entry',
-      text: 'Get a free bonus entry just for joining.',
+      title: 'Earn your bonus entry',
+      text: 'Get a bonus entry just for joining.',
       tint: ALPHA_GREEN_10,
       iconColor: STATUS_ACTIVATED_TEXT,
     },

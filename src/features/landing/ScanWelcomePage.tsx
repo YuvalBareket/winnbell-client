@@ -80,7 +80,7 @@ const ScanWelcomePage = () => {
     {
       icon: <CardGiftcardOutlined />,
       title: 'Always free to play',
-      text: 'No purchase is ever necessary. Every member can claim a free entry in the app each week.',
+      text: 'No purchase is ever necessary. Every member can claim a weekly entry in the app.',
       tint: ALPHA_GREEN_10,
       iconColor: STATUS_ACTIVATED_TEXT,
     },

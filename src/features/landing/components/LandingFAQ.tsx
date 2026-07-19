@@ -6,11 +6,11 @@ import { PRIMARY_MAIN, TEXT_SECONDARY, TEXT_HEADING } from '../../../shared/colo
 const FAQ_ITEMS = [
   {
     q: 'Is it free for consumers?',
-    a: 'Yes, completely. Every member receives one free campaign entry every week - no purchase required. You can also earn additional entries by submitting receipts from partner businesses. No purchase is necessary to participate or win.',
+    a: 'Yes, completely. Every member receives one campaign entry every week - no purchase required. You can also earn additional entries by submitting receipts from partner businesses. No purchase is necessary to participate or win.',
   },
   {
     q: 'How are winners chosen?',
-    a: 'At the end of each monthly campaign, one winner is selected at random from all eligible entries in the pool. Every entry - whether earned from a receipt or claimed as the free weekly entry - has an equal chance of winning.',
+    a: 'At the end of each monthly campaign, one winner is selected at random from all eligible entries in the pool. Every entry - whether earned from a receipt or claimed as the weekly entry - has an equal chance of winning.',
   },
   {
     q: 'How do businesses benefit?',

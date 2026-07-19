@@ -31,7 +31,7 @@ import { pressable } from '../../../shared/motion';
 const GRADIENT_FREE = `linear-gradient(155deg, ${PRIMARY_MAIN} 0%, ${PRIMARY_DEEP} 100%)`;
 
 const FREE_ENTRY_INFO =
-  'Winnbell gives every member one free entry each week. It resets every Sunday, so claim yours before the week is up.';
+  'Winnbell gives every member one entry each week. It resets every Sunday, so claim yours before the week is up.';
 
 const getNextSunday = (): Date => {
   const now = new Date();
@@ -87,7 +87,7 @@ const FreeTicketPage: React.FC = () => {
     return (
       // Header renders during loading too, so it never pops in after the spinner.
       <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, display: 'flex', flexDirection: 'column' }}>
-        <AppPageHero title='Free weekly entry' subtitle='One free entry, every week. On us.' />
+        <AppPageHero title='Weekly entry' subtitle='One entry, every week. On us.' />
         <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', pb: 12 }}>
           <CircularProgress color='primary' />
         </Box>
@@ -100,7 +100,7 @@ const FreeTicketPage: React.FC = () => {
   const usedCount = canActivate || noCampaign ? 0 : 1;
   const resetDate = formatNextDate(status?.nextAvailableDate);
 
-  const claimLabel = isActivating ? 'Claiming...' : canActivate ? 'Claim my free entry' : noCampaign ? 'No active campaign' : 'Claimed this week';
+  const claimLabel = isActivating ? 'Claiming...' : canActivate ? 'Claim my weekly entry' : noCampaign ? 'No active campaign' : 'Claimed this week';
 
   // Press gestures only - the looping attraction (scale breathe + light sweep) now lives
   // inside AttractButton itself, so a second framer breathe here would fight it.
@@ -165,18 +165,9 @@ const FreeTicketPage: React.FC = () => {
 
   // ── Desktop: two columns (gradient story card + white claim card) ──────────
   if (isDesktop) {
-    const availabilityChip = (
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, px: 1.5, py: 0.6, borderRadius: 5, bgcolor: canActivate ? `${SUCCESS_GREEN}1f` : 'action.hover' }}>
-        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: canActivate ? SUCCESS_GREEN : TEXT_SECONDARY }} />
-        <Typography sx={{ fontWeight: 800, fontSize: '0.78rem', color: canActivate ? SUCCESS_GREEN : TEXT_SECONDARY }}>
-          {canActivate ? 'Available now' : noCampaign ? 'No campaign' : 'Claimed this week'}
-        </Typography>
-      </Box>
-    );
-
     return (
       <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', pb: 5 }}>
-        <AppPageHero title='Free weekly entry' subtitle='One free entry, every week. On us.' actions={availabilityChip} />
+        <AppPageHero title='Weekly entry' subtitle='One entry, every week. On us.' />
 
         <Container maxWidth='lg' sx={{ mt: 1 }}>
           <Box sx={{ display: 'flex', gap: 3, alignItems: 'stretch' }}>
@@ -186,10 +177,10 @@ const FreeTicketPage: React.FC = () => {
                 <CardGiftcardOutlined sx={{ fontSize: 30 }} />
               </Box>
               <Box sx={{ alignSelf: 'flex-start', px: 1.5, py: 0.5, borderRadius: 5, bgcolor: ALPHA_WHITE_15, mb: 2, zIndex: 1 }}>
-                <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase' }}>Free . no purchase</Typography>
+                <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase' }}>No purchase needed</Typography>
               </Box>
               <Typography sx={{ fontWeight: 900, fontSize: '2.4rem', lineHeight: 1.1, mb: 2, maxWidth: 420, zIndex: 1 }}>
-                {canActivate ? 'Your free entry is ready to claim' : noCampaign ? 'No active campaign right now' : "This week's free entry is claimed"}
+                {canActivate ? 'Your weekly entry is ready to claim' : noCampaign ? 'No active campaign right now' : "This week's entry is claimed"}
               </Typography>
               <Typography sx={{ color: ALPHA_WHITE_80, fontSize: '0.95rem', lineHeight: 1.6, maxWidth: 440, zIndex: 1 }}>
                 {FREE_ENTRY_INFO}
@@ -199,7 +190,7 @@ const FreeTicketPage: React.FC = () => {
 
             {/* RIGHT: claim card */}
             <Box sx={{ flex: 1, borderRadius: 4, p: 3.5, bgcolor: BG_SURFACE, border: `1px solid ${BORDER_LIGHT}`, display: 'flex', flexDirection: 'column' }}>
-              <Typography sx={{ fontWeight: 800, color: TEXT_HEADING, fontSize: '1.05rem', mb: 2 }}>This week's free entry</Typography>
+              <Typography sx={{ fontWeight: 800, color: TEXT_HEADING, fontSize: '1.05rem', mb: 2 }}>This week's entry</Typography>
 
               {/* Availability by date (no countdown clock) */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
@@ -208,7 +199,7 @@ const FreeTicketPage: React.FC = () => {
                 </Box>
                 <Box>
                   <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: TEXT_SECONDARY }}>
-                    {canActivate ? 'Availability' : 'Next free entry'}
+                    {canActivate ? 'Availability' : 'Next weekly entry'}
                   </Typography>
                   <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: canActivate ? SUCCESS_GREEN : TEXT_HEADING }}>
                     {canActivate ? 'Available now' : noCampaign ? 'Check back soon' : resetDate}
@@ -220,7 +211,7 @@ const FreeTicketPage: React.FC = () => {
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.75, borderTop: `1px solid ${BORDER_LIGHT}`, borderBottom: `1px solid ${BORDER_LIGHT}` }}>
-                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', fontWeight: 600 }}>Free entries used this week</Typography>
+                <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', fontWeight: 600 }}>Weekly entries used</Typography>
                 <Typography sx={{ fontWeight: 800, color: TEXT_HEADING }}>{usedCount} / 1</Typography>
               </Box>
 
@@ -244,7 +235,7 @@ const FreeTicketPage: React.FC = () => {
 
   return (
     <Box sx={{ minHeight: MOBILE_CONTENT_HEIGHT, pb: 12 }}>
-      <AppPageHero title='Free weekly entry' subtitle='One free entry, every week. On us.' />
+      <AppPageHero title='Weekly entry' subtitle='One entry, every week. On us.' />
 
       <Container maxWidth='sm' sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {/* Intro card: info text */}
@@ -261,7 +252,7 @@ const FreeTicketPage: React.FC = () => {
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography sx={{ fontSize: '0.66rem', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: TEXT_SECONDARY }}>
-              {canActivate ? 'Availability' : 'Next free entry'}
+              {canActivate ? 'Availability' : 'Next weekly entry'}
             </Typography>
             <Typography sx={{ fontWeight: 800, color: canActivate ? SUCCESS_GREEN : TEXT_HEADING }}>
               {canActivate ? 'Available now' : noCampaign ? 'Check back soon' : resetDate}
@@ -271,7 +262,7 @@ const FreeTicketPage: React.FC = () => {
 
         {/* Used this week */}
         <Box sx={{ ...cardSx, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', fontWeight: 600 }}>Free entries this week</Typography>
+          <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem', fontWeight: 600 }}>Weekly entries used</Typography>
           <Typography sx={{ fontWeight: 800, color: TEXT_HEADING }}>{usedCount} / 1</Typography>
         </Box>
 

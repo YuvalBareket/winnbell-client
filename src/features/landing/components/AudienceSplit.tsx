@@ -32,7 +32,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
             <Stack spacing={1.5} sx={{ mb: 3.5, textAlign: 'left' }}>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
-                Earn entries and claim your free weekly entry
+                Earn entries and claim your weekly entry
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />

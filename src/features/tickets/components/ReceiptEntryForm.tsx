@@ -167,7 +167,7 @@ const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact
       >
         {iconChip}
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant='body2' sx={{ fontWeight: 800, color: PRIMARY_DEEP, lineHeight: 1.2 }}>Claim free weekly entry</Typography>
+          <Typography variant='body2' sx={{ fontWeight: 800, color: PRIMARY_DEEP, lineHeight: 1.2 }}>Claim weekly entry</Typography>
           <Typography variant='caption' sx={{ color: PRIMARY_MAIN, opacity: 0.85, display: 'block', lineHeight: 1.3 }}>No purchase needed. Resets Every Sunday.</Typography>
         </Box>
         <ArrowForwardRounded sx={{ color: PRIMARY_MAIN, flexShrink: 0 }} />
@@ -183,7 +183,7 @@ const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact
       </Box>
       <Typography sx={{ fontWeight: 800, color: PRIMARY_DEEP, fontSize: '1rem' }}>No receipt today?</Typography>
       <Typography sx={{ color: PRIMARY_MAIN, opacity: 0.9, lineHeight: 1.5, mt: 1, fontSize: '0.8125rem' }}>
-        Claim your free weekly entry. One on us, every week, no purchase needed.
+        Claim your weekly entry. One on us, every week, no purchase needed.
       </Typography>
       <motion.div {...pressable} style={{ width: '100%' }}>
         <Button
@@ -192,7 +192,7 @@ const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact
           startIcon={<StarRounded sx={{ fontSize: 18 }} />}
           sx={{ mt: 2.5, height: 44, borderRadius: 2, fontWeight: 800, textTransform: 'none', color: '#fff', background: GRADIENT_PRIMARY, '&:hover': { background: GRADIENT_PRIMARY, filter: 'brightness(0.96)' } }}
         >
-          Claim free entry
+          Claim weekly entry
         </Button>
       </motion.div>
       <Typography sx={{ mt: 1.25, color: PRIMARY_MAIN, opacity: 0.7, fontSize: '0.72rem' }}>
@@ -535,7 +535,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               Daily limit reached
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-              You've used your entries for today. Come back tomorrow - or claim your free weekly entry below.
+              You've used your entries for today. Come back tomorrow - or claim your weekly entry below.
             </Typography>
           </Box>
         </Box>
@@ -575,7 +575,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               Daily entry limit reached
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-              You've used your entries for today. Come back tomorrow - or claim your free weekly entry below.
+              You've used your entries for today. Come back tomorrow - or claim your weekly entry below.
             </Typography>
           </Box>
         </Box>

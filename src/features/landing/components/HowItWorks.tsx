@@ -6,7 +6,7 @@ const STEPS = [
   {
     num: '01',
     title: 'Join for free',
-    body: 'Create your free account and claim your weekly free entry. No purchase necessary - ever.',
+    body: 'Create your free account and claim your weekly entry. No purchase necessary - ever.',
   },
   {
     num: '02',

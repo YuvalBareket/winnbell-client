@@ -13,7 +13,7 @@ export interface BulletItem {
 
 const DEFAULT_BULLETS: BulletItem[] = [
   { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local businesses' },
-  { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your free weekly entry - no purchase needed' },
+  { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your weekly entry - no purchase needed' },
   { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
 ];
 

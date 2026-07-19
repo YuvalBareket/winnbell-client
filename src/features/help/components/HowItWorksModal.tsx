@@ -47,8 +47,8 @@ const steps = [
   },
   {
     icon: CardGiftcard,
-    title: 'Get Your Free Entry',
-    description: 'Every member gets 1 free entry every week - no purchase needed',
+    title: 'Get Your Weekly Entry',
+    description: 'Every member gets 1 entry every week - no purchase needed',
     color: PRIMARY_DEEP,
   },
   {

@@ -30,7 +30,7 @@ const InviteFriendCard = () => {
     try {
       await navigator.share({
         title: 'Join Winnbell',
-        text: 'Get a free bonus entry when you join through my link.',
+        text: 'Get a bonus entry when you join through my link.',
         url: referralLink.link,
       });
     } catch (err: unknown) {
@@ -98,7 +98,7 @@ const InviteFriendCard = () => {
                   Invite a friend
                 </Typography>
                 <Typography variant="body2" sx={{ color: TEXT_SECONDARY, fontSize: '0.85rem' }}>
-                  They get a free bonus entry when they join through your link.
+                  They get a bonus entry when they join through your link.
                 </Typography>
               </Stack>
             </Stack>

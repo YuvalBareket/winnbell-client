@@ -86,7 +86,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
             }}
           >
             Turn everyday shopping into chances to win real monthly cash prizes. Earn entries
-            through participating businesses or claim your free entry today. No purchase necessary.
+            through participating businesses or claim your weekly entry today. No purchase necessary.
           </Typography>
         </motion.div>
 

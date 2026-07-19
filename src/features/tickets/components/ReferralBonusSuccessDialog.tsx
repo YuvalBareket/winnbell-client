@@ -55,7 +55,7 @@ const ReferralBonusSuccessDialog: React.FC<Props> = ({
             You're In!
           </Typography>
           <Typography variant="body1" sx={{ color: ALPHA_WHITE_70, mb: 4, lineHeight: 1.6 }}>
-            Your free bonus entry is locked in for this month's draw. Good luck!
+            Your bonus entry is locked in for this month's draw. Good luck!
           </Typography>
           <Button
             variant="contained"

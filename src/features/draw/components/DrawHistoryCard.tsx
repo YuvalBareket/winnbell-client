@@ -208,7 +208,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
                         receipt
                       </>
                     ) : (
-                      'Selected with free weekly entry'
+                      'Selected with a weekly entry'
                     )}
                   </Typography>
                 </Box>

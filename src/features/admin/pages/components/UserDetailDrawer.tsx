@@ -33,7 +33,7 @@ interface Props {
 const SOURCE_LABELS: Record<string, string> = {
   code: 'Code',
   receipt: 'Receipt',
-  free: 'Free',
+  free: 'Weekly',
   promo: 'Promo',
   referral: 'Referral',
 };

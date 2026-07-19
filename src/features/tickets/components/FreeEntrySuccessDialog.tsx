@@ -61,8 +61,8 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, drawLabel,
           </Typography>
           <Typography variant="body1" sx={{ color: ALPHA_WHITE_70, mb: 4, lineHeight: 1.6 }}>
             {drawLabel
-              ? <>Your free entry is locked into the <b style={{ color: '#fff' }}>{drawLabel}</b>. Good luck!</>
-              : <>Your free entry is in the campaign. Good luck!</>}
+              ? <>Your weekly entry is locked into the <b style={{ color: '#fff' }}>{drawLabel}</b>. Good luck!</>
+              : <>Your weekly entry is in the campaign. Good luck!</>}
           </Typography>
           {claimedCode && (
             <Box sx={{
@@ -81,7 +81,7 @@ const FreeEntrySuccessDialog: React.FC<Props> = ({ open, claimedCode, drawLabel,
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 4 }}>
               <AccessTimeRounded sx={{ fontSize: 17, color: ALPHA_WHITE_70 }} />
               <Typography variant="body2" sx={{ color: ALPHA_WHITE_70 }}>
-                Next free entry {nextDateLabel}
+                Next weekly entry {nextDateLabel}
               </Typography>
             </Box>
           )}

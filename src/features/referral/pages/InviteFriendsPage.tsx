@@ -38,7 +38,7 @@ const InviteFriendsPage = () => {
     try {
       await navigator.share({
         title: 'Join Winnbell',
-        text: 'Get a free bonus entry when you join through my link.',
+        text: 'Get a bonus entry when you join through my link.',
         url: referralLink.link,
       });
     } catch (err: unknown) {
@@ -63,7 +63,7 @@ const InviteFriendsPage = () => {
     {
       icon: <CardGiftcardOutlined />,
       title: 'Bonus entry granted',
-      text: 'They receive a free bonus entry in the current monthly draw right away.',
+      text: 'They receive a bonus entry in the current monthly draw right away.',
     },
   ];
 
@@ -114,7 +114,7 @@ const InviteFriendsPage = () => {
                     lineHeight: 1.3,
                   }}
                 >
-                  Give your friends a free entry
+                  Give your friends a bonus entry
                 </Typography>
               </Box>
               <Typography
@@ -380,7 +380,7 @@ Know someone who could use a little extra luck this month? Share your link and i
       <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: 6 }}>
         <AppPageHero
           title='Invite Friends'
-          subtitle='Share Winnbell and give them a free bonus entry'
+          subtitle='Share Winnbell and give them a bonus entry'
         />
 
         <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>

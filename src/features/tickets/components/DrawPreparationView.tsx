@@ -170,8 +170,8 @@ const DrawPreparationView = ({
               <Box sx={{ p: 2, bgcolor: 'rgba(25,93,230,0.04)', borderRadius: 2, border: '1px solid rgba(25,93,230,0.1)' }}>
                 <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
                   {inActiveCampaign
-                    ? 'Your campaign is live. Customers can submit receipts from your store through the Winnbell app to earn campaign entries, and members also receive one free entry per week regardless of any purchase.'
-                    : 'Once the campaign is live, customers can submit receipts from your store through the Winnbell app to earn campaign entries. Members also receive one free entry per week regardless of any purchase, once your campaign is live.'}
+                    ? 'Your campaign is live. Customers can submit receipts from your store through the Winnbell app to earn campaign entries, and members also receive one entry every week regardless of any purchase.'
+                    : 'Once the campaign is live, customers can submit receipts from your store through the Winnbell app to earn campaign entries. Members also receive one entry every week regardless of any purchase, once your campaign is live.'}
                 </Typography>
               </Box>
             </Box>
