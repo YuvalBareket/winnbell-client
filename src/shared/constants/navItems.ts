@@ -45,8 +45,10 @@ export const businessNavItems: NavItem[] = [
   { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 
+// Managers get the Marketing page where owners have the Business Hub - branch
+// managers don't manage the business profile/locations, but they do promote.
 export const managerNavItems: NavItem[] = [
-  { label: 'Business Hub', Icon: BusinessOutlined, path: '/nearby' },
+  { label: 'Marketing', Icon: RocketLaunchOutlined, path: '/marketing' },
   { label: 'Campaign Dashboard', Icon: CampaignOutlined, path: '/campaign' },
   { label: 'Analytics', Icon: BarChartOutlined, path: '/stats' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },

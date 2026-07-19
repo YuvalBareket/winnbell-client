@@ -386,7 +386,7 @@ const RegisterPage = () => {
         ]
       : isLocationManager
       ? [
-          { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Scan and validate customer entries' },
+          { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'See your customer analytics' },
           { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Manage your branch operations' },
           { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Track performance and engagement' },
         ]

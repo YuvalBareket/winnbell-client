@@ -17,6 +17,7 @@ import {
   Logout,
   ConfirmationNumberOutlined,
   StorefrontOutlined,
+  RocketLaunchOutlined,
   BusinessOutlined,
   BarChartOutlined,
   ReceiptLongOutlined,
@@ -116,7 +117,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
       ]
     : isManager
     ? [
-        { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },
+        { label: 'Marketing', icon: <RocketLaunchOutlined />, path: '/marketing' },
         { label: 'Campaign Dashboard', icon: <CampaignOutlined />, path: '/campaign' },
         { label: 'Analytics', icon: <BarChartOutlined />, path: '/stats' },
         { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },

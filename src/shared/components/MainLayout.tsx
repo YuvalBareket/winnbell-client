@@ -38,9 +38,13 @@ const LayoutShell = () => {
   const isNearby = location.pathname === '/nearby';
   const scanActive = location.pathname === mobileMainPath;
 
+  // First tab: consumer map / owner Business Hub live on /nearby; managers have no
+  // Business Hub, so their first tab is the Marketing page instead.
+  const firstTabPath = isManager ? '/marketing' : '/nearby';
+
   // Reliable bottom-nav taps: the native click is cancelled by tiny finger movement on
   // mobile, so we navigate on pointer-up instead (see useTap).
-  const tapNearby = useTap(() => navigate('/nearby'));
+  const tapNearby = useTap(() => navigate(firstTabPath));
   const tapMain = useTap(() => navigate(mobileMainPath));
   const thirdNavPath = isBusinessOrManager ? '/stats' : '/tickets';
   const tapThird = useTap(() => navigate(thirdNavPath));
@@ -108,7 +112,7 @@ const LayoutShell = () => {
               },
             }}
           >
-            <BottomNavigationAction {...tapNearby} value='/nearby' showLabel={false} icon={<Storefront />} />
+            <BottomNavigationAction {...tapNearby} value={firstTabPath} showLabel={false} icon={<Storefront />} />
 
             <BottomNavigationAction
               {...tapMain}

@@ -177,7 +177,9 @@ const AppRoutes = () => {
           {/* Business/User routes - not accessible to admin */}
           {!isAdmin && (
             <>
-              <Route path='/nearby' element={isBusinessAdmin ? <BusinessHubPage /> : <NearbyPage />} />
+              {/* Managers have no Business Hub - their nav points at /marketing; stale
+                  /nearby links follow along instead of landing on the consumer map. */}
+              <Route path='/nearby' element={isBusinessAdmin ? <BusinessHubPage /> : isManager ? <Navigate to='/marketing' replace /> : <NearbyPage />} />
               <Route path='/scan' element={isUser ? <RedeemPage /> : <Navigate to={homePath} replace />} />
               <Route path='/campaign' element={isBusinessAdmin || isManager ? <CampaignDashboardPage /> : <Navigate to='/tickets' replace />} />
               <Route path='/tickets' element={<MyTicketsPage />} />
