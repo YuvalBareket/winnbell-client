@@ -464,11 +464,19 @@ const CampaignDashboardPage = () => {
               <Typography sx={{ fontSize: '13px', fontWeight: 800, color: TEXT_HEADING }}>{formatCurrency(bizData.min_transaction_amount)}</Typography>
             </Stack>
           )}
+          {headerData?.start_date && (
+            <Stack direction="row" alignItems="center" justifyContent="space-between">
+              <Typography sx={{ fontSize: '13px', fontWeight: 600, color: TEXT_SECONDARY }}>Started</Typography>
+              <Typography sx={{ fontSize: '13px', fontWeight: 800, color: TEXT_HEADING }}>
+                {new Date(headerData.start_date).toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric' })}
+              </Typography>
+            </Stack>
+          )}
           {headerData?.draw_date && (
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Typography sx={{ fontSize: '13px', fontWeight: 600, color: TEXT_SECONDARY }}>Draws on</Typography>
               <Typography sx={{ fontSize: '13px', fontWeight: 800, color: TEXT_HEADING }}>
-                {new Date(headerData.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {new Date(headerData.draw_date).toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric' })}
               </Typography>
             </Stack>
           )}

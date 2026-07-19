@@ -5,6 +5,7 @@ export interface CampaignHeaderData {
   status?: string;
   campaign_name: string | null;
   prize_amount: number | null;
+  start_date: string | null;
   draw_date: string | null;
   days_remaining: number | null;
   entries_used: number;
@@ -16,6 +17,7 @@ export interface CampaignListItem {
   draw_id: number;
   name: string;
   prize_amount: number;
+  start_date: string;
   draw_date: string;
   status: string;
   is_current: boolean;

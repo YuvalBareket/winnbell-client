@@ -10,6 +10,7 @@ import {
   Alert,
 } from '@mui/material';
 import { useCreateDraw } from '../../hooks/useAdmin';
+import { lastOfMonth } from '../../utils/drawDates';
 
 const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
@@ -19,13 +20,18 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
   const [formData, setFormData] = useState({
     name: '',
     prize_amount: '',
+    start_date: '',
     draw_date: '',
   });
 
   const handleClose = () => {
-    setFormData({ name: '', prize_amount: '', draw_date: '' });
+    setFormData({ name: '', prize_amount: '', start_date: '', draw_date: '' });
     onClose();
   };
+
+  // Compare against the NORMALISED draw day (last of the month) - the server moves the
+  // draw there, so a start after the typed day but before month-end is still valid.
+  const startAfterDraw = !!formData.start_date && !!formData.draw_date && formData.start_date >= lastOfMonth(formData.draw_date);
 
   const handleSubmit = () => {
     mutation.mutate(
@@ -33,6 +39,7 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         name: formData.name,
         prize_amount: parseFloat(formData.prize_amount) || 0,
         draw_date: formData.draw_date,
+        ...(formData.start_date ? { start_date: formData.start_date } : {}),
       },
       {
         onSuccess: () => {
@@ -66,12 +73,23 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
             slotProps={{ htmlInput: { min: 1, step: 1 } }}
           />
           <TextField
-            label='Campaign Date'
+            label='Start Date (optional)'
+            type='date'
+            fullWidth
+            slotProps={{ inputLabel: { shrink: true } }}
+            value={formData.start_date}
+            onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+            error={startAfterDraw}
+            helperText={startAfterDraw ? 'Must be before the draw date' : 'Leave empty to start on the 1st of the campaign month'}
+          />
+          <TextField
+            label='Draw Date'
             type='date'
             fullWidth
             slotProps={{ inputLabel: { shrink: true } }}
             value={formData.draw_date}
             onChange={(e) => setFormData({ ...formData, draw_date: e.target.value })}
+            helperText='Moved to the last day of its month automatically'
           />
         </Stack>
       </DialogContent>
@@ -80,7 +98,7 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
         <Button
           variant='contained'
           onClick={handleSubmit}
-          disabled={mutation.isPending || !formData.name || !formData.draw_date || !formData.prize_amount}
+          disabled={mutation.isPending || !formData.name || !formData.draw_date || !formData.prize_amount || startAfterDraw}
         >
           {mutation.isPending ? 'Saving...' : 'Create Campaign'}
         </Button>

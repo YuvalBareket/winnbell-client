@@ -465,7 +465,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
           <TableRow sx={{ backgroundColor: BG_PAGE }}>
             <TableCell>Name</TableCell>
             <TableCell>Prize Pool</TableCell>
-            <TableCell>Date</TableCell>
+            <TableCell>Period</TableCell>
             <TableCell align='center'>Entries</TableCell>
             <TableCell>Status</TableCell>
             <TableCell align='right'>Actions</TableCell>
@@ -488,7 +488,10 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                   </Stack>
                 </TableCell>
                 <TableCell>${Number(draw.prize_amount ?? 0).toLocaleString()}</TableCell>
-                <TableCell>{new Date(draw.draw_date).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  {draw.start_date ? `${new Date(draw.start_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })} - ` : ''}
+                  {new Date(draw.draw_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}
+                </TableCell>
                 <TableCell align='center'>
                   <Stack direction='row' alignItems='center' justifyContent='center' spacing={0.5}>
                     <ConfirmationNumberOutlinedIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
@@ -536,7 +539,8 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 <Chip label={draw.status} size='small' color={STATUS_COLORS[draw.status?.toLowerCase()] ?? 'default'} />
                 <Typography variant='caption' sx={{ alignSelf: 'center', color: 'text.secondary' }}>
-                  {new Date(draw.draw_date).toLocaleDateString()}
+                  {draw.start_date ? `${new Date(draw.start_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })} - ` : ''}
+                  {new Date(draw.draw_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}
                 </Typography>
               </Box>
               {expandedDrawId === draw.id && <DrawBusinessesPanel key={draw.id} drawId={draw.id} drawStatus={draw.status} />}

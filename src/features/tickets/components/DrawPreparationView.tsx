@@ -59,11 +59,17 @@ const DrawPreparationView = ({
   const showNextCampaign = effectivelySubscribed && !subscription?.skip_next_campaign;
   const drawName = subscription?.draw_name ?? (showNextCampaign ? subscription?.next_campaign_name : null) ?? null;
   const drawDateValue = subscription?.draw_date ?? (showNextCampaign ? subscription?.next_campaign_date : null) ?? null;
+  const startDateValue = subscription?.draw_start_date ?? (showNextCampaign ? subscription?.next_campaign_start_date : null) ?? null;
   const prizeValue = subscription?.prize_amount ?? (showNextCampaign ? subscription?.next_campaign_prize : null) ?? null;
 
-  const drawDate = drawDateValue ? new Date(drawDateValue) : null;
+  // A live campaign counts down to its draw (the end); a registered upcoming one counts
+  // down to its START - the 1st of the month - which is when the business goes live.
+  const targetDateValue = inActiveCampaign ? drawDateValue : (startDateValue ?? drawDateValue);
+  const drawDate = targetDateValue ? new Date(targetDateValue) : null;
+  // Clamped: an overdue boundary (start passed but admin opens late, or a live draw not
+  // yet closed) must read "0 days to go", never a negative count.
   const daysUntil = drawDate
-    ? Math.ceil((drawDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    ? Math.max(0, Math.ceil((drawDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : null;
 
   const prizeAmount = prizeValue
@@ -140,7 +146,7 @@ const DrawPreparationView = ({
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                   <CalendarMonth sx={{ fontSize: 16, opacity: 0.8 }} />
                   <Typography variant='body2' sx={{ opacity: 0.9 }}>
-                    {drawDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    {inActiveCampaign ? 'Ends' : 'Starts'} {drawDate.toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'long', day: 'numeric', year: 'numeric' })}
                   </Typography>
                 </Box>
               )}

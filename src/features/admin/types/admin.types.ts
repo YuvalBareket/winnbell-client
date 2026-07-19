@@ -52,6 +52,10 @@ export interface Draw {
   id: number;
   name: string;
   prize_amount: number;
+  // Campaign period: opens midnight NY on the 1st (start_date), drawn on the last day (draw_date).
+  // Optional: /admin/draws (active list) returns a slim row without it, and pre-migration
+  // prod rows may lack it - guard before formatting.
+  start_date?: string;
   draw_date: string;
   status: 'Upcoming' | 'Open' | 'Closed';
   winner_user_id?: number;
@@ -63,6 +67,7 @@ export interface UpdateDrawInput {
   name?: string;
   prize_amount?: number;
   draw_date?: string;
+  start_date?: string;
 }
 
 export interface CreateBusinessInput {
@@ -79,6 +84,8 @@ export interface CreateDrawInput {
   name: string;
   prize_amount: number;
   draw_date: string;
+  // Optional: omitted = campaign starts on the 1st of the draw month.
+  start_date?: string;
 }
 
 export interface LocationBreakdownRow {

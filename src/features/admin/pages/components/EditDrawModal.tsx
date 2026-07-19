@@ -12,6 +12,7 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { useUpdateDraw } from '../../hooks/useAdmin';
 import { apiErrorMessage } from '../../../../shared/utils/apiError';
+import { firstOfMonth, lastOfMonth } from '../../utils/drawDates';
 import type { Draw } from '../../types/admin.types';
 
 interface Props {
@@ -25,6 +26,7 @@ interface Props {
 interface FormValues {
   name: string;
   prize_amount: string;
+  start_date: string;
   draw_date: string;
 }
 
@@ -33,20 +35,25 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
 
   // `values` reactively resets the form whenever `draw` changes (RHF v7 pattern).
   // This replaces the reset-in-effect pattern which caused a one-frame stale display on open.
-  const { control, handleSubmit, formState: { isDirty } } = useForm<FormValues>({
+  const { control, handleSubmit, getValues, setValue, trigger, formState: { isDirty } } = useForm<FormValues>({
     values: draw
-      ? { name: draw.name, prize_amount: String(draw.prize_amount), draw_date: draw.draw_date.slice(0, 10) }
-      : { name: '', prize_amount: '', draw_date: '' },
+      ? { name: draw.name, prize_amount: String(draw.prize_amount), start_date: draw.start_date?.slice(0, 10) ?? '', draw_date: draw.draw_date.slice(0, 10) }
+      : { name: '', prize_amount: '', start_date: '', draw_date: '' },
     // A background refetch of the entity must never wipe what the user is typing.
     resetOptions: { keepDirtyValues: true },
   });
 
   const onSubmit = async (values: FormValues) => {
     if (!draw) return;
-    const payload: { name?: string; prize_amount?: number; draw_date?: string } = {};
+    const payload: { name?: string; prize_amount?: number; start_date?: string; draw_date?: string } = {};
     if (values.name.trim() !== draw.name) payload.name = values.name.trim();
     if (Number(values.prize_amount) !== Number(draw.prize_amount)) payload.prize_amount = Number(values.prize_amount);
     if (values.draw_date !== draw.draw_date.slice(0, 10)) payload.draw_date = values.draw_date;
+    // WYSIWYG: whenever the draw date moves, send the start the admin is LOOKING at,
+    // so the server never silently re-derives a different one behind the form.
+    if (values.start_date && (payload.draw_date !== undefined || values.start_date !== (draw.start_date?.slice(0, 10) ?? ''))) {
+      payload.start_date = values.start_date;
+    }
 
     try {
       await updateDraw.mutateAsync({ drawId: draw.id, data: payload });
@@ -93,7 +100,26 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
                 type='number'
                 fullWidth
                 size='small'
-                inputProps={{ min: 1 }}
+                slotProps={{ htmlInput: { min: 1 } }}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+          <Controller
+            name='start_date'
+            control={control}
+            // The server normalises the draw to the LAST day of its month - compare
+            // against that boundary, not the raw day typed in the draw field.
+            rules={{ validate: (v) => !v || v < lastOfMonth(getValues('draw_date')) || 'Must be before the draw date' }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label='Start Date'
+                type='date'
+                fullWidth
+                size='small'
+                slotProps={{ inputLabel: { shrink: true } }}
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
               />
@@ -110,8 +136,18 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
                 type='date'
                 fullWidth
                 size='small'
-                inputProps={{ min: today }}
-                InputLabelProps={{ shrink: true }}
+                onChange={(e) => {
+                  const prev = field.value;
+                  field.onChange(e);
+                  // A start that was just the default (1st of the old draw month) keeps
+                  // tracking the default when the month moves; a custom start stays put.
+                  if (getValues('start_date') === firstOfMonth(prev)) {
+                    setValue('start_date', firstOfMonth(e.target.value), { shouldDirty: true });
+                  }
+                  // Re-check the start against the new draw month either way.
+                  void trigger('start_date');
+                }}
+                slotProps={{ htmlInput: { min: today }, inputLabel: { shrink: true } }}
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
               />

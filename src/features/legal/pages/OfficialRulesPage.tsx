@@ -27,6 +27,7 @@ interface DrawInfo {
   id: number;
   name: string;
   prize_amount: string;
+  start_date?: string;
   draw_date: string;
   status: string;
 }
@@ -53,17 +54,18 @@ const OfficialRulesPage = () => {
   const content = (() => {
     let text = applyStaticSubstitutions(rulesContent);
     if (draw) {
-      const drawDate = new Date(draw.draw_date).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'long', day: 'numeric',
+      // Campaign boundaries are NY-timed instants; format them in NY so the legal dates
+      // never shift a day for readers in other timezones.
+      const nyDate = (iso: string) => new Date(iso).toLocaleDateString('en-US', {
+        timeZone: 'America/New_York', year: 'numeric', month: 'long', day: 'numeric',
       });
+      const drawDate = nyDate(draw.draw_date);
       const prizeAmount = parseFloat(draw.prize_amount).toLocaleString('en-US', {
         style: 'currency', currency: 'USD',
       });
-      const dt = new Date(draw.draw_date);
-      const startDate = new Date(dt.getFullYear(), dt.getMonth(), 1)
-        .toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      const endDate = new Date(dt.getFullYear(), dt.getMonth() + 1, 0)
-        .toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      // Pre-migration rows can lack start_date; never let "Jan 1 1970" into legal copy.
+      const startDate = draw.start_date ? nyDate(draw.start_date) : 'See Platform';
+      const endDate = drawDate;
 
       text = text
         .replace(/\[Campaign Name\]/g, draw.name)

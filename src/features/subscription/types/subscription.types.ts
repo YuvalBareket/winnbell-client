@@ -7,6 +7,8 @@ export interface SubscriptionDetails {
   billing_interval: 'monthly' | 'yearly';
   draw_id: number | null;
   draw_name: string | null;
+  // Campaign period: opens midnight NY on the 1st (draw_start_date), drawn on the last day (draw_date).
+  draw_start_date: string | null;
   draw_date: string | null;
   draw_status: string | null;
   prize_amount: number | null;
@@ -34,6 +36,7 @@ export interface SubscriptionDetails {
   // (null if no upcoming campaign has been created yet).
   next_campaign_id: number | null;
   next_campaign_name: string | null;
+  next_campaign_start_date: string | null;
   next_campaign_date: string | null;
   next_campaign_prize: number | null;
 }
