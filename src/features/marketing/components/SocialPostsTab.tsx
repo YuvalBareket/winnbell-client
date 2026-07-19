@@ -32,8 +32,8 @@ type RatioId = 'story' | 'square-1-1';
 interface Ratio { id: RatioId; label: string; w: number; h: number }
 
 const RATIOS: Ratio[] = [
-  { id: 'square-1-1', label: 'Square · 1:1', w: 540, h: 540 },
   { id: 'story', label: 'Story · 9:16', w: 440, h: 780 },
+  { id: 'square-1-1', label: 'Square · 1:1', w: 540, h: 540 },
 ];
 
 // Style presets: { id, label, background gradient, primary text, accent, fineprint }
@@ -197,7 +197,6 @@ const STYLE_PRESETS: StylePreset[] = [
 ];
 
 const SocialPostsTab = ({
-  businessName,
   scanUrl,
   canDownload,
   onRequireLocation,
@@ -210,11 +209,11 @@ const SocialPostsTab = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [savingImage, setSavingImage] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [selectedRatio, setSelectedRatio] = useState<RatioId>('square-1-1');
+  const [selectedRatio, setSelectedRatio] = useState<RatioId>('story');
   const [selectedStyle, setSelectedStyle] = useState<string>('navy');
-  const [headline, setHeadline] = useState("This month's draw is live.");
+  const [headline, setHeadline] = useState('WE ARE NOW ON WINNBELL!');
   const [tagline, setTagline] = useState('Shop local.');
-  const [subtext, setSubtext] = useState(`Join this month's draw at ${businessName}`);
+  const [subtext, setSubtext] = useState("Every qualifying purchase can enter you into this month's cash prize campaign");
   const imageRef = useRef<HTMLDivElement>(null);
 
   const currentRatio = RATIOS.find((r) => r.id === selectedRatio) || RATIOS[0];
@@ -345,7 +344,7 @@ const SocialPostsTab = ({
     const kickerSize = isStory ? 11 : 10;
     const headlineSize = isStory ? 52 : 48;
     const subtextSize = isStory ? 15 : 13;
-    const logoHeight = isStory ? 38 : 34;
+    const logoHeight = isStory ? 50 : 44;
 
     return (
       <Box
@@ -373,7 +372,7 @@ const SocialPostsTab = ({
 
         {/* Header - Wordmark. On story the logo drops below Instagram's username
             overlay (~top 13% of a story is covered by the poster's own handle). */}
-        <Box sx={{ position: 'relative', zIndex: 1, mt: isStory ? '84px' : 0 }}>
+        <Box sx={{ position: 'relative', zIndex: 1, mt: isStory ? '74px' : 0 }}>
           <Box
             component='img'
             src={isDarkText ? '/winnbell_app_name.svg' : '/winnbell_app_name_white.svg'}
@@ -401,6 +400,7 @@ const SocialPostsTab = ({
               fontWeight: 800,
               fontSize: headlineSize,
               letterSpacing: '-0.03em',
+              wordSpacing: '0.18em',
               lineHeight: 1.05,
               whiteSpace: 'pre-line',
               mb: subtext ? 1.5 : 0,
@@ -424,7 +424,7 @@ const SocialPostsTab = ({
         {/* Story only: white pill marking where the Instagram link sticker goes -
             the owner places the real tappable sticker on top of it when posting */}
         {isStory && (
-          <Box sx={{ position: 'absolute', bottom: 100, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 1 }}>
+          <Box sx={{ position: 'absolute', bottom: 100, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', zIndex: 1 }}>
             <Box sx={{ bgcolor: '#fff', borderRadius: '999px', px: '18px', py: '10px', display: 'flex', alignItems: 'center', gap: '7px' }}>
               <svg viewBox='0 0 24 24' width={16} height={16} fill={PRIMARY_MAIN}>
                 <path d='M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5' />
@@ -433,6 +433,9 @@ const SocialPostsTab = ({
                 Put your link here
               </Typography>
             </Box>
+            <Typography sx={{ fontWeight: 700, fontSize: 13, color: style.textPrimary, textAlign: 'center' }}>
+              First entry on us via the link above
+            </Typography>
           </Box>
         )}
 
@@ -693,7 +696,7 @@ const SocialPostsTab = ({
                   value={subtext}
                   onChange={(e) => {
                     const val = e.target.value;
-                    if (val.length <= 60) setSubtext(val);
+                    if (val.length <= 100) setSubtext(val);
                   }}
                   placeholder='Optional'
                   sx={{
@@ -715,7 +718,7 @@ const SocialPostsTab = ({
                   }}
                 />
                 <Typography sx={{ fontSize: '11px', color: TEXT_SECONDARY, mt: 0.5 }}>
-                  {subtext.length} / 60
+                  {subtext.length} / 100
                 </Typography>
               </Box>
             </Box>
