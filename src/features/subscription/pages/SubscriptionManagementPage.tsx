@@ -996,7 +996,7 @@ export default function SubscriptionManagementPage() {
             }}
             variant='contained'
             // Compare against the plan the NEXT campaign will run with (staged change wins
-            // over the live tier - e.g. a founding member's live 1,000 benefit is not
+            // over the live tier - e.g. a founding member's live 2,500 benefit is not
             // their plan; their staged choice is).
             disabled={updatingPlan || newTier === (sub.pending_entries_per_location ?? sub.entries_per_location ?? 0)}
             sx={{ fontWeight: 700 }}

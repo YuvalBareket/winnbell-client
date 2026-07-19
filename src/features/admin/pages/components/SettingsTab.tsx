@@ -140,7 +140,7 @@ const SettingsTab: React.FC = () => {
                 <Typography variant='h6' fontWeight={700}>Founding Partner Program</Typography>
               </Stack>
               <Typography variant='body2' color='text.secondary' mb={2.5}>
-                Control the early-bird founding partner offer. When active, businesses pay a one-time $1,000 flat fee for the full year instead of a recurring subscription.
+                Control the early-bird founding partner offer. When active, businesses pay a one-time $1,200 flat fee for the full year instead of a recurring subscription.
               </Typography>
 
               <Stack spacing={2.5}>

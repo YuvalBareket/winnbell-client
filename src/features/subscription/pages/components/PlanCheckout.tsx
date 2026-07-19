@@ -42,7 +42,7 @@ interface Props {
   onBack?: () => void;
 }
 
-const FOUNDING_ENTRIES = 1000;
+const FOUNDING_ENTRIES = 2500;
 const FOUNDING_PRICE   = 1200;
 
 const PlanCheckout = ({

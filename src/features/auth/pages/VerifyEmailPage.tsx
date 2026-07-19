@@ -305,7 +305,7 @@ const VerifyEmailPage = () => {
         <AuthBrandPanel
           headline={<>Check your<br />inbox.</>}
           tagline="One quick step to secure your account. We've sent a code that expires in 10 minutes."
-          bullets={[{ icon: <LockOutlined sx={{ fontSize: 18 }} />, text: 'Keeps your entries & wins safe' }]}
+          bullets={[{ icon: <LockOutlined sx={{ fontSize: 18 }} />, text: 'Keeps your info safe' }]}
         />
 
         {/* Right: form panel */}

@@ -106,7 +106,7 @@ const BusinessHubPage = () => {
     .filter((l) => (l.is_active && !l.deactivate_at_open) || l.activate_at_open).length;
 
   // Pricing for the add-location dialog is the NEXT campaign's plan: the staged tier wins
-  // over the live one (e.g. a founding member's live 1,000 benefit is not their plan), and
+  // over the live one (e.g. a founding member's live 2,500 benefit is not their plan), and
   // the per-location rate comes from the tier price map — fee_at_entry is a TOTAL, not a rate.
   const nextCampaignTier = subscription?.pending_entries_per_location ?? subscription?.entries_per_location ?? null;
   const planSummary = subscription ? {
