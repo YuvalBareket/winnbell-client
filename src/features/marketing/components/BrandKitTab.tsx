@@ -21,6 +21,10 @@ interface BrandKitTabProps {
   onRequireLocation: () => void;
   /** Parent's location-picker dialog state, used to resume a click after picking */
   locationPickerOpen: boolean;
+  /** Bumped on every actual pick - distinguishes picking from dismissing the dialog */
+  locationPickVersion: number;
+  /** Re-ask the location on every action (owner with 2+ locations) */
+  alwaysAskLocation: boolean;
 }
 
 const BrandKitTab = ({
@@ -29,6 +33,8 @@ const BrandKitTab = ({
   onToast,
   onRequireLocation,
   locationPickerOpen,
+  locationPickVersion,
+  alwaysAskLocation,
 }: BrandKitTabProps) => {
   const navigate = useNavigate();
   const [downloadingQr, setDownloadingQr] = useState(false);
@@ -58,6 +64,8 @@ const BrandKitTab = ({
     ready: !!effectiveLocationId,
     pickerOpen: locationPickerOpen,
     requestLocation: onRequireLocation,
+    pickVersion: locationPickVersion,
+    alwaysAsk: alwaysAskLocation,
     actions: {
       qr: () => { void handleDownloadQr(); },
     },

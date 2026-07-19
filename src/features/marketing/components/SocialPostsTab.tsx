@@ -20,6 +20,10 @@ interface SocialPostsTabProps {
   onRequireLocation: () => void;
   /** Parent's location-picker dialog state, used to resume a click after picking */
   locationPickerOpen: boolean;
+  /** Bumped on every actual pick - distinguishes picking from dismissing the dialog */
+  locationPickVersion: number;
+  /** Re-ask the location on every action (owner with 2+ locations) */
+  alwaysAskLocation: boolean;
   onToast: (msg: string) => void;
 }
 
@@ -198,6 +202,8 @@ const SocialPostsTab = ({
   canDownload,
   onRequireLocation,
   locationPickerOpen,
+  locationPickVersion,
+  alwaysAskLocation,
   onToast,
 }: SocialPostsTabProps) => {
   const theme = useTheme();
@@ -317,6 +323,8 @@ const SocialPostsTab = ({
     ready: canDownload,
     pickerOpen: locationPickerOpen,
     requestLocation: onRequireLocation,
+    pickVersion: locationPickVersion,
+    alwaysAsk: alwaysAskLocation,
     actions: {
       copy: doCopyLink,
     },

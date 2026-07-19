@@ -40,6 +40,9 @@ const MarketingPage = () => {
   const [copied, setCopied] = useState(false);
   // "Choose a location" buttons open this picker directly (no scroll-to-top hunting).
   const [locPickerOpen, setLocPickerOpen] = useState(false);
+  // Bumped on every actual pick in the dialog, so gated actions can tell a pick
+  // apart from a dismissal (a dismissal must cancel the pending action).
+  const [locPickVersion, setLocPickVersion] = useState(0);
 
   // Center the selected tab in the scrollable tab bar (mobile) - MUI only scrolls it
   // into view at the edge, which hides what comes next.
@@ -62,6 +65,11 @@ const MarketingPage = () => {
   const effectiveLocationId = isManager
     ? currentUser?.location_id ?? null
     : (selectedLocationId || (locations.length === 1 ? locations[0].id : null));
+
+  // Location-bound assets (QRs, links) are easy to mix up between branches, so when a
+  // real choice exists every download/copy re-asks which location it is for. Managers
+  // and single-location businesses have no choice - they keep one-click downloads.
+  const alwaysAskLocation = !isManager && locations.length > 1;
 
   const scanUrl = effectiveLocationId
     ? `${window.location.origin}/scan?l=${effectiveLocationId}`
@@ -203,6 +211,8 @@ const MarketingPage = () => {
             onToast={setSnackbar}
             onRequireLocation={() => setLocPickerOpen(true)}
             locationPickerOpen={locPickerOpen}
+            locationPickVersion={locPickVersion}
+            alwaysAskLocation={alwaysAskLocation}
             copied={copied}
             onCopy={handleCopyScanUrl}
             minAmountLabel={businessData?.min_transaction_amount ? `${formatCurrency(Number(businessData.min_transaction_amount))}` : null}
@@ -216,6 +226,8 @@ const MarketingPage = () => {
             canDownload={!!effectiveLocationId}
             onRequireLocation={() => setLocPickerOpen(true)}
             locationPickerOpen={locPickerOpen}
+            locationPickVersion={locPickVersion}
+            alwaysAskLocation={alwaysAskLocation}
             onToast={setSnackbar}
           />
         )}
@@ -231,6 +243,8 @@ const MarketingPage = () => {
             onToast={setSnackbar}
             onRequireLocation={() => setLocPickerOpen(true)}
             locationPickerOpen={locPickerOpen}
+            locationPickVersion={locPickVersion}
+            alwaysAskLocation={alwaysAskLocation}
           />
         )}
       </Container>
@@ -246,7 +260,7 @@ const MarketingPage = () => {
           {locations.map((loc) => (
             <ListItemButton
               key={loc.id}
-              onClick={() => { setSelectedLocationId(loc.id); setLocPickerOpen(false); }}
+              onClick={() => { setSelectedLocationId(loc.id); setLocPickVersion((v) => v + 1); setLocPickerOpen(false); }}
               sx={{ borderRadius: 2, mb: 0.5 }}
             >
               <ListItemIcon sx={{ minWidth: 38 }}>
