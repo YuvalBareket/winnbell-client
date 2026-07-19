@@ -10,7 +10,7 @@ import {
   PRIMARY_MAIN, TEXT_HEADING, TEXT_SECONDARY,
   ALPHA_PRIMARY_06,
 } from '../../../shared/colors';
-import { downloadNodeAsPng } from '../utils/capture';
+import { svgToPngDataUrl } from '../utils/capture';
 import { LEGAL_TEXT } from './posterConstants';
 import { useLocationGatedActions } from '../hooks/useLocationGatedActions';
 
@@ -44,10 +44,18 @@ const BrandKitTab = ({
   const legalRef = useRef<HTMLDivElement>(null);
 
   const handleDownloadQr = async () => {
-    if (!qrRef.current || !effectiveLocationId) return;
+    const svg = qrRef.current?.querySelector('svg');
+    if (!svg || !effectiveLocationId) return;
     setDownloadingQr(true);
     try {
-      await downloadNodeAsPng(qrRef.current, 'winnbell-qr.png', 2);
+      // Serialize the QR's own SVG (transparent background) instead of capturing the
+      // white preview card - the download is a clean square PNG with transparent bg,
+      // ready to drop onto any design. 8x the 150px preview = 1200px, print-sharp.
+      const pngUrl = await svgToPngDataUrl(svg as SVGSVGElement, 8);
+      const link = document.createElement('a');
+      link.download = 'winnbell-qr.png';
+      link.href = pngUrl;
+      link.click();
       onToast('QR downloaded!');
     } catch (err) {
       console.error(err);
@@ -156,7 +164,9 @@ const BrandKitTab = ({
                           p: 2,
                         }}
                       >
-                        <QRCodePlain value={scanUrl} size={150} level='H' fgColor={TEXT_HEADING} />
+                        {/* Transparent QR background: the white preview card provides contrast
+                            on screen, and the downloaded PNG stays transparent. */}
+                        <QRCodePlain value={scanUrl} size={150} level='H' fgColor={TEXT_HEADING} bgColor='transparent' />
                       </Box>
                     )}
 
