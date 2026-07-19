@@ -52,6 +52,7 @@ export const BUSINESS_SECTORS: Record<
   Entertainment: { label: 'Entertainment', icon: <Theaters />,         color: SECTOR_CONFIG.Entertainment.color, bgColor: SECTOR_CONFIG.Entertainment.bgColor },
   Education:     { label: 'Education',     icon: <School />,           color: SECTOR_CONFIG.Education.color,     bgColor: SECTOR_CONFIG.Education.bgColor },
   Service:       { label: 'Service',       icon: <Build />,            color: SECTOR_CONFIG.Service.color,       bgColor: SECTOR_CONFIG.Service.bgColor },
+  Other:         { label: 'Other',         icon: <Storefront />,       color: SECTOR_CONFIG.Other.color,         bgColor: SECTOR_CONFIG.Other.bgColor },
   Free:          { label: 'Free',          icon: <CardGiftcard />,     color: SECTOR_CONFIG.Free.color,          bgColor: SECTOR_CONFIG.Free.bgColor },
 };
 

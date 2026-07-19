@@ -7,6 +7,8 @@ import {
   Button,
   Stack,
   Paper,
+  Select,
+  MenuItem,
   CircularProgress,
   IconButton,
   InputAdornment,
@@ -135,12 +137,13 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
             </Box>
 
             <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
-          {/* Sector picker with shrink animation */}
+          {/* Sector picker: compact dropdown on desktop (the expanding grid took over the
+              dialog there); mobile keeps the tap-friendly pill + grid. */}
           <Controller
             name='businessSector'
             control={control}
             rules={{ required: 'Required' }}
-            render={({ fieldState }) => (
+            render={({ field, fieldState }) => (
               <Box>
                 <Typography
                   variant='body2'
@@ -151,6 +154,44 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                 >
                   Industry
                 </Typography>
+                {isDesktop ? (
+                  <Select
+                    {...field}
+                    fullWidth
+                    displayEmpty
+                    error={!!fieldState.error}
+                    renderValue={(key: string) => {
+                      const s = key ? BUSINESS_SECTORS[key] : null;
+                      if (!s) {
+                        return <Typography variant='body2' color='text.disabled'>Select industry</Typography>;
+                      }
+                      return (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{ display: 'flex', fontSize: 22, color: s.color }}>{s.icon}</Box>
+                          <Typography variant='body2' fontWeight={700}>{s.label}</Typography>
+                        </Box>
+                      );
+                    }}
+                    MenuProps={{ PaperProps: { sx: { maxHeight: 360, borderRadius: 2 } } }}
+                    sx={{
+                      height: 56, // match the Business name TextField (outlined, medium)
+                      bgcolor: 'white',
+                      borderRadius: 2,
+                    }}
+                  >
+                    {editableSectors.map((key) => {
+                      const s = BUSINESS_SECTORS[key];
+                      return (
+                        <MenuItem key={key} value={key} sx={{ py: 1.25 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ display: 'flex', fontSize: 22, color: s.color }}>{s.icon}</Box>
+                            <Typography variant='body2' fontWeight={600}>{s.label}</Typography>
+                          </Box>
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                ) : (
                 <AnimatePresence mode='wait'>
                   {selectedSector && BUSINESS_SECTORS[selectedSector] ? (
                     <motion.div
@@ -250,6 +291,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                     </motion.div>
                   )}
                 </AnimatePresence>
+                )}
                 {fieldState.error && (
                   <Typography variant='caption' color='error' sx={{ mt: 0.5, display: 'block' }}>
                     {fieldState.error.message}
