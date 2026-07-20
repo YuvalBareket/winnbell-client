@@ -132,7 +132,9 @@ const CampaignDashboardPage = () => {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useCampaignEntries(locationIdForQuery, campaignIdForQuery);
+    // The feed shows the SAME period the KPI toggle selects (live campaign only - past
+    // campaigns have no toggle and show their full history).
+  } = useCampaignEntries(locationIdForQuery, campaignIdForQuery, isCurrentCampaign ? dateRange : undefined);
 
   const loadedPages = entriesData?.pages ?? [];
   const allEntries = loadedPages.flatMap((p) => p.items);
@@ -142,10 +144,10 @@ const CampaignDashboardPage = () => {
   const canGoNext = entriesPage < loadedPages.length - 1 || hasNextPage;
 
   // Any filter change gives the entries query a fresh cache entry that starts at page 0,
-  // so the page cursor must snap back to the first page too.
+  // so the page cursor must snap back to the first page too (incl. the period toggle).
   useEffect(() => {
     setEntriesPage(0);
-  }, [locationIdForQuery, campaignIdForQuery]);
+  }, [locationIdForQuery, campaignIdForQuery, dateRange]);
 
   // Bring the top of the entries card back into view when the page changes, so a new page
   // always starts from its first row instead of wherever the last page was scrolled to.
@@ -545,10 +547,9 @@ const CampaignDashboardPage = () => {
           <Box>
             {displayEntries.map((entry, idx) => {
               const badge = sourceBadge(entry.entry_source);
+              // Only the exception is labeled: normal entries carry no status chip, an
+              // entry under review shows the (business-safe) "Under review" tag.
               const isUnderReview = entry.status === 'under_review';
-              const statusColor = isUnderReview ? STATUS_PENDING_TEXT : STATUS_ACTIVATED_TEXT;
-              const statusBorder = isUnderReview ? BORDER_REVIEW : BORDER_APPROVED;
-              const statusLabel = isUnderReview ? 'Under review' : 'Approved';
               // The feed identifies the submission (receipt id), never the customer.
               const title = entry.receipt_identifier ?? `${badge.label} entry`;
               const RowIcon = entry.entry_source === 'receipt' ? ReceiptOutlined : CardGiftcardOutlined;
@@ -557,10 +558,15 @@ const CampaignDashboardPage = () => {
               return (
                 <motion.div key={entry.ticket_id} variants={popIn} initial="hidden" animate="visible">
                   {/* Desktop row */}
-                  <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '40px minmax(0,1fr) 110px 120px', gap: 2, alignItems: 'center', px: '22px', py: '16px', borderBottom: last ? 'none' : `1px solid ${BG_SUBTLE}` }}>
+                  <Box sx={{ display: { xs: 'none', md: 'grid' }, gridTemplateColumns: '40px minmax(0,1fr) 110px', gap: 2, alignItems: 'center', px: '22px', py: '16px', borderBottom: last ? 'none' : `1px solid ${BG_SUBTLE}` }}>
                     <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: AVATAR_BLUE_BG, color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><RowIcon sx={{ fontSize: 20 }} /></Box>
                     <Box sx={{ minWidth: 0 }}>
-                      <Typography sx={{ fontSize: '14px', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</Typography>
+                      <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
+                        <Typography sx={{ fontSize: '14px', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</Typography>
+                        {isUnderReview && (
+                          <Box component="span" sx={{ fontSize: '10px', fontWeight: 700, color: STATUS_PENDING_TEXT, border: `1px solid ${BORDER_REVIEW}`, borderRadius: '6px', px: '7px', py: '1px', whiteSpace: 'nowrap', flexShrink: 0 }}>Under review</Box>
+                        )}
+                      </Stack>
                       <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: '3px', minWidth: 0 }}>
                         <Box component="span" sx={{ fontSize: '10.5px', fontWeight: 700, color: badge.color, border: `1px solid ${badge.border}`, borderRadius: '6px', px: '7px', py: '1px', flexShrink: 0 }}>{badge.label}</Box>
                         {entry.entry_count > 1 && (
@@ -574,14 +580,18 @@ const CampaignDashboardPage = () => {
                     <Typography sx={{ fontSize: '14px', fontWeight: 800, color: entry.transaction_amount !== null ? PRIMARY_MAIN : TEXT_TERTIARY, textAlign: 'right' }}>
                       {entry.transaction_amount !== null ? formatCurrency(entry.transaction_amount) : '-'}
                     </Typography>
-                    <Box component="span" sx={{ justifySelf: 'start', fontSize: '11px', fontWeight: 700, color: statusColor, border: `1px solid ${statusBorder}`, borderRadius: '7px', px: '10px', py: '4px' }}>{statusLabel}</Box>
                   </Box>
 
                   {/* Mobile row */}
                   <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1.375, px: '14px', py: '12px', borderBottom: last ? 'none' : `1px solid ${BG_SUBTLE}` }}>
                     <Box sx={{ width: 36, height: 36, borderRadius: '50%', bgcolor: AVATAR_BLUE_BG, color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><RowIcon sx={{ fontSize: 18 }} /></Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontSize: '13.5px', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</Typography>
+                      <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
+                        <Typography sx={{ fontSize: '13.5px', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</Typography>
+                        {isUnderReview && (
+                          <Box component="span" sx={{ fontSize: '8.5px', fontWeight: 700, color: STATUS_PENDING_TEXT, border: `1px solid ${BORDER_REVIEW}`, borderRadius: '5px', px: '5px', py: '1px', whiteSpace: 'nowrap', flexShrink: 0 }}>Under review</Box>
+                        )}
+                      </Stack>
                       <Stack direction="row" alignItems="center" spacing={0.875} sx={{ mt: '2px', minWidth: 0 }}>
                         <Box component="span" sx={{ fontSize: '9.5px', fontWeight: 700, color: badge.color, border: `1px solid ${badge.border}`, borderRadius: '5px', px: '6px', py: '1px', flexShrink: 0 }}>{badge.label}</Box>
                         {entry.entry_count > 1 && (
@@ -590,12 +600,9 @@ const CampaignDashboardPage = () => {
                         <Typography sx={{ fontSize: '11px', color: TEXT_TERTIARY, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formatRelativeTime(entry.created_at)}{showEntryLocation ? ` · ${entry.location_name}` : ''}</Typography>
                       </Stack>
                     </Box>
-                    <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-                      <Typography sx={{ fontSize: '13.5px', fontWeight: 800, color: entry.transaction_amount !== null ? PRIMARY_MAIN : TEXT_TERTIARY }}>
-                        {entry.transaction_amount !== null ? formatCurrency(entry.transaction_amount) : '-'}
-                      </Typography>
-                      <Typography sx={{ fontSize: '9.5px', fontWeight: 700, color: statusColor }}>{statusLabel}</Typography>
-                    </Box>
+                    <Typography sx={{ fontSize: '13.5px', fontWeight: 800, color: entry.transaction_amount !== null ? PRIMARY_MAIN : TEXT_TERTIARY, textAlign: 'right', flexShrink: 0 }}>
+                      {entry.transaction_amount !== null ? formatCurrency(entry.transaction_amount) : '-'}
+                    </Typography>
                   </Box>
                 </motion.div>
               );

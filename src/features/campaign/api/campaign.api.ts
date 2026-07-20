@@ -77,12 +77,15 @@ export const fetchCampaignEntries = async (params: {
   cursor?: string;
   limit?: number;
   campaign_id?: number;
+  // Same period the KPI toggle uses - keeps the feed consistent with the counters.
+  range?: DateRange;
 }): Promise<CampaignEntriesResult> => {
   const queryParams: Record<string, unknown> = {};
   if (params.location_id !== undefined) queryParams.location_id = params.location_id;
   if (params.cursor !== undefined) queryParams.cursor = params.cursor;
   if (params.limit !== undefined) queryParams.limit = params.limit;
   if (params.campaign_id !== undefined) queryParams.draw_id = params.campaign_id;
+  if (params.range !== undefined) queryParams.range = params.range;
 
   const res = await api.get<CampaignEntriesResult>('/business/campaign/entries', {
     params: queryParams,

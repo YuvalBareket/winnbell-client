@@ -70,8 +70,8 @@ export const queryKeys = {
       ['campaign', 'header', locationId ?? 'all', campaignId ?? 'current'] as const,
     kpis:    (dateRange: unknown, locationId?: number, campaignId?: number) =>
       ['campaign', 'kpis', dateRange, locationId ?? 'all', campaignId ?? 'current'] as const,
-    entries: (locationId?: number, campaignId?: number) =>
-      ['campaign', 'entries', locationId ?? 'all', campaignId ?? 'current'] as const,
+    entries: (locationId?: number, campaignId?: number, range?: string) =>
+      ['campaign', 'entries', locationId ?? 'all', campaignId ?? 'current', range ?? 'all-time'] as const,
   },
 
   // --- Subscription --------------------------------------------------------

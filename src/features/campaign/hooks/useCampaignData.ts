@@ -29,15 +29,16 @@ export const useCampaignKpis = (dateRange: DateRange, locationId?: number, campa
   });
 };
 
-export const useCampaignEntries = (locationId?: number, campaignId?: number) => {
+export const useCampaignEntries = (locationId?: number, campaignId?: number, range?: DateRange) => {
   return useInfiniteQuery({
-    queryKey: queryKeys.campaign.entries(locationId, campaignId),
+    queryKey: queryKeys.campaign.entries(locationId, campaignId, range),
     queryFn: ({ pageParam }) =>
       fetchCampaignEntries({
         location_id: locationId,
         cursor: pageParam,
         limit: 20,
         campaign_id: campaignId,
+        range,
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
