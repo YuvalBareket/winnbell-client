@@ -6,7 +6,7 @@ import {
   Typography,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { StorefrontOutlined } from '@mui/icons-material';
+import { StorefrontOutlined, NearMeOutlined } from '@mui/icons-material';
 import { PRIMARY_MAIN } from '../../../shared/colors';
 import { SPRING_POP } from '../../../shared/motion';
 import { LocationCard, NearbyLocationCard } from './LocationCards';
@@ -110,8 +110,9 @@ const BusinessSelector: React.FC<Props> = ({
         </Typography>
       ) : nearbyLocations.length > 0 ? (
         <>
-          <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: 'text.disabled', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', fontSize: '0.68rem' }}>
-            📍 Nearest to you
+          <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5, color: 'text.disabled', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', fontSize: '0.68rem' }}>
+            <NearMeOutlined sx={{ fontSize: 13 }} />
+            Nearest to you
           </Typography>
           {nearbyLocations.slice(0, 3).map((loc, i) => (
             <motion.div key={loc.location_id} {...cardEntrance(i)}>
