@@ -122,7 +122,7 @@ const MarketingPage = () => {
                   iconColor: ACCENT_GOLD_DARK,
                   iconBg: ACCENT_GOLD_LIGHT,
                   title: 'Get the most out of Winnbell',
-                  desc: 'Simple, proven ways to bring in more customers.',
+                  desc: 'A read-through guide with everything you need to know.',
                   onClick: () => navigate('/marketing/guide'),
                   mobileHidden: false,
                 },

@@ -372,7 +372,7 @@ const BusinessHubPage = () => {
                 </Box>
                 <Stack sx={{ minWidth: 0, flex: 1 }}>
                   <Typography noWrap sx={{ fontSize: '0.875rem', fontWeight: 800 }}>Get the Most Out of Winnbell</Typography>
-                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', lineHeight: 1.4 }}>Ready-made materials to promote your campaign</Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', lineHeight: 1.4 }}>A read-through guide with everything you need to know</Typography>
                 </Stack>
                 <ArrowForwardRounded className='doc-arrow' sx={{ fontSize: 18, color: 'text.disabled', flexShrink: 0, transition: 'all 0.18s ease' }} />
               </Paper>
