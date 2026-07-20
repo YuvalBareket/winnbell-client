@@ -104,6 +104,7 @@ const BusinessProfilePage = () => {
   const { control, handleSubmit, setValue, watch, trigger, setError } = useForm({
     defaultValues: {
       businessName: user?.fullName || '',
+      legal_name: '',
       businessSector: '',
       description: '',
       website_url: '',
@@ -165,7 +166,7 @@ const BusinessProfilePage = () => {
   const goNext = async () => {
     // Validate EVERY step-one field before advancing - including the optional website,
     // whose format rule would otherwise only surface as a failed submit at the very end.
-    if (await trigger(['businessName', 'businessSector', 'website_url'])) setStep(1);
+    if (await trigger(['businessName', 'legal_name', 'businessSector', 'website_url'])) setStep(1);
   };
 
   // Collapse the location being edited into a summary card and open a fresh one below.
@@ -522,6 +523,15 @@ const BusinessProfilePage = () => {
                           <Typography sx={{ fontSize: '0.72rem', color: TEXT_TERTIARY, fontWeight: 500, mt: 1 }}>PNG or SVG, at least 256x256px. Shown on your map pin.</Typography>
                         </Box>
                       </Stack>
+                    </motion.div>
+
+                    {/* legal name */}
+                    <motion.div variants={popIn}>
+                      <FieldLabel>Business legal name</FieldLabel>
+                      <Controller name='legal_name' control={control} rules={{ required: 'Business legal name is required' }} render={({ field, fieldState: { error } }) => (
+                        <TextField {...field} fullWidth size='small' placeholder='Registered legal entity name' error={!!error} helperText={error?.message} sx={fieldSx} />
+                      )} />
+                      <Typography sx={{ fontSize: '0.72rem', color: TEXT_TERTIARY, fontWeight: 500, mt: 1 }}>As registered with the state. Never shown to customers.</Typography>
                     </motion.div>
 
                     {/* description */}

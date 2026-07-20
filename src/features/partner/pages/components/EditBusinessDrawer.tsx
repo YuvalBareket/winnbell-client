@@ -31,6 +31,7 @@ import {
 
 interface BusinessSnapshot {
   name: string;
+  legal_name?: string | null;
   sector: string;
   description: string;
   terms_text: string;
@@ -58,10 +59,11 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
           businessName: business.name,
           businessSector: business.sector,
           description: business.description,
+          legal_name: business.legal_name ?? '',
           terms_text: business.terms_text,
           website_url: business.website_url ?? '',
         }
-      : { businessName: '', businessSector: '', description: '', terms_text: '', website_url: '' },
+      : { businessName: '', businessSector: '', description: '', legal_name: '', terms_text: '', website_url: '' },
     // A background refetch of the entity must never wipe what the user is typing.
     resetOptions: { keepDirtyValues: true },
   });
@@ -75,15 +77,15 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
   const content = (
     <>
       {/* Gradient header */}
-      <Box sx={{ background: GRADIENT_HERO, px: 3, pt: isDesktop ? 3 : 2, pb: 3, color: 'white' }}>
+      <Box sx={{ background: GRADIENT_HERO, px: 3, pt: isDesktop ? 2.5 : 2, pb: 2.5, color: 'white' }}>
         {/* Drag handle - only meaningful on the bottom sheet */}
         {!isDesktop && (
           <Box sx={{ width: 40, height: 4, bgcolor: ALPHA_WHITE_30, borderRadius: 2, mx: 'auto', mb: 2.5 }} />
         )}
         <Stack direction='row' alignItems='flex-start' justifyContent='space-between'>
           <Box>
-            <Typography variant='h6' fontWeight={800}>Business Settings</Typography>
-            <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>
+            <Typography fontWeight={800} sx={{ fontSize: '1.05rem' }}>Business Settings</Typography>
+            <Typography sx={{ opacity: 0.8, mt: 0.5, fontSize: '0.8rem' }}>
               Changes are visible to customers browsing your profile.
             </Typography>
           </Box>
@@ -94,18 +96,18 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
       </Box>
 
       {/* Form body */}
-      <Box sx={{ px: 3, pt: 3, pb: 5, overflowY: 'auto' }}>
-        <Stack spacing={2.5} component='form' onSubmit={handleSubmit(onSubmit)}>
+      <Box sx={{ px: 3, pt: 2.5, pb: 3.5, overflowY: 'auto' }}>
+        <Stack spacing={2} component='form' onSubmit={handleSubmit(onSubmit)}>
 
           {/* Business name + industry share a row on desktop; stacked on mobile. */}
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2.5, alignItems: 'flex-start' }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'flex-start' }}>
             <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
               {/* Business name - the public name shown to customers */}
               <Typography
                 variant='body2'
                 fontWeight={700}
                 color='text.secondary'
-                mb={1.5}
+                mb={1}
                 sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}
               >
                 Business name
@@ -118,19 +120,20 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                   <TextField
                     {...field}
                     fullWidth
+                    size='small'
                     placeholder="e.g. Joe's Coffee"
                     error={!!fieldState.error}
                     helperText={fieldState.error?.message}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position='start'>
-                          <StorefrontOutlined sx={{ color: PRIMARY_MAIN, fontSize: 20 }} />
+                          <StorefrontOutlined sx={{ color: PRIMARY_MAIN, fontSize: 18 }} />
                         </InputAdornment>
                       ),
                     }}
                     // Label is an external caption above, so name the input for a11y / testing.
                     inputProps={{ 'aria-label': 'Business name' }}
-                    sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
+                    sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white', borderRadius: '10px' } }}
                   />
                 )}
               />
@@ -149,7 +152,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                   variant='body2'
                   fontWeight={700}
                   color='text.secondary'
-                  mb={1.5}
+                  mb={1}
                   sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}
                 >
                   Industry
@@ -166,25 +169,25 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                         return <Typography variant='body2' color='text.disabled'>Select industry</Typography>;
                       }
                       return (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <Box sx={{ display: 'flex', fontSize: 22, color: s.color }}>{s.icon}</Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                          <Box sx={{ display: 'flex', fontSize: 19, color: s.color }}>{s.icon}</Box>
                           <Typography variant='body2' fontWeight={700}>{s.label}</Typography>
                         </Box>
                       );
                     }}
-                    MenuProps={{ PaperProps: { sx: { maxHeight: 360, borderRadius: 2 } } }}
+                    MenuProps={{ PaperProps: { sx: { maxHeight: 360, borderRadius: '10px' } } }}
                     sx={{
-                      height: 56, // match the Business name TextField (outlined, medium)
+                      height: 40, // match the Business name TextField (outlined, small)
                       bgcolor: 'white',
-                      borderRadius: 2,
+                      borderRadius: '10px',
                     }}
                   >
                     {editableSectors.map((key) => {
                       const s = BUSINESS_SECTORS[key];
                       return (
-                        <MenuItem key={key} value={key} sx={{ py: 1.25 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ display: 'flex', fontSize: 22, color: s.color }}>{s.icon}</Box>
+                        <MenuItem key={key} value={key} sx={{ py: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                            <Box sx={{ display: 'flex', fontSize: 19, color: s.color }}>{s.icon}</Box>
                             <Typography variant='body2' fontWeight={600}>{s.label}</Typography>
                           </Box>
                         </MenuItem>
@@ -204,9 +207,9 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                       <Paper
                         elevation={0}
                         sx={{
-                          height: 56, // match the Business name TextField (outlined, medium)
-                          px: 2,
-                          borderRadius: 2,
+                          height: 40, // match the Business name TextField (outlined, small)
+                          px: 1.75,
+                          borderRadius: '10px',
                           border: '2px solid',
                           borderColor: PRIMARY_MAIN,
                           bgcolor: 'rgba(25,93,230,0.04)',
@@ -264,7 +267,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
                                 onClick={() => setValue('businessSector', key, { shouldValidate: true })}
                                 sx={{
                                   p: 1.5,
-                                  borderRadius: 2,
+                                  borderRadius: '10px',
                                   border: '2px solid',
                                   borderColor: BORDER_LIGHT,
                                   bgcolor: 'white',
@@ -303,6 +306,37 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
             </Box>
           </Box>
 
+          {/* Legal name - the registered entity name; admin-facing, never shown to customers */}
+          <Box>
+            <Typography
+              variant='body2'
+              fontWeight={700}
+              color='text.secondary'
+              mb={1}
+              sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}
+            >
+              Business legal name
+            </Typography>
+            <Controller
+              name='legal_name'
+              control={control}
+              rules={{ required: 'Business legal name is required' }}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? ''}
+                  fullWidth
+                  size='small'
+                  placeholder='Registered legal entity name'
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message ?? 'As registered with the state. Never shown to customers.'}
+                  inputProps={{ 'aria-label': 'Business legal name' }}
+                  sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white', borderRadius: '10px' } }}
+                />
+              )}
+            />
+          </Box>
+
           <Controller
             name='description'
             control={control}
@@ -311,13 +345,14 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
               <TextField
                 {...field}
                 fullWidth
+                size='small'
                 multiline
                 rows={3}
                 label='About your business'
                 placeholder='Describe what you offer...'
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
-                sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
+                sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white', borderRadius: '10px' } }}
               />
             )}
           />
@@ -330,16 +365,17 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
               <TextField
                 {...field}
                 fullWidth
+                size='small'
                 label='Website'
                 placeholder='https://yourbusiness.com'
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position='start'>
-                      <LanguageOutlined sx={{ color: 'text.disabled', fontSize: 20 }} />
+                      <LanguageOutlined sx={{ color: 'text.disabled', fontSize: 18 }} />
                     </InputAdornment>
                   ),
                 }}
-                sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
+                sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'white', borderRadius: '10px' } }}
               />
             )}
           />
@@ -350,7 +386,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
               variant='outlined'
               onClick={onClose}
               disabled={isPending}
-              sx={{ fontWeight: 700, py: 1.5, textTransform: 'none' }}
+              sx={{ fontWeight: 700, py: 1.1, textTransform: 'none', borderRadius: '10px' }}
             >
               Cancel
             </Button>
@@ -360,7 +396,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
               variant='contained'
               disabled={isPending}
               startIcon={isPending ? <CircularProgress size={16} color='inherit' /> : null}
-              sx={{ fontWeight: 800, py: 1.5, textTransform: 'none' }}
+              sx={{ fontWeight: 800, py: 1.1, textTransform: 'none', borderRadius: '10px' }}
             >
               {isPending ? 'Saving\u2026' : 'Save Changes'}
             </Button>
@@ -381,7 +417,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '20px',
+            borderRadius: '10px',
             overflow: 'hidden',
           },
         }}
@@ -398,7 +434,7 @@ const EditBusinessDrawer = ({ open, onClose, business }: Props) => {
       onClose={onClose}
       PaperProps={{
         sx: {
-          borderRadius: '20px 20px 0 0',
+          borderRadius: '10px 10px 0 0',
           maxHeight: '90vh',
           overflow: 'hidden',
         },

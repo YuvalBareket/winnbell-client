@@ -11,6 +11,9 @@ export interface BusinessSetupInput {
   businessName: string;
   businessSector: string;
   description: string;
+  // Registered legal entity name, captured at business registration (pendingBusinessLegalName)
+  // and attached at setup submit. Admin-facing only.
+  legal_name?: string | null;
   website_url?: string;
   logo_url?: string;
   min_transaction_amount?: number;
@@ -30,6 +33,7 @@ export interface UpdateBusinessInput {
   businessName: string;
   businessSector: string;
   description: string;
+  legal_name?: string | null;
   terms_text: string;
   website_url?: string;
 }
@@ -55,6 +59,8 @@ export interface BusinessLocation {
 export interface BusinessData {
   id: number;
   name: string;
+  // Registered legal entity name (admin-facing, editable in Business Settings)
+  legal_name: string | null;
   sector: string;
   description: string;
   terms_text: string;

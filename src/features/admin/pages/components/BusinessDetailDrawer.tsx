@@ -188,6 +188,7 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                 { label: 'Fee at Entry', value: biz.fee_at_entry != null ? `$${Number(biz.fee_at_entry).toFixed(2)}` : '—' },
                 { label: 'Entry Cap', value: biz.entries_per_location ?? '—' },
                 { label: 'Min. Transaction', value: biz.min_transaction_amount ? `$${Number(biz.min_transaction_amount).toFixed(2)}` : '—' },
+                { label: 'Legal Name', value: biz.legal_name ?? '—' },
                 { label: 'Member Since', value: new Date(biz.created_at).toLocaleDateString() },
               ].map(({ label, value }) => (
                 <Box key={label} sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
