@@ -413,11 +413,7 @@ const ProfileSetupPage = () => {
                   </Stack>
                 </motion.div>
 
-                <motion.div variants={popIn}>
-                  <Typography align="center" sx={{ fontSize: '12.5px', color: TEXT_TERTIARY, fontWeight: 600 }}>
-                    You can edit this later in Settings
-                  </Typography>
-                </motion.div>
+            
               </Stack>
             </Box>
           </motion.div>
@@ -575,9 +571,7 @@ const ProfileSetupPage = () => {
           >
             {mutation.isPending ? 'Setting up...' : 'Finish setup'}
           </AttractButton>
-          <Typography align="center" sx={{ fontSize: '12.5px', color: TEXT_TERTIARY, fontWeight: 600, mt: '12px' }}>
-            You can edit this later in Settings
-          </Typography>
+        
         </motion.div>
       </Box>
     </Box>
