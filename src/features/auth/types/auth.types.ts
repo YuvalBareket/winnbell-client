@@ -1,4 +1,6 @@
-export type UserRole = 'User' | 'Business' | 'Admin' | 'Manager';
+// The server only ever issues these three roles. Location managers are Business-role
+// users WITH location_id set - there is no 'Manager' role on the wire.
+export type UserRole = 'User' | 'Business' | 'Admin';
 
 export interface User {
   id: number;
@@ -15,6 +17,8 @@ export interface User {
   gender?: string | null;
   /** Self-declared U.S. state of residence (2-letter code) from profile setup */
   state?: string | null;
+  /** Returned by all auth responses; the live value is still fetched via useMyRiskLevel. */
+  isPhoneVerified?: boolean;
   created_at: string;
 }
 
@@ -52,16 +56,6 @@ export interface AuthState {
   // mirrored into the fields above so existing selectors/API interceptor are unchanged.
   accounts: StoredAccount[];
   activeAccountId: number | null; // user.id of the active account
-}
-export interface RegisterRequest {
-  fullName: string;
-  email: string;
-  password: string;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
 }
 export interface LoginPayload {
   user: User;

@@ -1,25 +1,9 @@
 import axios from 'axios';
 import { api } from '../../../shared/api/client';
-import type {
-  AuthResponse,
-  LoginRequest,
-  RegisterRequest,
-} from '../types/auth.types';
-// Adjust this import path if needed based on your folder structure
+import type { AuthResponse } from '../types/auth.types';
 
-export const registerUserFn = async (
-  data: RegisterRequest,
-): Promise<AuthResponse> => {
-  // Added '/api' here because it's missing from baseURL
-  const response = await api.post<AuthResponse>('/auth/register', data);
-  return response.data;
-};
-export const loginUserFn = async (
-  data: LoginRequest,
-): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/auth/login', data);
-  return response.data;
-};
+// NOTE: the legacy /auth/register + /auth/login password endpoints were removed from the
+// client (and disabled on the production server) - all sign-in goes through Supabase + /sync.
 
 export const syncUserFn = async (
   accessToken: string,
