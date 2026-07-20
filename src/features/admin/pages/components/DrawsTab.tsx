@@ -408,7 +408,11 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   };
 
   const active = draws?.filter((d) => d.status?.toUpperCase() === 'OPEN') ?? [];
-  const upcoming = draws?.filter((d) => d.status?.toUpperCase() === 'UPCOMING') ?? [];
+  // Upcoming reads soonest-first (the next campaign to open sits on top); the server
+  // returns everything draw_date DESC, which is right for history but backwards here.
+  const upcoming = (draws?.filter((d) => d.status?.toUpperCase() === 'UPCOMING') ?? [])
+    .slice()
+    .sort((a, b) => new Date(a.draw_date).getTime() - new Date(b.draw_date).getTime());
   const history = draws?.filter((d) => d.status?.toUpperCase() === 'CLOSED') ?? [];
   // A campaign can only be closed when there is an Upcoming campaign to take over: closing
   // atomically opens it, so the platform is never left without an open campaign. With none
