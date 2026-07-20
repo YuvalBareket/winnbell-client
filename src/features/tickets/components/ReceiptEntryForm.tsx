@@ -273,6 +273,15 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     staleTime: 5 * 60_000,
   });
 
+  // Quick-picks from the nearby endpoint carry no cap_reached (budget-capped payload), so the
+  // stored flag starts false for them. The authoritative detail always carries it - sync once
+  // the real data lands for the currently selected location.
+  useEffect(() => {
+    if (selectedLocationDetail && selectedLocation?.location_id === selectedLocationDetail.location_id) {
+      setSelectedLocationCapReached(!!selectedLocationDetail.cap_reached);
+    }
+  }, [selectedLocationDetail, selectedLocation?.location_id]);
+
   const submitReceiptEntry = useSubmitReceiptEntry();
 
   // onLocationSelect is called inline in handlers and in the auto-select effect above.
@@ -322,6 +331,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     // loads (real name + min_transaction_amount), so we do not check hasAutoSelected here.
     if (preselectedLocationData) {
       setSelectedLocation(preselectedLocationData);
+      setSelectedLocationCapReached(!!preselectedLocationData.cap_reached);
       onLocationSelect?.(true);
       hasAutoSelected.current = true;
       return;

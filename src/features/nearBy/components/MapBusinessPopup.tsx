@@ -7,14 +7,14 @@ import {
 import {
   Directions, Close, LocationOn, InfoOutlined,
   ReceiptLong, AttachMoney, LocalPhoneOutlined, LanguageOutlined,
-  LocationOnOutlined,
+  LocationOnOutlined, CelebrationOutlined,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { NearbyLocation, NearbyLocationDetail } from '../types/nearBy.types';
 import { getLocationProfileById } from '../api/nearBy.api';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
-import { PRIMARY_MAIN } from '../../../shared/colors';
+import { PRIMARY_MAIN, GRADIENT_HERO } from '../../../shared/colors';
 import { MAX_ENTRIES_PER_RECEIPT } from '../../../shared/constants/entries';
 import { formatDistanceMiles, haversineKm } from '../../../shared/utils/distance';
 import { safeHttpUrl } from '../../../shared/utils/url';
@@ -230,10 +230,37 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
         </Box>
       )}
 
+      {/* At capacity: the location cannot accept entries this campaign - render ONLY a
+          celebratory notice (no business info at all; deliberate, so a full location is a
+          moment of hype rather than a wall of greyed-out buttons). Never in preview. */}
+      {location && !preview && detail?.cap_reached && (
+        <motion.div
+          initial={{ opacity: 0, y: 16, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+        >
+          <Box sx={{ px: 3.5, py: 7, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ width: 84, height: 84, borderRadius: '50%', background: GRADIENT_HERO, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 12px 28px ${PRIMARY_MAIN}45` }}>
+              <CelebrationOutlined sx={{ fontSize: 40, color: 'white' }} />
+            </Box>
+            <Typography sx={{ fontWeight: 900, fontSize: '1.25rem', letterSpacing: '-0.01em' }}>
+              This spot is buzzing!
+            </Typography>
+            <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7, maxWidth: 320 }}>
+              All of this location's entries for this month's campaign have been claimed.
+              This location will share entries again in the next campaign.
+            </Typography>
+            <Typography variant='caption' color='text.disabled' sx={{ mt: 0.5 }}>
+              Plenty of other participating locations are ready on the map.
+            </Typography>
+          </Box>
+        </motion.div>
+      )}
+
       {/* Hero, body, and actions -- shows real content when location is available.
           No AnimatePresence: the Drawer's own slide transition covers the close; the
           entrance spring below covers the open. */}
-        {location && (
+        {location && (preview || !detail?.cap_reached) && (
           <>
             {/* Real hero banner */}
             <motion.div
