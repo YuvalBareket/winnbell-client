@@ -162,7 +162,7 @@ const LoginPage = () => {
 
   const FormContent = () => (
     <motion.div variants={staggerContainer} initial="hidden" animate="visible">
-      <Stack sx={{ zoom: { xs: 0.85, md: 0.83 } }}>
+      <Stack sx={{ zoom: { xs: 0.85, md: 0.8 } }}>
         {/* Header - desktop only; on mobile the gradient band above carries the title */}
         {isDesktop && (
           <motion.div variants={riseIn}>

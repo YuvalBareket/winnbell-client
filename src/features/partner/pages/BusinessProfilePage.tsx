@@ -512,11 +512,11 @@ const BusinessProfilePage = () => {
                         <Box onClick={() => logoInputRef.current?.click()} sx={{ width: 96, height: 96, flexShrink: 0, borderRadius: '18px', cursor: 'pointer', overflow: 'hidden', border: uploadedLogoKey ? `1px solid ${BORDER_LIGHT}` : `2px dashed ${BORDER_LIGHT}`, bgcolor: BG_SUBTLE, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, transition: 'border-color 0.15s ease', '&:hover': { borderColor: PRIMARY_MAIN } }}>
                           {uploadedLogoKey
                             ? <Box component='img' src={`${logoBase}/business-logos/${uploadedLogoKey}`} alt='logo' sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : (<><ImageOutlined sx={{ fontSize: 24, color: TEXT_TERTIARY }} /><Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: TEXT_TERTIARY }}>Add logo</Typography></>)}
+                            : (<><ImageOutlined sx={{ fontSize: 24, color: TEXT_TERTIARY }} /><Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: TEXT_TERTIARY, textAlign: 'center', lineHeight: 1.35 }}>Add logo<Box component='span' sx={{ display: 'block', fontWeight: 500, fontSize: '0.62rem' }}>(optional)</Box></Typography></>)}
                         </Box>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <FieldLabel>Business name</FieldLabel>
-                          <Controller name='businessName' control={control} rules={{ required: 'Business name is required' }} render={({ field, fieldState: { error } }) => (
+                          <FieldLabel>Business public name <Box component='span' sx={{ fontSize: '0.72rem', color: TEXT_TERTIARY, fontWeight: 500, whiteSpace: 'nowrap' }}>(what users will see)</Box></FieldLabel>
+                          <Controller name='businessName' control={control} rules={{ required: 'Business public name is required' }} render={({ field, fieldState: { error } }) => (
                             <TextField {...field} fullWidth size='small' placeholder="e.g. Joe's Coffee" error={!!error} helperText={error?.message}
                               InputProps={{ startAdornment: (<InputAdornment position='start'><Storefront sx={{ color: PRIMARY_MAIN, fontSize: 19 }} /></InputAdornment>) }} sx={fieldSx} />
                           )} />
