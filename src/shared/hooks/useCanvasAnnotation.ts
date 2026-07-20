@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { MARKER_YELLOW, MARKER_BLACK } from '../colors';
 
 interface Pt { x: number; y: number }
+
+/** 'highlight' = thin semi-transparent yellow; 'cover' = opaque black for hiding private info. */
+export type MarkerKind = 'highlight' | 'cover';
+
+interface MarkedPath { pts: Pt[]; marker: MarkerKind }
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 8;
@@ -12,7 +18,7 @@ const midpoint = (a: Pt, b: Pt): Pt => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2
 /**
  * Receipt annotation engine.
  *
- * The image and the yellow marker are drawn INSIDE the canvas through a single
+ * The image and the markers (yellow highlighter / black cover) are drawn INSIDE the canvas through a single
  * pan/zoom transform (scale + origin), so:
  *  - the whole receipt always fits at 1x (letterboxed, never clipped);
  *  - zoom/pan stay crisp (we redraw from the source image, not a stretched bitmap);
@@ -37,9 +43,9 @@ export const useCanvasAnnotation = (
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const imgRef = useRef<HTMLImageElement | null>(null);
-  const pathsRef = useRef<Pt[][]>([]);          // committed lines, image-space
+  const pathsRef = useRef<MarkedPath[]>([]);    // committed lines, image-space
   const currentPathRef = useRef<Pt[]>([]);      // in-progress line, image-space
-  const markerWidthRef = useRef(12);            // image-space px
+  const markerWidthRef = useRef(12);            // image-space px (both markers)
 
   // View transform (canvas backing-pixel space)
   const scaleRef = useRef(1);                   // user zoom multiplier (1..MAX_SCALE)
@@ -53,6 +59,7 @@ export const useCanvasAnnotation = (
   const pinchRef = useRef<{ dist: number; mid: Pt } | null>(null);
 
   const toolRef = useRef<'draw' | 'pan'>('draw');
+  const markerRef = useRef<MarkerKind>('highlight');
 
   // When controlledImgFile is supplied the caller is the source of truth. The internal
   // state is only used when the hook manages its own file (e.g. from the internal file input).
@@ -69,10 +76,16 @@ export const useCanvasAnnotation = (
   const [pathCount, setPathCount] = useState(0);
   const [zoom, setZoom] = useState(1);          // mirror of scaleRef for the UI
   const [tool, setToolState] = useState<'draw' | 'pan'>('draw');
+  const [marker, setMarkerState] = useState<MarkerKind>('highlight');
 
   const setTool = useCallback((t: 'draw' | 'pan') => {
     toolRef.current = t;
     setToolState(t);
+  }, []);
+
+  const setMarker = useCallback((m: MarkerKind) => {
+    markerRef.current = m;
+    setMarkerState(m);
   }, []);
 
   // ── geometry helpers (read refs only, so they stay correct without deps) ──
@@ -134,21 +147,22 @@ export const useCanvasAnnotation = (
     ctx.globalAlpha = 1;
     ctx.drawImage(img, 0, 0);
 
-    // Yellow highlighter marker (image-space width, so it scales with the receipt).
-    ctx.globalAlpha = 0.32;
-    ctx.strokeStyle = '#FFD600';
-    ctx.lineWidth = markerWidthRef.current;
+    // Markers (image-space width, so they scale with the receipt). Each path keeps the
+    // marker it was drawn with: thin translucent yellow highlight vs opaque black cover.
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    const drawPath = (pts: Pt[]) => {
+    const drawPath = (pts: Pt[], kind: MarkerKind) => {
       if (pts.length < 2) return;
+      ctx.globalAlpha = kind === 'cover' ? 1 : 0.32;
+      ctx.strokeStyle = kind === 'cover' ? MARKER_BLACK : MARKER_YELLOW;
+      ctx.lineWidth = markerWidthRef.current;
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
       ctx.stroke();
     };
-    pathsRef.current.forEach(drawPath);
-    if (currentPathRef.current.length > 1) drawPath(currentPathRef.current);
+    pathsRef.current.forEach((p) => drawPath(p.pts, p.marker));
+    if (currentPathRef.current.length > 1) drawPath(currentPathRef.current, markerRef.current);
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
@@ -212,7 +226,7 @@ export const useCanvasAnnotation = (
     const url = URL.createObjectURL(imgFile);
     img.onload = () => {
       imgRef.current = img;
-      markerWidthRef.current = Math.max(8, Math.round(Math.min(img.width, img.height) * 0.022));
+      markerWidthRef.current = Math.max(18, Math.round(Math.min(img.width, img.height) * 0.048));
       pathsRef.current = [];
       currentPathRef.current = [];
       setPathCount(0);
@@ -313,7 +327,7 @@ export const useCanvasAnnotation = (
         if (isDrawingRef.current) {
           isDrawingRef.current = false;
           if (currentPathRef.current.length > 1) {
-            pathsRef.current = [...pathsRef.current, currentPathRef.current];
+            pathsRef.current = [...pathsRef.current, { pts: currentPathRef.current, marker: markerRef.current }];
             setPathCount(pathsRef.current.length);
             onPathCountChangeRef.current?.(pathsRef.current.length);
           }
@@ -395,13 +409,13 @@ export const useCanvasAnnotation = (
       octx.imageSmoothingEnabled = true;
       octx.imageSmoothingQuality = 'high';
       octx.drawImage(img, 0, 0, off.width, off.height);
-      octx.globalAlpha = 0.32;
-      octx.strokeStyle = '#FFD600';
-      octx.lineWidth = markerWidthRef.current * s;
       octx.lineCap = 'round';
       octx.lineJoin = 'round';
-      for (const pts of pathsRef.current) {
+      for (const { pts, marker: kind } of pathsRef.current) {
         if (pts.length < 2) continue;
+        octx.globalAlpha = kind === 'cover' ? 1 : 0.32;
+        octx.strokeStyle = kind === 'cover' ? MARKER_BLACK : MARKER_YELLOW;
+        octx.lineWidth = markerWidthRef.current * s;
         octx.beginPath();
         octx.moveTo(pts[0].x * s, pts[0].y * s);
         for (let i = 1; i < pts.length; i++) octx.lineTo(pts[i].x * s, pts[i].y * s);
@@ -421,6 +435,8 @@ export const useCanvasAnnotation = (
     zoom,
     tool,
     setTool,
+    marker,
+    setMarker,
     minScale: MIN_SCALE,
     maxScale: MAX_SCALE,
     zoomIn,

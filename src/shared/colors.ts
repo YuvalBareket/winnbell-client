@@ -78,6 +78,8 @@ export const GOLD_INK       = '#3a2606';  // dark brown text/icons on gold backg
 export const GOLD_TINT_IVORY= '#fffbf0';  // warm white tint (founding card inner bg)
 export const GOLD_TINT_CREAM= '#fef6e0';  // deeper warm cream (founding card inner bg end)
 export const SUCCESS_GREEN  = '#10b981';  // winner / success states
+export const MARKER_YELLOW  = '#FFD600';  // receipt guide highlighter marker (semi-transparent stroke)
+export const MARKER_BLACK   = '#1f1f1f';  // receipt guide cover marker (opaque, hides private info)
 
 // ── Analytics / dashboards ───────────────────
 // Semantic metric colors (good / caution / bad) and a categorical palette for charts &
