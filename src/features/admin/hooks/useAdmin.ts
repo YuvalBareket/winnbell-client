@@ -10,6 +10,7 @@ import {
   pickWinner,
   confirmWinner,
   reopenDraw,
+  setDrawPrizeRevealed,
   fetchDrawCandidate,
   fetchDrawRejectedWinners,
   fetchDrawAuditLog,
@@ -162,6 +163,20 @@ export const useReopenDraw = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
+      queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
+    },
+  });
+};
+
+export const useSetDrawPrizeRevealed = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ drawId, revealed }: { drawId: number; revealed: boolean }) =>
+      setDrawPrizeRevealed(drawId, revealed),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
+      // Public hub caches the masked prize - refresh so a reveal shows up immediately.
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
     },
   });

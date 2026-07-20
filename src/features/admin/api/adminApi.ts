@@ -33,6 +33,8 @@ export const confirmWinner = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/confirm-winner`);
 export const reopenDraw = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/reopen`);
+export const setDrawPrizeRevealed = (drawId: number, revealed: boolean) =>
+  api.patch(`/admin/draws/${drawId}/prize-reveal`, { revealed });
 export const fetchAdminOverview = () => api.get('/admin/overview');
 export const fetchAllUsers = (params: {
   page: number;

@@ -93,7 +93,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
                   color='text.primary'
                   sx={{ mb: 0.25, fontSize: '1.25rem' }}
                 >
-                  {formatCurrency(draw.prize_amount)}
+                  {draw.prize_amount != null ? formatCurrency(draw.prize_amount) : '$ Revealing soon'}
                 </Typography>
                 <Typography variant='caption' color={TEXT_SECONDARY} fontWeight={600}>
                   {isOpen ? 'Prize Pool' : hasWinner ? 'Prize Awarded' : 'Prize Pool'}

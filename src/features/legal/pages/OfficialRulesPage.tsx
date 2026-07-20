@@ -26,7 +26,7 @@ const applyStaticSubstitutions = (text: string) => text
 interface DrawInfo {
   id: number;
   name: string;
-  prize_amount: string;
+  prize_amount: string | null;
   start_date?: string;
   draw_date: string;
   status: string;
@@ -60,9 +60,10 @@ const OfficialRulesPage = () => {
         timeZone: 'America/New_York', year: 'numeric', month: 'long', day: 'numeric',
       });
       const drawDate = nyDate(draw.draw_date);
-      const prizeAmount = parseFloat(draw.prize_amount).toLocaleString('en-US', {
-        style: 'currency', currency: 'USD',
-      });
+      // An upcoming campaign's prize can be hidden (NULL) until the admin reveals it.
+      const prizeAmount = draw.prize_amount != null
+        ? parseFloat(draw.prize_amount).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+        : 'To be announced';
       // Pre-migration rows can lack start_date; never let "Jan 1 1970" into legal copy.
       const startDate = draw.start_date ? nyDate(draw.start_date) : 'See Platform';
       const endDate = drawDate;

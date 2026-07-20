@@ -20,18 +20,29 @@ import type { IDrawResult } from '../types';
 import { staggerContainer, popIn, riseIn, SPRING_POP } from '../../../shared/motion';
 
 const DrawHistoryPage = () => {
-  const [selectedDrawIndex, setSelectedDrawIndex] = useState(0);
+  // null until the user swipes - the effective selection then falls back to the start
+  // slide (the current campaign), so the detail below always matches the centered card.
+  const [selectedDrawIndex, setSelectedDrawIndex] = useState<number | null>(null);
   const [profileLocationId, setProfileLocationId] = useState<number | null>(null);
   const { data: history, isLoading, isError } = useGetDrawHistory();
   const [swiperInst, setSwiperInst] = useState<SwiperType | null>(null);
 
-  // Separate active and closed campaigns
   const activeCampaigns = history?.filter(d => d.status?.toLowerCase() === 'open') ?? [];
   const closedCampaigns = history?.filter(d => d.status?.toLowerCase() === 'closed') ?? [];
+  // The soonest upcoming campaign sits as the LEFT neighbour of the current one.
+  const nextUpcoming = (history?.filter(d => d.status?.toLowerCase() === 'upcoming') ?? [])
+    .sort((a, b) => new Date(a.draw_date).getTime() - new Date(b.draw_date).getTime())[0];
 
-  // Combine: active first, then closed
-  const allCampaigns: IDrawResult[] = [...activeCampaigns, ...closedCampaigns];
-  const selectedDraw = allCampaigns[selectedDrawIndex] || null;
+  // Deck order: [next upcoming] [CURRENT - starts centered] [prev] [prev-1] ... No loop:
+  // the deck ends at the upcoming campaign on the left and the oldest one on the right.
+  const allCampaigns: IDrawResult[] = [
+    ...(nextUpcoming ? [nextUpcoming] : []),
+    ...activeCampaigns,
+    ...closedCampaigns,
+  ];
+  const startIndex = nextUpcoming && (activeCampaigns.length + closedCampaigns.length) > 0 ? 1 : 0;
+  const effectiveIndex = selectedDrawIndex ?? startIndex;
+  const selectedDraw = allCampaigns[effectiveIndex] || null;
 
   return (
     // xs: AppPageHero renders inside this box, so only the 76px bottom nav is external; / 0.9 cancels the xs zoom so the fixed page fills the viewport exactly
@@ -81,10 +92,11 @@ const DrawHistoryPage = () => {
               spaceBetween={12}
               breakpoints={{ 900: { spaceBetween: 26 } }}
               grabCursor
-              loop={allCampaigns.length >= 3}
+              loop={false}
+              initialSlide={startIndex}
               speed={420}
               slideToClickedSlide
-              onSlideChange={(swiper) => setSelectedDrawIndex(swiper.realIndex)}
+              onSlideChange={(swiper) => setSelectedDrawIndex(swiper.activeIndex)}
             >
               {allCampaigns.map((draw) => (
                 <SwiperSlide key={draw.id}>
@@ -105,8 +117,8 @@ const DrawHistoryPage = () => {
                   key={i}
                   component={motion.div}
                   variants={popIn}
-                  onClick={() => swiperInst?.slideToLoop(i)}
-                  sx={{ height: 6, borderRadius: '3px', cursor: 'pointer', transition: 'all 0.3s', width: i === selectedDrawIndex ? 20 : 6, bgcolor: i === selectedDrawIndex ? PRIMARY_MAIN : BORDER_LIGHT }}
+                  onClick={() => swiperInst?.slideTo(i)}
+                  sx={{ height: 6, borderRadius: '3px', cursor: 'pointer', transition: 'all 0.3s', width: i === effectiveIndex ? 20 : 6, bgcolor: i === effectiveIndex ? PRIMARY_MAIN : BORDER_LIGHT }}
                 />
               ))}
             </Box>

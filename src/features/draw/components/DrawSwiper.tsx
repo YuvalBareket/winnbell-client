@@ -53,6 +53,7 @@ export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwipe
     return [...open, ...closed];
   }, [history]);
 
+
   useEffect(() => {
     // Seed from the SAME ordered list the deck renders, so draw_id matches slide 0 (the current
     // draw). Using raw history[0] here selected the wrong draw and loaded another draw's entries.

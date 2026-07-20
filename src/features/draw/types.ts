@@ -1,7 +1,11 @@
 export interface IDrawSummary {
   id: number;
   name: string;
-  prize_amount: number;
+  // NULL while an UPCOMING campaign's prize is still hidden (admin has not revealed it) -
+  // the server masks it on the wire, so the amount is genuinely unknown to the client.
+  prize_amount: number | null;
+  // Campaign period: opens midnight NY on the 1st (start_date), drawn on the last day.
+  start_date?: string;
   draw_date: string;
   status: string;
 }

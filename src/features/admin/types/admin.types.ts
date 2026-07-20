@@ -52,6 +52,8 @@ export interface Draw {
   id: number;
   name: string;
   prize_amount: number;
+  // Upcoming-only: public prize display stays hidden until the admin reveals it.
+  prize_revealed?: boolean;
   // Campaign period: opens midnight NY on the 1st (start_date), drawn on the last day (draw_date).
   // Optional: /admin/draws (active list) returns a slim row without it, and pre-migration
   // prod rows may lack it - guard before formatting.

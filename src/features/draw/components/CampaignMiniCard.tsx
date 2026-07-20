@@ -14,7 +14,7 @@ import {
 export const CampaignMiniCard = ({ draw, selected }: { draw: IDrawSummary; selected: boolean }) => {
   const isClosed = draw.status?.toLowerCase() === 'closed';
   const daysLeft = calculateDaysLeft(draw.draw_date);
-  const prize = formatCurrency(draw.prize_amount);
+  const prize = draw.prize_amount != null ? formatCurrency(draw.prize_amount) : '$ Revealing soon';
 
   if (isClosed) {
     return (

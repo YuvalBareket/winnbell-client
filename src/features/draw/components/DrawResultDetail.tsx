@@ -32,9 +32,11 @@ const StatCard = ({ icon, tint, iconColor, label, value, valueColor, hideOnMobil
 
 export const DrawResultDetail = ({ draw, onLocationClick }: { draw: IDrawResult; onLocationClick?: (locationId: number) => void }) => {
   const isClosed = draw.status?.toLowerCase() === 'closed';
+  const isUpcoming = draw.status?.toLowerCase() === 'upcoming';
   const hasWinner = !!draw.winner_name;
   const winner = winnerFirstName(draw.winner_name);
-  const prize = formatCurrency(draw.prize_amount);
+  // NULL = upcoming prize still hidden (admin has not revealed it yet)
+  const prize = draw.prize_amount != null ? formatCurrency(draw.prize_amount) : '$ Revealing soon';
   const drawDate = new Date(draw.closed_at ?? draw.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (
@@ -116,17 +118,20 @@ export const DrawResultDetail = ({ draw, onLocationClick }: { draw: IDrawResult;
         </Stack>
       </motion.div>
 
-      {/* Official rules */}
-      <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.12 }}>
-        <Box sx={{ bgcolor: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, borderRadius: '16px', p: '14px 18px', boxShadow: SHADOW_CARD, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
-          <Typography sx={{ color: TEXT_TERTIARY, fontSize: '0.72rem', lineHeight: 1.6, flex: 1, minWidth: 200 }}>
-            Campaign operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Free entry method available on the platform. 18+. Void where prohibited.
-          </Typography>
-          <Link href={`/rules/${draw.id}`} underline='none' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: '0.78rem', fontWeight: 700, color: PRIMARY_MAIN, flexShrink: 0, transition: 'gap 0.2s ease-in-out', '&:hover': { gap: 0.75 } }}>
-            <ArticleOutlined sx={{ fontSize: 16 }} /> Official Rules
-          </Link>
-        </Box>
-      </motion.div>
+      {/* Official rules - not shown for an upcoming campaign (its rules are published
+          when it opens; showing them early alongside a hidden prize reads wrong). */}
+      {!isUpcoming && (
+        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.12 }}>
+          <Box sx={{ bgcolor: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, borderRadius: '16px', p: '14px 18px', boxShadow: SHADOW_CARD, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+            <Typography sx={{ color: TEXT_TERTIARY, fontSize: '0.72rem', lineHeight: 1.6, flex: 1, minWidth: 200 }}>
+              Campaign operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Free entry method available on the platform. 18+. Void where prohibited.
+            </Typography>
+            <Link href={`/rules/${draw.id}`} underline='none' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: '0.78rem', fontWeight: 700, color: PRIMARY_MAIN, flexShrink: 0, transition: 'gap 0.2s ease-in-out', '&:hover': { gap: 0.75 } }}>
+              <ArticleOutlined sx={{ fontSize: 16 }} /> Official Rules
+            </Link>
+          </Box>
+        </motion.div>
+      )}
     </Stack>
   );
 };

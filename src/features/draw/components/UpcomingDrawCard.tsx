@@ -13,10 +13,15 @@ import { goldShineSx } from './goldShine';
 export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
   // Now draw refers to the actual IDrawSummary object
   const daysLeft = calculateDaysLeft(draw?.draw_date);
-  const formattedAmount = formatCurrency(draw?.prize_amount ?? 0);
+  const formattedAmount = draw?.prize_amount != null ? formatCurrency(draw.prize_amount) : '$ Revealing soon';
   // A closed campaign is in the past, so a days-left countdown would wrongly read
-  // "Campaign Ends Today". Show that it has ended instead.
+  // "Campaign Ends Today". Show that it has ended instead. An upcoming one has not
+  // started - show its start date rather than a live countdown.
   const isClosed = draw?.status?.toLowerCase() === 'closed';
+  const isUpcoming = draw?.status?.toLowerCase() === 'upcoming';
+  const startsLabel = draw?.start_date
+    ? new Date(draw.start_date).toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'long', day: 'numeric' })
+    : null;
 
   return (
     <Paper
@@ -75,9 +80,9 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
           border: `1px solid ${ALPHA_WHITE_20}`,
         }}
       >
-        {!isClosed && <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: GOLD_TROPHY }} />}
-        <Typography sx={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: isClosed ? ALPHA_WHITE_70 : ACCENT_GOLD_LIGHT }}>
-          {isClosed ? 'Ended' : 'Live now'}
+        {!isClosed && !isUpcoming && <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: GOLD_TROPHY }} />}
+        <Typography sx={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: isClosed || isUpcoming ? ALPHA_WHITE_70 : ACCENT_GOLD_LIGHT }}>
+          {isClosed ? 'Ended' : isUpcoming ? 'Coming soon' : 'Live now'}
         </Typography>
       </Box>
 
@@ -125,9 +130,11 @@ export const UpcomingDrawCard = ({ draw }: { draw: IDrawSummary | null }) => {
           <Typography variant='body2' sx={{ fontWeight: 600 }}>
             {isClosed
               ? 'Campaign ended'
-              : daysLeft <= 0
-                ? 'Campaign Ends Today'
-                : `Campaign ends in: ${daysLeft} days`}
+              : isUpcoming
+                ? (startsLabel ? `Starts ${startsLabel}` : 'Starting soon')
+                : daysLeft <= 0
+                  ? 'Campaign Ends Today'
+                  : `Campaign ends in: ${daysLeft} days`}
           </Typography>
         </Box>
       </Box>

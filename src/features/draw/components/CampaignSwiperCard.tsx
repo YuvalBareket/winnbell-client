@@ -13,10 +13,16 @@ interface CampaignSwiperCardProps {
 
 const CampaignSwiperCard = ({ draw }: CampaignSwiperCardProps) => {
   const isOpen = draw.status?.toLowerCase() === 'open';
+  const isUpcoming = draw.status?.toLowerCase() === 'upcoming';
   const hasWinner = !!draw.winner_name;
   const daysLeft = calculateDaysLeft(draw.draw_date);
-  const prize = formatCurrency(draw.prize_amount);
+  // A hidden upcoming prize arrives as NULL - tease it instead of showing a number.
+  const prizeHidden = draw.prize_amount == null;
+  const prize = !prizeHidden ? formatCurrency(draw.prize_amount!) : '$ Revealing soon';
   const drawnDate = new Date(draw.closed_at ?? draw.draw_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const startsDate = draw.start_date
+    ? new Date(draw.start_date).toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric' })
+    : null;
 
   return (
     <Box
@@ -52,6 +58,10 @@ const CampaignSwiperCard = ({ draw }: CampaignSwiperCardProps) => {
             <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#fff', animation: 'livePulse 2s ease-in-out infinite', '@keyframes livePulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
             <Typography sx={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.06em' }}>LIVE</Typography>
           </Box>
+        ) : isUpcoming ? (
+          <Typography sx={{ flexShrink: 0, bgcolor: ACCENT_GOLD_LIGHT, border: `1.5px solid ${ACCENT_GOLD}`, borderRadius: '999px', px: 1.1, py: 0.35, color: ACCENT_GOLD_DARK, fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.06em' }}>
+            UPCOMING
+          </Typography>
         ) : (
           <Typography sx={{ flexShrink: 0, bgcolor: ALPHA_PRIMARY_10, border: `1.5px solid ${PRIMARY_MAIN}`, borderRadius: '999px', px: 1.1, py: 0.35, color: PRIMARY_MAIN, fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.06em' }}>
             CLOSED
@@ -63,7 +73,8 @@ const CampaignSwiperCard = ({ draw }: CampaignSwiperCardProps) => {
       <Typography
         sx={{
           position: 'relative',
-          fontSize: { xs: '1.75rem', md: '2rem' },
+          // The "Coming soon" tease is longer than a dollar figure - step it down so it fits.
+          fontSize: prizeHidden ? { xs: '1.3rem', md: '1.5rem' } : { xs: '1.75rem', md: '2rem' },
           fontWeight: 900,
           letterSpacing: '-0.03em',
           lineHeight: 1,
@@ -83,6 +94,10 @@ const CampaignSwiperCard = ({ draw }: CampaignSwiperCardProps) => {
         {isOpen ? (
           <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, opacity: 0.85 }}>
             {daysLeft <= 0 ? 'Ends today' : `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`}
+          </Typography>
+        ) : isUpcoming ? (
+          <Typography sx={{ color: TEXT_TERTIARY, fontSize: '0.8rem', fontWeight: 600 }}>
+            {startsDate ? `Starts ${startsDate}` : 'Starting soon'}
           </Typography>
         ) : (
           <>

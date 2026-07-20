@@ -46,6 +46,8 @@ import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumb
 import SearchIcon from '@mui/icons-material/Search';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   useOpenDraw,
@@ -53,6 +55,7 @@ import {
   usePickWinner,
   useConfirmWinner,
   useReopenDraw,
+  useSetDrawPrizeRevealed,
   useDrawBusinesses,
   useDeleteDraw,
   useDuplicateDraw,
@@ -307,6 +310,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const reopenDraw = useReopenDraw();
   const deleteDraw = useDeleteDraw();
   const duplicateDraw = useDuplicateDraw();
+  const setPrizeRevealed = useSetDrawPrizeRevealed();
 
   const { data: candidate, isLoading: candidateLoading } = useDrawCandidate(effectiveReviewDrawId);
   const { data: rejectedWinners } = useDrawRejectedWinners(effectiveReviewDrawId);
@@ -429,6 +433,27 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       )}
       {draw.status?.toUpperCase() === 'UPCOMING' && (
         <Button size='small' variant='contained' color='success' startIcon={<LockOpenIcon />} onClick={(e) => { e.stopPropagation(); setConfirmOpen(draw.id); }} fullWidth={!inline}>Open</Button>
+      )}
+      {draw.status?.toUpperCase() === 'UPCOMING' && (
+        // Prize teaser: the public hub hides an upcoming campaign's prize ($???) until revealed.
+        <Button
+          size='small'
+          variant={draw.prize_revealed ? 'contained' : 'outlined'}
+          color='secondary'
+          startIcon={draw.prize_revealed ? <VisibilityIcon /> : <VisibilityOffIcon />}
+          onClick={async (e) => {
+            e.stopPropagation();
+            try {
+              await setPrizeRevealed.mutateAsync({ drawId: draw.id, revealed: !draw.prize_revealed });
+              onSnackSuccess(!draw.prize_revealed ? 'Prize is now visible to users' : 'Prize hidden until you reveal it');
+            } catch (err: unknown) {
+              onSnackError(apiErrorMessage(err, 'Failed to update prize reveal'));
+            }
+          }}
+          fullWidth={!inline}
+        >
+          {draw.prize_revealed ? 'Prize Shown' : 'Reveal Prize'}
+        </Button>
       )}
       {draw.status?.toUpperCase() === 'OPEN' && (
         hasUpcoming ? (
