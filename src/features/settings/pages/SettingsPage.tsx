@@ -731,7 +731,7 @@ export default function SettingsPage() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ color: TEXT_SECONDARY, mt: 1 }}>
-            Your profile and personal data will be permanently removed. Your existing entries will remain in any active draw under an anonymous name. This cannot be undone.
+            Your profile and personal data will be permanently removed. All your entries will be removed and you will not be able to participate in the current campaign. This cannot be undone.
           </DialogContentText>
           {deleteError && (
             <Alert
