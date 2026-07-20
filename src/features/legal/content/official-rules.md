@@ -139,7 +139,7 @@ Winnbell may, from time to time and at its sole discretion, make available addit
 
 Participating Businesses may enable customers to access participation opportunities in the Campaign based on predefined eligibility conditions. These conditions are determined by each Participating Business prior to the Campaign and are presented on the Platform.
 
-Participating Businesses may define eligibility conditions based on qualifying interactions, including transactions or other customer activity, as specified on the Platform. Any transaction-based participation method is offered solely as one possible means of entry. A purchase is not required to enter or win, and a purchase will not increase a participant's chances of winning. To the extent a Participating Business offers entry opportunities based on qualifying transactions or other customer activity, the Alternative Method of Entry described in Section 8 is intended to provide a free method of entry without requiring purchase or payment.
+Participating Businesses may define eligibility conditions based on qualifying interactions, including transactions or other customer activity, as specified on the Platform. Any transaction-based participation method is offered solely as one possible means of entry. A purchase is not required to enter or win, and a purchase will not increase a participant's chances of winning. To the extent a Participating Business offers entry opportunities based on qualifying transactions or other customer activity, the Alternative Method of Entry described in Section 8 is intended to provide a method of entry that does not require purchase or payment.
 
 To participate through a Participating Business, you must:
 

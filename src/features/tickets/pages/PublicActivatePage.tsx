@@ -123,7 +123,7 @@ const PublicActivatePage = () => {
                 <CheckCircle sx={{ fontSize: 32 }} />
               </Box>
               <Typography variant='h6' fontWeight={800}>Promotional Entry!</Typography>
-              <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>Sign in to claim your free campaign entry</Typography>
+              <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.5 }}>Sign in to claim your campaign entry</Typography>
             </Box>
           </motion.div>
 

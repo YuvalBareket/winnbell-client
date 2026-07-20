@@ -771,7 +771,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                   {/* Entry source chip */}
                   <Stack direction='row' spacing={1} flexWrap='wrap'>
                     <Chip
-                      label={candidate.entrySource ?? 'unknown'}
+                      label={candidate.entrySource === 'free' ? 'weekly' : (candidate.entrySource ?? 'unknown')}
                       size='small'
                       color={
                         candidate.entrySource === 'receipt' ? 'primary'

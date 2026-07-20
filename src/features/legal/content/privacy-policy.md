@@ -6,7 +6,7 @@
 
 **1\. Introduction**
 
-Winnbell ("Winnbell," "we," "us," or "our") operates a promotional campaign platform that allows users to participate in prize-based campaigns by submitting entries through participating businesses or through a free alternative method of entry.
+Winnbell ("Winnbell," "we," "us," or "our") operates a promotional campaign platform that allows users to participate in prize-based campaigns by submitting entries through participating businesses or through an alternative method of entry that requires no purchase.
 
 This Privacy Policy explains how we collect, use, share, and handle personal information when you use the Winnbell platform, including our website, services, and related features (the "Platform").
 

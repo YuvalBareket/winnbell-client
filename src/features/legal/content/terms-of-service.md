@@ -304,7 +304,7 @@ Participating businesses have no authority or influence over the operation of th
 
 **6.4 No Purchase Requirement and Separation from Transactions**
 
-Participation in campaigns is not conditioned on the purchase of goods or services. Participation methods, including any available free method of entry, are defined in the applicable Official Rules.
+Participation in campaigns is not conditioned on the purchase of goods or services. Participation methods, including any alternative method of entry that requires no purchase, are defined in the applicable Official Rules.
 
 No participating business payment, promotion, or commercial activity is tied to, or influences, the number, validity, or odds of entries in any campaign.
 

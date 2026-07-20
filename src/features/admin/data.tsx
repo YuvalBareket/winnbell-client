@@ -53,7 +53,7 @@ export const BUSINESS_SECTORS: Record<
   Education:     { label: 'Education',     icon: <School />,           color: SECTOR_CONFIG.Education.color,     bgColor: SECTOR_CONFIG.Education.bgColor },
   Service:       { label: 'Service',       icon: <Build />,            color: SECTOR_CONFIG.Service.color,       bgColor: SECTOR_CONFIG.Service.bgColor },
   Other:         { label: 'Other',         icon: <Storefront />,       color: SECTOR_CONFIG.Other.color,         bgColor: SECTOR_CONFIG.Other.bgColor },
-  Free:          { label: 'Free',          icon: <CardGiftcard />,     color: SECTOR_CONFIG.Free.color,          bgColor: SECTOR_CONFIG.Free.bgColor },
+  Free:          { label: 'Weekly',        icon: <CardGiftcard />,     color: SECTOR_CONFIG.Free.color,          bgColor: SECTOR_CONFIG.Free.bgColor },
 };
 
 export type BusinessSector = keyof typeof BUSINESS_SECTORS;

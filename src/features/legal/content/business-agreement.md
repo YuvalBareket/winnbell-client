@@ -696,7 +696,7 @@ Example:
 
 (b) A clear indication that participation does not require a purchase, for example:
 
-- "No purchase necessary. Free entry available on the Winnbell platform."
+- "No purchase necessary. Alternative method of entry available on the Winnbell platform."
 
 These elements ensure customers understand that the Campaign is operated by Winnbell and that free participation is available.
 

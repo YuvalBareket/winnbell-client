@@ -124,7 +124,7 @@ export const DrawResultDetail = ({ draw, onLocationClick }: { draw: IDrawResult;
         <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.12 }}>
           <Box sx={{ bgcolor: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, borderRadius: '16px', p: '14px 18px', boxShadow: SHADOW_CARD, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
             <Typography sx={{ color: TEXT_TERTIARY, fontSize: '0.72rem', lineHeight: 1.6, flex: 1, minWidth: 200 }}>
-              Campaign operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Free entry method available on the platform. 18+. Void where prohibited.
+              Campaign operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Alternative method of entry available on the platform. 18+. Void where prohibited.
             </Typography>
             <Link href={`/rules/${draw.id}`} underline='none' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: '0.78rem', fontWeight: 700, color: PRIMARY_MAIN, flexShrink: 0, transition: 'gap 0.2s ease-in-out', '&:hover': { gap: 0.75 } }}>
               <ArticleOutlined sx={{ fontSize: 16 }} /> Official Rules

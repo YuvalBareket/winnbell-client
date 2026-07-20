@@ -468,7 +468,7 @@ const BusinessLandingPage = () => {
             {[
               { q: 'Do I have to provide or pay for the prize?', a: 'No. Winnbell sponsors the prize and operates the campaign.' },
               { q: 'Does my business run the campaign?', a: 'No. Winnbell administers the campaign, validates entries, selects the winner at random, and awards the prize. Your role is simply to give eligible customers the opportunity to earn entries.' },
-              { q: 'Can customers enter without making a purchase?', a: 'Yes. Every Winnbell campaign includes a free alternative method of entry, in accordance with the Official Rules.' },
+              { q: 'Can customers enter without making a purchase?', a: 'Yes. Every Winnbell campaign includes an alternative method of entry with no purchase required, in accordance with the Official Rules.' },
               { q: 'How do customers receive entries?', a: 'Customers who make a qualifying purchase scan your Winnbell QR code and submit their receipt through the platform, in under 30 seconds. Winnbell also provides all users with weekly entries.' },
               { q: 'How much work is required from my staff?', a: 'Very little. Once you are set up, a brief mention at checkout is all it takes to lift engagement. Winnbell handles everything else.' },
               { q: 'Why wouldn\'t I just run my own prize promotion?', a: 'A legally compliant prize promotion requires campaign planning, official rules, entry management, winner selection, prize administration, legal work, prize sponsorship, and ongoing oversight. Winnbell packages all of it into one professionally managed platform, so businesses of any size can offer this kind of customer excitement without the traditional cost and complexity.' },

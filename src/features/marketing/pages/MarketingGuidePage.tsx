@@ -265,7 +265,7 @@ const CHAPTERS: Chapter[] = [
       { type: 'p', text: 'You can also use the receipt footer to clearly indicate which number customers should submit as their **Receipt Number**, helping reduce confusion during the submission process.' },
       { type: 'p', text: 'Your QR code can be downloaded from the **Create Your Own** page in the **Marketing** section of the platform.' },
       { type: 'p', text: 'In all cases just add this sentence to the footer:' },
-      { type: 'callout', text: 'NO PURCHASE NECESSARY. Free entry available. See Official Rules at winnbell.com' },
+      { type: 'callout', text: 'NO PURCHASE NECESSARY. Alternative method of entry available. See Official Rules at winnbell.com' },
     ],
   },
   {
