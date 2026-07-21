@@ -6,6 +6,12 @@ import { initViewportUnstick } from './shared/viewportUnstick';
 // Heal stale-dvh tab restores (scroll-below-footer bug) - see shared/viewportUnstick.ts
 initViewportUnstick();
 
+// Google Fonts loads with media="print" in index.html so it never blocks first paint;
+// flipping to 'all' here applies it once the app boots. This used to be an inline
+// onload= handler, moved here so the CSP needs no inline-script exception.
+const googleFonts = document.getElementById('google-fonts') as HTMLLinkElement | null;
+if (googleFonts) googleFonts.media = 'all';
+
 // 1. Create the Client
 export const queryClient = new QueryClient({
   defaultOptions: {
