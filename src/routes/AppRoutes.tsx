@@ -139,7 +139,9 @@ const AppRoutes = () => {
       <Route path='/start' element={<ScanWelcomePage />} />
       <Route path='/join' element={<JoinPage />} />
       <Route path='/region-blocked' element={<RegionBlockedPage />} />
-      <Route path='/login/:role?' element={<RegionGate><LoginPage /></RegionGate>} />
+      {/* Login is NOT region-gated: existing users must be able to sign in while traveling.
+          Region eligibility is enforced at signup (RegionGate below + server-side on new-account sync). */}
+      <Route path='/login/:role?' element={<LoginPage />} />
       <Route path='/register/:role?' element={<RegionGate><RegisterPage /></RegionGate>} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
       <Route path='/sso-callback' element={branded(<SSOCallbackPage />)} />
