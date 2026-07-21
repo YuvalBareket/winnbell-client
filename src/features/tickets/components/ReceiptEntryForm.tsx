@@ -22,16 +22,19 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import AttractButton from '../../../shared/components/AttractButton';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AccessTime, Close, EmojiEvents, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded } from '@mui/icons-material';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { AccessTime, Close, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded, ConfirmationNumberOutlined, CelebrationRounded } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import {
   PRIMARY_MAIN, PRIMARY_LIGHT, PRIMARY_DEEP, GRADIENT_PRIMARY, GRADIENT_FREE_CARD,
   ACCENT_GOLD, ACCENT_GOLD_DARK, SUCCESS_GREEN, TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT,
+  GRADIENT_CELEBRATION, GRADIENT_DRAW_CARD, SHADOW_ELEVATED,
+  ALPHA_WHITE_20, ALPHA_WHITE_30,
+  ALPHA_PRIMARY_06, ALPHA_PRIMARY_10, ALPHA_PRIMARY_20,
 } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
-import { staggerContainer, riseIn, popIn, pressable, pressableCard, SPRING_SNAPPY } from '../../../shared/motion';
+import { staggerContainer, riseIn, popIn, pressable, pressableCard, SPRING_SNAPPY, heroPop } from '../../../shared/motion';
 import EntrySuccessDialog from './EntrySuccessDialog';
 import ReceiptImageUploadField from './ReceiptImageUploadField';
 import BusinessSelector from './BusinessSelector';
@@ -49,6 +52,21 @@ import type { NearbyLocation, NearbyLocationDetail } from '../../nearBy/types/ne
 // Hoisted at module level so the factory is not re-created per render.
 // Device-level "don't show again" for the before-you-submit confirmation dialog.
 const SKIP_SUBMIT_CONFIRM_KEY = 'skipSubmitConfirm';
+
+// Floating confetti layout for the maxed-out celebration crest. Static positions
+// (no randomness in render); each piece gently bobs with a transform-only loop.
+type CrestPiece = {
+  top?: number; bottom?: number; left?: string; right?: string;
+  w: number; h: number; round?: boolean; opacity: number;
+  rotate: number; duration: number; delay: number;
+};
+const CREST_CONFETTI: CrestPiece[] = [
+  { top: 34, left: '8%', w: 10, h: 10, opacity: 1, rotate: 24, duration: 3.4, delay: 0 },
+  { top: 58, right: '12%', w: 8, h: 8, opacity: 0.7, rotate: -18, duration: 3, delay: 0.5 },
+  { top: 96, left: '13%', w: 7, h: 14, opacity: 0.85, rotate: 40, duration: 3.8, delay: 0.2 },
+  { top: 24, right: '22%', w: 9, h: 9, round: true, opacity: 0.6, rotate: -30, duration: 3.2, delay: 0.8 },
+  { bottom: 70, right: '9%', w: 11, h: 11, opacity: 0.5, rotate: 12, duration: 3.6, delay: 0.35 },
+];
 
 const receiptFieldSx = (accentColor: string) => ({
   '& .MuiOutlinedInput-root': {
@@ -86,8 +104,8 @@ const toParticipating = (n: NearbyLocation | NearbyLocationDetail): Participatin
     business_name: d.business_name ?? n.name,
     sector: n.sector,
     logo_url: n.logo_url,
-    receipt_example_image_url: 'receipt_example_image_url' in n ? (n as any).receipt_example_image_url : null,
-    min_transaction_amount: 'min_transaction_amount' in n ? (n as any).min_transaction_amount : null,
+    receipt_example_image_url: 'receipt_example_image_url' in n ? n.receipt_example_image_url : null,
+    min_transaction_amount: 'min_transaction_amount' in n ? n.min_transaction_amount : null,
   };
 };
 
@@ -247,6 +265,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // ──────────────────────────────────────────────────
   const navigate = useNavigate();
   const riskLevel = useMyRiskLevel();
+  const reduceMotion = useReducedMotion();
   const { data: searchResults = [], isFetching: isSearching } = useSearchParticipatingLocations(debouncedTerm);
   const receiptImageUpload = useUploadReceiptImage();
 
@@ -517,21 +536,110 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-      {/* ── Draw cap reached ─────────────────────────── */}
+      {/* ── Draw cap reached - celebration card ──────── */}
       {riskLevel.isDrawCapped && (
-        <Box sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 1.5 }}>
-          <Box sx={{ width: 56, height: 56, borderRadius: '50%', background: GRADIENT_PRIMARY, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <EmojiEvents sx={{ fontSize: 28, color: 'white' }} />
+        <motion.div initial='hidden' animate='visible' variants={staggerContainer}>
+          <Box sx={{ borderRadius: '26px', overflow: 'hidden', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: SHADOW_ELEVATED }}>
+
+            {/* Blue crest: glow orbs + floating confetti + trophy medallion */}
+            <Box sx={{ position: 'relative', overflow: 'hidden', px: { xs: 3, sm: 5 }, pt: { xs: 4.5, sm: 5.5 }, pb: 8, background: GRADIENT_CELEBRATION }}>
+              <Box sx={{ position: 'absolute', top: -90, right: -70, width: 280, height: 280, borderRadius: '50%', bgcolor: ALPHA_WHITE_20, filter: 'blur(50px)', pointerEvents: 'none' }} />
+              <Box sx={{ position: 'absolute', bottom: -120, left: -60, width: 260, height: 260, borderRadius: '50%', bgcolor: alpha(PRIMARY_LIGHT, 0.4), filter: 'blur(60px)', pointerEvents: 'none' }} />
+
+              {CREST_CONFETTI.map((c, i) => (
+                <Box
+                  key={i}
+                  component={motion.span}
+                  initial={{ rotate: c.rotate, y: 0 }}
+                  animate={reduceMotion ? { rotate: c.rotate } : { rotate: c.rotate, y: [0, -6, 0] }}
+                  transition={{ duration: c.duration, delay: c.delay, repeat: Infinity, ease: 'easeInOut' }}
+                  sx={{
+                    position: 'absolute', top: c.top, bottom: c.bottom, left: c.left, right: c.right,
+                    width: c.w, height: c.h, borderRadius: c.round ? '50%' : '2px',
+                    bgcolor: 'common.white', opacity: c.opacity, pointerEvents: 'none', display: 'block',
+                  }}
+                />
+              ))}
+
+              <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <motion.div variants={heroPop}>
+                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.9, bgcolor: ALPHA_WHITE_20, border: '1px solid', borderColor: ALPHA_WHITE_30, borderRadius: 999, px: 1.75, py: 0.6 }}>
+                    <StarRounded sx={{ fontSize: 16, color: 'common.white' }} />
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.03em', color: 'common.white' }}>
+                      ALL {MAX_ENTRIES_PER_DRAW} ENTRIES IN
+                    </Typography>
+                  </Box>
+                </motion.div>
+              </Box>
+            </Box>
+
+            {/* Body card overlapping the crest */}
+            <Box sx={{ px: { xs: 2, sm: 4 }, pb: { xs: 3, sm: 4 }, mt: -3.75, position: 'relative' }}>
+              <Box sx={{ bgcolor: 'background.paper', borderRadius: '22px', p: { xs: 2.5, sm: 3.5 } }}>
+                <motion.div variants={popIn}>
+                  <Typography sx={{ textAlign: 'center', fontSize: { xs: '1.5rem', sm: '1.8rem' }, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, color: TEXT_HEADING }}>
+                    You're maxed out for this campaign!
+                    <CelebrationRounded sx={{ fontSize: '1.15em', color: PRIMARY_MAIN, verticalAlign: 'text-bottom', ml: 0.75 }} />
+                  </Typography>
+                  <Typography sx={{ textAlign: 'center', fontSize: '0.94rem', lineHeight: 1.65, color: TEXT_SECONDARY, mt: 1.5, mx: 'auto', maxWidth: 400 }}>
+                    All <Box component='strong' sx={{ color: TEXT_HEADING }}>{MAX_ENTRIES_PER_DRAW} entries</Box> are in - that's the maximum for this campaign. Sit back, relax, and let the draw do its thing. Good luck!
+                  </Typography>
+                </motion.div>
+
+                {/* Filled entry meter with shimmer */}
+                <motion.div variants={popIn}>
+                  <Box sx={{ mt: 3, bgcolor: ALPHA_PRIMARY_06, border: '1px solid', borderColor: ALPHA_PRIMARY_20, borderRadius: '16px', px: 2.25, py: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1.25 }}>
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: PRIMARY_MAIN }}>
+                        Your entries
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.94rem', fontWeight: 800, color: PRIMARY_DEEP }}>
+                        {MAX_ENTRIES_PER_DRAW} <Box component='span' sx={{ color: alpha(PRIMARY_MAIN, 0.45) }}>/ {MAX_ENTRIES_PER_DRAW}</Box>
+                      </Typography>
+                    </Box>
+                    <Box sx={{ position: 'relative', height: 11, borderRadius: '7px', bgcolor: ALPHA_PRIMARY_10, overflow: 'hidden' }}>
+                      <Box sx={{ width: '100%', height: '100%', borderRadius: '7px', background: `linear-gradient(90deg, ${PRIMARY_LIGHT}, ${PRIMARY_MAIN})` }} />
+                      {!reduceMotion && (
+                        <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: '7px' }}>
+                          <Box
+                            component={motion.div}
+                            initial={{ x: '-120%' }}
+                            animate={{ x: '320%' }}
+                            transition={{ duration: 1.6, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1 }}
+                            sx={{ width: '32%', height: '100%', background: `linear-gradient(90deg, transparent, ${ALPHA_WHITE_30}, transparent)` }}
+                          />
+                        </Box>
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1.4 }}>
+                      <CheckCircle sx={{ fontSize: 16, color: PRIMARY_MAIN }} />
+                      <Typography sx={{ fontSize: '0.79rem', fontWeight: 700, color: PRIMARY_MAIN }}>
+                        Entry cap reached - you're all set
+                      </Typography>
+                    </Box>
+                  </Box>
+                </motion.div>
+
+                {/* CTA to My Entries */}
+                <motion.div variants={popIn} {...pressable}>
+                  <AttractButton
+                    fullWidth
+                    onClick={() => navigate('/tickets')}
+                    startIcon={<ConfirmationNumberOutlined />}
+                    sx={{
+                      mt: 2.75, borderRadius: '15px', py: 1.8, fontSize: '0.95rem', fontWeight: 800, textTransform: 'none',
+                      color: 'common.white', background: GRADIENT_DRAW_CARD,
+                      boxShadow: `0 12px 24px -8px ${alpha(PRIMARY_MAIN, 0.55)}`,
+                      '&:hover': { background: GRADIENT_DRAW_CARD, filter: 'brightness(1.08)' },
+                    }}
+                  >
+                    View my entries
+                  </AttractButton>
+                </motion.div>
+              </Box>
+            </Box>
           </Box>
-          <Box>
-            <Typography variant="subtitle1" fontWeight={800} color="text.primary" sx={{ mb: 0.5 }}>
-              You're maxed out for this campaign! 
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-              You've submitted all <strong>{MAX_ENTRIES_PER_DRAW} entries</strong> for this campaign. That's the maximum - sit back and wait for the results. Good luck!
-            </Typography>
-          </Box>
-        </Box>
+        </motion.div>
       )}
 
       {/* ── Daily receipt limit (5/day for all users) ── */}

@@ -116,6 +116,7 @@ export const GRADIENT_SIDEBAR     = `linear-gradient(160deg, #42a5f5 0%, #1565c0
 export const GRADIENT_HERO_WARM   = `linear-gradient(135deg, #1565c0 0%, #0f3a6b 60%, #081f3a 100%)`;
 export const GRADIENT_CTA         = GRADIENT_DRAW_CARD;  // primary CTA buttons on auth pages (deep blue ramp)
 export const GRADIENT_GOLD_CTA    = `linear-gradient(135deg, #c5a047 0%, #a0822f 100%)`;
+export const GRADIENT_CELEBRATION = `linear-gradient(158deg, #42a5f5 0%, #1565c0 50%, #0f3a6b 100%)`; // celebration crest (maxed-out card)
 export const GRADIENT_GOLD_VIVID  = `linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)`;  // bright real-gold CTA (trophy gold to amber)
 export const GRADIENT_FREE_CARD   = `linear-gradient(155deg, #eaf3fd 0%, #d6e6fb 100%)`;  // free-weekly-entry card (blue tint)
 export const GRADIENT_LOADING     = `linear-gradient(150deg, #3a86de 0%, #1a68c2 52%, #134d8a 100%)`;
