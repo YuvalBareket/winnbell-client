@@ -599,17 +599,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                     </Box>
                     <Box sx={{ position: 'relative', height: 11, borderRadius: '7px', bgcolor: ALPHA_PRIMARY_10, overflow: 'hidden' }}>
                       <Box sx={{ width: '100%', height: '100%', borderRadius: '7px', background: `linear-gradient(90deg, ${PRIMARY_LIGHT}, ${PRIMARY_MAIN})` }} />
-                      {!reduceMotion && (
-                        <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: '7px' }}>
-                          <Box
-                            component={motion.div}
-                            initial={{ x: '-120%' }}
-                            animate={{ x: '320%' }}
-                            transition={{ duration: 1.6, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1 }}
-                            sx={{ width: '32%', height: '100%', background: `linear-gradient(90deg, transparent, ${ALPHA_WHITE_30}, transparent)` }}
-                          />
-                        </Box>
-                      )}
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1.4 }}>
                       <CheckCircle sx={{ fontSize: 16, color: PRIMARY_MAIN }} />
