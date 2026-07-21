@@ -76,7 +76,7 @@ Located in `src/shared/components/`. Use them before building a new equivalent.
 - **`LoadingScreen`** — full-screen branded loader (gradient + logo + bouncing dots). Use for route/suspense fallbacks.
 - **`AppHeader`**, **`AppSidebar`**, **`AppMenuDrawer`**, **`MainLayout`** — the app shell (mobile header + desktop sidebar + drawer). New pages render inside `MainLayout`.
 - **`AccountSwitcher`** — Instagram-style device account switcher (max 2 accounts); menu on desktop, inline on mobile.
-- **`RegionGate` / `AccessGate`** — gate content by region/access.
+- **`RegionGate`** — gate content by region (signup only; login is never region-gated).
 - **`AddressAutoComplete`** — address input with autocomplete.
 - **`ErrorBoundary`** — wraps risky subtrees.
 
