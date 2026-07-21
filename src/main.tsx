@@ -12,6 +12,22 @@ initViewportUnstick();
 const googleFonts = document.getElementById('google-fonts') as HTMLLinkElement | null;
 if (googleFonts) googleFonts.media = 'all';
 
+// PWA update handoff: sw.ts activates new versions immediately (skipWaiting + claim).
+// When the new SW takes control of this already-open page, reload once so the page's
+// code matches the new precache (old lazy chunks are gone after cleanup). The
+// hadController guard skips the reload on the very first install, and the refreshed
+// flag makes sure we never reload twice.
+if ('serviceWorker' in navigator) {
+  let hadController = !!navigator.serviceWorker.controller;
+  let refreshed = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) { hadController = true; return; }
+    if (refreshed) return;
+    refreshed = true;
+    window.location.reload();
+  });
+}
+
 // 1. Create the Client
 export const queryClient = new QueryClient({
   defaultOptions: {

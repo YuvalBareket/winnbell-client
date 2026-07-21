@@ -5,8 +5,16 @@ declare let self: ServiceWorkerGlobalScope;
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
+// True auto-update: a freshly installed SW activates immediately (skipWaiting) and takes
+// control of open pages (clients.claim) instead of waiting for every tab to close.
+// main.tsx reloads the page once when the new SW takes over, so users always run the
+// latest deploy on their next visit.
+self.skipWaiting();
+self.addEventListener('activate', (event: ExtendableEvent) => {
+  event.waitUntil(self.clients.claim());
+});
 
-// Allow auto-update to activate new service worker immediately
+// Legacy hook kept for older register scripts that message SKIP_WAITING explicitly.
 self.addEventListener('message', (event: ExtendableMessageEvent) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
