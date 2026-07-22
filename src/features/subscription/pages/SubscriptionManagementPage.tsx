@@ -377,7 +377,11 @@ export default function SubscriptionManagementPage() {
                           </Typography>
                           <Typography variant='h6' fontWeight={800} color='text.primary'>Cancelled</Typography>
                           <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
-                            You were not charged and are not in any campaign. Resume your plan whenever you're ready.
+                            {sub.status === 'Cancelled'
+                              // Truly ended (period end passed): only a NEW plan can bring it back, and an
+                              // in-window signup pays for the upcoming campaign at checkout.
+                              ? 'You were not charged and are not in any campaign. Start a new plan whenever you are ready to join the next campaign.'
+                              : 'You were not charged and are not in any campaign. Resume your plan whenever you\'re ready.'}
                           </Typography>
                         </Box>
                       ) : periodEndLabel && (
