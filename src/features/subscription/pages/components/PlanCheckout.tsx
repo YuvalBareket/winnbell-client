@@ -69,15 +69,17 @@ const PlanCheckout = ({
   // in particular a founding member in their transition window, who is here to start a
   // REGULAR plan (the server rejects a second founding purchase for them anyway).
   const hasLiveSubscription = !!existingSub && existingSub.status !== 'Cancelled';
-  const foundingAvailable = founding && founding.active && founding.remaining > 0 && effectiveLocations <= 3 && !hasLiveSubscription;
+  // Per-location pricing: founding is open to any business size ($1,200 x locations).
+  const foundingAvailable = founding && founding.active && founding.remaining > 0 && !hasLiveSubscription;
 
   // Regular plan values
   const pricePerLocation    = TIER_MAP[selectedTier] ?? 0;
 
-  // Savings vs regular monthly plan
+  // Founding totals + savings vs regular monthly plan (both scale with location count)
+  const foundingTotal = FOUNDING_PRICE * effectiveLocations;
   const regularMonthlyForFounding = TIER_MAP[FOUNDING_ENTRIES] ?? 0;
   const regularYearlyCost = regularMonthlyForFounding * effectiveLocations * 12;
-  const foundingSaving = regularYearlyCost - FOUNDING_PRICE;
+  const foundingSaving = regularYearlyCost - foundingTotal;
   const totalMonthly        = pricePerLocation * effectiveLocations;
 
   return (
@@ -336,12 +338,19 @@ const PlanCheckout = ({
                   </>
                 )}
 
+                {effectiveLocations > 1 && (
+                  <Stack direction='row' justifyContent='space-between' sx={{ mb: 1 }}>
+                    <Typography variant='body2' color='text.secondary' fontWeight={600}>
+                      {effectiveLocations} locations &times; ${FOUNDING_PRICE.toLocaleString()}
+                    </Typography>
+                  </Stack>
+                )}
                 <Stack direction='row' justifyContent='space-between' alignItems='flex-end' sx={{ mb: 0.5 }}>
                   <Typography variant='body2' color='text.secondary' fontWeight={700}>Total today</Typography>
-                  <Typography sx={{ fontSize: 32, fontWeight: 900, letterSpacing: '-0.02em', color: PRIMARY_DEEP, lineHeight: 1 }}>${FOUNDING_PRICE.toLocaleString()}</Typography>
+                  <Typography sx={{ fontSize: 32, fontWeight: 900, letterSpacing: '-0.02em', color: PRIMARY_DEEP, lineHeight: 1 }}>${foundingTotal.toLocaleString()}</Typography>
                 </Stack>
                 <Typography sx={{ textAlign: 'right', fontSize: 11.5, color: 'text.secondary', fontWeight: 600, mb: 2.5 }}>
-                  then $0 / month for 12 months
+                  $1,200 per location &middot; then $0 / month for 12 months
                 </Typography>
 
                 {error && <Typography variant='body2' color='error' textAlign='center' mb={1.5}>{error}</Typography>}
@@ -372,7 +381,7 @@ const PlanCheckout = ({
                   Charged once today. Your locations join the next campaign, since the current one is already open.
                 </Typography>
                 <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mt: 0.75 }}>
-                  Available for businesses with up to 3 locations.
+                  Covers your current {effectiveLocations === 1 ? 'location' : `${effectiveLocations} locations`} for the full year. Locations are fixed for the founding year.
                 </Typography>
 
                 <Box sx={{ textAlign: 'center', mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>

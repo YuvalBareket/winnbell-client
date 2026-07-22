@@ -98,6 +98,10 @@ const BusinessHubPage = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [removingLocation, setRemovingLocation] = useState<BusinessLocation | null>(null);
 
+  // Founding plans pay $1,200 per location at purchase and the location set is FIXED for
+  // the year: edits allowed, add/remove hidden (the server blocks them too).
+  const isFounding = !!subscription?.is_founding;
+
   // Live locations plus staged adds (created during a running campaign, going live at the
   // next open) — the owner must still see and manage a location they just added.
   const activeLocations = (business?.locations ?? []).filter((l) => l.is_active || l.activate_at_open);
@@ -400,7 +404,7 @@ const BusinessHubPage = () => {
               >
                 Branch Management
               </Typography>
-              {activeLocations.length > 0 && !isManager && (
+              {activeLocations.length > 0 && !isManager && !isFounding && (
                 <Button
                   size='small'
                   variant='outlined'
@@ -442,7 +446,7 @@ const BusinessHubPage = () => {
                     <LocationCard
                       loc={loc}
                       onEdit={setEditingLocation}
-                      onRemove={!isManager ? setRemovingLocation : undefined}
+                      onRemove={!isManager && !isFounding ? setRemovingLocation : undefined}
                       onInvite={handleGenerateInvite}
                       onRemoveManager={setRemoveManagerLocationId}
                       isInviting={isInviting}

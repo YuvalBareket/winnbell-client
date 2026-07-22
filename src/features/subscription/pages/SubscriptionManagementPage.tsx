@@ -114,7 +114,8 @@ export default function SubscriptionManagementPage() {
     ? new Date(sub.draw_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
 
-  // Founding: 50% of remaining time; regular: no refund
+  // Founding: 50% of remaining time on the TOTAL net paid (per-location pricing:
+  // initial $1,200 x locations plus later location adds minus refunds); regular: no refund
   const foundingRefundEstimate = (() => {
     if (!sub?.is_founding || !sub.current_period_end) return 0;
     const now = new Date();
@@ -124,7 +125,8 @@ export default function SubscriptionManagementPage() {
     const totalMs = periodEnd.getTime() - createdAt.getTime();
     const remainingMs = Math.max(0, periodEnd.getTime() - now.getTime());
     const fraction = totalMs > 0 ? remainingMs / totalMs : 0;
-    return Math.round(1200 * fraction * 0.5 * 100) / 100;
+    const netPaid = Number(sub.founding_net_paid ?? 1200);
+    return Math.round(netPaid * fraction * 0.5 * 100) / 100;
   })();
 
   if (isLoading) {
