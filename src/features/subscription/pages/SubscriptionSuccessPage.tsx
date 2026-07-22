@@ -95,7 +95,10 @@ const SubscriptionSuccessPage = () => {
     );
   }
 
-  if (verifying) {
+  // Spinner until the verify call SETTLES - not just while it is in flight. On the first
+  // render the mutation has not fired yet (the effect runs after paint), so gating only on
+  // isPending lets the celebration below flash for a frame before verification even starts.
+  if (verifying || (!isSuccess && !isError)) {
     return (
       <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Stack alignItems='center' spacing={2}>
