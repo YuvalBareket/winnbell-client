@@ -791,13 +791,13 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                         }
                       />
                     )}
-                    {/* Risk score badge */}
+                    {/* Risk score badge - server payload field is riskScore (userRiskScore is the rejected-winners key) */}
                     <Chip
-                      label={`Risk: ${candidate.userRiskScore ?? 0}`}
+                      label={`Risk: ${candidate.riskScore ?? 0}`}
                       size='small'
                       color={
-                        (candidate.userRiskScore ?? 0) >= 20 ? 'error'
-                        : (candidate.userRiskScore ?? 0) >= 10 ? 'warning'
+                        (candidate.riskScore ?? 0) >= 20 ? 'error'
+                        : (candidate.riskScore ?? 0) >= 10 ? 'warning'
                         : 'success'
                       }
                       variant='outlined'

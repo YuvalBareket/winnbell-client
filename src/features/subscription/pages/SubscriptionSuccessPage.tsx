@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Typography, Button, Paper, Stack, CircularProgress, Chip } from '@mui/material';
-import { CheckCircle, Storefront, ErrorOutline, WorkspacePremium, ReceiptLongOutlined, LocalAtmOutlined } from '@mui/icons-material';
+import { CheckCircle, Storefront, ErrorOutline, WorkspacePremium, ReceiptLongOutlined, LocalAtmOutlined, CreditCardOutlined } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
@@ -10,7 +10,8 @@ import { setBusinessActive } from '../../../store/slices/authSlice';
 import { api } from '../../../shared/api/client';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 import { MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
-import { fetchSubscription } from '../api/subscription.api';
+import { isStripeCheckoutUrl } from '../../../shared/utils/url';
+import { fetchSubscription, updatePaymentMethodApi } from '../api/subscription.api';
 
 const SubscriptionSuccessPage = () => {
   const navigate = useNavigate();
@@ -31,9 +32,29 @@ const SubscriptionSuccessPage = () => {
     isSuccess,
     isError,
     error: verifyError,
+    data: verifyData,
   } = useMutation({
-    mutationFn: () => api.post('/business/subscription/verify-session', { sessionId }).then(r => r.data),
-    onSuccess: () => dispatch(setBusinessActive()),
+    mutationFn: () =>
+      api.post('/business/subscription/verify-session', { sessionId })
+        .then(r => r.data as { activated: boolean; subscriptionStatus: 'Active' | 'Incomplete' | null }),
+    // 'Incomplete' = the in-window signup charge was declined: the subscription exists but
+    // the business is NOT enrolled until the card is fixed, so do not flag it active.
+    onSuccess: (data) => {
+      if (data?.subscriptionStatus !== 'Incomplete') dispatch(setBusinessActive());
+    },
+  });
+  const paymentDeclined = isSuccess && verifyData?.subscriptionStatus === 'Incomplete';
+
+  // Card fix for the declined-signup state: same setup-session flow the manage page uses.
+  // The URL guard lives in mutationFn so a bad value rejects the mutation (surfaced below)
+  // instead of throwing inside onSuccess.
+  const { mutate: goUpdateCard, isPending: updatingCard, isError: updateCardFailed } = useMutation({
+    mutationFn: async () => {
+      const { url } = await updatePaymentMethodApi();
+      if (!isStripeCheckoutUrl(url)) throw new Error('Invalid checkout URL');
+      return url;
+    },
+    onSuccess: (url) => { window.location.href = url; },
   });
 
   useEffect(() => {
@@ -145,6 +166,54 @@ const SubscriptionSuccessPage = () => {
               {soldOutRefunded ? 'See regular plans' : 'Go to Dashboard'}
             </Button>
           </Stack>
+        </Paper>
+      </Box>
+    );
+  }
+
+  // In-window signup charge declined: subscription stored Incomplete, business NOT enrolled
+  // at open. Tell the truth instead of celebrating; the payment-failed email says the same.
+  if (paymentDeclined) {
+    return (
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 3 }}>
+        <Paper elevation={0} sx={{ p: 5, borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 440, width: '100%' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.32, ease: 'easeOut' }}
+          >
+            <Stack spacing={3} alignItems='center'>
+              <ErrorOutline sx={{ fontSize: 72, color: 'warning.main' }} />
+              <Box>
+                <Typography variant='h4' fontWeight={900} mb={1}>Your card was declined</Typography>
+                <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
+                  Your subscription was created, but the payment for the upcoming campaign did not go through.
+                  Update your payment method to join the next campaign. Your spot is saved and activates the moment the payment succeeds.
+                </Typography>
+              </Box>
+              <Button
+                variant='contained' size='large'
+                startIcon={<CreditCardOutlined />}
+                disabled={updatingCard}
+                onClick={() => goUpdateCard()}
+                sx={{ py: 1.75, px: 4, fontWeight: 800 }}
+              >
+                {updatingCard ? 'Opening secure checkout...' : 'Update payment method'}
+              </Button>
+              {updateCardFailed && (
+                <Typography variant='body2' color='error.main' fontWeight={600}>
+                  Could not open the payment page. Please try again.
+                </Typography>
+              )}
+              <Button
+                variant='text'
+                onClick={() => navigate('/subscription/manage')}
+                sx={{ textTransform: 'none', fontWeight: 700 }}
+              >
+                Go to Campaign Management
+              </Button>
+            </Stack>
+          </motion.div>
         </Paper>
       </Box>
     );
