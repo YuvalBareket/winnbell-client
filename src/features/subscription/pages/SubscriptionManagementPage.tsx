@@ -656,8 +656,9 @@ export default function SubscriptionManagementPage() {
                           <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.75 }}>
                             Current prize pool
                           </Typography>
+                          {/* NULL = prize not revealed yet (admin teaser), never $0.00 */}
                           <Typography variant='h5' fontWeight={900} color='primary.main' sx={{ fontSize: { xs: '1.75rem', md: '2rem' } }}>
-                            ${Number(sub?.prize_amount ?? 0).toFixed(2)}
+                            {sub?.prize_amount != null ? `$${Number(sub.prize_amount).toFixed(2)}` : 'Revealing soon'}
                           </Typography>
                         </Box>
                       </Stack>
@@ -717,8 +718,9 @@ export default function SubscriptionManagementPage() {
                         <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.75 }}>
                           Prize pool
                         </Typography>
+                        {/* NULL = prize not revealed yet (admin teaser), never $0.00 */}
                         <Typography variant='h5' fontWeight={900} color='primary.main' sx={{ fontSize: { xs: '1.75rem', md: '2rem' } }}>
-                          ${Number(sub.next_campaign_prize ?? 0).toFixed(2)}
+                          {sub.next_campaign_prize != null ? `$${Number(sub.next_campaign_prize).toFixed(2)}` : 'Revealing soon'}
                         </Typography>
                       </Box>
                     </Stack>
