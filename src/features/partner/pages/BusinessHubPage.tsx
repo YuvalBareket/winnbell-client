@@ -24,6 +24,7 @@ import {
   ArrowForwardOutlined,
   MenuBookRounded,
   ArrowForwardRounded,
+  WorkspacePremium,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -416,6 +417,25 @@ const BusinessHubPage = () => {
                 </Button>
               )}
             </Stack>
+
+            {/* Founding plans cover a fixed location set for the year - explain why there is
+                no add/remove here and route questions to the contact page. */}
+            {isFounding && !isManager && (
+              <Alert
+                severity='info'
+                icon={<WorkspacePremium sx={{ fontSize: 20 }} />}
+                sx={{ mb: 2, borderRadius: 2 }}
+              >
+                Your Founding Partner plan covers these locations for the full year, so locations cannot be added or removed. You can still edit their details anytime. If you have any questions,{' '}
+                <Box
+                  component='span'
+                  onClick={() => navigate('/contact')}
+                  sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  contact us
+                </Box>
+              </Alert>
+            )}
 
             {activeLocations.length === 0 ? (
               <Paper
