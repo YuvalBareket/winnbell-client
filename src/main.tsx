@@ -6,6 +6,21 @@ import { initViewportUnstick } from './shared/viewportUnstick';
 // Heal stale-dvh tab restores (scroll-below-footer bug) - see shared/viewportUnstick.ts
 initViewportUnstick();
 
+// Stale-deploy self-heal: every build renames the hashed JS chunks, so a tab (or PWA cache)
+// from the PREVIOUS deploy fails when it lazily imports a route ("Failed to fetch dynamically
+// imported module"). Vite emits 'vite:preloadError' for exactly this; reload once so the
+// browser picks up the new index.html + chunk names instead of crashing to the error screen.
+// The sessionStorage timestamp guards against a reload loop when the failure is NOT a stale
+// deploy (e.g. genuinely offline): one attempt per minute, then let the error surface.
+window.addEventListener('vite:preloadError', (event) => {
+  const KEY = 'winnbell:chunk-reload-at';
+  const last = Number(sessionStorage.getItem(KEY) ?? 0);
+  if (Date.now() - last < 60_000) return;
+  sessionStorage.setItem(KEY, String(Date.now()));
+  event.preventDefault();
+  window.location.reload();
+});
+
 // Google Fonts loads with media="print" in index.html so it never blocks first paint;
 // flipping to 'all' here applies it once the app boots. This used to be an inline
 // onload= handler, moved here so the CSP needs no inline-script exception.
