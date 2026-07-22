@@ -162,18 +162,21 @@ const LoginPage = () => {
 
   const FormContent = () => (
     <motion.div variants={staggerContainer} initial="hidden" animate="visible">
-      <Stack sx={{ zoom: { xs: 0.85, md: 0.8 } }}>
+      {/* Approved mobile/tablet sizing keeps the zoom; large desktops (lg+) render at 1:1
+          where the responsive lg/xl sizes below take over (zoom 0.8 there made the whole
+          form look tiny on big monitors). */}
+      <Stack sx={{ zoom: { xs: 0.85, md: 0.8, lg: 1 } }}>
         {/* Header - desktop only; on mobile the gradient band above carries the title */}
         {isDesktop && (
           <motion.div variants={riseIn}>
-            <Box sx={{ mb: '30px', textAlign: 'left' }}>
+            <Box sx={{ mb: { lg: '30px', xl: '36px' }, textAlign: 'left' }}>
               <Stack direction='row' alignItems='center' gap={2} mb='6px'>
                 <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
                   <ArrowBackIosNew fontSize='small' />
                 </IconButton>
-                <Typography sx={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>{addMode ? 'Add Account' : 'Welcome Back'}</Typography>
+                <Typography sx={{ fontSize: { lg: '28px', xl: '32px' }, fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>{addMode ? 'Add Account' : 'Welcome Back'}</Typography>
               </Stack>
-              <Typography sx={{ fontSize: '14.5px', fontWeight: 500, color: TEXT_TERTIARY }}>{addMode ? 'Sign in to the account you want to add' : 'Sign in to check your entries'}</Typography>
+              <Typography sx={{ fontSize: { lg: '14.5px', xl: '15px' }, fontWeight: 500, color: TEXT_TERTIARY }}>{addMode ? 'Sign in to the account you want to add' : 'Sign in to check your entries'}</Typography>
             </Box>
           </motion.div>
         )}
@@ -349,12 +352,12 @@ const LoginPage = () => {
             bgcolor: BG_PAGE,
             display: 'flex',
             flexDirection: 'column',
-            px: 7,
+            px: { lg: 8, xl: 12 },
             py: 6,
             justifyContent: 'center',
           }}
         >
-          <Box sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
+          <Box sx={{ maxWidth: { lg: 420, xl: 480 }, width: '100%', mx: 'auto' }}>
             {FormContent()}
           </Box>
         </Box>

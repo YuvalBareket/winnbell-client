@@ -39,11 +39,11 @@ const AuthBrandPanel: React.FC<AuthBrandPanelProps> = ({
 }) => (
   <Box
     sx={{
-      width: '42%',
+      width: { md: '42%', lg: '45%', xl: '48%' },
       background: isBusinessVariant ? GRADIENT_HERO_WARM : GRADIENT_HERO,
       display: { xs: 'none', md: 'flex' },
       flexDirection: 'column',
-      p: 6,
+      p: { md: 6, lg: 7, xl: 8 },
       color: 'white',
       position: 'relative',
       overflow: 'hidden',
@@ -73,11 +73,11 @@ const AuthBrandPanel: React.FC<AuthBrandPanelProps> = ({
     {/* Headline + Tagline + Bullets pushed to bottom via margin-top: auto */}
     <Box sx={{ mt: 'auto' }}>
       {/* Headline */}
-      <Typography variant='h2' sx={{ fontWeight: 800, lineHeight: 1.1, letterSpacing: -0.03, mb: 2 }}>
+      <Typography variant='h2' sx={{ fontWeight: 800, lineHeight: 1.1, letterSpacing: -0.03, mb: 2, fontSize: { md: 40, lg: 44, xl: 48 } }}>
         {headline}
       </Typography>
       {tagline && (
-        <Typography sx={{ fontSize: 15, opacity: 0.82, mb: bullets.length > 0 ? 4 : 0, lineHeight: 1.7, maxWidth: 340 }}>
+        <Typography sx={{ fontSize: { md: 15, xl: 16 }, opacity: 0.82, mb: bullets.length > 0 ? 4 : 0, lineHeight: 1.7, maxWidth: { md: 340, xl: 380 } }}>
           {tagline}
         </Typography>
       )}
