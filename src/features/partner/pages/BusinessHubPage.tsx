@@ -171,8 +171,9 @@ const BusinessHubPage = () => {
       const data = await generateInvite(locId);
       setInviteLink(data.inviteLink);
       setInviteDialogOpen(true);
-    } catch {
-      setSnackbar({ open: true, message: 'Failed to generate invite link. Try again.', severity: 'error' });
+    } catch (err) {
+      // Surfaces the server's curated reason (e.g. location already has a manager - remove first)
+      setSnackbar({ open: true, message: apiErrorMessage(err, 'Failed to generate invite link. Try again.'), severity: 'error' });
     }
   };
 
