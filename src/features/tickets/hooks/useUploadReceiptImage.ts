@@ -59,11 +59,14 @@ export const useUploadReceiptImage = () => {
       // The exact size is signed into the upload URL server-side (hard cap enforcement)
       const { uploadUrl, publicUrl } = await getReceiptUploadUrl(webpFile.size);
 
-      await fetch(uploadUrl, {
+      // fetch only rejects on network/CSP failure; a non-2xx from R2 (e.g. expired
+      // presigned URL) resolves normally, so check res.ok or a dead image URL is returned.
+      const res = await fetch(uploadUrl, {
         method: 'PUT',
         body: webpFile,
         headers: { 'Content-Type': 'image/webp' },
       });
+      if (!res.ok) throw new Error(`Upload failed (${res.status})`);
 
       return publicUrl;
     } catch {
