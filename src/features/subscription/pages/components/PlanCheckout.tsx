@@ -1,6 +1,6 @@
 import {
   Box, Button, Typography, Stack, Divider,
-  CircularProgress, IconButton,
+  CircularProgress, IconButton, Checkbox, FormControlLabel,
 } from '@mui/material';
 import { WorkspacePremium, ArrowBack, Check, CreditCard, LockOutlined } from '@mui/icons-material';
 import { useState, useRef } from 'react';
@@ -53,6 +53,10 @@ const PlanCheckout = ({
   const { data: founding } = useFoundingAvailability();
   const { data: existingSub } = useSubscription();
   const [foundingMode, setFoundingMode] = useState(false);
+  // Founding Partner Special Terms: enrollment requires explicit electronic acceptance
+  // (fixed 12-month term, immediate charge, no cancellation refund) before checkout.
+  const [foundingTermsAccepted, setFoundingTermsAccepted] = useState(false);
+  const [foundingTermsError, setFoundingTermsError] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);
 
   // Selecting a plan reveals the Start Campaign action (esp. on mobile, where the
@@ -114,7 +118,7 @@ const PlanCheckout = ({
         >
         <motion.div whileHover={{ scale: 1.012 }} whileTap={{ scale: 0.995 }} animate={{ scale: [1, 1.012, 1] }} transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}>
         <Box
-          onClick={() => !foundingLoading && !loading && setFoundingMode(m => !m)}
+          onClick={() => { if (!foundingLoading && !loading) { setFoundingMode(m => !m); setFoundingTermsError(false); } }}
           sx={{
             mb: { xs: '26px', md: '30px' }, mt: { xs: 1.5, md: 0 },
             p: '2px',
@@ -258,7 +262,7 @@ const PlanCheckout = ({
           {/* ── FOUNDING MODE: confirm + order summary (two-column) ── */}
           <Stack direction='row' alignItems='center' spacing={0.5}>
             <IconButton
-              onClick={() => !foundingLoading && setFoundingMode(false)}
+              onClick={() => { if (!foundingLoading) { setFoundingMode(false); setFoundingTermsError(false); } }}
               size='small'
               aria-label='Back to plans'
               sx={{ ml: -0.75, color: TEXT_TERTIARY }}
@@ -355,17 +359,74 @@ const PlanCheckout = ({
 
                 {error && <Typography variant='body2' color='error' textAlign='center' mb={1.5}>{error}</Typography>}
 
+                {/* Founding Partner Special Terms acceptance (electronic signature per the
+                    Terms' Section 9). The claim button stays enabled; clicking without
+                    accepting surfaces the inline error below instead of a dead button. */}
+                    <Stack sx={{mb:1.5}}>
+                <FormControlLabel
+                  sx={{ alignItems: 'flex-start', mr: 0 }}
+                  control={
+                    <Checkbox
+                      size='small'
+                      checked={foundingTermsAccepted}
+                      onChange={(e) => { setFoundingTermsAccepted(e.target.checked); if (e.target.checked) setFoundingTermsError(false); }}
+                      sx={{ mt: -0.5 }}
+                    />
+                  }
+                  label={
+                    <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
+                      I agree to the{' '}
+                      <Box
+                        component='a'
+                        href='/founding-terms'
+                        target='_blank'
+                        rel='noopener'
+                        onClick={(e) => e.stopPropagation()}
+                        sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
+                      >
+                        Founding Partner Special Terms
+                      </Box>
+                      {' '}(a fixed 12-month plan, charged in full today, with no refund for early cancellation).
+                    </Typography>
+                  }
+                />
+                <AnimatePresence>
+                  {foundingTermsError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <Typography variant='caption' color='error.main' fontWeight={700} display='block' sx={{ mb: 1 }}>
+                        Please accept the Founding Partner Special Terms to continue.
+                      </Typography>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+</Stack>
+                {/* Dimmed (but still clickable - clicking surfaces the inline error) until the
+                    Special Terms box is checked; lights up to full gold once accepted. */}
                 <Button
                   fullWidth
-                  onClick={onFoundingSubscribe}
+                  onClick={() => {
+                    if (!foundingTermsAccepted) { setFoundingTermsError(true); return; }
+                    onFoundingSubscribe();
+                  }}
                   disabled={foundingLoading || loading}
                   startIcon={foundingLoading ? undefined : <CreditCard sx={{ fontSize: 18 }} />}
                   sx={{
                     background: GOLD_GRADIENT,
                     color: GOLD_INK, fontWeight: 900, fontSize: 15, borderRadius: '13px',
                     py: '13px', textTransform: 'none',
-                    boxShadow: '0 12px 26px -12px rgba(245,158,11,0.7)',
-                    '&:hover': { background: GOLD_GRADIENT, boxShadow: '0 16px 30px -10px rgba(245,158,11,0.75)' },
+                    opacity: foundingTermsAccepted ? 1 : 0.5,
+                    filter: foundingTermsAccepted ? 'none' : 'saturate(0.5)',
+                    boxShadow: foundingTermsAccepted ? '0 12px 26px -12px rgba(245,158,11,0.7)' : 'none',
+                    transition: 'opacity 0.25s ease, filter 0.25s ease, box-shadow 0.25s ease',
+                    '&:hover': {
+                      background: GOLD_GRADIENT,
+                      boxShadow: foundingTermsAccepted ? '0 16px 30px -10px rgba(245,158,11,0.75)' : 'none',
+                    },
                     '&.Mui-disabled': { opacity: 0.7, color: GOLD_INK },
                   }}
                 >
@@ -387,7 +448,7 @@ const PlanCheckout = ({
                 <Box sx={{ textAlign: 'center', mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                   <Typography variant='caption' color='text.secondary'>
                     Prefer monthly?{' '}
-                    <Box component='span' onClick={() => !foundingLoading && setFoundingMode(false)} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                    <Box component='span' onClick={() => { if (!foundingLoading) { setFoundingMode(false); setFoundingTermsError(false); } }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
                       Back to plans
                     </Box>
                   </Typography>

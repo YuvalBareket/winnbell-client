@@ -14,9 +14,10 @@ export interface SubscriptionDetails {
   prize_amount: number | null;
   is_founding: boolean;
   founding_seat_number: number | null;
-  // Per-location founding pricing: total net paid across the founding ledger (initial
-  // $1,200 x locations plus location adds minus refunds) - drives the cancel estimate.
-  founding_net_paid?: number;
+  // Special Terms Section 6: second-year renewal at the exact price of the initial term.
+  founding_amount_paid?: number | null;
+  // ONE-TIME option: true once the single renewal was used (no further renewals offered).
+  founding_renewed?: boolean;
   fee_at_entry: number | null;
   entries_per_location: number | null;
   // Staged plan change (tier or location count, incl. the founding hand-off): the new plan

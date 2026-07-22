@@ -21,6 +21,8 @@ const SubscriptionSuccessPage = () => {
   // 'upm' = returning from an update-payment-method setup session (existing subscriber
   // fixing a card), not a new subscription purchase.
   const isPaymentUpdate = searchParams.get('purpose') === 'upm';
+  // 'frenew' = a founding partner returning from the second-year renewal checkout.
+  const isFoundingRenewal = searchParams.get('purpose') === 'frenew';
 
   // Verify-session is a side-effecting POST (not a GET), so useMutation is the correct primitive.
   // The ref guard prevents double-fire across re-renders of ONE component instance.
@@ -107,6 +109,39 @@ const SubscriptionSuccessPage = () => {
             {isPaymentUpdate ? 'Updating your payment method...' : 'Activating your business...'}
           </Typography>
         </Stack>
+      </Box>
+    );
+  }
+
+  if (isFoundingRenewal && isSuccess) {
+    return (
+      <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+        <Paper elevation={0} sx={{ p: 5, borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center', maxWidth: 440, width: '100%' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.32, ease: 'easeOut' }}
+          >
+            <Stack spacing={3} alignItems='center'>
+              <CheckCircle sx={{ fontSize: 72, color: 'success.main' }} />
+              <Box>
+                <Typography variant='h4' fontWeight={900} mb={1}>Founding year renewed!</Typography>
+                <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
+                  Thank you for another year. Your Founding Partner membership now runs for an additional
+                  12 months, starting right where your current year ends. A confirmation email with your
+                  new term date is on its way.
+                </Typography>
+              </Box>
+              <Button
+                variant='contained' size='large'
+                onClick={() => navigate('/subscription/manage')}
+                sx={{ py: 1.75, px: 4, fontWeight: 800 }}
+              >
+                Back to Campaign Management
+              </Button>
+            </Stack>
+          </motion.div>
+        </Paper>
       </Box>
     );
   }

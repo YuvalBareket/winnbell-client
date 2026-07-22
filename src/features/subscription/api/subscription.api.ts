@@ -29,3 +29,8 @@ export const skipCampaignApi = (skip: boolean): Promise<{ skipped: boolean }> =>
 // Stripe setup session to save a new card; outstanding invoices are retried with it.
 export const updatePaymentMethodApi = (): Promise<{ url: string }> =>
   api.post('/business/subscription/update-payment-method').then(r => r.data);
+
+// Founding second-year renewal (Special Terms Section 6): a payment checkout for one
+// additional 12-month term at the original founding price. Final 30 days of the term only.
+export const foundingRenewalApi = (): Promise<{ url: string }> =>
+  api.post('/business/subscription/founding-renewal').then(r => r.data);

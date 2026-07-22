@@ -447,7 +447,7 @@ const BusinessHubPage = () => {
                 <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
                   Add your first branch to start issuing entries.
                 </Typography>
-                {!isManager && (
+                {!isManager && !isFounding && (
                   <Button
                     variant='contained'
                     onClick={() => setAddLocationOpen(true)}
