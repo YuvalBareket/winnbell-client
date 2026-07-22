@@ -2,17 +2,18 @@ import { useState, useRef } from 'react';
 import {
   Box, Typography, Paper, Stack, Chip, Button, Divider, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Alert,
-  Container, Skeleton,
+  Container, Skeleton, alpha,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import {
   ReceiptLong, CheckCircle, Cancel, EmojiEvents,
-  Lock, LockOpen, WorkspacePremium, Edit, SwapHoriz, CreditCard,
+  Lock, LockOpen, WorkspacePremium, Edit, SwapHoriz, CreditCard, OpenInNew,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
+import { safeHttpUrl } from '../../../shared/utils/url';
 import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSkipCampaign } from '../hooks/useSubscription';
 import { updatePaymentMethodApi } from '../api/subscription.api';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
@@ -838,6 +839,9 @@ export default function SubscriptionManagementPage() {
 
                       const changeReason = invoice.invoice_description
                         ?? (isChangeEntry ? 'Plan or location updated' : null);
+                      // Stripe's hosted receipt page (view + PDF download). Synthetic entries
+                      // (founding payments, change log, refunds) have no Stripe invoice, so null.
+                      const receiptUrl = safeHttpUrl(invoice.hosted_invoice_url);
 
                       return (
                         <motion.div
@@ -885,6 +889,42 @@ export default function SubscriptionManagementPage() {
                                     color: isRefunded ? 'text.secondary' : isPaid ? 'success.dark' : 'error.main',
                                   }}
                                 />
+                                {receiptUrl && (
+                                  <Button
+                                    size='small'
+                                    href={receiptUrl}
+                                    target='_blank'
+                                    rel='noopener'
+                                    endIcon={<OpenInNew sx={{ fontSize: '13px !important' }} />}
+                                    sx={{
+                                      ml: 'auto !important',
+                                      textTransform: 'none',
+                                      fontWeight: 600,
+                                      minWidth: 0,
+                                      px: 1.25,
+                                      py: 0.625,
+                                      flexShrink: 0,
+                                      fontSize: '0.875rem',
+                                      borderRadius: '20px',
+                                      border: '1px solid',
+                                      borderColor: alpha(PRIMARY_MAIN, 0.2),
+                                      color: 'text.secondary',
+                                      backgroundColor: alpha(PRIMARY_MAIN, 0.04),
+                                      transition: 'all 0.2s ease-in-out',
+                                      '&:hover': {
+                                        backgroundColor: alpha(PRIMARY_MAIN, 0.08),
+                                        borderColor: alpha(PRIMARY_MAIN, 0.35),
+                                        color: 'primary.main',
+                                        transform: 'translateY(-1px)',
+                                      },
+                                      '&:active': {
+                                        transform: 'translateY(0)',
+                                      },
+                                    }}
+                                  >
+                                    Invoice
+                                  </Button>
+                                )}
                               </Stack>
                               {subLines.length > 0 && (
                                 <Stack spacing={0.25} pl={0.25}>
