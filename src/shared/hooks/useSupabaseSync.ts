@@ -23,7 +23,14 @@ export const useSupabaseSync = (retryCount = 0) => {
   const needsResyncRef = useRef(false);
   useEffect(() => {
     isAuthenticatedRef.current = isAuthenticated;
-    needsResyncRef.current = isAuthenticated && isBusiness && currentUser?.businessLogoUrl === undefined;
+    // Resync-worthy states (derived, no state-sync effects):
+    //  - business account persisted before businessLogoUrl existed (stale shape)
+    //  - authenticated account with a NULL refresh token (corrupted/legacy persisted
+    //    state, audit P2-7): without a ticket the account dies at the next access-token
+    //    expiry, so let the next Supabase auth event re-sync and mint a fresh pair.
+    needsResyncRef.current =
+      (isAuthenticated && isBusiness && currentUser?.businessLogoUrl === undefined) ||
+      (isAuthenticated && store.getState().auth.refreshToken == null);
   });
 
   const syncing = useRef(false);
@@ -129,7 +136,14 @@ export const useSupabaseSync = (retryCount = 0) => {
         //  - no active account, or same user as active  -> normal login / token-refresh write-back
         //  - different user + intentional add            -> append the second account
         //  - different user + NOT an add (stale session) -> ignore, never clobber the active account
-        const payload = { user: data.user, token: data.token, refreshToken: data.refreshToken ?? null };
+        // Never OVERWRITE a stored refresh token with null (audit P2-7): if the sync
+        // response ever lacked one, the account's existing ticket is still the best we
+        // have - writing null would strand the account into a guaranteed logout at the
+        // next access-token expiry. For a brand-new account there is nothing stored and
+        // this stays null as before.
+        const priorRefresh = (store.getState().auth.accounts ?? [])
+          .find((a) => a.user.id === data.user.id)?.refreshToken ?? null;
+        const payload = { user: data.user, token: data.token, refreshToken: data.refreshToken ?? priorRefresh };
         const authNow = store.getState().auth;
         const activeId = authNow.activeAccountId;
         const syncedId = data.user.id;

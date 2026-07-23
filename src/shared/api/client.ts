@@ -52,6 +52,10 @@ api.interceptors.request.use(
 // The _retry flag prevents loops; refreshPromise dedupes concurrent refreshes.
 let refreshPromise: Promise<void> | null = null;
 
+// Throttle for the null-refresh-token repair path (audit P2-7): a burst of 401s from a
+// corrupted account must trigger ONE Supabase-session nudge, not one per failed request.
+let nullTicketRepairAt = 0;
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -125,6 +129,31 @@ api.interceptors.response.use(
             return Promise.reject(error);
           }
           // Definitive rejection — fall through to dropping the account
+        }
+      } else if (failingUser) {
+        // No stored refresh token (corrupted/legacy persisted state - audit P2-7). The
+        // server never rejected anything, so don't log the user out yet: if the Supabase
+        // session still belongs to THIS account, nudge it - the TOKEN_REFRESHED event
+        // makes useSupabaseSync re-sync (its needsResync check passes for a null ticket)
+        // and mint a fresh internal token pair with all the usual identity/role guards.
+        // This request fails once; the repaired tokens serve the next one. If there is
+        // no matching Supabase session, nothing can recover the account - fall through
+        // to the normal drop below.
+        try {
+          const { data: s } = await supabase.auth.getSession();
+          const sessionEmail = s.session?.user?.email?.toLowerCase();
+          const failingEmail = String(failingUser.email ?? '').toLowerCase();
+          if (sessionEmail && failingEmail && sessionEmail === failingEmail) {
+            if (Date.now() - nullTicketRepairAt > 30_000) {
+              nullTicketRepairAt = Date.now();
+              supabase.auth.refreshSession().catch(() => {});
+            }
+            return Promise.reject(error);
+          }
+        } catch {
+          // Session lookup itself failed (transient) - that says nothing about the
+          // account, and we never log out without a definitive server rejection.
+          return Promise.reject(error);
         }
       }
 
