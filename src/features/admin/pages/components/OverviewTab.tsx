@@ -208,7 +208,7 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
                     {currentOpenDraw.name}
                   </Typography>
                   <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                    Prize Pool: ${Number(currentOpenDraw.prize_amount ?? 0).toLocaleString()}
+                    Prize: ${Number(currentOpenDraw.prize_amount ?? 0).toLocaleString()}
                   </Typography>
                   <Typography variant='body2' color='text.secondary'>
                     Draw Date: {new Date(currentOpenDraw.draw_date).toLocaleDateString()}

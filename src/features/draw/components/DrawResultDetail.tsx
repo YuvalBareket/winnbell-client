@@ -103,7 +103,7 @@ export const DrawResultDetail = ({ draw, onLocationClick }: { draw: IDrawResult;
             <Box>
               <Typography sx={{ fontWeight: 800, color: ACCENT_GOLD_DARK, fontSize: '0.9rem', mb: 0.25 }}>Verification in progress</Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.78rem', lineHeight: 1.5 }}>
-                A potential winner has been selected and is undergoing eligibility and fraud verification. We will announce the final winner soon.
+                    A potential winner has been selected and is undergoing verification and eligibility checks. We'll announce the final winner soon.
               </Typography>
             </Box>
           </Box>
@@ -113,7 +113,7 @@ export const DrawResultDetail = ({ draw, onLocationClick }: { draw: IDrawResult;
       {/* Stat cards */}
       <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.08 }}>
         <Stack direction='row' spacing={1.5}>
-          <StatCard icon={<EmojiEventsOutlined sx={{ fontSize: 22 }} />} tint={ACCENT_GOLD_LIGHT} iconColor={ACCENT_GOLD_DARK} label={isClosed ? 'Prize Awarded' : 'Prize Pool'} value={prize} valueColor={ACCENT_GOLD_DARK} />
+          <StatCard icon={<EmojiEventsOutlined sx={{ fontSize: 22 }} />} tint={ACCENT_GOLD_LIGHT} iconColor={ACCENT_GOLD_DARK} label={isClosed ? 'Prize Awarded' : 'Prize'} value={prize} valueColor={ACCENT_GOLD_DARK} />
           <StatCard icon={<CalendarTodayOutlined sx={{ fontSize: 20 }} />} tint={CHART_GRID} iconColor={TEXT_TERTIARY} label='Draw Date' value={drawDate} />
         </Stack>
       </motion.div>

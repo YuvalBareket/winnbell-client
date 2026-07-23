@@ -178,13 +178,13 @@ const RegisterPage = () => {
   //   ? <Handshake sx={{ color: 'white', fontSize: 36 }} />
   //   : <Person sx={{ color: 'white', fontSize: 36 }} />;
 
-  const roleTitle = addMode ? 'Add Account' : isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Partner Program' : 'Join Winnbell';
+  const roleTitle = addMode ? 'Add Account' : isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Business Registration' : 'Join Winnbell';
   const roleSubtitle = addMode
     ? 'Create a new account to add to this device.'
     : isLocationManager
     ? 'Complete your profile to manage your branch.'
     : isBusinessOwner
-    ? 'Register your brand to start issuing entries.'
+    ? 'Register your business and become a partner.'
     : 'Create an account to start winning.';
 
   // ─── Form content (shared between mobile & desktop) ──────────────────────────
@@ -237,7 +237,7 @@ const RegisterPage = () => {
         <Stack spacing={1.75}>
           <motion.div variants={popIn}>
             <Box>
-              <Typography sx={authLabelSx}>Full Name</Typography>
+              <Typography sx={authLabelSx}>Business Representative Full Name</Typography>
               <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
                 sx={authInputSx}
                 InputProps={{
@@ -489,7 +489,7 @@ const RegisterPage = () => {
         {/* Title block */}
         <Box sx={{ position: 'relative', mt: 1.5, px: 1 }}>
           <Typography variant='h5' fontWeight={700} sx={{ letterSpacing: '-0.02em' }}>
-            {addMode ? 'Add Account' : isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Partner Program' : 'Join Winnbell'}
+            {addMode ? 'Add Account' : isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Business Registration' : 'Join Winnbell'}
           </Typography>
           <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.25 }}>
             {addMode
@@ -497,7 +497,7 @@ const RegisterPage = () => {
               : isLocationManager
               ? 'Complete your profile to manage your branch.'
               : isBusinessOwner
-              ? 'Register your brand to start issuing entries.'
+              ? 'Register your business and become a partner.'
               : 'Create an account to start winning.'}
           </Typography>
         </Box>

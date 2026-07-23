@@ -11,9 +11,9 @@ import {
 
 // "How it works" steps - numbered 01-04 to match the user landing design
 const BUSINESS_STEPS = [
-  { num: '01', title: 'Create your account', body: 'Register your business in a couple of minutes.' },
-  { num: '02', title: 'Set up your profile', body: 'Add your name, logo, and locations so customers recognize you.' },
-  { num: '03', title: 'Subscribe', body: 'Pick the plan that fits your locations, then set your minimum purchase, the amount that qualifies a receipt for entries.' },
+  { num: '01', title: 'Create your account', body: 'Register your business in a minute.' },
+  { num: '02', title: 'Set up your profile', body: 'Add your name, logo, and locations so customers can discover you.' },
+  { num: '03', title: 'Subscribe', body: 'Pick the plan that fits you.' },
   { num: '04', title: 'Prepare for the campaign', body: 'Look through our guide and get ready for the upcoming campaign.' },
 ];
 import { motion } from 'framer-motion';
@@ -184,13 +184,13 @@ const BusinessLandingPage = () => {
             transition={{ duration: 0.45, delay: 0.1 }}
           >
             <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '0.95rem', md: '1.1rem' }, lineHeight: 1.6, maxWidth: 640, mx: 'auto', mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
-              One campaign a month. One randomly selected winner. Zero work on your side. Winnbell operates and administers the whole thing, and your customers earn entries through qualifying purchases at your business.
+              One campaign a month. One randomly selected winner. Minimal effort on your side. Winnbell operates and administers the whole thing, and your customers earn entries through qualifying purchases at your business.
             </Typography>
           </motion.div>
 
           <Box sx={{ mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
             <Typography sx={{ color: TEXT_HEADING, fontSize: { xs: '0.95rem', md: '1.1rem' }, fontWeight: 600, mb: { xs: 3, md: 4 } }}>
-              From sign-up to live in four steps:
+              Quick sign up:
             </Typography>
 
             {/* Steps - same design language as the user landing HowItWorks section:
@@ -256,7 +256,7 @@ const BusinessLandingPage = () => {
           >
             <Box sx={{ bgcolor: BG_SUBTLE, borderRadius: 2, p: { xs: 2.5, md: 3.5 }, textAlign: 'center' }}>
               <Typography sx={{ color: TEXT_HEADING, fontWeight: 600, fontSize: { xs: '1rem', md: '1.1rem' } }}>
-                That's it. You're live in the upcoming campaign. Under 10 minutes, start to finish.
+                That's it. You're set for the upcoming campaign.
               </Typography>
             </Box>
           </motion.div>
@@ -280,9 +280,9 @@ const BusinessLandingPage = () => {
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: { xs: 3, md: 4 } }}>
             {[
               { Icon: TravelExploreRounded, title: 'They find you', desc: 'New faces discover you on the Winnbell map. Regulars get a reason to round up their purchase.' },
-              { Icon: QrCodeScannerRounded, title: 'They scan', desc: 'One QR at checkout. Receipt in, 30 seconds flat.' },
-              { Icon: ConfirmationNumberRounded, title: "They're in the draw", desc: "Every qualifying receipt earns entries into this month's cash prize draw." },
-              { Icon: AutoAwesomeRounded, title: 'They come back', desc: 'The draw stays on their mind, and your business is where it lives.' },
+              { Icon: QrCodeScannerRounded, title: 'They scan', desc: 'One QR at checkout. Receipt in. less then 30 seconds.' },
+              { Icon: ConfirmationNumberRounded, title: "They're in the draw", desc: "Every qualified receipt earns entries into this month's cash prize draw." },
+              { Icon: AutoAwesomeRounded, title: 'They come back', desc: 'They link the excitement of the draw with your business, and keep coming back.' },
             ].map((card, i) => (
               <motion.div
                 key={i}

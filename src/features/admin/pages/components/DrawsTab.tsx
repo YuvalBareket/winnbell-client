@@ -493,7 +493,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
         <TableHead>
           <TableRow sx={{ backgroundColor: BG_PAGE }}>
             <TableCell>Name</TableCell>
-            <TableCell>Prize Pool</TableCell>
+            <TableCell>Prize</TableCell>
             <TableCell>Period</TableCell>
             <TableCell align='center'>Entries</TableCell>
             <TableCell>Status</TableCell>

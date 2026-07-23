@@ -142,7 +142,7 @@ const MyTicketsPage = () => {
       {/* Hero renders full-size, OUTSIDE the zoom box below. */}
       <AppPageHero
         title={isBusinessUser ? 'Distributed Entries' : 'My Entries'}
-        subtitle={isBusinessUser ? 'Track your distributed entries' : 'Swipe to switch campaign'}
+        subtitle={isBusinessUser ? 'Track your distributed entries' : 'All your entries in one place'}
       />
 
       <motion.div initial="hidden" animate="visible" variants={staggerContainer}>

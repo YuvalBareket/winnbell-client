@@ -89,21 +89,11 @@ const PlanCheckout = ({
   return (
     <Box sx={{ px: { xs: 0, md: 4 }, pt: { xs: 0.5, md: 2 }, pb: { xs: 2, md: 4 } }}>
 
-      {/* Step header - above the founding card (regular mode only) */}
-      {!foundingMode && (
-        <>
-          <Stack direction='row' alignItems='center' spacing={0.5} sx={{ mb: 0.5 }}>
-            {onBack && (
-              <IconButton onClick={onBack} size='small' aria-label='Back' sx={{ ml: -0.75, color: TEXT_TERTIARY }}>
-                <ArrowBack sx={{ fontSize: 22 }} />
-              </IconButton>
-            )}
-            <Typography variant='h6' fontWeight={700}>Pick your plan</Typography>
-          </Stack>
-          <Typography variant='caption' color='text.secondary' display='block' mb={2}>
-            Choose the entry volume that fits your traffic. Change it anytime.
-          </Typography>
-        </>
+      {/* Back button (regular mode only) */}
+      {!foundingMode && onBack && (
+        <IconButton onClick={onBack} size='small' aria-label='Back' sx={{ ml: -0.75, mb: 1, color: TEXT_TERTIARY }}>
+          <ArrowBack sx={{ fontSize: 22 }} />
+        </IconButton>
       )}
 
       {/* ── Founding Partner card (shown when active + spots remain) ── */}
@@ -562,7 +552,7 @@ const PlanCheckout = ({
             direction={{ xs: 'column', sm: 'row' }}
             alignItems='center'
             justifyContent='center'
-            gap={2.25}
+            gap={0.5}
             sx={{ flexWrap: 'wrap', mb: 3 }}
           >
             <Typography
@@ -572,7 +562,7 @@ const PlanCheckout = ({
                 fontWeight: 500,
               }}
             >
-              Billed on the 24th each month · you join the next campaign, since this one is already open
+              Billed on the 24th each month | the participation start from the next campaign, since this one is already open
             </Typography>
             <Typography
               sx={{
@@ -581,7 +571,7 @@ const PlanCheckout = ({
                 fontWeight: 500,
               }}
             >
-              Need more than {MAX_TIER.toLocaleString()} entries?{' '}
+             | Need more than {MAX_TIER.toLocaleString()} entries?{' '}
               <Box
                 component='span'
                 onClick={() => { window.location.href = 'mailto:support@winnbell.com'; }}

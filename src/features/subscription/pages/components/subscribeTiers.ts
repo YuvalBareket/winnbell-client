@@ -23,7 +23,7 @@ export const PLAN_META: Record<number, PlanMeta> = {
   1000: {
     name: 'Low Volume',
     tagline: 'For lower-traffic locations',
-    features: ['Map visibility while active', 'Campaign setup tools', 'Winnbell campaign administration'],
+    features: ['Map visibility while active', 'Campaign setup & tracking tools', 'Winnbell campaign administration'],
   },
   2500: {
     name: 'Medium Volume',
@@ -33,7 +33,7 @@ export const PLAN_META: Record<number, PlanMeta> = {
   },
   5000: {
     name: 'High Volume',
-    tagline: 'For busy or multi-location businesses',
+    tagline: 'For busy businesses',
     features: ['Everything in Medium Volume', 'Highest standard capacity', 'Built for busy locations'],
   },
 };

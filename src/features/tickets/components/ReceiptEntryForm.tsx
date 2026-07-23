@@ -566,7 +566,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                   <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.9, bgcolor: ALPHA_WHITE_20, border: '1px solid', borderColor: ALPHA_WHITE_30, borderRadius: 999, px: 1.75, py: 0.6 }}>
                     <StarRounded sx={{ fontSize: 16, color: 'common.white' }} />
                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.03em', color: 'common.white' }}>
-                      ALL {MAX_ENTRIES_PER_DRAW} ENTRIES IN
+                      ALL {MAX_ENTRIES_PER_DRAW} ENTRIES CLAIMED
                     </Typography>
                   </Box>
                 </motion.div>
@@ -578,11 +578,11 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               <Box sx={{ bgcolor: 'background.paper', borderRadius: '22px', p: { xs: 2.5, sm: 3.5 } }}>
                 <motion.div variants={popIn}>
                   <Typography sx={{ textAlign: 'center', fontSize: { xs: '1.5rem', sm: '1.8rem' }, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, color: TEXT_HEADING }}>
-                    You're maxed out for this campaign!
+                    Well done!
                     <CelebrationRounded sx={{ fontSize: '1.15em', color: PRIMARY_MAIN, verticalAlign: 'text-bottom', ml: 0.75 }} />
                   </Typography>
                   <Typography sx={{ textAlign: 'center', fontSize: '0.94rem', lineHeight: 1.65, color: TEXT_SECONDARY, mt: 1.5, mx: 'auto', maxWidth: 400 }}>
-                    All <Box component='strong' sx={{ color: TEXT_HEADING }}>{MAX_ENTRIES_PER_DRAW} entries</Box> are in - that's the maximum for this campaign. Sit back, relax, and let the draw do its thing. Good luck!
+                    All <Box component='strong' sx={{ color: TEXT_HEADING }}>{MAX_ENTRIES_PER_DRAW} entries</Box> are claimed, that's the maximum for this campaign. Sit back, relax, and let the draw do its thing. Good luck!
                   </Typography>
                 </motion.div>
 

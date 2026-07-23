@@ -212,7 +212,6 @@ const SocialPostsTab = ({
   const [selectedRatio, setSelectedRatio] = useState<RatioId>('story');
   const [selectedStyle, setSelectedStyle] = useState<string>('navy');
   const [headline, setHeadline] = useState('WE ARE NOW ON WINNBELL!');
-  const [tagline, setTagline] = useState('Shop local.');
   const [subtext, setSubtext] = useState("Every qualifying purchase can enter you into this month's cash prize campaign");
   const imageRef = useRef<HTMLDivElement>(null);
 
@@ -245,7 +244,7 @@ const SocialPostsTab = ({
   // works close to a real tap, and the html2canvas capture is slow enough to burn
   // that window - pre-capturing means the tap shares instantly on the first try.
   // Only inputs that are actually rendered into the image; the scan link is not.
-  const captureKey = JSON.stringify([selectedRatio, selectedStyle, headline, tagline, subtext]);
+  const captureKey = JSON.stringify([selectedRatio, selectedStyle, headline, subtext]);
   const blobCacheRef = useRef<{ key: string; blob: Blob } | null>(null);
   const pendingCaptureRef = useRef<{ key: string; promise: Promise<Blob> } | null>(null);
 
@@ -341,7 +340,6 @@ const SocialPostsTab = ({
     const isStory = h > w;
 
     // Scale typography per ratio
-    const kickerSize = isStory ? 11 : 10;
     const headlineSize = isStory ? 52 : 48;
     const subtextSize = isStory ? 15 : 13;
     const logoHeight = isStory ? 50 : 44;
@@ -383,18 +381,6 @@ const SocialPostsTab = ({
 
         {/* Middle - Content (vertically centered) */}
         <Box sx={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <Typography
-            sx={{
-              fontWeight: 800,
-              fontSize: kickerSize,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: style.textAccent,
-              mb: 1,
-            }}
-          >
-            {tagline}
-          </Typography>
           <Typography
             sx={{
               fontWeight: 800,
@@ -648,79 +634,41 @@ const SocialPostsTab = ({
               </Typography>
             </Box>
 
-            {/* Tagline + Subtext Grid - single column on narrow screens */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-              <Box>
-                <Typography sx={{ fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: TEXT_SECONDARY, mb: 1 }}>
-                  Tagline
-                </Typography>
-                <Box
-                  component='input'
-                  type='text'
-                  value={tagline}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val.length <= 40) setTagline(val);
-                  }}
-                  placeholder='Shop local.'
-                  sx={{
-                    width: '100%',
-                    background: '#f7f9fc',
-                    border: '1px solid',
-                    borderColor: BORDER_SUBTLE,
-                    borderRadius: '12px',
-                    p: '10px 12px',
-                    fontFamily: 'inherit',
-                    fontSize: '13px',
-                    fontWeight: 800,
-                    color: TEXT_HEADING,
-                    boxSizing: 'border-box',
-                    '&:focus': {
-                      outline: 'none',
-                      borderColor: PRIMARY_MAIN,
-                    },
-                  }}
-                />
-                <Typography sx={{ fontSize: '11px', color: TEXT_SECONDARY, mt: 0.5 }}>
-                  {tagline.length} / 40
-                </Typography>
-              </Box>
-
-              <Box>
-                <Typography sx={{ fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: TEXT_SECONDARY, mb: 1 }}>
-                  Subtext
-                </Typography>
-                <Box
-                  component='input'
-                  type='text'
-                  value={subtext}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val.length <= 100) setSubtext(val);
-                  }}
-                  placeholder='Optional'
-                  sx={{
-                    width: '100%',
-                    background: '#f7f9fc',
-                    border: '1px solid',
-                    borderColor: BORDER_SUBTLE,
-                    borderRadius: '12px',
-                    p: '10px 12px',
-                    fontFamily: 'inherit',
-                    fontSize: '13px',
-                    fontWeight: 800,
-                    color: TEXT_HEADING,
-                    boxSizing: 'border-box',
-                    '&:focus': {
-                      outline: 'none',
-                      borderColor: PRIMARY_MAIN,
-                    },
-                  }}
-                />
-                <Typography sx={{ fontSize: '11px', color: TEXT_SECONDARY, mt: 0.5 }}>
-                  {subtext.length} / 100
-                </Typography>
-              </Box>
+            {/* Subtext */}
+            <Box>
+              <Typography sx={{ fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: TEXT_SECONDARY, mb: 1 }}>
+                Subtext
+              </Typography>
+              <Box
+                component='input'
+                type='text'
+                value={subtext}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.length <= 100) setSubtext(val);
+                }}
+                placeholder='Optional'
+                sx={{
+                  width: '100%',
+                  background: '#f7f9fc',
+                  border: '1px solid',
+                  borderColor: BORDER_SUBTLE,
+                  borderRadius: '12px',
+                  p: '10px 12px',
+                  fontFamily: 'inherit',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: TEXT_HEADING,
+                  boxSizing: 'border-box',
+                  '&:focus': {
+                    outline: 'none',
+                    borderColor: PRIMARY_MAIN,
+                  },
+                }}
+              />
+              <Typography sx={{ fontSize: '11px', color: TEXT_SECONDARY, mt: 0.5 }}>
+                {subtext.length} / 100
+              </Typography>
             </Box>
 
             {/* Color Swatches */}
