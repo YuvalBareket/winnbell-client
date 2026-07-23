@@ -199,7 +199,7 @@ const RegisterPage = () => {
       {/* Approved mobile/tablet sizing keeps the zoom; large desktops (lg+) render at 1:1
           where the responsive lg/xl sizes take over (zoom 0.8 there made the whole form
           look tiny on big monitors). */}
-      <Stack sx={{ zoom: { xs: 0.85, md: 0.8, lg: 1 } }}>
+      <Stack sx={{ zoom: { xs: 0.85, md: 0.83, xl: 1 } }}>
         {/* Header - desktop only; on mobile the gradient band above carries the title */}
         {isDesktop && (
           <motion.div variants={riseIn}>
