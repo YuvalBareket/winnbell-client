@@ -5,7 +5,7 @@ import {
 import { WorkspacePremium, ArrowBack, Check, CreditCard, LockOutlined } from '@mui/icons-material';
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TIER_MAP, MAX_TIER, PLAN_META } from './subscribeTiers';
+import { TIER_MAP, MAX_TIER, PLAN_META, FOUNDING_TERM_MONTHS, FOUNDING_PRICE_PER_LOCATION } from './subscribeTiers';
 import PlanCards from './PlanCards';
 import { useFoundingAvailability } from '../../hooks/useFoundingAvailability';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -42,8 +42,7 @@ interface Props {
   onBack?: () => void;
 }
 
-const FOUNDING_ENTRIES = 2500;
-const FOUNDING_PRICE   = 1200;
+const FOUNDING_ENTRIES = 2500; // fallback only - availability serves entriesPerLocation
 
 const PlanCheckout = ({
   selectedTier, setSelectedTier,
@@ -54,7 +53,7 @@ const PlanCheckout = ({
   const { data: existingSub } = useSubscription();
   const [foundingMode, setFoundingMode] = useState(false);
   // Founding Partner Special Terms: enrollment requires explicit electronic acceptance
-  // (fixed 12-month term, immediate charge, no cancellation refund) before checkout.
+  // (fixed term, immediate charge, no cancellation refund) before checkout.
   const [foundingTermsAccepted, setFoundingTermsAccepted] = useState(false);
   const [foundingTermsError, setFoundingTermsError] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -73,17 +72,21 @@ const PlanCheckout = ({
   // in particular a founding member in their transition window, who is here to start a
   // REGULAR plan (the server rejects a second founding purchase for them anyway).
   const hasLiveSubscription = !!existingSub && existingSub.status !== 'Cancelled';
-  // Per-location pricing: founding is open to any business size ($1,200 x locations).
+  // Per-location pricing: founding is open to any business size. Price + term lengths
+  // come from the server (admin-set price in Settings, single-source term constants).
   const foundingAvailable = founding && founding.active && founding.remaining > 0 && !hasLiveSubscription;
+  const foundingPricePerLocation = founding?.price ?? FOUNDING_PRICE_PER_LOCATION;
+  const foundingTermMonths = founding?.termMonths ?? FOUNDING_TERM_MONTHS;
+  const priceLabel = `$${foundingPricePerLocation.toLocaleString()}`;
 
   // Regular plan values
   const pricePerLocation    = TIER_MAP[selectedTier] ?? 0;
 
-  // Founding totals + savings vs regular monthly plan (both scale with location count)
-  const foundingTotal = FOUNDING_PRICE * effectiveLocations;
+  // Founding totals + savings vs the regular monthly plan over the SAME term length
+  const foundingTotal = foundingPricePerLocation * effectiveLocations;
   const regularMonthlyForFounding = TIER_MAP[FOUNDING_ENTRIES] ?? 0;
-  const regularYearlyCost = regularMonthlyForFounding * effectiveLocations * 12;
-  const foundingSaving = regularYearlyCost - foundingTotal;
+  const regularTermCost = regularMonthlyForFounding * effectiveLocations * foundingTermMonths;
+  const foundingSaving = regularTermCost - foundingTotal;
   const totalMonthly        = pricePerLocation * effectiveLocations;
 
   return (
@@ -252,7 +255,7 @@ const PlanCheckout = ({
           {/* ── FOUNDING MODE: confirm + order summary (two-column) ── */}
           <Stack direction='row' alignItems='center' spacing={0.5}>
             <IconButton
-              onClick={() => { if (!foundingLoading) { setFoundingMode(false); setFoundingTermsError(false); } }}
+              onClick={() => { if (!foundingLoading) { setFoundingMode(false); setFoundingTermsError(false); setFoundingTermsAccepted(false); } }}
               size='small'
               aria-label='Back to plans'
               sx={{ ml: -0.75, color: TEXT_TERTIARY }}
@@ -264,7 +267,7 @@ const PlanCheckout = ({
             </Typography>
           </Stack>
           <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5, mb: 3 }}>
-            One-time payment for a full year of campaigns. Review and claim your spot.
+            One-time payment for your full founding term of campaigns. Review and claim your spot.
           </Typography>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 360px' }, gap: { xs: 2, md: 3 }, alignItems: 'start' }}>
@@ -285,7 +288,7 @@ const PlanCheckout = ({
                         <Typography sx={{ fontSize: 11, fontWeight: 800, color: STATUS_ACTIVATED_TEXT }}>Selected</Typography>
                       </Box>
                     </Stack>
-                    <Typography variant='caption' color='text.secondary'>Locked-in founding rate for a full year</Typography>
+                    <Typography variant='caption' color='text.secondary'>Locked-in founding rate for the full term</Typography>
                   </Box>
                 </Stack>
 
@@ -296,9 +299,9 @@ const PlanCheckout = ({
                 </Typography>
                 <Stack spacing={1.5}>
                   {[
-                    <><b style={{ color: PRIMARY_DEEP }}>{FOUNDING_ENTRIES.toLocaleString()} entries</b> per location in every campaign</>,
-                    <>All campaigns for a full <b style={{ color: PRIMARY_DEEP }}>12 months</b></>,
-                    <><b style={{ color: PRIMARY_DEEP }}>One-time payment</b>. No monthly bill for 12 months</>,
+                    <><b style={{ color: PRIMARY_DEEP }}>{(founding?.entriesPerLocation ?? FOUNDING_ENTRIES).toLocaleString()} entries</b> per location in every campaign</>,
+                    <>All campaigns for <b style={{ color: PRIMARY_DEEP }}>{foundingTermMonths} full months</b></>,
+                    <><b style={{ color: PRIMARY_DEEP }}>One-time payment</b>. No monthly bill during your term</>,
                     <>Your locations shown on the <b style={{ color: PRIMARY_DEEP }}>Winnbell map</b></>,
                   ].map((node, i) => (
                     <Stack key={i} direction='row' spacing={1.25} alignItems='flex-start'>
@@ -321,8 +324,8 @@ const PlanCheckout = ({
                 {foundingSaving > 0 && (
                   <>
                     <Stack direction='row' justifyContent='space-between' sx={{ mb: 1.5 }}>
-                      <Typography variant='body2' color='text.secondary' fontWeight={600}>Regular plan &middot; 12 mo</Typography>
-                      <Typography variant='body2' color='text.secondary' fontWeight={600} sx={{ textDecoration: 'line-through' }}>${regularYearlyCost.toLocaleString()}</Typography>
+                      <Typography variant='body2' color='text.secondary' fontWeight={600}>Regular plan &middot; {foundingTermMonths} mo</Typography>
+                      <Typography variant='body2' color='text.secondary' fontWeight={600} sx={{ textDecoration: 'line-through' }}>${regularTermCost.toLocaleString()}</Typography>
                     </Stack>
                     <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
                       <Typography variant='body2' color='text.secondary' fontWeight={600}>Founding discount</Typography>
@@ -335,7 +338,7 @@ const PlanCheckout = ({
                 {effectiveLocations > 1 && (
                   <Stack direction='row' justifyContent='space-between' sx={{ mb: 1 }}>
                     <Typography variant='body2' color='text.secondary' fontWeight={600}>
-                      {effectiveLocations} locations &times; ${FOUNDING_PRICE.toLocaleString()}
+                      {effectiveLocations} locations &times; {priceLabel}
                     </Typography>
                   </Stack>
                 )}
@@ -344,7 +347,7 @@ const PlanCheckout = ({
                   <Typography sx={{ fontSize: 32, fontWeight: 900, letterSpacing: '-0.02em', color: PRIMARY_DEEP, lineHeight: 1 }}>${foundingTotal.toLocaleString()}</Typography>
                 </Stack>
                 <Typography sx={{ textAlign: 'right', fontSize: 11.5, color: 'text.secondary', fontWeight: 600, mb: 2.5 }}>
-                  $1,200 per location &middot; then $0 / month for 12 months
+                  {priceLabel} per location &middot; then $0 / month for {foundingTermMonths} months
                 </Typography>
 
                 {error && <Typography variant='body2' color='error' textAlign='center' mb={1.5}>{error}</Typography>}
@@ -376,7 +379,7 @@ const PlanCheckout = ({
                       >
                         Founding Partner Special Terms
                       </Box>
-                      {' '}(a fixed 12-month plan, charged in full today, with no refund for early cancellation).
+                      {' '}(a fixed {foundingTermMonths}-month plan, charged in full today, with no refund for early cancellation).
                     </Typography>
                   }
                 />
@@ -432,13 +435,13 @@ const PlanCheckout = ({
                   Charged once today. Your locations join the next campaign, since the current one is already open.
                 </Typography>
                 <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mt: 0.75 }}>
-                  Covers your current {effectiveLocations === 1 ? 'location' : `${effectiveLocations} locations`} for the full year. Locations are fixed for the founding year.
+                  Covers your current {effectiveLocations === 1 ? 'location' : `${effectiveLocations} locations`} for the full {foundingTermMonths}-month term. Locations are fixed for the founding term.
                 </Typography>
 
                 <Box sx={{ textAlign: 'center', mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                   <Typography variant='caption' color='text.secondary'>
                     Prefer monthly?{' '}
-                    <Box component='span' onClick={() => { if (!foundingLoading) { setFoundingMode(false); setFoundingTermsError(false); } }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                    <Box component='span' onClick={() => { if (!foundingLoading) { setFoundingMode(false); setFoundingTermsError(false); setFoundingTermsAccepted(false); } }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
                       Back to plans
                     </Box>
                   </Typography>

@@ -18,6 +18,7 @@ import {
 import { WorkspacePremium } from '@mui/icons-material';
 import { usePlatformSettings, useSavePlatformSettings } from '../../hooks/useAdmin';
 import { US_STATES } from '../../../../shared/constants/usStates';
+import { AMBER_HOURGLASS } from '../../../../shared/colors';
 import { useFoundingAvailability } from '../../../subscription/hooks/useFoundingAvailability';
 
 const SettingsTab: React.FC = () => {
@@ -136,11 +137,11 @@ const SettingsTab: React.FC = () => {
             {/* ── Founding Partner Program ──────────────────────────────────── */}
             <Box>
               <Stack direction='row' alignItems='center' spacing={1} mb={0.5}>
-                <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 20 }} />
+                <WorkspacePremium sx={{ color: AMBER_HOURGLASS, fontSize: 20 }} />
                 <Typography variant='h6' fontWeight={700}>Founding Partner Program</Typography>
               </Stack>
               <Typography variant='body2' color='text.secondary' mb={2.5}>
-                Control the early-bird founding partner offer. When active, businesses pay a one-time $1,200 flat fee for the full year instead of a recurring subscription.
+                Control the early-bird founding partner offer. When active, businesses pay a one-time fee per location for the full founding term instead of a recurring subscription.
               </Typography>
 
               <Stack spacing={2.5}>

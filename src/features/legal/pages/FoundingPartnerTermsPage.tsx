@@ -4,7 +4,7 @@ import LegalDocumentPage from './LegalDocumentPage';
 const FoundingPartnerTermsPage = () => (
   <LegalDocumentPage
     title="Founding Partner Special Terms"
-    lastUpdated="Last updated: July 22, 2026"
+    lastUpdated="Last updated: July 23, 2026"
     content={termsContent}
   />
 );

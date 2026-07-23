@@ -99,8 +99,8 @@ const BusinessHubPage = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [removingLocation, setRemovingLocation] = useState<BusinessLocation | null>(null);
 
-  // Founding plans pay $1,200 per location at purchase and the location set is FIXED for
-  // the year: edits allowed, add/remove hidden (the server blocks them too).
+  // Founding plans pay per location at purchase (admin-set price) and the location set is
+  // FIXED for the term: edits allowed, add/remove hidden (the server blocks them too).
   const isFounding = !!subscription?.is_founding;
 
   // Live locations plus staged adds (created during a running campaign, going live at the
@@ -418,7 +418,7 @@ const BusinessHubPage = () => {
               )}
             </Stack>
 
-            {/* Founding plans cover a fixed location set for the year - explain why there is
+            {/* Founding plans cover a fixed location set for the term - explain why there is
                 no add/remove here and route questions to the contact page. */}
             {isFounding && !isManager && (
               <Alert
@@ -426,7 +426,7 @@ const BusinessHubPage = () => {
                 icon={<WorkspacePremium sx={{ fontSize: 20 }} />}
                 sx={{ mb: 2, borderRadius: 2 }}
               >
-                Your Founding Partner plan covers these locations for the full year, so locations cannot be added or removed. You can still edit their details anytime. If you have any questions,{' '}
+                Your Founding Partner plan covers these locations for your entire founding term, so locations cannot be added or removed. You can still edit their details anytime. If you have any questions,{' '}
                 <Box
                   component='span'
                   onClick={() => navigate('/contact')}

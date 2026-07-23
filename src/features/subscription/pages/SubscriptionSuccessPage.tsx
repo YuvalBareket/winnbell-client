@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Box, Typography, Button, Paper, Stack, CircularProgress, Chip } from '@mui/material';
+import { Box, Typography, Button, Paper, Stack, CircularProgress, Chip, alpha } from '@mui/material';
 import { CheckCircle, Storefront, ErrorOutline, WorkspacePremium, ReceiptLongOutlined, LocalAtmOutlined, CreditCardOutlined } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -9,7 +9,7 @@ import { useAppDispatch } from '../../../store/hook';
 import { setBusinessActive } from '../../../store/slices/authSlice';
 import { api } from '../../../shared/api/client';
 import { queryKeys } from '../../../shared/constants/queryKeys';
-import { MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
+import { MOBILE_CONTENT_HEIGHT, AMBER_HOURGLASS, ACCENT_GOLD_DARK } from '../../../shared/colors';
 import { isStripeCheckoutUrl } from '../../../shared/utils/url';
 import { fetchSubscription, updatePaymentMethodApi } from '../api/subscription.api';
 
@@ -106,7 +106,7 @@ const SubscriptionSuccessPage = () => {
         <Stack alignItems='center' spacing={2}>
           <CircularProgress />
           <Typography color='text.secondary' fontWeight={600}>
-            {isPaymentUpdate ? 'Updating your payment method...' : 'Activating your business...'}
+            {isPaymentUpdate ? 'Updating your payment method...' : isFoundingRenewal ? 'Confirming your renewal...' : 'Activating your business...'}
           </Typography>
         </Stack>
       </Box>
@@ -125,10 +125,10 @@ const SubscriptionSuccessPage = () => {
             <Stack spacing={3} alignItems='center'>
               <CheckCircle sx={{ fontSize: 72, color: 'success.main' }} />
               <Box>
-                <Typography variant='h4' fontWeight={900} mb={1}>Founding year renewed!</Typography>
+                <Typography variant='h4' fontWeight={900} mb={1}>Founding plan renewed!</Typography>
                 <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
-                  Thank you for another year. Your Founding Partner membership now runs for an additional
-                  12 months, starting right where your current year ends. A confirmation email with your
+                  Thank you for renewing. Your Founding Partner membership now runs for an additional
+                  term, starting right where your current one ends. A confirmation email with your
                   new term date is on its way.
                 </Typography>
               </Box>
@@ -276,14 +276,14 @@ const SubscriptionSuccessPage = () => {
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}
               >
                 <Chip
-                  icon={<WorkspacePremium sx={{ fontSize: '16px !important', color: '#f59e0b !important' }} />}
+                  icon={<WorkspacePremium sx={{ fontSize: '16px !important', color: `${AMBER_HOURGLASS} !important` }} />}
                   label="Founding Partner"
-                  sx={{ fontWeight: 800, bgcolor: 'rgba(245,158,11,0.12)', color: '#b45309', border: '1px solid rgba(245,158,11,0.3)' }}
+                  sx={{ fontWeight: 800, bgcolor: alpha(AMBER_HOURGLASS, 0.12), color: ACCENT_GOLD_DARK, border: '1px solid', borderColor: alpha(AMBER_HOURGLASS, 0.3) }}
                 />
                 <Box>
                   <Typography variant='h4' fontWeight={900} mb={1}>Welcome, Founding Partner!</Typography>
                   <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
-                    You're a Founding Partner for the full year. Your business joins each monthly campaign and appears on the Winnbell map as soon as the next campaign opens.
+                    You're a Founding Partner for your full term. Your business joins each monthly campaign and appears on the Winnbell map as soon as the next campaign opens.
                   </Typography>
                 </Box>
               </motion.div>

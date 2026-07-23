@@ -22,7 +22,7 @@ import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, us
 import { updatePaymentMethodApi, foundingRenewalApi } from '../api/subscription.api';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
-import { TIER_MAP } from './components/subscribeTiers';
+import { TIER_MAP, FOUNDING_RENEWAL_TERM_MONTHS } from './components/subscribeTiers';
 import PlanCards from './components/PlanCards';
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
@@ -85,7 +85,7 @@ export default function SubscriptionManagementPage() {
     }
   };
 
-  // Founding second-year renewal (Special Terms Section 6): the checkout URL guard lives
+  // Founding one-time renewal (Special Terms Section 6): the checkout URL guard lives
   // in mutationFn so a bad value rejects the mutation instead of throwing in onSuccess.
   const [renewalError, setRenewalError] = useState('');
   const { mutate: startFoundingRenewal, isPending: renewingFounding } = useMutation({
@@ -131,21 +131,14 @@ export default function SubscriptionManagementPage() {
     ? new Date(sub.draw_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
 
-  // Founding Partner Special Terms: the plan is a fixed 12-month term with NO cancellation
+  // Founding Partner Special Terms: the plan is a fixed term with NO cancellation
   // refund and no early termination - the cancel action does not exist for founding at all
-  // (the membership simply runs through its year and does not renew).
+  // (the membership simply runs through its term and does not renew).
 
-  // Second-year renewal window (Special Terms Section 6): the FINAL 30 days of the term,
-  // and only if the ONE-TIME renewal has not been used yet - after the second year the
-  // business continues through the regular plans.
-  const foundingRenewalOpen = (() => {
-    if (!sub?.is_founding || sub.status === 'Cancelled' || !sub.current_period_end || sub.founding_renewed) return false;
-    const end = new Date(sub.current_period_end);
-    const open = new Date(end);
-    open.setDate(open.getDate() - 30);
-    const now = new Date();
-    return now >= open && now <= end;
-  })();
+  // One-time renewal window (Special Terms Section 6). The server computes this flag
+  // with the same helper its checkout guard uses (single source of truth) - no client
+  // date math, so the banner can never show when the server would reject the renewal.
+  const foundingRenewalOpen = sub?.founding_renewal_open === true;
 
   if (isLoading) {
     return (
@@ -165,7 +158,7 @@ export default function SubscriptionManagementPage() {
   }
 
   const statusColors = STATUS_COLOR[sub.status] ?? { bg: 'action.hover', color: 'text.secondary' };
-  // Founding Partner Special Terms: fixed 12-month term, no early termination, no refund -
+  // Founding Partner Special Terms: fixed term, no early termination, no refund -
   // there is no cancel action for founding memberships (they expire on their own).
   const canCancel = sub.status !== 'Cancelled' && !sub.cancel_at_period_end && !sub.is_founding;
 
@@ -228,7 +221,7 @@ export default function SubscriptionManagementPage() {
           </Alert>
         )}
 
-        {/* Founding partner final included month: the year still runs, but it no longer covers
+        {/* Founding partner final included month: the term still runs, but it no longer covers
             the next campaign. Subscribing before this month ends means no gap. */}
         <AnimatePresence>
           {sub?.is_founding && sub?.founding_transition_available && sub?.current_period_end && new Date(sub.current_period_end) >= new Date() && (
@@ -238,15 +231,15 @@ export default function SubscriptionManagementPage() {
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.3 }}
             >
-              <Paper elevation={0} sx={{ mb: 3, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'rgba(245,158,11,0.04)' }}>
+              <Paper elevation={0} sx={{ mb: 3, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: alpha(AMBER_HOURGLASS, 0.04) }}>
                 <Stack direction='row' alignItems='center' spacing={2} mb={2}>
-                  <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
+                  <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: alpha(AMBER_HOURGLASS, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <WorkspacePremium sx={{ color: AMBER_HOURGLASS, fontSize: 24 }} />
                   </Box>
                   <Box flex={1}>
-                    <Typography variant='h6' fontWeight={800}>Your founding year is ending</Typography>
+                    <Typography variant='h6' fontWeight={800}>Your founding term is ending</Typography>
                     <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                      Your Founding Partner term ends {periodEndLabel}. The current campaign is the last one included in your founding year.
+                      Your Founding Partner term ends {periodEndLabel}. The current campaign is the last one included in your founding term.
                       Start a plan by <strong>{lastDayOfMonthLabel}</strong> and you will be in the next campaign without missing a day.
                     </Typography>
                   </Box>
@@ -275,14 +268,14 @@ export default function SubscriptionManagementPage() {
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.3 }}
             >
-              <Paper elevation={0} sx={{ mb: 3, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'rgba(245,158,11,0.04)' }}>
+              <Paper elevation={0} sx={{ mb: 3, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: alpha(AMBER_HOURGLASS, 0.04) }}>
                 <Stack direction='row' alignItems='center' spacing={2} mb={2}>
-                  <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
+                  <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: alpha(AMBER_HOURGLASS, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <WorkspacePremium sx={{ color: AMBER_HOURGLASS, fontSize: 24 }} />
                   </Box>
                   <Box flex={1}>
-                    <Typography variant='h6' fontWeight={800}>Your founding year has ended</Typography>
-                    <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>Your founding partner year is complete. Start a plan to keep running campaigns.</Typography>
+                    <Typography variant='h6' fontWeight={800}>Your founding term has ended</Typography>
+                    <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>Your founding partner term is complete. Start a plan to keep running campaigns.</Typography>
                   </Box>
                 </Stack>
                 <Box>
@@ -329,9 +322,9 @@ export default function SubscriptionManagementPage() {
                     }}
                   >
                     <Stack direction='row' alignItems='center' spacing={2} mb={2}>
-                      <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: sub.is_founding ? 'rgba(245,158,11,0.15)' : 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: sub.is_founding ? alpha(AMBER_HOURGLASS, 0.15) : 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         {sub.is_founding
-                          ? <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
+                          ? <WorkspacePremium sx={{ color: AMBER_HOURGLASS, fontSize: 24 }} />
                           : <ReceiptLong sx={{ color: 'white', fontSize: 24 }} />}
                       </Box>
                       <Box flex={1}>
@@ -348,7 +341,7 @@ export default function SubscriptionManagementPage() {
                             {hasPendingPlan
                               ? `$${Number(sub.pending_fee_at_entry ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month · starts with the next campaign`
                               : sub.is_founding
-                              ? `$${Number((sub.fee_at_entry ?? 0) * 12).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / year`
+                              ? `$${Number(sub.founding_amount_paid ?? sub.fee_at_entry ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} one-time for your founding term`
                               : sub.billing_interval === 'yearly'
                                 ? `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month · billed yearly`
                                 : `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month`}
@@ -411,7 +404,7 @@ export default function SubscriptionManagementPage() {
                           <Typography variant='h6' fontWeight={800} color='text.primary'>{periodEndLabel}</Typography>
                           <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
                             {sub.is_founding
-                              ? 'One-time payment. All 12 monthly campaigns included, no renewal.'
+                              ? 'One-time payment. Every campaign through your term is included, no auto-renewal.'
                               : sub.cancel_at_period_end
                                 ? 'You stay in every campaign you have already paid for - no further charges'
                                 : 'Your plan is billed on the 24th of each month. Each payment covers the next month\'s campaign.'}
@@ -420,7 +413,7 @@ export default function SubscriptionManagementPage() {
                       )}
                     </Stack>
 
-                    {/* Founding second-year renewal (Special Terms Section 6): offered in the
+                    {/* Founding one-time renewal (Special Terms Section 6): offered in the
                         FINAL 30 days of the term, at the exact original founding price. */}
                     <AnimatePresence>
                       {foundingRenewalOpen && (
@@ -441,11 +434,11 @@ export default function SubscriptionManagementPage() {
                               <WorkspacePremium sx={{ color: ACCENT_GOLD_DARK, fontSize: 26, mt: 0.25 }} />
                               <Box flex={1}>
                                 <Typography variant='subtitle2' fontWeight={800} sx={{ color: ACCENT_GOLD_DARK }}>
-                                  Renew your founding year
+                                  Renew your founding plan
                                 </Typography>
                                 <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5, lineHeight: 1.6 }}>
-                                  Your founding year ends {periodEndLabel}. As a Founding Partner you can renew the exact same plan for another 12 months at your original price
-                                  {sub.founding_amount_paid ? <> of <strong>${Number(sub.founding_amount_paid).toLocaleString()}</strong></> : null}. Your new year starts right where this one ends.
+                                  Your founding term ends {periodEndLabel}. As a Founding Partner you can renew the exact same plan for another {FOUNDING_RENEWAL_TERM_MONTHS} months at your original monthly rate
+                                  {sub.founding_renewal_price ? <> - <strong>${Number(sub.founding_renewal_price).toLocaleString()}</strong> for the full {FOUNDING_RENEWAL_TERM_MONTHS} months</> : null}. Your new term starts right where this one ends.
                                 </Typography>
                                 <Button
                                   variant='contained'
@@ -459,7 +452,7 @@ export default function SubscriptionManagementPage() {
                                     '&:hover': { background: GRADIENT_GOLD_VIVID },
                                   }}
                                 >
-                                  {renewingFounding ? <CircularProgress size={20} sx={{ color: GOLD_INK }} /> : `Renew for a year${sub.founding_amount_paid ? ` - $${Number(sub.founding_amount_paid).toLocaleString()}` : ''}`}
+                                  {renewingFounding ? <CircularProgress size={20} sx={{ color: GOLD_INK }} /> : `Renew for ${FOUNDING_RENEWAL_TERM_MONTHS} months${sub.founding_renewal_price ? ` - $${Number(sub.founding_renewal_price).toLocaleString()}` : ''}`}
                                 </Button>
                                 {renewalError && (
                                   <Typography variant='caption' color='error.main' fontWeight={700} display='block' sx={{ mt: 1 }}>
@@ -529,7 +522,7 @@ export default function SubscriptionManagementPage() {
                         Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. It just will not renew after that.
                       </Alert>
                     )}
-                    {/* Founding: the plan is fixed for the year (Special Terms) - no Edit Plan at all */}
+                    {/* Founding: the plan is fixed for the term (Special Terms) - no Edit Plan at all */}
                     {!sub.is_founding && (
                       <Box pt={2}>
                         <Button
@@ -655,10 +648,12 @@ export default function SubscriptionManagementPage() {
                         </Button>
                       )}
 
-                      {/* Founding: fixed 12-month term per the Special Terms - nothing to cancel */}
+                      {/* Founding: fixed term per the Special Terms - nothing to cancel.
+                          Month-agnostic wording: a renewed member's remaining term differs
+                          from the initial one, so the end DATE carries the information. */}
                       {sub.is_founding && sub.status !== 'Cancelled' && (
                         <Typography variant='caption' color='text.secondary' textAlign='center' sx={{ lineHeight: 1.6 }}>
-                          Your Founding Partner plan is a one-time purchase for a fixed 12-month term{periodEndLabel ? ` ending ${periodEndLabel}` : ''}. It does not renew and there is nothing to cancel. See the{' '}
+                          Your Founding Partner plan is a one-time purchase for a fixed term{periodEndLabel ? ` ending ${periodEndLabel}` : ''}. It does not renew and there is nothing to cancel. See the{' '}
                           <Box
                             component='a'
                             href='/founding-terms'
