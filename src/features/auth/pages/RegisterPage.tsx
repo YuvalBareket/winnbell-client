@@ -53,7 +53,7 @@ const RegisterPage = () => {
   const isBusinessUser = useAppSelector(selectIsBusiness);
   const isManagerUser = useAppSelector(selectIsLocMgr);
 
-  const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -114,7 +114,8 @@ const RegisterPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.fullName) { setError('Please enter your full name.'); return; }
+    if (!formData.firstName.trim()) { setError('Please enter your first name.'); return; }
+    if (!formData.lastName.trim()) { setError('Please enter your last name.'); return; }
     if (!formData.email) { setError('Please enter your email address.'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { setTouched((t) => ({ ...t, email: true })); setError('Enter a valid email address.'); return; }
     if (!formData.password) { setError('Please enter a password.'); return; }
@@ -144,7 +145,7 @@ const RegisterPage = () => {
         password: formData.password,
         options: {
           data: {
-            full_name: formData.fullName,
+            full_name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
             role: roleFormatted,
             invite_token: inviteToken || null,
           },
@@ -236,15 +237,26 @@ const RegisterPage = () => {
 
         <Stack spacing={1.75}>
           <motion.div variants={popIn}>
-            <Box>
-              <Typography sx={authLabelSx}>Business Representative Full Name</Typography>
-              <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
-                sx={authInputSx}
-                InputProps={{
-                  startAdornment: (<InputAdornment position='start'><Person sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
-                }}
-              />
-            </Box>
+            <Stack direction='row' spacing={1.5}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={authLabelSx}>First Name</Typography>
+                <TextField fullWidth name='firstName' value={formData.firstName} onChange={handleChange} placeholder='First name'
+                  sx={authInputSx}
+                  InputProps={{
+                    startAdornment: (<InputAdornment position='start'><Person sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
+                  }}
+                />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={authLabelSx}>Last Name</Typography>
+                <TextField fullWidth name='lastName' value={formData.lastName} onChange={handleChange} placeholder='Last name'
+                  sx={authInputSx}
+                  InputProps={{
+                    startAdornment: (<InputAdornment position='start'><Person sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
+                  }}
+                />
+              </Box>
+            </Stack>
           </motion.div>
 
           <motion.div variants={popIn}>
