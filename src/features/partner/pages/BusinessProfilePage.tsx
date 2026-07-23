@@ -39,7 +39,7 @@ import { Controller, useForm, useFieldArray } from 'react-hook-form';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import type { BusinessSetupInput } from '../types/business.types';
 import { useAppSelector } from '../../../store/hook';
-import { selectCurrentUser, selectIsRequiresBusinessSetup } from '../../../store/selectors/authSelectors';
+import { selectIsRequiresBusinessSetup } from '../../../store/selectors/authSelectors';
 import AddressAutoComplete from '../../../shared/components/AddressAutoComplete';
 import { useBusinessSetup } from '../hooks/useBusinessSetup';
 import {
@@ -88,7 +88,6 @@ const FieldLabel = ({ children, hint }: { children: React.ReactNode; hint?: stri
 );
 
 const BusinessProfilePage = () => {
-  const user = useAppSelector(selectCurrentUser);
   const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
 
   const [step, setStep] = useState(0);
@@ -103,7 +102,7 @@ const BusinessProfilePage = () => {
 
   const { control, handleSubmit, setValue, watch, trigger, setError } = useForm({
     defaultValues: {
-      businessName: user?.fullName || '',
+      businessName: '',
       legal_name: '',
       businessSector: '',
       description: '',
