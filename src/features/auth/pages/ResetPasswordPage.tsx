@@ -21,7 +21,7 @@ import {
 // the focused TextField after each character on mobile and replaying the entrance animation.
 // Stable module-scope identity makes the element form safe.
 
-const SuccessContent = () => (
+const SuccessContent = ({ revokeWarning = false }: { revokeWarning?: boolean }) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
@@ -39,8 +39,15 @@ const SuccessContent = () => (
         Password Updated
       </Typography>
       <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-        Your account is now secure. Redirecting to login...
+        {revokeWarning ? 'Redirecting to login...' : 'Your account is now secure. Redirecting to login...'}
       </Typography>
+      {revokeWarning && (
+        <Alert severity='warning' sx={{ mt: 2.5, textAlign: 'left', borderRadius: 2 }}>
+          Your password was changed, but we could not sign out your other devices right now.
+          If you reset your password because you suspect someone else has access, please
+          reset it again in a few minutes or contact support.
+        </Alert>
+      )}
     </Box>
   </motion.div>
 );
@@ -239,6 +246,7 @@ const ResetPasswordPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [revokeWarning, setRevokeWarning] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -276,11 +284,16 @@ const ResetPasswordPage = () => {
       return;
     }
 
-    await revokeOtherSessions();
+    // Security half of the reset (audit P2-8): kill every other device. The hook retries
+    // internally and reports the outcome - a failure must be SHOWN, not swallowed, because
+    // the user is likely here precisely because someone else may have their account.
+    const revoked = await revokeOtherSessions();
+    if (!revoked) setRevokeWarning(true);
 
     setLoading(false);
     setSuccess(true);
-    setTimeout(() => navigate('/login', { replace: true }), 3000);
+    // Leave time to read the warning before the redirect when the revoke failed.
+    setTimeout(() => navigate('/login', { replace: true }), revoked ? 3000 : 10000);
   };
 
   if (!ready) {
@@ -320,7 +333,7 @@ const ResetPasswordPage = () => {
           }}
         >
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400, width: '100%', mx: 'auto' }}>
-            {success ? <SuccessContent /> : <FormContent {...formProps} />}
+            {success ? <SuccessContent revokeWarning={revokeWarning} /> : <FormContent {...formProps} />}
           </Box>
         </Box>
       </Box>
@@ -366,7 +379,7 @@ const ResetPasswordPage = () => {
             </Box>
           )}
 
-          {success ? <SuccessContent /> : <FormContent {...formProps} />}
+          {success ? <SuccessContent revokeWarning={revokeWarning} /> : <FormContent {...formProps} />}
         </Stack>
       </motion.div>
     </Box>
