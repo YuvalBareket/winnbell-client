@@ -299,6 +299,7 @@ const PlanCheckout = ({
                 </Typography>
                 <Stack spacing={1.5}>
                   {[
+                    <>Everything in the <b style={{ color: PRIMARY_DEEP }}>Medium Volume plan</b></>,
                     <><b style={{ color: PRIMARY_DEEP }}>{(founding?.entriesPerLocation ?? FOUNDING_ENTRIES).toLocaleString()} entries</b> per location in every campaign</>,
                     <>All campaigns for <b style={{ color: PRIMARY_DEEP }}>{foundingTermMonths} full months</b></>,
                     <><b style={{ color: PRIMARY_DEEP }}>One-time payment</b>. No monthly bill during your term</>,
