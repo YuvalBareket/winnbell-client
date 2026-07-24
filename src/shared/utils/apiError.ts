@@ -7,3 +7,10 @@ export const apiErrorMessage = (err: unknown, fallback: string): string => {
   const data = isAxiosError(err) ? (err.response?.data as { error?: string; message?: string } | undefined) : undefined;
   return data?.error ?? data?.message ?? fallback;
 };
+
+// Machine-readable error code the server may attach alongside the message (e.g.
+// RECEIPT_CONTEST_IMAGE_REQUIRED), for branching that must not depend on message text.
+export const apiErrorCode = (err: unknown): string | undefined => {
+  const data = isAxiosError(err) ? (err.response?.data as { code?: string } | undefined) : undefined;
+  return data?.code;
+};

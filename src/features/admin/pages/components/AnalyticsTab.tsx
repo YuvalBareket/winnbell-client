@@ -328,6 +328,10 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                             ocr_validation_failed: 'OCR Failed',
                             shared_receipt_suspected: 'Duplicate Receipt',
                             ocr_error_pending_review: 'OCR Error',
+                            superseded_by_verified_image: 'Duplicate Receipt (superseded)',
+                            superseded_by_admin_decision: 'Superseded (admin)',
+                            contest_pending: 'Under Review',
+                            contest_not_won: 'Not Verified',
                           };
                           return (
                             <Box key={r.reason} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

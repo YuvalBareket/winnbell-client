@@ -53,6 +53,10 @@ const QUARANTINE_LABELS: Record<string, string> = {
   ocr_validation_failed: 'Image rejected',
   ocr_error_pending_review: 'OCR error',
   shared_receipt_suspected: 'Shared receipt',
+  superseded_by_verified_image: 'Duplicate receipt',
+  superseded_by_admin_decision: 'Superseded (admin)',
+  contest_pending: 'Under review',
+  contest_not_won: 'Not verified',
 };
 
 const RISK_FLAG_LABELS: Record<string, string> = {
@@ -66,6 +70,7 @@ const RISK_FLAG_LABELS: Record<string, string> = {
   threshold_probing: 'Threshold probing',
   amount_outlier: 'Amount outlier (>3x avg)',
   suspiciously_fast_input: 'Suspiciously fast input',
+  superseded_duplicate_receipt: 'Duplicate receipt (owner verified theirs)',
 };
 
 const SUB_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default'> = {

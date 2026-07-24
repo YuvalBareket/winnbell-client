@@ -23,7 +23,7 @@ import {
 import { alpha } from '@mui/material/styles';
 import AttractButton from '../../../shared/components/AttractButton';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { AccessTime, Close, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded, ConfirmationNumberOutlined, CelebrationRounded } from '@mui/icons-material';
+import { AccessTime, Close, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded, ConfirmationNumberOutlined, CelebrationRounded, PhotoCameraOutlined } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import {
@@ -33,7 +33,7 @@ import {
   ALPHA_WHITE_20, ALPHA_WHITE_30,
   ALPHA_PRIMARY_06, ALPHA_PRIMARY_10, ALPHA_PRIMARY_20,
 } from '../../../shared/colors';
-import { apiErrorMessage } from '../../../shared/utils/apiError';
+import { apiErrorMessage, apiErrorCode } from '../../../shared/utils/apiError';
 import { staggerContainer, riseIn, popIn, pressable, pressableCard, SPRING_SNAPPY, heroPop } from '../../../shared/motion';
 import EntrySuccessDialog from './EntrySuccessDialog';
 import ReceiptImageUploadField from './ReceiptImageUploadField';
@@ -244,6 +244,9 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const receiptKeystrokeTimesRef = useRef<number[]>([]);
   const [receiptWasPasted, setReceiptWasPasted] = useState(false);
   const [requiresImage, setRequiresImage] = useState(false);
+  // Anti-squatting: shown when the server says this receipt was already typed by someone else.
+  // A dialog (not just the inline card) so the explanation can't be scrolled out of view.
+  const [contestDialogOpen, setContestDialogOpen] = useState(false);
   const [receiptImageUrl, setReceiptImageUrl] = useState<string | null>(null);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
@@ -477,7 +480,15 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       },
       onError: (err) => {
         const message = apiErrorMessage(err, 'Submission failed. Please try again.');
-        if (message === 'A receipt image is required to submit an entry.') {
+        // Anti-squatting: this receipt was already typed (by someone with no photo). Reveal the
+        // image upload and ask for a photo so OCR can verify it is really theirs and override
+        // the squatter. Code-based so it does not depend on the exact server message text.
+        if (apiErrorCode(err) === 'RECEIPT_CONTEST_IMAGE_REQUIRED') {
+          setRequiresImage(true);
+          // Explain it in a dialog so it can't be missed; keep a short inline note as a fallback.
+          setContestDialogOpen(true);
+          setErrorMessage('This receipt was already entered. Attach a photo of it below and submit again to confirm it is yours.');
+        } else if (message === 'A receipt image is required to submit an entry.') {
           setRequiresImage(true);
           setErrorMessage('Please attach a photo of your receipt to continue.');
         } else {
@@ -531,6 +542,21 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       ) : 'Submit & get my entries'}
     </AttractButton>
     </motion.div>
+  );
+
+  // Shared error card so mobile (inline, above the mobile submit) and desktop (right rail,
+  // below the submit button) render the exact same thing.
+  const renderErrorCard = () => (
+    <Box sx={{
+      display: 'flex', alignItems: 'flex-start', gap: 1.5,
+      p: 2, borderRadius: 2.5,
+      bgcolor: '#fef2f2', border: '1px solid #fecaca',
+    }}>
+      <Typography sx={{ fontSize: '1rem', lineHeight: 1, mt: 0.1 }}>⚠️</Typography>
+      <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 500, lineHeight: 1.5 }}>
+        {errorMessage}
+      </Typography>
+    </Box>
   );
 
   return (
@@ -765,6 +791,49 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </>
       )}
 
+      {/* ── Contest ("already entered, prove it's yours") dialog ──────────────
+          Shown when the server returns RECEIPT_CONTEST_IMAGE_REQUIRED. A dialog (not just the
+          inline card) so the explanation is never scrolled out of view. */}
+      <Dialog
+        open={contestDialogOpen}
+        onClose={() => setContestDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 3, p: 0.5 } }}
+      >
+        <DialogContent sx={{ p: 3, textAlign: 'center' }}>
+          <Box sx={{
+            width: 56, height: 56, borderRadius: '50%', mx: 'auto', mb: 2,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            bgcolor: `${primaryColor || PRIMARY_MAIN}14`,
+          }}>
+            <PhotoCameraOutlined sx={{ fontSize: 28, color: primaryColor || PRIMARY_MAIN }} />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: 'text.primary' }}>
+            Just one quick step
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
+            Someone already entered this receipt number. If it's yours, add a clear photo and submit
+            again so we can confirm it and give you your entry. Questions? Contact us anytime.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <AttractButton
+            fullWidth
+            variant="contained"
+            onClick={() => setContestDialogOpen(false)}
+            startIcon={<PhotoCameraOutlined />}
+            sx={{
+              height: 48, borderRadius: 2.5, fontWeight: 800, textTransform: 'none',
+              bgcolor: primaryColor || PRIMARY_MAIN,
+              '&:hover': { bgcolor: primaryColor || PRIMARY_MAIN, filter: 'brightness(0.9)' },
+            }}
+          >
+            Attach a photo
+          </AttractButton>
+        </DialogActions>
+      </Dialog>
+
       {/* ── Receipt example dialog ──────────────────── */}
       <Dialog open={exampleOpen} onClose={() => setExampleOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle
@@ -821,6 +890,11 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             onChange={(e) => {
               const val = e.target.value;
               setReceiptIdentifier(val);
+              // A different receipt number is a different situation: drop the contest-driven
+              // "image required" state and its error so a fresh, uncontested number is not stuck
+              // behind an image gate. (Risk-based requiresImage is separate and still applies.)
+              setRequiresImage(false);
+              if (errorMessage) setErrorMessage('');
               if (val === '') {
                 receiptKeystrokeTimesRef.current = [];
                 setReceiptWasPasted(false);
@@ -939,17 +1013,12 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             />
           )}
 
-          {/* Error */}
+          {/* Error — MOBILE only. On desktop it lives in the right rail below the submit
+              button (see renderErrorCard there) so it is never pushed off-screen below the
+              long field column. */}
           {errorMessage && (
-            <Box sx={{
-              display: 'flex', alignItems: 'flex-start', gap: 1.5,
-              p: 2, borderRadius: 2.5,
-              bgcolor: '#fef2f2', border: '1px solid #fecaca',
-            }}>
-              <Typography sx={{ fontSize: '1rem', lineHeight: 1, mt: 0.1 }}>⚠️</Typography>
-              <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 500, lineHeight: 1.5 }}>
-                {errorMessage}
-              </Typography>
+            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+              {renderErrorCard()}
             </Box>
           )}
 
@@ -989,6 +1058,14 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               </Box>
             </Box>
             {renderSubmit()}
+            {/* Error — DESKTOP: directly under the submit button in the right rail, where the
+                user is looking after they click. Keeps it in view instead of buried below the
+                fields. Mobile renders it inline above the mobile submit. */}
+            {errorMessage && (
+              <Box sx={{ mt: 2 }}>
+                {renderErrorCard()}
+              </Box>
+            )}
           </Box>
         </Box>
         )}
