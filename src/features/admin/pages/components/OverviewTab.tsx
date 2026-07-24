@@ -3,22 +3,34 @@ import {
   Box,
   Typography,
   Grid,
-  Card,
-  CardContent,
   Stack,
   LinearProgress,
-  Alert,
   Chip,
   useMediaQuery,
   useTheme,
   Button,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { motion } from 'framer-motion';
 import PeopleIcon from '@mui/icons-material/People';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { AdminCard, StatCard, IconTile } from '../components/adminUi';
+import {
+  PRIMARY_MAIN, PRIMARY_TINT,
+  ALPHA_GREEN_10, METRIC_GOOD,
+  CHART_PURPLE_TINT, CHART_PURPLE,
+  ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
+  GRADIENT_DRAW_CARD,
+  ALPHA_WHITE_15, ALPHA_WHITE_20,
+  TEXT_SECONDARY, TEXT_HEADING,
+  GOLD_SOFT,
+  AMBER_HOURGLASS,
+  ALPHA_AMBER_12,
+  STATUS_PENDING_BG,
+} from '../../../../shared/colors';
+import { staggerContainer, riseIn } from '../../../../shared/motion';
 
 interface Props {
   overview: any;
@@ -38,257 +50,243 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
 
   return (
     <Stack spacing={3}>
-      {/* Attention Required */}
+      {/* Attention Required - styled as AdminCard with left accent */}
       {hasAttention && (
-        <Alert
-          severity='warning'
-          icon={<WarningAmberIcon />}
-          action={
-            <Button color='inherit' size='small' href='/admin/users' sx={{ fontWeight: 700 }}>
-              Review
-            </Button>
-          }
-        >
-          <strong>{flaggedUsers} high-risk user{flaggedUsers !== 1 ? 's' : ''}</strong> with risk score ≥ 20 need review.
-        </Alert>
+        <motion.div variants={riseIn} initial='hidden' animate='visible'>
+          <AdminCard sx={{ borderLeft: `4px solid ${STATUS_PENDING_BG}`, pl: 2 }}>
+            <Stack direction='row' alignItems='center' spacing={2} sx={{ py: 2, pr: 2 }}>
+              <Box sx={{ flexShrink: 0 }}>
+                <IconTile icon={<WarningAmberIcon />} tint={ALPHA_AMBER_12} color={AMBER_HOURGLASS} size={48} />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant='body2' fontWeight={700} sx={{ color: TEXT_HEADING }}>
+                  {flaggedUsers} high-risk user{flaggedUsers !== 1 ? 's' : ''} need review
+                </Typography>
+                <Typography variant='caption' sx={{ color: TEXT_SECONDARY, display: 'block', mt: 0.5 }}>
+                  Risk score ≥ 20
+                </Typography>
+              </Box>
+              <Box sx={{ flexShrink: 0 }}>
+                <Button
+                  size='small'
+                  href='/admin/users'
+                  sx={{
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    color: PRIMARY_MAIN,
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                >
+                  Review
+                </Button>
+              </Box>
+            </Stack>
+          </AdminCard>
+        </motion.div>
       )}
 
-      {/* KPI Cards */}
-      <Grid container spacing={isMobile ? 1.5 : 2}>
-        {/* Total Users */}
-        <Grid size={{ xs: 6, sm: 6, md: 3 }}>
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-            <CardContent>
-              <Stack spacing={1} alignItems='flex-start'>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 40,
-                    height: 40,
-                    borderRadius: 1,
-                    bgcolor: theme => alpha(theme.palette.primary.main, 0.1),
-                    color: 'primary.main',
-                  }}
-                >
-                  <PeopleIcon />
-                </Box>
-                <Typography variant='body2' color='text.secondary'>
-                  Total Users
-                </Typography>
-                <Typography variant='h6' fontWeight={700}>
-                  {overview?.users?.total_users ?? 0}
-                </Typography>
-                <Typography variant='caption' color='text.secondary'>
-                  {overview?.users?.business_users ?? 0} businesses,{' '}
-                  {overview?.users?.regular_users ?? 0} regular
-                </Typography>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
+      {/* KPI Cards - wrap in motion stagger container */}
+      <motion.div variants={staggerContainer} initial='hidden' animate='visible'>
+        <Grid container spacing={isMobile ? 1.5 : 2}>
+          {/* Total Users */}
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+            <StatCard
+              icon={<PeopleIcon />}
+              tint={PRIMARY_TINT}
+              color={PRIMARY_MAIN}
+              label='Total Users'
+              value={overview?.users?.total_users ?? 0}
+              caption={`${overview?.users?.business_users ?? 0} businesses, ${overview?.users?.regular_users ?? 0} regular`}
+            />
+          </Grid>
 
-        {/* Active Businesses */}
-        <Grid size={{ xs: 6, sm: 6, md: 3 }}>
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-            <CardContent>
-              <Stack spacing={1} alignItems='flex-start'>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 40,
-                    height: 40,
-                    borderRadius: 1,
-                    bgcolor: theme => alpha(theme.palette.success.main, 0.1),
-                    color: 'success.main',
-                  }}
-                >
-                  <StorefrontIcon />
-                </Box>
-                <Typography variant='body2' color='text.secondary'>
-                  Active Businesses
-                </Typography>
-                <Typography variant='h6' fontWeight={700}>
-                  {overview?.businesses?.active ?? 0}
-                </Typography>
-                <Typography variant='caption' color='text.secondary'>
-                  of {overview?.businesses?.total ?? 0} total
-                </Typography>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
+          {/* Active Businesses */}
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+            <StatCard
+              icon={<StorefrontIcon />}
+              tint={ALPHA_GREEN_10}
+              color={METRIC_GOOD}
+              label='Active Businesses'
+              value={overview?.businesses?.active ?? 0}
+              caption={`of ${overview?.businesses?.total ?? 0} total`}
+            />
+          </Grid>
 
-        {/* Active Subscriptions */}
-        <Grid size={{ xs: 6, sm: 6, md: 3 }}>
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-            <CardContent>
-              <Stack spacing={1} alignItems='flex-start'>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 40,
-                    height: 40,
-                    borderRadius: 1,
-                    bgcolor: theme => alpha(theme.palette.secondary.main, 0.1),
-                    color: 'secondary.main',
-                  }}
-                >
-                  <CreditCardIcon />
-                </Box>
-                <Typography variant='body2' color='text.secondary'>
-                  Active Subscriptions
-                </Typography>
-                <Typography variant='h6' fontWeight={700}>
-                  {overview?.subscriptions?.active_subs ?? 0}
-                </Typography>
-                <Typography variant='caption' color='text.secondary'>
-                  ${Number(overview?.subscriptions?.total_fees ?? 0).toLocaleString()} monthly
-                </Typography>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
+          {/* Active Subscriptions */}
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+            <StatCard
+              icon={<CreditCardIcon />}
+              tint={CHART_PURPLE_TINT}
+              color={CHART_PURPLE}
+              label='Active Subscriptions'
+              value={overview?.subscriptions?.active_subs ?? 0}
+              caption={`$${Number(overview?.subscriptions?.total_fees ?? 0).toLocaleString()}/mo`}
+            />
+          </Grid>
 
-        {/* Current Draw Prize Pool */}
-        <Grid size={{ xs: 6, sm: 6, md: 3 }}>
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-            <CardContent>
-              <Stack spacing={1} alignItems='flex-start'>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 40,
-                    height: 40,
-                    borderRadius: 1,
-                    bgcolor: theme => alpha(theme.palette.warning.main, 0.1),
-                    color: 'warning.main',
-                  }}
-                >
-                  <EmojiEventsIcon />
-                </Box>
-                <Typography variant='body2' color='text.secondary'>
-                  Current Campaign Prize
-                </Typography>
-                <Typography variant='h6' fontWeight={700}>
-                  ${Number(overview?.currentDraw?.prize_pool ?? 0).toLocaleString()}
-                </Typography>
-                <Typography variant='caption' color='text.secondary'>
-                  {overview?.currentDraw?.name ?? 'No active campaign'}
-                </Typography>
-              </Stack>
-            </CardContent>
-          </Card>
+          {/* Current Draw Prize Pool */}
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+            <StatCard
+              icon={<EmojiEventsIcon />}
+              tint={ACCENT_GOLD_LIGHT}
+              color={ACCENT_GOLD_DARK}
+              label='Current Campaign Prize'
+              value={`$${Number(overview?.currentDraw?.prize_pool ?? 0).toLocaleString()}`}
+              caption={overview?.currentDraw?.name ?? 'No active campaign'}
+            />
+          </Grid>
         </Grid>
-      </Grid>
+      </motion.div>
 
-      {/* Current Draw Card */}
-      {currentOpenDraw ? (
-        <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-          <CardContent>
-            <Stack spacing={2}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  flexWrap: 'wrap',
-                  gap: 2,
-                }}
-              >
-                <Box>
-                  <Typography variant='h6' fontWeight={700}>
-                    {currentOpenDraw.name}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                    Prize: ${Number(currentOpenDraw.prize_amount ?? 0).toLocaleString()}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
+      {/* Current Draw Card - gradient hero with glow orb */}
+      {currentOpenDraw && (
+        <motion.div variants={riseIn} initial='hidden' animate='visible'>
+          <Box
+            sx={{
+              position: 'relative',
+              overflow: 'hidden',
+              background: GRADIENT_DRAW_CARD,
+              borderRadius: '15px',
+              p: 3,
+              color: 'white',
+            }}
+          >
+            {/* Glow orb - radial gradient, not filter:blur */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: -80,
+                right: -80,
+                width: 280,
+                height: 280,
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`,
+                pointerEvents: 'none',
+              }}
+            />
+
+            <Stack spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
+              {/* Campaign name and meta */}
+              <Box>
+                <Typography variant='h5' fontWeight={700} sx={{ letterSpacing: '-0.02em', mb: 1 }}>
+                  {currentOpenDraw.name}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <Typography variant='body2' sx={{ opacity: 0.9 }}>
                     Draw Date: {new Date(currentOpenDraw.draw_date).toLocaleDateString()}
                   </Typography>
-                </Box>
-                <Stack direction='row' spacing={1} alignItems='center'>
                   {daysUntilDraw !== null && (
                     <Chip
                       label={daysUntilDraw === 0 ? 'Draw today!' : `${daysUntilDraw}d left`}
-                      color={daysUntilDraw <= 3 ? 'warning' : 'default'}
                       size='small'
+                      sx={{
+                        bgcolor: ALPHA_WHITE_20,
+                        border: `1px solid ${ALPHA_WHITE_20}`,
+                        color: 'white',
+                        fontWeight: 600,
+                      }}
                     />
                   )}
-                  <Chip label='Open' color='primary' size='small' />
-                </Stack>
+                  <Chip
+                    label='Open'
+                    size='small'
+                    sx={{
+                      bgcolor: ALPHA_WHITE_20,
+                      border: `1px solid ${ALPHA_WHITE_20}`,
+                      color: 'white',
+                      fontWeight: 600,
+                    }}
+                  />
+                </Box>
               </Box>
 
-              {/* Ticket activation progress */}
+              {/* Prize amount - gold emphasis */}
               <Box>
-                <Box
+                <Typography variant='body2' sx={{ opacity: 0.85, mb: 0.5 }}>
+                  Prize Pool
+                </Typography>
+                <Typography
+                  variant='h4'
+                  fontWeight={800}
                   sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    mb: 1,
+                    background: `linear-gradient(90deg, ${GOLD_SOFT}, white)`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    letterSpacing: '-0.02em',
                   }}
                 >
-                  <Typography variant='body2' fontWeight={500}>
+                  ${Number(currentOpenDraw.prize_amount ?? 0).toLocaleString()}
+                </Typography>
+              </Box>
+
+              {/* Entry activation progress */}
+              <Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                  <Typography variant='body2' fontWeight={600}>
                     Entry Activation
                   </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    {overview?.currentDrawTickets?.activated ?? 0} /{' '}
-                    {overview?.currentDrawTickets?.total_tickets ?? 0}
+                  <Typography variant='body2' sx={{ opacity: 0.85 }}>
+                    {overview?.currentDrawTickets?.activated ?? 0} / {overview?.currentDrawTickets?.total_tickets ?? 0}
                   </Typography>
                 </Box>
                 <LinearProgress
                   variant='determinate'
                   value={
                     overview?.currentDrawTickets?.total_tickets
-                      ? (overview.currentDrawTickets.activated /
-                        overview.currentDrawTickets.total_tickets) *
-                      100
+                      ? (overview.currentDrawTickets.activated / overview.currentDrawTickets.total_tickets) * 100
                       : 0
                   }
-                  sx={{ height: 8, borderRadius: 1 }}
+                  sx={{
+                    height: 6,
+                    borderRadius: 1,
+                    bgcolor: ALPHA_WHITE_20,
+                    '& .MuiLinearProgress-bar': {
+                      bgcolor: 'white',
+                    },
+                  }}
                 />
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{ display: 'block', mt: 1 }}
-                >
+                <Typography variant='caption' sx={{ display: 'block', mt: 0.75, opacity: 0.8 }}>
                   {overview?.currentDrawTickets?.total_tickets
-                    ? Math.round(
-                      (overview.currentDrawTickets.activated /
-                        overview.currentDrawTickets.total_tickets) *
-                      100
-                    )
+                    ? Math.round((overview.currentDrawTickets.activated / overview.currentDrawTickets.total_tickets) * 100)
                     : 0}
                   % activated
                 </Typography>
               </Box>
             </Stack>
-          </CardContent>
-        </Card>
-      ) : (
-        <Alert severity='info'>
-          No active campaign. Create and open a campaign in the <strong>Campaigns</strong> tab to start a raffle.
-        </Alert>
+          </Box>
+        </motion.div>
       )}
 
-      {/* Revenue Model */}
-      <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-        <CardContent>
-          <Typography variant='subtitle2' fontWeight={700} mb={0.5}>Revenue Model</Typography>
-          <Typography variant='body2' color='text.secondary'>
-            Businesses pay a monthly subscription fee to participate in campaigns. Currently{' '}
-            <strong>{overview?.subscriptions?.active_subs ?? 0} active subscriptions</strong> generating{' '}
-            <strong>${Number(overview?.subscriptions?.total_fees ?? 0).toLocaleString()}/mo</strong>.
-          </Typography>
-        </CardContent>
-      </Card>
+      {/* No active campaign state - animated in */}
+      {!currentOpenDraw && (
+        <motion.div variants={riseIn} initial='hidden' animate='visible'>
+          <AdminCard sx={{ bgcolor: STATUS_PENDING_BG, borderColor: 'transparent' }}>
+            <Stack spacing={1.5} sx={{ py: 2 }}>
+              <Typography variant='subtitle2' fontWeight={700} sx={{ color: TEXT_HEADING }}>
+                No active campaign
+              </Typography>
+              <Typography variant='body2' sx={{ color: TEXT_SECONDARY }}>
+                Create and open a campaign in the Campaigns tab to start a raffle.
+              </Typography>
+            </Stack>
+          </AdminCard>
+        </motion.div>
+      )}
+
+      {/* Revenue Model - quiet card */}
+      <motion.div variants={riseIn} initial='hidden' animate='visible'>
+        <AdminCard>
+          <Stack spacing={1} sx={{ p: 2.25 }}>
+            <Typography variant='subtitle2' fontWeight={700} sx={{ color: TEXT_HEADING }}>
+              Revenue Model
+            </Typography>
+            <Typography variant='body2' sx={{ color: TEXT_SECONDARY }}>
+              Businesses pay a monthly subscription fee to participate in campaigns. Currently <strong>{overview?.subscriptions?.active_subs ?? 0} active subscriptions</strong> generating <strong>${Number(overview?.subscriptions?.total_fees ?? 0).toLocaleString()}/mo</strong>.
+            </Typography>
+          </Stack>
+        </AdminCard>
+      </motion.div>
 
     </Stack>
   );

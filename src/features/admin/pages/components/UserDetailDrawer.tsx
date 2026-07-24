@@ -22,7 +22,31 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import { motion } from 'framer-motion';
 import { useUserDetail, useAdminImageDecision } from '../../hooks/useAdmin';
+import {
+  GRADIENT_HERO,
+  ALPHA_WHITE_15,
+  BG_ROW_SUBTLE,
+  BORDER_LIGHT,
+  BORDER_SUBTLE,
+  TEXT_HEADING,
+  TEXT_TERTIARY,
+  STATUS_ACTIVATED_BG,
+  STATUS_ACTIVATED_TEXT,
+  STATUS_PENDING_BG,
+  STATUS_PENDING_TEXT,
+  METRIC_BAD_TINT,
+  METRIC_BAD,
+  METRIC_GOOD_TINT,
+  METRIC_GOOD,
+  METRIC_WARN_TINT,
+  METRIC_WARN,
+  PRIMARY_MAIN,
+  GRADIENT_PRIMARY,
+} from '../../../../shared/colors';
+import { staggerContainer, popIn } from '../../../../shared/motion';
+import { AdminCard, SectionHeader } from './adminUi';
 
 interface Props {
   userId: number | null;
@@ -42,7 +66,7 @@ const QUARANTINE_LABELS: Record<string, string> = {
   high_risk_user: 'High risk user',
   ocr_pending: 'Image pending review',
   ocr_validation_failed: 'Image rejected',
-  ocr_error_pending_review: 'OCR error — pending review',
+  ocr_error_pending_review: 'OCR error - pending review',
   shared_receipt_suspected: 'Shared receipt',
 };
 
@@ -66,8 +90,6 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
   const user = data?.user;
   const entries = data?.entries ?? [];
 
-  const riskColor: 'error' | 'warning' | 'success' =
-    (user?.risk_score ?? 0) >= 20 ? 'error' : (user?.risk_score ?? 0) >= 10 ? 'warning' : 'success';
   const riskLabel =
     (user?.risk_score ?? 0) >= 20 ? 'HIGH' : (user?.risk_score ?? 0) >= 10 ? 'MEDIUM' : 'LOW';
   const RiskIcon =
@@ -78,12 +100,44 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
       anchor='right'
       open={userId !== null}
       onClose={onClose}
-      PaperProps={{ sx: { width: { xs: '100vw', sm: 600, md: 900, lg: 1000 }, p: 0 } }}
+      PaperProps={{
+        sx: {
+          width: { xs: '100vw', sm: 600, md: 900, lg: 1000 },
+          p: 0,
+          borderRadius: { md: '20px 0 0 20px' },
+        }
+      }}
     >
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography variant='h6' fontWeight={700}>User Profile</Typography>
-        <IconButton onClick={onClose} size='small'><CloseIcon /></IconButton>
+      {/* Header with gradient band */}
+      <Box
+        sx={{
+          background: GRADIENT_HERO,
+          color: 'white',
+          px: 3,
+          py: 3,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: '-50%',
+            right: '-10%',
+            width: '60%',
+            height: '120%',
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 70%)`,
+            pointerEvents: 'none',
+          },
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+          <Typography variant='h6' fontWeight={800} sx={{ letterSpacing: '-0.02em' }}>
+            User Profile
+          </Typography>
+          <IconButton onClick={onClose} size='small' sx={{ color: 'white' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </Box>
 
       <Box sx={{ overflowY: 'auto', flex: 1, p: 3 }}>
@@ -96,236 +150,384 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
             <Skeleton variant='rounded' height={200} />
           </Stack>
         ) : user ? (
-          <Stack spacing={3}>
+          <motion.div variants={staggerContainer} initial='hidden' animate='visible'>
+            <Stack spacing={3}>
             {/* Identity */}
-            <Stack direction='row' spacing={2} alignItems='center'>
-              <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main', fontSize: 22, fontWeight: 700 }}>
-                {(user.full_name ?? user.email ?? '?')[0].toUpperCase()}
-              </Avatar>
-              <Box>
-                <Typography variant='h6' fontWeight={700} lineHeight={1.2}>{user.full_name ?? '—'}</Typography>
-                <Typography variant='body2' color='text.secondary'>{user.email}</Typography>
-              </Box>
-            </Stack>
+            <motion.div variants={popIn}>
+              <Stack direction='row' spacing={2} alignItems='center'>
+                <Avatar
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    background: GRADIENT_PRIMARY,
+                    color: 'white',
+                    fontSize: 22,
+                    fontWeight: 700,
+                  }}
+                >
+                  {(user.full_name ?? user.email ?? '?')[0].toUpperCase()}
+                </Avatar>
+                <Box>
+                  <Typography variant='h6' fontWeight={800} lineHeight={1.2} sx={{ color: TEXT_HEADING, letterSpacing: '-0.02em' }}>
+                    {user.full_name ?? '—'}
+                  </Typography>
+                  <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>
+                    {user.email}
+                  </Typography>
+                </Box>
+              </Stack>
+            </motion.div>
 
             {/* Status chips */}
-            <Stack direction='row' spacing={1} flexWrap='wrap'>
-              <Chip label={user.role} size='small' color={user.role === 'Business' ? 'secondary' : 'default'} />
-              <Chip label={user.is_active ? 'Active' : 'Inactive'} size='small' color={user.is_active ? 'success' : 'default'} variant={user.is_active ? 'filled' : 'outlined'} />
-              <Chip label={user.is_email_verified ? 'Email Verified' : 'Unverified'} size='small' color={user.is_email_verified ? 'success' : 'warning'} variant='outlined' />
-              <Chip icon={<RiskIcon />} label={`${riskLabel} · ${user.risk_score}`} size='small' color={riskColor} />
-            </Stack>
+            <motion.div variants={popIn}>
+              <Stack direction='row' spacing={0.75} flexWrap='wrap'>
+                <Chip
+                  label={user.role}
+                  size='small'
+                  sx={{
+                    bgcolor: user.role === 'Business' ? PRIMARY_MAIN : 'default',
+                    color: user.role === 'Business' ? 'white' : 'default',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                  }}
+                />
+                <Chip
+                  label={user.is_active ? 'Active' : 'Inactive'}
+                  size='small'
+                  sx={{
+                    bgcolor: user.is_active ? STATUS_ACTIVATED_BG : 'transparent',
+                    color: user.is_active ? STATUS_ACTIVATED_TEXT : TEXT_TERTIARY,
+                    border: user.is_active ? 'none' : `1px solid ${BORDER_SUBTLE}`,
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                  }}
+                />
+                <Chip
+                  label={user.is_email_verified ? 'Email Verified' : 'Unverified'}
+                  size='small'
+                  sx={{
+                    bgcolor: user.is_email_verified ? STATUS_ACTIVATED_BG : STATUS_PENDING_BG,
+                    color: user.is_email_verified ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                  }}
+                />
+                <Chip
+                  icon={<RiskIcon sx={{ fontSize: 14 }} />}
+                  label={`${riskLabel} · ${user.risk_score}`}
+                  size='small'
+                  sx={{
+                    bgcolor: user.risk_score >= 20 ? METRIC_BAD_TINT : user.risk_score >= 10 ? METRIC_WARN_TINT : METRIC_GOOD_TINT,
+                    color: user.risk_score >= 20 ? METRIC_BAD : user.risk_score >= 10 ? METRIC_WARN : METRIC_GOOD,
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    border: 'none',
+                  }}
+                />
+              </Stack>
+            </motion.div>
 
             {/* Stats */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              {[
-                { label: 'Member Since', value: new Date(user.created_at).toLocaleDateString() },
-                { label: 'Total Entries', value: entries.length },
-                { label: 'Business', value: user.business_name ?? '—' },
-                { label: 'Last Flagged', value: user.risk_last_flagged_at ? new Date(user.risk_last_flagged_at).toLocaleDateString() : 'Never' },
-              ].map(({ label, value }) => (
-                <Box key={label} sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-                  <Typography variant='caption' color='text.secondary' display='block'>{label}</Typography>
-                  <Typography variant='body2' fontWeight={600}>{String(value)}</Typography>
+            <motion.div variants={popIn}>
+              <AdminCard sx={{ p: 0, overflow: 'hidden' }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderRadius: '15px' }}>
+                  {[
+                    { label: 'Member Since', value: new Date(user.created_at).toLocaleDateString() },
+                    { label: 'Total Entries', value: entries.length },
+                    { label: 'Business', value: user.business_name ?? '—' },
+                    { label: 'Last Flagged', value: user.risk_last_flagged_at ? new Date(user.risk_last_flagged_at).toLocaleDateString() : 'Never' },
+                  ].map(({ label, value }, idx) => (
+                    <Box
+                      key={label}
+                      sx={{
+                        p: 2,
+                        borderBottom: idx >= 2 ? 'none' : `1px solid ${BORDER_SUBTLE}`,
+                        borderRight: idx % 2 === 0 ? `1px solid ${BORDER_SUBTLE}` : 'none',
+                        bgcolor: idx % 2 === 0 ? BG_ROW_SUBTLE : 'transparent',
+                      }}
+                    >
+                      <Typography variant='caption' sx={{ color: TEXT_TERTIARY, fontWeight: 700 }} display='block'>
+                        {label}
+                      </Typography>
+                      <Typography variant='body2' fontWeight={600} sx={{ color: TEXT_HEADING, mt: 0.5 }}>
+                        {String(value)}
+                      </Typography>
+                    </Box>
+                  ))}
                 </Box>
-              ))}
-            </Box>
+              </AdminCard>
+            </motion.div>
 
             {/* Accumulated risk flags */}
             {Array.isArray(user.risk_flags) && user.risk_flags.length > 0 && (
-              <Box sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'warning.light', bgcolor: 'warning.50' }}>
-                <Typography variant='caption' color='text.secondary' display='block' mb={1}>
-                  Risk Signals (accumulated)
-                </Typography>
-                <Stack direction='row' spacing={0.5} flexWrap='wrap' gap={0.5}>
-                  {(user.risk_flags as string[]).map((flag) => (
-                    <Chip
-                      key={flag}
-                      label={RISK_FLAG_LABELS[flag] ?? flag}
-                      size='small'
-                      color='warning'
-                      sx={{ fontSize: 11 }}
-                    />
-                  ))}
-                </Stack>
-              </Box>
+              <motion.div variants={popIn}>
+                <AdminCard sx={{ p: 2, borderColor: METRIC_WARN_TINT, bgcolor: METRIC_WARN_TINT }}>
+                  <Typography variant='caption' sx={{ color: METRIC_WARN, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }} display='block' mb={1.5}>
+                    Risk Signals - Accumulated
+                  </Typography>
+                  <Stack direction='row' spacing={0.5} flexWrap='wrap' gap={0.5}>
+                    {(user.risk_flags as string[]).map((flag) => (
+                      <Chip
+                        key={flag}
+                        label={RISK_FLAG_LABELS[flag] ?? flag}
+                        size='small'
+                        sx={{
+                          bgcolor: 'white',
+                          color: METRIC_WARN,
+                          fontWeight: 700,
+                          borderRadius: '8px',
+                          fontSize: 11,
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                </AdminCard>
+              </motion.div>
             )}
 
-            <Divider />
+            <Divider sx={{ borderColor: BORDER_SUBTLE }} />
 
             {/* Entry history */}
-            <Box>
-              <Stack direction='row' alignItems='center' spacing={1} mb={1.5}>
-                <ConfirmationNumberOutlinedIcon fontSize='small' color='action' />
-                <Typography variant='subtitle2' fontWeight={700}>
-                  Entry History ({entries.length})
-                </Typography>
-              </Stack>
+            <motion.div variants={popIn}>
+              <Box>
+                <SectionHeader
+                  icon={<ConfirmationNumberOutlinedIcon />}
+                  tint={METRIC_GOOD_TINT}
+                  color={METRIC_GOOD}
+                  title={`Entry History (${entries.length})`}
+                />
 
-              {entries.length === 0 ? (
-                <Typography variant='body2' color='text.secondary'>No entries yet.</Typography>
-              ) : (
-                <Table size='small'>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Campaign</TableCell>
-                      <TableCell>Source</TableCell>
-                      <TableCell>Date</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Receipt</TableCell>
-                      <TableCell>Risk +</TableCell>
-                      <TableCell>Risk Signals</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {entries.map((e) => (
-                      <TableRow key={e.id} hover>
-                        <TableCell>
-                          <Typography variant='caption' fontWeight={600} noWrap>{e.draw_name ?? '—'}</Typography>
-                          {e.business_name && (
-                            <Typography variant='caption' color='text.secondary' display='block' noWrap>{e.business_name}</Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Chip label={SOURCE_LABELS[e.entry_source] ?? e.entry_source} size='small' variant='outlined' sx={{ fontSize: 11 }} />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant='caption'>{e.activated_at ? new Date(e.activated_at).toLocaleDateString() : '—'}</Typography>
-                        </TableCell>
-                        <TableCell>
-                          {e.is_quarantined ? (
-                            <Chip
-                              label={QUARANTINE_LABELS[e.quarantine_reason ?? ''] ?? 'Quarantined'}
-                              size='small'
-                              color={e.quarantine_reason === 'ocr_pending' ? 'warning' : 'error'}
-                            />
-                          ) : (
-                            <Chip label='Active' size='small' color='success' />
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {e.receipt_image_url ? (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0.5 }}>
-                              <Box
-                                component='a'
-                                href={e.receipt_image_url}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                sx={{ display: 'inline-block', lineHeight: 0 }}
-                              >
-                                <Box
-                                  component='img'
-                                  src={e.receipt_image_url}
-                                  alt='Receipt'
+                {entries.length === 0 ? (
+                  <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>
+                    No entries yet.
+                  </Typography>
+                ) : (
+                  <AdminCard sx={{ p: 0, overflow: 'hidden' }}>
+                    <Table size='small'>
+                      <TableHead>
+                        <TableRow sx={{ bgcolor: BG_ROW_SUBTLE }}>
+                          <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Campaign</TableCell>
+                          <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Source</TableCell>
+                          <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Date</TableCell>
+                          <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Status</TableCell>
+                          <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Receipt</TableCell>
+                          <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Risk +</TableCell>
+                          <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Risk Signals</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {entries.map((e) => (
+                          <TableRow key={e.id} hover sx={{ '&:hover': { bgcolor: BG_ROW_SUBTLE }, borderBottom: `1px solid ${BORDER_SUBTLE}` }}>
+                            <TableCell>
+                              <Typography variant='caption' fontWeight={600} noWrap sx={{ color: TEXT_HEADING }}>
+                                {e.draw_name ?? '—'}
+                              </Typography>
+                              {e.business_name && (
+                                <Typography variant='caption' sx={{ color: TEXT_TERTIARY }} display='block' noWrap>
+                                  {e.business_name}
+                                </Typography>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={SOURCE_LABELS[e.entry_source] ?? e.entry_source}
+                                size='small'
+                                sx={{
+                                  fontSize: 11,
+                                  borderColor: BORDER_LIGHT,
+                                  borderRadius: '8px',
+                                  border: `1px solid ${BORDER_LIGHT}`,
+                                  bgcolor: 'transparent',
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant='caption' sx={{ color: TEXT_HEADING }}>
+                                {e.activated_at ? new Date(e.activated_at).toLocaleDateString() : '—'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              {e.is_quarantined ? (
+                                <Chip
+                                  label={QUARANTINE_LABELS[e.quarantine_reason ?? ''] ?? 'Quarantined'}
+                                  size='small'
                                   sx={{
-                                    width: 48,
-                                    height: 48,
-                                    objectFit: 'cover',
-                                    borderRadius: 1,
-                                    border: '1px solid',
-                                    borderColor: e.image_validation_status === 'failed' || e.image_validation_status === 'ocr_error' ? 'error.main' : e.image_validation_status === 'passed' ? 'success.main' : 'divider',
-                                    cursor: 'pointer',
-                                    transition: 'opacity 150ms',
-                                    '&:hover': { opacity: 0.8 },
+                                    bgcolor: e.quarantine_reason === 'ocr_pending' ? METRIC_WARN_TINT : METRIC_BAD_TINT,
+                                    color: e.quarantine_reason === 'ocr_pending' ? METRIC_WARN : METRIC_BAD,
+                                    fontWeight: 700,
+                                    borderRadius: '8px',
+                                    fontSize: 11,
                                   }}
                                 />
-                              </Box>
-                              {e.image_validation_status && e.image_validation_status !== 'not_required' && (
+                              ) : (
                                 <Chip
-                                  label={
-                                    e.image_validation_status === 'passed' ? 'OCR ok' :
-                                    e.image_validation_status === 'failed' ? 'OCR fail' :
-                                    e.image_validation_status === 'ocr_error' ? 'OCR err' :
-                                    'OCR pending'
-                                  }
+                                  label='Active'
                                   size='small'
-                                  color={
-                                    e.image_validation_status === 'passed' ? 'success' :
-                                    e.image_validation_status === 'failed' ? 'error' :
-                                    e.image_validation_status === 'ocr_error' ? 'warning' :
-                                    'default'
-                                  }
-                                  sx={{ fontSize: 10, height: 18 }}
+                                  sx={{
+                                    bgcolor: STATUS_ACTIVATED_BG,
+                                    color: STATUS_ACTIVATED_TEXT,
+                                    fontWeight: 700,
+                                    borderRadius: '8px',
+                                    fontSize: 11,
+                                  }}
                                 />
                               )}
-                              {e.image_validation_status && e.image_validation_status !== 'not_required' && (
-                                <Stack direction='row' spacing={0.25}>
-                                  {e.image_validation_status !== 'passed' && (
-                                    <IconButton
-                                      size='small'
-                                      color='success'
-                                      disabled={pendingTicket === e.id}
-                                      title='Approve image'
-                                      onClick={() => {
-                                        setPendingTicket(e.id);
-                                        imageDecision.mutate({ ticketId: e.id, decision: 'approve' }, { onSettled: () => setPendingTicket(null) });
+                            </TableCell>
+                            <TableCell>
+                              {e.receipt_image_url ? (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0.5 }}>
+                                  <Box
+                                    component='a'
+                                    href={e.receipt_image_url}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                    sx={{ display: 'inline-block', lineHeight: 0 }}
+                                  >
+                                    <Box
+                                      component='img'
+                                      src={e.receipt_image_url}
+                                      alt='Receipt'
+                                      sx={{
+                                        width: 48,
+                                        height: 48,
+                                        objectFit: 'cover',
+                                        borderRadius: '8px',
+                                        border: '1px solid',
+                                        borderColor: e.image_validation_status === 'failed' || e.image_validation_status === 'ocr_error' ? METRIC_BAD : e.image_validation_status === 'passed' ? METRIC_GOOD : BORDER_SUBTLE,
+                                        cursor: 'pointer',
+                                        transition: 'opacity 150ms',
+                                        '&:hover': { opacity: 0.8 },
                                       }}
-                                      sx={{ p: 0.25 }}
-                                    >
-                                      <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />
-                                    </IconButton>
-                                  )}
-                                  {e.image_validation_status !== 'failed' && (
-                                    <IconButton
+                                    />
+                                  </Box>
+                                  {e.image_validation_status && e.image_validation_status !== 'not_required' && (
+                                    <Chip
+                                      label={
+                                        e.image_validation_status === 'passed' ? 'OCR ok' :
+                                        e.image_validation_status === 'failed' ? 'OCR fail' :
+                                        e.image_validation_status === 'ocr_error' ? 'OCR err' :
+                                        'OCR pending'
+                                      }
                                       size='small'
-                                      color='error'
-                                      disabled={pendingTicket === e.id}
-                                      title='Reject image'
-                                      onClick={() => {
-                                        setPendingTicket(e.id);
-                                        imageDecision.mutate({ ticketId: e.id, decision: 'reject' }, { onSettled: () => setPendingTicket(null) });
+                                      sx={{
+                                        bgcolor:
+                                          e.image_validation_status === 'passed' ? STATUS_ACTIVATED_BG :
+                                          e.image_validation_status === 'failed' ? METRIC_BAD_TINT :
+                                          e.image_validation_status === 'ocr_error' ? METRIC_WARN_TINT :
+                                          STATUS_PENDING_BG,
+                                        color:
+                                          e.image_validation_status === 'passed' ? STATUS_ACTIVATED_TEXT :
+                                          e.image_validation_status === 'failed' ? METRIC_BAD :
+                                          e.image_validation_status === 'ocr_error' ? METRIC_WARN :
+                                          STATUS_PENDING_TEXT,
+                                        fontSize: 10,
+                                        height: 18,
+                                        fontWeight: 700,
+                                        borderRadius: '6px',
                                       }}
-                                      sx={{ p: 0.25 }}
-                                    >
-                                      <CancelOutlinedIcon sx={{ fontSize: 16 }} />
-                                    </IconButton>
+                                    />
                                   )}
+                                  {e.image_validation_status && e.image_validation_status !== 'not_required' && (
+                                    <Stack direction='row' spacing={0.25}>
+                                      {e.image_validation_status !== 'passed' && (
+                                        <IconButton
+                                          size='small'
+                                          color='success'
+                                          disabled={pendingTicket === e.id}
+                                          title='Approve image'
+                                          onClick={() => {
+                                            setPendingTicket(e.id);
+                                            imageDecision.mutate({ ticketId: e.id, decision: 'approve' }, { onSettled: () => setPendingTicket(null) });
+                                          }}
+                                          sx={{ p: 0.25 }}
+                                        >
+                                          <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />
+                                        </IconButton>
+                                      )}
+                                      {e.image_validation_status !== 'failed' && (
+                                        <IconButton
+                                          size='small'
+                                          color='error'
+                                          disabled={pendingTicket === e.id}
+                                          title='Reject image'
+                                          onClick={() => {
+                                            setPendingTicket(e.id);
+                                            imageDecision.mutate({ ticketId: e.id, decision: 'reject' }, { onSettled: () => setPendingTicket(null) });
+                                          }}
+                                          sx={{ p: 0.25 }}
+                                        >
+                                          <CancelOutlinedIcon sx={{ fontSize: 16 }} />
+                                        </IconButton>
+                                      )}
+                                    </Stack>
+                                  )}
+                                </Box>
+                              ) : (
+                                <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                                  —
+                                </Typography>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {e.risk_score_delta !== 0 ? (
+                                <Chip
+                                  label={e.risk_score_delta > 0 ? `+${e.risk_score_delta}` : `${e.risk_score_delta}`}
+                                  size='small'
+                                  sx={{
+                                    bgcolor: e.risk_score_delta > 0 ? METRIC_BAD_TINT : METRIC_GOOD_TINT,
+                                    color: e.risk_score_delta > 0 ? METRIC_BAD : METRIC_GOOD,
+                                    fontSize: 11,
+                                    height: 20,
+                                    fontWeight: 700,
+                                    borderRadius: '8px',
+                                  }}
+                                />
+                              ) : (
+                                <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                                  —
+                                </Typography>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {Array.isArray(e.risk_flags) && e.risk_flags.length > 0 ? (
+                                <Stack spacing={0.5}>
+                                  {(e.risk_flags as string[]).map((flag) => (
+                                    <Chip
+                                      key={flag}
+                                      label={RISK_FLAG_LABELS[flag] ?? flag}
+                                      size='small'
+                                      sx={{
+                                        fontSize: 10,
+                                        height: 20,
+                                        fontWeight: 700,
+                                        bgcolor: METRIC_WARN_TINT,
+                                        color: METRIC_WARN,
+                                        border: `1px solid ${METRIC_WARN_TINT}`,
+                                        borderRadius: '6px',
+                                      }}
+                                    />
+                                  ))}
                                 </Stack>
+                              ) : (
+                                <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                                  —
+                                </Typography>
                               )}
-                            </Box>
-                          ) : (
-                            <Typography variant='caption' color='text.disabled'>—</Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {e.risk_score_delta !== 0 ? (
-                            <Chip
-                              label={e.risk_score_delta > 0 ? `+${e.risk_score_delta}` : `${e.risk_score_delta}`}
-                              size='small'
-                              color={e.risk_score_delta > 0 ? 'error' : 'success'}
-                              sx={{ fontSize: 11, height: 20, fontWeight: 700 }}
-                            />
-                          ) : (
-                            <Typography variant='caption' color='text.disabled'>—</Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {Array.isArray(e.risk_flags) && e.risk_flags.length > 0 ? (
-                            <Stack spacing={0.5}>
-                              {(e.risk_flags as string[]).map((flag) => (
-                                <Chip
-                                  key={flag}
-                                  label={RISK_FLAG_LABELS[flag] ?? flag}
-                                  size='small'
-                                  color='warning'
-                                  variant='outlined'
-                                  sx={{ fontSize: 10, height: 20 }}
-                                />
-                              ))}
-                            </Stack>
-                          ) : (
-                            <Typography variant='caption' color='text.disabled'>—</Typography>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </Box>
-          </Stack>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </AdminCard>
+                )}
+              </Box>
+            </motion.div>
+            </Stack>
+          </motion.div>
         ) : (
-          <Typography color='text.secondary'>User not found.</Typography>
+          <Typography sx={{ color: TEXT_TERTIARY }}>
+            User not found.
+          </Typography>
         )}
       </Box>
     </Drawer>

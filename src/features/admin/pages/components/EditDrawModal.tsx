@@ -8,12 +8,19 @@ import {
   Stack,
   TextField,
   CircularProgress,
+  Box,
+  Typography,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import { useForm, Controller } from 'react-hook-form';
 import { useUpdateDraw } from '../../hooks/useAdmin';
 import { apiErrorMessage } from '../../../../shared/utils/apiError';
 import { firstOfMonth, lastOfMonth } from '../../utils/drawDates';
 import type { Draw } from '../../types/admin.types';
+import {
+  PRIMARY_MAIN, PRIMARY_TINT, GRADIENT_CTA, SHADOW_PRIMARY_SOFT, TEXT_HEADING, TEXT_SECONDARY,
+} from '../../../../shared/colors';
+import { IconTile } from './adminUi';
 
 interface Props {
   open: boolean;
@@ -67,10 +74,17 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth>
-      <DialogTitle>Edit Campaign</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
+    <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: '20px' } }}>
+      <DialogTitle sx={{ pb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <IconTile icon={<EditIcon />} tint={PRIMARY_TINT} color={PRIMARY_MAIN} size={36} />
+          <Box>
+            <Typography variant='h6' sx={{ fontWeight: 800, color: TEXT_HEADING, lineHeight: 1.2 }}>Edit Campaign</Typography>
+          </Box>
+        </Box>
+      </DialogTitle>
+      <DialogContent sx={{ pt: 2 }}>
+        <Stack spacing={2.5}>
           <Controller
             name='name'
             control={control}
@@ -83,6 +97,7 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
                 size='small'
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
+                slotProps={{ input: { sx: { borderRadius: '12px' } } }}
               />
             )}
           />
@@ -100,7 +115,7 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
                 type='number'
                 fullWidth
                 size='small'
-                slotProps={{ htmlInput: { min: 1 } }}
+                slotProps={{ htmlInput: { min: 1 }, input: { sx: { borderRadius: '12px' } } }}
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
               />
@@ -119,7 +134,7 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
                 type='date'
                 fullWidth
                 size='small'
-                slotProps={{ inputLabel: { shrink: true } }}
+                slotProps={{ inputLabel: { shrink: true }, input: { sx: { borderRadius: '12px' } } }}
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
               />
@@ -147,7 +162,7 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
                   // Re-check the start against the new draw month either way.
                   void trigger('start_date');
                 }}
-                slotProps={{ htmlInput: { min: today }, inputLabel: { shrink: true } }}
+                slotProps={{ htmlInput: { min: today }, inputLabel: { shrink: true }, input: { sx: { borderRadius: '12px' } } }}
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
               />
@@ -155,12 +170,19 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
           />
         </Stack>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+      <DialogActions sx={{ gap: 1, px: 3, pb: 2.5, pt: 1.5 }}>
+        <Button onClick={onClose} sx={{ color: TEXT_SECONDARY, textTransform: 'none', fontWeight: 600 }}>Cancel</Button>
         <Button
-          variant='contained'
           onClick={handleSubmit(onSubmit)}
           disabled={updateDraw.isPending || !isDirty}
+          sx={{
+            background: GRADIENT_CTA,
+            color: 'white',
+            borderRadius: '12px',
+            fontWeight: 700,
+            textTransform: 'none',
+            boxShadow: SHADOW_PRIMARY_SOFT,
+          }}
         >
           {updateDraw.isPending ? <CircularProgress size={20} color='inherit' /> : 'Save Changes'}
         </Button>

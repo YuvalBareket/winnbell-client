@@ -2,7 +2,6 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Card,
   CardContent,
   Stack,
   Chip,
@@ -14,7 +13,6 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Paper,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -65,15 +63,26 @@ import {
   useDrawCandidate,
   useDrawRejectedWinners,
 } from '../../hooks/useAdmin';
-import { BG_PAGE } from '../../../../shared/colors';
+import {
+  BG_PAGE, PRIMARY_MAIN,
+  STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT, STATUS_PENDING_BG, STATUS_PENDING_TEXT,
+  TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY, ERROR_BG_TINT, ERROR_BORDER_TINT,
+  ERROR_MAIN, BG_ROW_SUBTLE, BORDER_SUBTLE,
+  ACCENT_GOLD_LIGHT, ACCENT_GOLD_CREAM, ACCENT_GOLD_DARK, ACCENT_GOLD, GOLD_INK,
+  GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_80, GOLD_TROPHY,
+  BG_SURFACE, BORDER_LIGHT, GRADIENT_SUCCESS_GREEN, ERROR_BORDER_LIGHT, ERROR_HOVER_BG,
+} from '../../../../shared/colors';
+import { staggerContainer, popIn } from '../../../../shared/motion';
+import { AdminCard, IconTile } from './adminUi';
 import { apiErrorMessage } from '../../../../shared/utils/apiError';
 import { BUSINESS_SECTORS } from '../../data';
 import EditDrawModal from './EditDrawModal';
 
-const STATUS_COLORS: Record<string, 'default' | 'warning' | 'primary' | 'success' | 'error'> = {
-  upcoming: 'default',
-  open: 'primary',
-  closed: 'success',
+const getStatusChipProps = (status: string) => {
+  const s = status?.toLowerCase() ?? '';
+  if (s === 'open') return { bg: PRIMARY_MAIN, text: 'white', color: 'primary' as const };
+  if (s === 'closed') return { bg: STATUS_ACTIVATED_BG, text: STATUS_ACTIVATED_TEXT, color: 'success' as const };
+  return { bg: STATUS_PENDING_BG, text: STATUS_PENDING_TEXT, color: 'default' as const };
 };
 
 const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({ drawId, drawStatus }) => {
@@ -228,7 +237,7 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
       ) : (
         <Stack spacing={0.5}>
           {allRows.map((b) => (
-            <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+            <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 2, bgcolor: BG_ROW_SUBTLE, border: `1px solid ${BORDER_SUBTLE}` }}>
               <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
               {canEdit && (
                 <IconButton size='small' color='error' onClick={() => setConfirmRemove({ id: b.id, name: b.name })} disabled={removeBiz.isPending}>
@@ -271,14 +280,29 @@ interface Props {
   onCreateDraw: () => void;
 }
 
-const SectionHeader: React.FC<{ label: string; count: number }> = ({ label, count }) => (
+const SectionHeaderRow: React.FC<{ label: string; count: number }> = ({ label, count }) => (
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-    <Typography variant='overline' fontWeight={700} color='text.secondary' sx={{ letterSpacing: 1 }}>
+    <Typography variant='overline' fontWeight={700} sx={{ color: TEXT_TERTIARY, letterSpacing: 1, textTransform: 'uppercase', fontSize: '0.75rem' }}>
       {label}
     </Typography>
     <Chip label={count} size='small' sx={{ height: 18, fontSize: 11 }} />
     <Box flex={1}><Divider /></Box>
   </Box>
+);
+
+// Label / value row for the winner-review evidence cards.
+const InfoRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
+  <Stack direction='row' alignItems='baseline' justifyContent='space-between' spacing={2}>
+    <Typography variant='caption' sx={{ color: TEXT_TERTIARY, fontWeight: 600, flexShrink: 0 }}>{label}</Typography>
+    <Typography variant='body2' sx={{ color: TEXT_HEADING, fontWeight: 600, textAlign: 'right', minWidth: 0 }}>{value}</Typography>
+  </Stack>
+);
+
+// Small uppercase caption that titles a card in the winner-review dialog.
+const CardLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <Typography variant='caption' sx={{ color: TEXT_TERTIARY, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+    {children}
+  </Typography>
 );
 
 const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuccess, onCreateDraw }) => {
@@ -300,6 +324,8 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const [penaltyChecked, setPenaltyChecked] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectedExpanded, setRejectedExpanded] = useState(false);
+  // Second-step "are you sure?" gate before confirming or rejecting a winner.
+  const [confirmDecision, setConfirmDecision] = useState<null | 'confirm' | 'reject'>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [expandedDrawId, setExpandedDrawId] = useState<number | null>(null);
 
@@ -351,13 +377,17 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const handlePickWinner = async () => {
     if (!confirmPick) return;
     const drawId = confirmPick.id;
-    setConfirmPick(null);
+    // Keep the pre-flight dialog open (showing its "Picking..." button state) while the winner is
+    // selected server-side, then hand off to the review dialog. Closing it before the await left a
+    // blank gap with no loading feedback until the review dialog popped open.
     try {
       await pickWinner.mutateAsync({ drawId });
       setReviewDismissed(false);
       setReviewDrawId(drawId);
     } catch (e: unknown) {
       onSnackError(apiErrorMessage(e, 'Failed to pick winner'));
+    } finally {
+      setConfirmPick(null);
     }
   };
 
@@ -457,11 +487,11 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       )}
       {draw.status?.toUpperCase() === 'OPEN' && (
         hasUpcoming ? (
-          <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} onClick={(e) => { e.stopPropagation(); setConfirmClose(draw.id); }} fullWidth={!inline}>Close</Button>
+          <Button size='small' startIcon={<LockIcon />} onClick={(e) => { e.stopPropagation(); setConfirmClose(draw.id); }} fullWidth={!inline} sx={{ color: ERROR_MAIN, borderColor: ERROR_BORDER_TINT, border: `1px solid ${ERROR_BORDER_TINT}`, backgroundColor: ERROR_BG_TINT, '&:hover': { backgroundColor: ERROR_BG_TINT, borderColor: ERROR_MAIN }, fontWeight: 700, textTransform: 'none' }}>Close</Button>
         ) : (
           <Tooltip title='Create an upcoming campaign first. Closing opens the next campaign automatically, so there is always one open.'>
             <Box component='span' sx={{ width: inline ? 'auto' : '100%', display: inline ? 'inline-flex' : 'block' }}>
-              <Button size='small' variant='outlined' color='warning' startIcon={<LockIcon />} disabled fullWidth={!inline}>Close</Button>
+              <Button size='small' startIcon={<LockIcon />} disabled fullWidth={!inline} sx={{ color: ERROR_MAIN, borderColor: ERROR_BORDER_TINT, border: `1px solid ${ERROR_BORDER_TINT}`, backgroundColor: ERROR_BG_TINT, fontWeight: 700, textTransform: 'none' }}>Close</Button>
             </Box>
           </Tooltip>
         )
@@ -488,133 +518,169 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   );
 
   const renderTable = (rows: any[]) => (
-    <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', mb: 3 }}>
-      <Table size='small'>
-        <TableHead>
-          <TableRow sx={{ backgroundColor: BG_PAGE }}>
-            <TableCell>Name</TableCell>
-            <TableCell>Prize</TableCell>
-            <TableCell>Period</TableCell>
-            <TableCell align='center'>Entries</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell align='right'>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((draw) => (
-            <React.Fragment key={draw.id}>
-              <TableRow
-                hover
-                sx={{ cursor: 'pointer', '& > *': { borderBottom: expandedDrawId === draw.id ? 'none' : undefined } }}
-                onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}
-              >
-                <TableCell sx={{ fontWeight: 600 }}>
-                  <Stack direction='row' alignItems='center' spacing={0.5}>
-                    <IconButton size='small' sx={{ p: 0.25 }}>
-                      {expandedDrawId === draw.id ? <KeyboardArrowUpIcon fontSize='small' /> : <KeyboardArrowDownIcon fontSize='small' />}
-                    </IconButton>
-                    {draw.name}
-                  </Stack>
-                </TableCell>
-                <TableCell>${Number(draw.prize_amount ?? 0).toLocaleString()}</TableCell>
-                <TableCell>
-                  {draw.start_date ? `${new Date(draw.start_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })} - ` : ''}
-                  {new Date(draw.draw_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}
-                </TableCell>
-                <TableCell align='center'>
-                  <Stack direction='row' alignItems='center' justifyContent='center' spacing={0.5}>
-                    <ConfirmationNumberOutlinedIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                    <Typography variant='body2' fontWeight={600}>{(draw.entry_count ?? 0).toLocaleString()}</Typography>
-                  </Stack>
-                </TableCell>
-                <TableCell>
-                  <Chip label={draw.status} size='small' color={STATUS_COLORS[draw.status?.toLowerCase()] ?? 'default'} />
-                </TableCell>
-                <TableCell align='right' onClick={(e) => e.stopPropagation()}>
-                  {renderActions(draw, true)}
-                </TableCell>
-              </TableRow>
-              {expandedDrawId === draw.id && (
-                <TableRow>
-                  <TableCell colSpan={6} sx={{ p: 0 }}>
-                    <DrawBusinessesPanel key={draw.id} drawId={draw.id} drawStatus={draw.status} />
+    <AdminCard sx={{ mb: 3, overflow: 'visible' }}>
+      <TableContainer sx={{ maxWidth: '100%' }}>
+        <Table size='small'>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: BG_ROW_SUBTLE }}>
+              <TableCell sx={{ color: TEXT_TERTIARY, fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Name</TableCell>
+              <TableCell sx={{ color: TEXT_TERTIARY, fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Prize</TableCell>
+              <TableCell sx={{ color: TEXT_TERTIARY, fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Period</TableCell>
+              <TableCell align='center' sx={{ color: TEXT_TERTIARY, fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Entries</TableCell>
+              <TableCell sx={{ color: TEXT_TERTIARY, fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Status</TableCell>
+              <TableCell align='right' sx={{ color: TEXT_TERTIARY, fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.map((draw) => (
+              <React.Fragment key={draw.id}>
+                <TableRow
+                  hover
+                  sx={{ cursor: 'pointer', '&:hover': { backgroundColor: BG_ROW_SUBTLE }, '& > *': { borderBottom: expandedDrawId === draw.id ? 'none' : `1px solid ${BORDER_SUBTLE}` } }}
+                  onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}
+                >
+                  <TableCell sx={{ fontWeight: 600, color: TEXT_HEADING }}>
+                    <Stack direction='row' alignItems='center' spacing={0.5}>
+                      <IconButton size='small' sx={{ p: 0.25 }}>
+                        {expandedDrawId === draw.id ? <KeyboardArrowUpIcon fontSize='small' /> : <KeyboardArrowDownIcon fontSize='small' />}
+                      </IconButton>
+                      {draw.name}
+                    </Stack>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: TEXT_HEADING }}>${Number(draw.prize_amount ?? 0).toLocaleString()}</TableCell>
+                  <TableCell sx={{ color: TEXT_SECONDARY }}>
+                    {draw.start_date ? `${new Date(draw.start_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })} - ` : ''}
+                    {new Date(draw.draw_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}
+                  </TableCell>
+                  <TableCell align='center'>
+                    <Stack direction='row' alignItems='center' justifyContent='center' spacing={0.5}>
+                      <ConfirmationNumberOutlinedIcon sx={{ fontSize: 14, color: TEXT_SECONDARY }} />
+                      <Typography variant='body2' fontWeight={600} sx={{ color: TEXT_HEADING }}>{(draw.entry_count ?? 0).toLocaleString()}</Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const props = getStatusChipProps(draw.status);
+                      return (
+                        <Chip
+                          label={draw.status}
+                          size='small'
+                          sx={{
+                            backgroundColor: props.bg,
+                            color: props.text,
+                            fontWeight: 700,
+                            borderRadius: '8px',
+                          }}
+                        />
+                      );
+                    })()}
+                  </TableCell>
+                  <TableCell align='right' onClick={(e) => e.stopPropagation()}>
+                    {renderActions(draw, true)}
                   </TableCell>
                 </TableRow>
-              )}
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                {expandedDrawId === draw.id && (
+                  <TableRow>
+                    <TableCell colSpan={6} sx={{ p: 0 }}>
+                      <DrawBusinessesPanel key={draw.id} drawId={draw.id} drawStatus={draw.status} />
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </AdminCard>
   );
 
   const renderCards = (rows: any[]) => (
-    <Stack spacing={2} sx={{ mb: 3 }}>
-      {rows.map((draw) => (
-        <Card key={draw.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-          <CardContent>
-            <Stack spacing={2}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Box>
-                  <Typography variant='subtitle2' fontWeight={700}>{draw.name}</Typography>
-                  <Typography variant='caption' color='text.secondary'>
-                    Prize: ${Number(draw.prize_amount ?? 0).toLocaleString()} · {(draw.entry_count ?? 0).toLocaleString()} entries
-                  </Typography>
-                </Box>
-                <IconButton size='small' onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}>
-                  {expandedDrawId === draw.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                </IconButton>
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Chip label={draw.status} size='small' color={STATUS_COLORS[draw.status?.toLowerCase()] ?? 'default'} />
-                <Typography variant='caption' sx={{ alignSelf: 'center', color: 'text.secondary' }}>
-                  {draw.start_date ? `${new Date(draw.start_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })} - ` : ''}
-                  {new Date(draw.draw_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}
-                </Typography>
-              </Box>
-              {expandedDrawId === draw.id && <DrawBusinessesPanel key={draw.id} drawId={draw.id} drawStatus={draw.status} />}
-              {renderActions(draw)}
-            </Stack>
-          </CardContent>
-        </Card>
-      ))}
-    </Stack>
+    <motion.div variants={staggerContainer} initial='hidden' animate='visible' style={{ marginBottom: 24 }}>
+      <Stack spacing={2}>
+        {rows.map((draw) => (
+          <motion.div key={draw.id} variants={popIn}>
+            <AdminCard hover>
+              <CardContent>
+                <Stack spacing={2}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Box>
+                      <Typography variant='subtitle2' fontWeight={700} sx={{ color: TEXT_HEADING }}>{draw.name}</Typography>
+                      <Typography variant='caption' sx={{ color: TEXT_SECONDARY }}>
+                        Prize: ${Number(draw.prize_amount ?? 0).toLocaleString()} · {(draw.entry_count ?? 0).toLocaleString()} entries
+                      </Typography>
+                    </Box>
+                    <IconButton size='small' onClick={() => setExpandedDrawId(expandedDrawId === draw.id ? null : draw.id)}>
+                      {expandedDrawId === draw.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                    </IconButton>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {(() => {
+                      const props = getStatusChipProps(draw.status);
+                      return (
+                        <Chip
+                          label={draw.status}
+                          size='small'
+                          sx={{
+                            backgroundColor: props.bg,
+                            color: props.text,
+                            fontWeight: 700,
+                            borderRadius: '8px',
+                          }}
+                        />
+                      );
+                    })()}
+                    <Typography variant='caption' sx={{ alignSelf: 'center', color: TEXT_SECONDARY }}>
+                      {draw.start_date ? `${new Date(draw.start_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })} - ` : ''}
+                      {new Date(draw.draw_date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}
+                    </Typography>
+                  </Box>
+                  {expandedDrawId === draw.id && <DrawBusinessesPanel key={draw.id} drawId={draw.id} drawStatus={draw.status} />}
+                  {renderActions(draw)}
+                </Stack>
+              </CardContent>
+            </AdminCard>
+          </motion.div>
+        ))}
+      </Stack>
+    </motion.div>
   );
 
   return (
     <>
-      <Stack spacing={0}>
-        <Box display='flex' justifyContent='flex-end' mb={3}>
-          <Button variant='contained' startIcon={<AddIcon />} onClick={onCreateDraw}>New Campaign</Button>
-        </Box>
-
-        {active.length > 0 && (
-          <>
-            <SectionHeader label='Active' count={active.length} />
-            {isMobile ? renderCards(active) : renderTable(active)}
-          </>
-        )}
-
-        {upcoming.length > 0 && (
-          <>
-            <SectionHeader label='Upcoming' count={upcoming.length} />
-            {isMobile ? renderCards(upcoming) : renderTable(upcoming)}
-          </>
-        )}
-
-        {history.length > 0 && (
-          <>
-            <SectionHeader label='History' count={history.length} />
-            {isMobile ? renderCards(history) : renderTable(history)}
-          </>
-        )}
-
-        {!draws?.length && (
-          <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
-            <Typography>No campaigns yet. Create one to get started.</Typography>
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20, mass: 0.9 }}>
+        <Stack spacing={0}>
+          <Box display='flex' justifyContent='flex-end' mb={3}>
+            <Button variant='contained' startIcon={<AddIcon />} onClick={onCreateDraw} sx={{ fontWeight: 700, textTransform: 'none' }}>New Campaign</Button>
           </Box>
-        )}
-      </Stack>
+
+          {active.length > 0 && (
+            <>
+              <SectionHeaderRow label='Active' count={active.length} />
+              {isMobile ? renderCards(active) : renderTable(active)}
+            </>
+          )}
+
+          {upcoming.length > 0 && (
+            <>
+              <SectionHeaderRow label='Upcoming' count={upcoming.length} />
+              {isMobile ? renderCards(upcoming) : renderTable(upcoming)}
+            </>
+          )}
+
+          {history.length > 0 && (
+            <>
+              <SectionHeaderRow label='History' count={history.length} />
+              {isMobile ? renderCards(history) : renderTable(history)}
+            </>
+          )}
+
+          {!draws?.length && (
+            <Box sx={{ textAlign: 'center', py: 6, color: TEXT_SECONDARY }}>
+              <Typography>No campaigns yet. Create one to get started.</Typography>
+            </Box>
+          )}
+        </Stack>
+      </motion.div>
 
       {/* Open confirmation */}
       <Dialog open={!!confirmOpen} onClose={() => setConfirmOpen(null)}>
@@ -670,7 +736,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       </Dialog>
 
       {/* Pick winner pre-flight */}
-      <Dialog open={!!confirmPick} onClose={() => setConfirmPick(null)} maxWidth='xs' fullWidth>
+      <Dialog open={!!confirmPick} onClose={() => { if (!pickWinner.isPending) setConfirmPick(null); }} maxWidth='xs' fullWidth>
         <DialogTitle>Pick a Winner?</DialogTitle>
         <DialogContent>
           <Stack spacing={2}>
@@ -694,7 +760,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmPick(null)}>Cancel</Button>
+          <Button onClick={() => setConfirmPick(null)} disabled={pickWinner.isPending}>Cancel</Button>
           <Button
             variant='contained'
             color='secondary'
@@ -726,269 +792,413 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       <Dialog
         open={!!effectiveReviewDrawId}
         onClose={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); setRejectReason(''); }}
-        maxWidth='sm'
+        maxWidth='md'
         fullWidth
+        slotProps={{ paper: { sx: { borderRadius: '20px', overflow: 'hidden' } } }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Stack direction='row' alignItems='center' spacing={1}>
-            <EmojiEventsIcon sx={{ color: 'warning.main' }} />
-            <Typography variant='h6' fontWeight={700}>{candidate?.winnerConfirmed ? 'Campaign Record' : 'Review Candidate Winner'}</Typography>
+        {/* Gradient header band - matches the app hero language (glow orb, white text). */}
+        <Box sx={{ position: 'relative', overflow: 'hidden', background: GRADIENT_HERO, color: 'white', px: 3, py: 2.5 }}>
+          <Box sx={{ position: 'absolute', top: -90, right: -70, width: 240, height: 240, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`, pointerEvents: 'none' }} />
+          <Stack direction='row' alignItems='center' spacing={1.75} sx={{ position: 'relative' }}>
+            <IconTile icon={<EmojiEventsIcon />} tint={ALPHA_WHITE_15} color={GOLD_TROPHY} size={46} />
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant='h6' fontWeight={800} sx={{ letterSpacing: '-0.02em', lineHeight: 1.2 }} noWrap>
+                {candidate?.winnerConfirmed ? 'Campaign Record' : 'Review Candidate Winner'}
+              </Typography>
+              <Typography variant='body2' sx={{ color: ALPHA_WHITE_80 }} noWrap>
+                {candidate?.winnerConfirmed ? 'This winner has been confirmed.' : 'Verify the candidate, then confirm or pick again.'}
+              </Typography>
+            </Box>
           </Stack>
-        </DialogTitle>
-        <DialogContent dividers sx={{ px: 3, py: 2 }}>
-          <AnimatePresence mode='wait'>
-            {candidateLoading ? (
-              <motion.div
-                key='skeleton'
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Stack spacing={1.5}>
-                  <Skeleton variant='text' width='60%' height={32} />
-                  <Skeleton variant='text' width='40%' />
-                  <Skeleton variant='rectangular' height={64} sx={{ borderRadius: 2 }} />
-                  <Skeleton variant='text' width='50%' />
-                  <Skeleton variant='text' width='35%' />
-                </Stack>
-              </motion.div>
-            ) : candidate ? (
-              <motion.div
-                key='content'
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Stack spacing={2}>
-                  {/* Winner identity */}
-                  <Box>
-                    <Typography variant='h6' fontWeight={800}>{candidate.winnerName}</Typography>
-                    <Typography variant='body2' color='text.secondary'>{candidate.winnerEmail}</Typography>
-                  </Box>
+        </Box>
 
-                  {/* Entry source chip */}
-                  <Stack direction='row' spacing={1} flexWrap='wrap'>
-                    <Chip
-                      label={candidate.entrySource === 'free' ? 'weekly' : (candidate.entrySource ?? 'unknown')}
-                      size='small'
-                      color={
-                        candidate.entrySource === 'receipt' ? 'primary'
-                        : candidate.entrySource === 'free' ? 'default'
-                        : candidate.entrySource === 'promo' ? 'secondary'
-                        : 'info'
-                      }
-                    />
-                    {candidate.imageValidationStatus && (
-                      <Chip
-                        label={candidate.imageValidationStatus}
-                        size='small'
-                        color={
-                          candidate.imageValidationStatus === 'passed' ? 'success'
-                          : candidate.imageValidationStatus === 'pending' ? 'warning'
-                          : 'error'
-                        }
-                      />
-                    )}
-                    {/* Risk score badge - server payload field is riskScore (userRiskScore is the rejected-winners key) */}
-                    <Chip
-                      label={`Risk: ${candidate.riskScore ?? 0}`}
-                      size='small'
-                      color={
-                        (candidate.riskScore ?? 0) >= 20 ? 'error'
-                        : (candidate.riskScore ?? 0) >= 10 ? 'warning'
-                        : 'success'
-                      }
-                      variant='outlined'
-                    />
-                  </Stack>
+        <DialogContent dividers sx={{ px: 3, py: 2.5, bgcolor: BG_ROW_SUBTLE }}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems='flex-start'>
 
-                  {/* Receipt details */}
-                  {candidate.entrySource === 'receipt' && (
-                    <Box sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}>
-                      <Stack spacing={0.75}>
-                        {candidate.receiptIdentifier && (
-                          <Typography variant='body2'>
-                            <strong>Receipt ID:</strong> {candidate.receiptIdentifier}
+            {/* LEFT - the winning entry, who won, and the evidence */}
+            <Box sx={{ flex: { md: 1.5 }, width: '100%', minWidth: 0 }}>
+              <AnimatePresence mode='wait'>
+                {candidateLoading ? (
+                  <motion.div
+                    key='skeleton'
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Stack spacing={2}>
+                      <Skeleton variant='rectangular' height={104} sx={{ borderRadius: '16px' }} />
+                      <Skeleton variant='rectangular' height={120} sx={{ borderRadius: '15px' }} />
+                      <Skeleton variant='rectangular' height={90} sx={{ borderRadius: '15px' }} />
+                    </Stack>
+                  </motion.div>
+                ) : candidate ? (
+                  <motion.div
+                    key='content'
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Stack spacing={2}>
+                      {/* Winning entry code - the hero, shown large so the admin can read
+                          it aloud / cross-check against the physical entry. */}
+                      {candidate.ticketCode && (
+                        <Box
+                          sx={{
+                            borderRadius: '16px',
+                            border: `1px solid ${ACCENT_GOLD}`,
+                            background: `linear-gradient(135deg, ${ACCENT_GOLD_LIGHT} 0%, ${ACCENT_GOLD_CREAM} 100%)`,
+                            px: 2.5,
+                            py: 2.25,
+                            textAlign: 'center',
+                          }}
+                        >
+                          <Typography
+                            variant='caption'
+                            sx={{ color: ACCENT_GOLD_DARK, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}
+                          >
+                            Winning Entry Code
                           </Typography>
-                        )}
-                        {candidate.transactionAmount != null && (
-                          <Typography variant='body2'>
-                            <strong>Amount:</strong> {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.transactionAmount)}
+                          <Typography
+                            sx={{
+                              mt: 0.5,
+                              color: GOLD_INK,
+                              fontWeight: 800,
+                              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                              fontSize: { xs: 32, sm: 40 },
+                              lineHeight: 1.05,
+                              letterSpacing: '0.06em',
+                              wordBreak: 'break-all',
+                            }}
+                          >
+                            {candidate.ticketCode}
                           </Typography>
-                        )}
-                        {candidate.transactionDate && (
-                          <Typography variant='body2'>
-                            <strong>Date:</strong> {new Date(candidate.transactionDate).toLocaleDateString()}
-                          </Typography>
-                        )}
-                        {candidate.receiptImageUrl && (
-                          <Box>
-                            <Typography variant='caption' color='text.secondary' display='block' mb={0.5}>Receipt image</Typography>
-                            <Box
-                              component='a'
-                              href={candidate.receiptImageUrl}
-                              target='_blank'
-                              rel='noopener noreferrer'
-                              sx={{ display: 'inline-block', borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider', cursor: 'pointer' }}
-                            >
-                              <Box
-                                component='img'
-                                src={candidate.receiptImageUrl}
-                                alt='Receipt'
-                                sx={{ display: 'block', width: 80, height: 80, objectFit: 'cover' }}
-                              />
-                            </Box>
-                          </Box>
-                        )}
-                      </Stack>
-                    </Box>
-                  )}
+                        </Box>
+                      )}
 
-                  {/* Business and prize */}
-                  <Stack spacing={0.5}>
-                    {candidate.businessName && (
-                      <Typography variant='body2' color='text.secondary'>
-                        <strong>Business:</strong> {candidate.businessName}{candidate.locationName ? ` - ${candidate.locationName}` : ''}
-                      </Typography>
-                    )}
-                    {candidate.prizePool != null && (
-                      <Typography variant='body2' color='text.secondary'>
-                        <strong>Prize pool:</strong> {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.prizePool)}
-                      </Typography>
-                    )}
-                  </Stack>
+                      {/* Winner identity + status chips */}
+                      <AdminCard sx={{ p: 2 }}>
+                        <CardLabel>Winner</CardLabel>
+                        <Typography variant='h6' fontWeight={800} sx={{ color: TEXT_HEADING, mt: 0.5, lineHeight: 1.2 }}>{candidate.winnerName}</Typography>
+                        <Typography variant='body2' sx={{ color: TEXT_SECONDARY, wordBreak: 'break-word' }}>{candidate.winnerEmail}</Typography>
 
-                  {/* Previously rejected */}
-                  {rejectedWinners && rejectedWinners.length > 0 && (
-                    <Box>
-                      <Button
-                        size='small'
-                        variant='text'
-                        color='inherit'
-                        startIcon={rejectedExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                        onClick={() => setRejectedExpanded((v) => !v)}
-                        sx={{ px: 0, color: 'text.secondary', fontWeight: 600, fontSize: 12 }}
-                      >
-                        Previously Rejected ({rejectedWinners.length})
-                      </Button>
-                      <Collapse in={rejectedExpanded}>
-                        <Stack spacing={1} sx={{ mt: 1 }}>
-                          {rejectedWinners.map((rw) => (
-                            <Box
-                              key={rw.id}
-                              sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}
-                            >
-                              <Stack spacing={0.5}>
-                                <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                                  <Typography variant='body2' fontWeight={600}>{rw.userName}</Typography>
-                                  <Typography
-                                    variant='caption'
-                                    fontWeight={700}
-                                    sx={{ color: rw.riskPenalty > 0 ? 'error.main' : 'text.disabled' }}
-                                  >
-                                    {rw.riskPenalty > 0 ? `+${rw.riskPenalty}` : 'No penalty'}
-                                  </Typography>
-                                </Stack>
-                                <Typography variant='caption' color='text.secondary'>
-                                  {rw.ticketCode}{rw.entrySource ? ` - ${rw.entrySource}` : ''}
-                                </Typography>
-                                {rw.receiptIdentifier && (
-                                  <Typography variant='caption' color='text.secondary'>
-                                    Receipt: {rw.receiptIdentifier}
-                                    {rw.transactionAmount != null ? ` - ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(rw.transactionAmount)}` : ''}
-                                    {rw.transactionDate ? ` - ${new Date(rw.transactionDate).toLocaleDateString()}` : ''}
-                                  </Typography>
-                                )}
-                                {rw.reason && (
-                                  <Typography variant='caption' sx={{ color: 'text.primary', fontStyle: 'italic', borderLeft: '2px solid', borderColor: 'divider', pl: 1, mt: 0.25 }}>
-                                    Reason: {rw.reason}
-                                  </Typography>
-                                )}
-                                <Typography variant='caption' color='text.disabled'>
-                                  Rejected {new Date(rw.rejectedAt).toLocaleString()}
-                                </Typography>
-                              </Stack>
-                            </Box>
-                          ))}
+                        <Stack direction='row' spacing={1} flexWrap='wrap' useFlexGap sx={{ mt: 1.5 }}>
+                          <Chip
+                            label={candidate.entrySource === 'free' ? 'weekly' : (candidate.entrySource ?? 'unknown')}
+                            size='small'
+                            color={
+                              candidate.entrySource === 'receipt' ? 'primary'
+                              : candidate.entrySource === 'free' ? 'default'
+                              : candidate.entrySource === 'promo' ? 'secondary'
+                              : 'info'
+                            }
+                          />
+                          {/* Image status chip - only meaningful when the entry actually needed a
+                              receipt image. 'not_required' entries (weekly / promo) have nothing to
+                              validate, so we hide the chip rather than surface a confusing raw value. */}
+                          {candidate.imageValidationStatus && candidate.imageValidationStatus !== 'not_required' && (
+                            <Chip
+                              label={
+                                candidate.imageValidationStatus === 'passed' ? 'Image verified'
+                                : candidate.imageValidationStatus === 'pending' ? 'Image pending'
+                                : 'Image failed'
+                              }
+                              size='small'
+                              color={
+                                candidate.imageValidationStatus === 'passed' ? 'success'
+                                : candidate.imageValidationStatus === 'pending' ? 'warning'
+                                : 'error'
+                              }
+                            />
+                          )}
+                          {/* Risk score badge - server payload field is riskScore (userRiskScore is the rejected-winners key) */}
+                          <Chip
+                            label={`Risk: ${candidate.riskScore ?? 0}`}
+                            size='small'
+                            color={
+                              (candidate.riskScore ?? 0) >= 20 ? 'error'
+                              : (candidate.riskScore ?? 0) >= 10 ? 'warning'
+                              : 'success'
+                            }
+                            variant='outlined'
+                          />
                         </Stack>
-                      </Collapse>
+                      </AdminCard>
+
+                      {/* Campaign / business / prize */}
+                      {(candidate.businessName || candidate.prizePool != null) && (
+                        <AdminCard sx={{ p: 2 }}>
+                          <CardLabel>Campaign</CardLabel>
+                          <Stack spacing={1} sx={{ mt: 1 }}>
+                            {candidate.businessName && (
+                              <InfoRow label='Business' value={`${candidate.businessName}${candidate.locationName ? ` - ${candidate.locationName}` : ''}`} />
+                            )}
+                            {candidate.prizePool != null && (
+                              <InfoRow label='Prize pool' value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.prizePool)} />
+                            )}
+                          </Stack>
+                        </AdminCard>
+                      )}
+
+                      {/* Receipt details */}
+                      {candidate.entrySource === 'receipt' && (
+                        <AdminCard sx={{ p: 2 }}>
+                          <CardLabel>Receipt</CardLabel>
+                          <Stack spacing={1} sx={{ mt: 1 }}>
+                            {candidate.receiptIdentifier && (
+                              <InfoRow label='Receipt ID' value={candidate.receiptIdentifier} />
+                            )}
+                            {candidate.transactionAmount != null && (
+                              <InfoRow label='Amount' value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.transactionAmount)} />
+                            )}
+                            {candidate.transactionDate && (
+                              <InfoRow label='Date' value={new Date(candidate.transactionDate).toLocaleDateString()} />
+                            )}
+                            {candidate.receiptImageUrl && (
+                              <Box sx={{ pt: 0.5 }}>
+                                <Box
+                                  component='a'
+                                  href={candidate.receiptImageUrl}
+                                  target='_blank'
+                                  rel='noopener noreferrer'
+                                  sx={{ display: 'inline-block', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${BORDER_LIGHT}`, cursor: 'pointer' }}
+                                >
+                                  <Box
+                                    component='img'
+                                    src={candidate.receiptImageUrl}
+                                    alt='Receipt'
+                                    sx={{ display: 'block', width: 96, height: 96, objectFit: 'cover' }}
+                                  />
+                                </Box>
+                              </Box>
+                            )}
+                          </Stack>
+                        </AdminCard>
+                      )}
+
+                    </Stack>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key='empty'
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Typography variant='body2' sx={{ color: TEXT_SECONDARY }}>
+                      A candidate winner has been selected. Verify to confirm or reject to pick another.
+                    </Typography>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Box>
+
+            {/* RIGHT - the decision and the rejected-winners history. Sits beside the
+                winner info on desktop, stacks below it on mobile. */}
+            <Box sx={{ flex: { md: 1 }, width: '100%', minWidth: 0 }}>
+              <Stack spacing={2}>
+              <AdminCard sx={{ p: 2 }}>
+                <CardLabel>{candidate?.winnerConfirmed ? 'Status' : 'Decision'}</CardLabel>
+                <Stack spacing={1.5} sx={{ mt: 1.5 }}>
+                  {candidate?.winnerConfirmed && (
+                    <Box sx={{ borderRadius: '12px', bgcolor: STATUS_ACTIVATED_BG, p: 1.5 }}>
+                      <Typography variant='body2' sx={{ fontWeight: 800, color: STATUS_ACTIVATED_TEXT }}>
+                        Winner confirmed
+                      </Typography>
+                      {candidate.confirmedAt && (
+                        <Typography variant='caption' sx={{ color: TEXT_SECONDARY, display: 'block', mt: 0.5 }}>
+                          {new Date(candidate.confirmedAt).toLocaleString()}
+                          {candidate.confirmedByName ? ` by ${candidate.confirmedByName}` : ''}
+                        </Typography>
+                      )}
                     </Box>
                   )}
+                  {!candidate?.winnerConfirmed && (<>
+                    <Button
+                      fullWidth
+                      variant='contained'
+                      onClick={() => setConfirmDecision('confirm')}
+                      disabled={confirmWinnerMutation.isPending || candidateLoading}
+                      sx={{
+                        background: GRADIENT_SUCCESS_GREEN,
+                        borderRadius: '12px',
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        py: 1.1,
+                        '&.Mui-disabled': { opacity: 0.6, color: 'white' },
+                      }}
+                    >
+                      {confirmWinnerMutation.isPending ? 'Confirming...' : 'Confirm Winner'}
+                    </Button>
+
+                    <Box sx={{ borderRadius: '12px', border: `1px solid ${ERROR_BORDER_LIGHT}`, bgcolor: ERROR_HOVER_BG, p: 1.5 }}>
+                      <Typography variant='caption' sx={{ color: ERROR_MAIN, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                        Reject this winner
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        size='small'
+                        multiline
+                        minRows={2}
+                        label='Reason for disqualification (required)'
+                        placeholder='e.g. Contacted the location; they confirmed no receipt matching this submission exists.'
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        sx={{ mt: 1.25, mb: 1, '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: BG_SURFACE } }}
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            size='small'
+                            checked={penaltyChecked}
+                            onChange={(e) => setPenaltyChecked(e.target.checked)}
+                            color='error'
+                          />
+                        }
+                        label={<Typography variant='body2'>Apply fraud penalty (+12 risk score)</Typography>}
+                        sx={{ m: 0 }}
+                      />
+                      <Button
+                        fullWidth
+                        variant='outlined'
+                        color='error'
+                        onClick={() => setConfirmDecision('reject')}
+                        disabled={pickWinner.isPending || confirmWinnerMutation.isPending || candidateLoading || !rejectReason.trim()}
+                        sx={{ mt: 1, borderRadius: '12px', textTransform: 'none', fontWeight: 700 }}
+                      >
+                        {pickWinner.isPending ? 'Picking...' : 'Reject and Pick Next'}
+                      </Button>
+                    </Box>
+                  </>)}
+                  <Button
+                    fullWidth
+                    onClick={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); setRejectReason(''); }}
+                    disabled={confirmWinnerMutation.isPending}
+                    sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, color: TEXT_SECONDARY }}
+                  >
+                    {candidate?.winnerConfirmed ? 'Close' : 'Cancel'}
+                  </Button>
                 </Stack>
-              </motion.div>
-            ) : (
-              <motion.div
-                key='empty'
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Typography variant='body2' color='text.secondary'>
-                  A candidate winner has been selected. Verify to confirm or reject to pick another.
-                </Typography>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </AdminCard>
+
+              {/* Previously rejected - lives in the right column on desktop, below the decision */}
+              {rejectedWinners && rejectedWinners.length > 0 && (
+                <AdminCard sx={{ p: 2 }}>
+                  <Button
+                    size='small'
+                    variant='text'
+                    color='inherit'
+                    startIcon={rejectedExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    onClick={() => setRejectedExpanded((v) => !v)}
+                    sx={{ px: 0, color: TEXT_SECONDARY, fontWeight: 700, fontSize: 12 }}
+                  >
+                    Previously Rejected ({rejectedWinners.length})
+                  </Button>
+                  <Collapse in={rejectedExpanded}>
+                    <Stack spacing={1} sx={{ mt: 1 }}>
+                      {rejectedWinners.map((rw) => (
+                        <Box
+                          key={rw.id}
+                          sx={{ p: 1.5, borderRadius: '12px', border: `1px solid ${BORDER_SUBTLE}`, bgcolor: BG_ROW_SUBTLE }}
+                        >
+                          <Stack spacing={0.5}>
+                            <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                              <Typography variant='body2' fontWeight={700} sx={{ color: TEXT_HEADING }}>{rw.userName}</Typography>
+                              <Typography
+                                variant='caption'
+                                fontWeight={700}
+                                sx={{ color: rw.riskPenalty > 0 ? ERROR_MAIN : TEXT_TERTIARY }}
+                              >
+                                {rw.riskPenalty > 0 ? `+${rw.riskPenalty}` : 'No penalty'}
+                              </Typography>
+                            </Stack>
+                            <Typography variant='caption' sx={{ color: TEXT_SECONDARY }}>
+                              {rw.ticketCode}{rw.entrySource ? ` - ${rw.entrySource}` : ''}
+                            </Typography>
+                            {rw.receiptIdentifier && (
+                              <Typography variant='caption' sx={{ color: TEXT_SECONDARY }}>
+                                Receipt: {rw.receiptIdentifier}
+                                {rw.transactionAmount != null ? ` - ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(rw.transactionAmount)}` : ''}
+                                {rw.transactionDate ? ` - ${new Date(rw.transactionDate).toLocaleDateString()}` : ''}
+                              </Typography>
+                            )}
+                            {rw.reason && (
+                              <Typography variant='caption' sx={{ color: TEXT_HEADING, fontStyle: 'italic', borderLeft: `2px solid ${BORDER_SUBTLE}`, pl: 1, mt: 0.25 }}>
+                                Reason: {rw.reason}
+                              </Typography>
+                            )}
+                            <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                              Rejected {new Date(rw.rejectedAt).toLocaleString()}{rw.rejectedByName ? ` by ${rw.rejectedByName}` : ''}
+                            </Typography>
+                          </Stack>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Collapse>
+                </AdminCard>
+              )}
+              </Stack>
+            </Box>
+
+          </Stack>
         </DialogContent>
-        <DialogActions sx={{ flexDirection: 'column', gap: 1, px: 3, pb: 2.5, pt: 2, alignItems: 'stretch' }}>
-          {!candidate?.winnerConfirmed && (<>
+      </Dialog>
+
+      {/* Confirm / reject winner - final "are you sure?" gate */}
+      <Dialog
+        open={!!confirmDecision}
+        onClose={() => setConfirmDecision(null)}
+        maxWidth='xs'
+        fullWidth
+        slotProps={{ paper: { sx: { borderRadius: '20px' } } }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: TEXT_HEADING }}>
+          {confirmDecision === 'reject' ? 'Reject this winner?' : 'Confirm this winner?'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: TEXT_SECONDARY }}>
+            {confirmDecision === 'reject' ? (
+              <>
+                This disqualifies{candidate?.winnerName ? ` ${candidate.winnerName}` : ' the current candidate'} and immediately draws another eligible entry.
+                {penaltyChecked ? ' A fraud penalty of +12 risk will be applied.' : ''} This cannot be undone.
+              </>
+            ) : (
+              <>
+                This finalizes{candidate?.winnerName ? ` ${candidate.winnerName}` : ' the current candidate'} as the winner of this campaign. This cannot be undone.
+              </>
+            )}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button
-            fullWidth
-            variant='contained'
-            color='success'
-            onClick={handleVerifyWinner}
-            disabled={confirmWinnerMutation.isPending || candidateLoading}
+            onClick={() => setConfirmDecision(null)}
+            disabled={confirmWinnerMutation.isPending || pickWinner.isPending}
+            sx={{ textTransform: 'none', fontWeight: 700, color: TEXT_SECONDARY }}
           >
-            {confirmWinnerMutation.isPending ? 'Confirming...' : 'Confirm Winner'}
+            Cancel
           </Button>
-          <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 1.5 }}>
-            <TextField
-              fullWidth
-              size='small'
-              multiline
-              minRows={2}
-              label='Reason for disqualification (required)'
-              placeholder='e.g. Contacted the location; they confirmed no receipt matching this submission exists.'
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              sx={{ mb: 1.5 }}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  size='small'
-                  checked={penaltyChecked}
-                  onChange={(e) => setPenaltyChecked(e.target.checked)}
-                  color='error'
-                />
-              }
-              label={
-                <Typography variant='body2'>Apply fraud penalty (+12 risk score)</Typography>
-              }
-              sx={{ m: 0 }}
-            />
+          {confirmDecision === 'reject' ? (
             <Button
-              fullWidth
-              variant='outlined'
+              variant='contained'
               color='error'
-              onClick={handlePickAnother}
-              disabled={pickWinner.isPending || confirmWinnerMutation.isPending || candidateLoading || !rejectReason.trim()}
-              sx={{ mt: 1 }}
+              onClick={async () => { await handlePickAnother(); setConfirmDecision(null); }}
+              disabled={pickWinner.isPending || confirmWinnerMutation.isPending}
+              sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700 }}
             >
-              {pickWinner.isPending ? 'Picking...' : 'Reject and Pick Next'}
+              {pickWinner.isPending ? 'Rejecting...' : 'Reject and Pick Next'}
             </Button>
-          </Box>
-          </>)}
-          <Button
-            fullWidth
-            onClick={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); setRejectReason(''); }}
-            disabled={confirmWinnerMutation.isPending}
-          >
-            {candidate?.winnerConfirmed ? 'Close' : 'Cancel'}
-          </Button>
+          ) : (
+            <Button
+              variant='contained'
+              onClick={async () => { await handleVerifyWinner(); setConfirmDecision(null); }}
+              disabled={confirmWinnerMutation.isPending || pickWinner.isPending}
+              sx={{ background: GRADIENT_SUCCESS_GREEN, borderRadius: '12px', textTransform: 'none', fontWeight: 700, '&.Mui-disabled': { opacity: 0.6, color: 'white' } }}
+            >
+              {confirmWinnerMutation.isPending ? 'Confirming...' : 'Confirm Winner'}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
 

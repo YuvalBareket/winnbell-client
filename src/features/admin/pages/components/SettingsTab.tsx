@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   Stack,
   Chip,
   Button,
@@ -11,14 +9,20 @@ import {
   CircularProgress,
   Autocomplete,
   Alert,
-  Divider,
   Switch,
   FormControlLabel,
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import { WorkspacePremium } from '@mui/icons-material';
 import { usePlatformSettings, useSavePlatformSettings } from '../../hooks/useAdmin';
 import { US_STATES } from '../../../../shared/constants/usStates';
-import { AMBER_HOURGLASS } from '../../../../shared/colors';
+import {
+  AMBER_HOURGLASS, BORDER_LIGHT, BG_ROW_SUBTLE,
+  TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY, PRIMARY_TINT, PRIMARY_MAIN,
+  GRADIENT_CTA, SHADOW_PRIMARY_SOFT,
+} from '../../../../shared/colors';
+import { riseIn, staggerContainer } from '../../../../shared/motion';
+import { AdminCard, SectionHeader } from './adminUi';
 import { useFoundingAvailability } from '../../../subscription/hooks/useFoundingAvailability';
 
 const SettingsTab: React.FC = () => {
@@ -68,163 +72,198 @@ const SettingsTab: React.FC = () => {
   };
 
   return (
-    <Stack spacing={3}>
-      {/* ── Allowed States ────────────────────────────────────────────────────── */}
-      <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-        <CardContent>
-          <Stack spacing={3}>
-            <Box>
-              <Typography variant='h6' fontWeight={700} mb={0.5}>Allowed States</Typography>
-              <Typography variant='body2' color='text.secondary' mb={2}>
-                Restrict registration to specific US states. When any state is selected, sign-ups from outside the US are blocked too. Remove all to allow sign-ups from anywhere.
-              </Typography>
+    <motion.div variants={staggerContainer} initial='hidden' animate='visible'>
+      <Stack spacing={3}>
+        {/* ── Allowed States ────────────────────────────────────────────────────── */}
+        <motion.div variants={riseIn}>
+          <AdminCard>
+            <Stack spacing={0}>
+              <Box sx={{ p: 2.25 }}>
+                <SectionHeader
+                  icon={<WorkspacePremium />}
+                  tint={PRIMARY_TINT}
+                  color={PRIMARY_MAIN}
+                  title='Allowed States'
+                />
+                <Typography variant='body2' sx={{ color: TEXT_SECONDARY, mb: 2 }}>
+                  Restrict registration to specific US states. When any state is selected, sign-ups from outside the US are blocked too. Remove all to allow sign-ups from anywhere.
+                </Typography>
 
-              <Autocomplete
-                options={US_STATES}
-                getOptionLabel={(o) => o.name}
-                value={null}
-                inputValue={stateInputValue}
-                onInputChange={(_e, val) => setStateInputValue(val)}
-                onChange={(_e, selected) => {
-                  if (selected && !localAllowedStates.includes(selected.code)) {
-                    setLocalAllowedStates((prev) => [...prev, selected.code]);
-                  }
-                  setStateInputValue('');
-                }}
-                renderInput={(params) => (
-                  <TextField {...params} size='small' placeholder='Search state…' sx={{ width: 300 }} />
-                )}
-              />
-
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1.5 }}>
-                {localAllowedStates.length === 0 ? (
-                  <Typography variant='caption' color='text.secondary'>No restriction (open everywhere)</Typography>
-                ) : (
-                  localAllowedStates.map((code) => {
-                    const state = US_STATES.find((s) => s.code === code);
-                    return (
-                      <Chip
-                        key={code}
-                        label={state?.name ?? code}
-                        size='small'
-                        onDelete={() => setLocalAllowedStates((prev) => prev.filter((x) => x !== code))}
-                      />
-                    );
-                  })
-                )}
-              </Box>
-
-              {localAllowedStates.length > 0 && (
-                <Button
-                  size='small' color='error' variant='outlined'
-                  onClick={() => {
-                    setLocalAllowedStates([]);
-                    saveMutation.mutate(
-                      { global_entry_cap: null, allowed_states: [], founding_member_cap: foundingCap, founding_phase_active: foundingActive },
-                      { onSuccess: () => setSettingsSaved(true) },
-                    );
+                <Autocomplete
+                  options={US_STATES}
+                  getOptionLabel={(o) => o.name}
+                  value={null}
+                  inputValue={stateInputValue}
+                  onInputChange={(_e, val) => setStateInputValue(val)}
+                  onChange={(_e, selected) => {
+                    if (selected && !localAllowedStates.includes(selected.code)) {
+                      setLocalAllowedStates((prev) => [...prev, selected.code]);
+                    }
+                    setStateInputValue('');
                   }}
-                  disabled={saveMutation.isPending}
-                  sx={{ mt: 1.5, fontWeight: 600 }}
-                >
-                  Open to everyone
-                </Button>
-              )}
-            </Box>
-
-            <Divider />
-
-            {/* ── Founding Partner Program ──────────────────────────────────── */}
-            <Box>
-              <Stack direction='row' alignItems='center' spacing={1} mb={0.5}>
-                <WorkspacePremium sx={{ color: AMBER_HOURGLASS, fontSize: 20 }} />
-                <Typography variant='h6' fontWeight={700}>Founding Partner Program</Typography>
-              </Stack>
-              <Typography variant='body2' color='text.secondary' mb={2.5}>
-                Control the early-bird founding partner offer. When active, businesses pay a one-time fee per location for the full founding term instead of a recurring subscription.
-              </Typography>
-
-              <Stack spacing={2.5}>
-                {/* Toggle */}
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={foundingActive}
-                      onChange={(e) => setFoundingActive(e.target.checked)}
-                      color='primary'
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size='small'
+                      placeholder='Search state…'
+                      sx={{ width: 300, '& .MuiOutlinedInput-root': { borderRadius: '12px', borderColor: BORDER_LIGHT } }}
                     />
-                  }
-                  label={
-                    <Box>
-                      <Typography variant='body2' fontWeight={700}>
-                        {foundingActive ? 'Program is active' : 'Program is inactive'}
-                      </Typography>
-                      <Typography variant='caption' color='text.secondary'>
-                        {foundingActive
-                          ? 'Businesses see the founding partner checkout flow'
-                          : 'Subscribe page will show "not currently active"'}
-                      </Typography>
-                    </Box>
-                  }
+                  )}
                 />
 
-                {/* Cap input */}
-                <Stack direction='row' alignItems='flex-start' spacing={2}>
-                  <TextField
-                    label='Max founding partners'
-                    type='number'
-                    size='small'
-                    value={foundingCap}
-                    onChange={(e) => {
-                      setFoundingCap(Number(e.target.value));
-                      setFoundingCapError('');
-                    }}
-                    inputProps={{ min: 1, step: 1 }}
-                    error={!!foundingCapError}
-                    helperText={foundingCapError || 'Minimum: current number of paid members'}
-                    sx={{ width: 220 }}
-                  />
-
-                  {/* Live stats */}
-                  {foundingAvailability && (
-                    <Box sx={{ pt: 0.5 }}>
-                      <Typography variant='caption' color='text.secondary' display='block'>
-                        Spots taken
-                      </Typography>
-                      <Typography variant='body1' fontWeight={800}>
-                        {foundingAvailability.taken}
-                        <Typography component='span' variant='body2' color='text.secondary' fontWeight={400}>
-                          {' '}/ {foundingAvailability.cap} · {foundingAvailability.remaining} remaining
-                        </Typography>
-                      </Typography>
-                    </Box>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1.5 }}>
+                  {localAllowedStates.length === 0 ? (
+                    <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>No restriction (open everywhere)</Typography>
+                  ) : (
+                    localAllowedStates.map((code) => {
+                      const state = US_STATES.find((s) => s.code === code);
+                      return (
+                        <Chip
+                          key={code}
+                          label={state?.name ?? code}
+                          size='small'
+                          onDelete={() => setLocalAllowedStates((prev) => prev.filter((x) => x !== code))}
+                        />
+                      );
+                    })
                   )}
-                </Stack>
+                </Box>
+
+                {localAllowedStates.length > 0 && (
+                  <Button
+                    size='small'
+                    color='error'
+                    variant='outlined'
+                    onClick={() => {
+                      setLocalAllowedStates([]);
+                      saveMutation.mutate(
+                        { global_entry_cap: null, allowed_states: [], founding_member_cap: foundingCap, founding_phase_active: foundingActive },
+                        { onSuccess: () => setSettingsSaved(true) },
+                      );
+                    }}
+                    disabled={saveMutation.isPending}
+                    sx={{ mt: 1.5, fontWeight: 600 }}
+                  >
+                    Open to everyone
+                  </Button>
+                )}
+              </Box>
+            </Stack>
+          </AdminCard>
+        </motion.div>
+
+        {/* ── Founding Partner Program ──────────────────────────────────── */}
+        <motion.div variants={riseIn}>
+          <AdminCard>
+            <Stack spacing={0}>
+              <Box sx={{ p: 2.25 }}>
+                  <SectionHeader
+                    icon={<WorkspacePremium />}
+                    tint={PRIMARY_TINT}
+                    color={AMBER_HOURGLASS}
+                    title='Founding Partner Program'
+                  />
+                  <Typography variant='body2' sx={{ color: TEXT_SECONDARY, mb: 2 }}>
+                    Control the early-bird founding partner offer. When active, businesses pay a one-time fee per location for the full founding term instead of a recurring subscription.
+                  </Typography>
+
+                  <Stack spacing={2.5}>
+                    {/* Toggle */}
+                    <Box sx={{ p: 1.5, bgcolor: BG_ROW_SUBTLE, borderRadius: '12px' }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={foundingActive}
+                            onChange={(e) => setFoundingActive(e.target.checked)}
+                            color='primary'
+                          />
+                        }
+                        label={
+                          <Box>
+                            <Typography variant='body2' sx={{ fontWeight: 700, color: TEXT_HEADING }}>
+                              {foundingActive ? 'Program is active' : 'Program is inactive'}
+                            </Typography>
+                            <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                              {foundingActive
+                                ? 'Businesses see the founding partner checkout flow'
+                                : 'Subscribe page will show "not currently active"'}
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </Box>
+
+                    {/* Cap input */}
+                    <Stack direction='row' alignItems='flex-start' spacing={2}>
+                      <TextField
+                        label='Max founding partners'
+                        type='number'
+                        size='small'
+                        value={foundingCap}
+                        onChange={(e) => {
+                          setFoundingCap(Number(e.target.value));
+                          setFoundingCapError('');
+                        }}
+                        inputProps={{ min: 1, step: 1 }}
+                        error={!!foundingCapError}
+                        helperText={foundingCapError || 'Minimum: current number of paid members'}
+                        sx={{
+                          width: 220,
+                          '& .MuiOutlinedInput-root': { borderRadius: '12px', borderColor: BORDER_LIGHT },
+                        }}
+                      />
+
+                      {/* Live stats */}
+                      {foundingAvailability && (
+                        <Box sx={{ pt: 0.5 }}>
+                          <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block' }}>
+                            Spots taken
+                          </Typography>
+                          <Typography variant='body1' sx={{ fontWeight: 800, color: TEXT_HEADING }}>
+                            {foundingAvailability.taken}
+                            <Typography component='span' variant='body2' sx={{ color: TEXT_SECONDARY, fontWeight: 400 }}>
+                              {' '}/ {foundingAvailability.cap} · {foundingAvailability.remaining} remaining
+                            </Typography>
+                          </Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Stack>
+                </Box>
               </Stack>
-            </Box>
+            </AdminCard>
+          </motion.div>
 
-            <Divider />
+        {/* Success Alert */}
+        {settingsSaved && (
+          <motion.div variants={riseIn}>
+            <Alert severity='success' onClose={() => setSettingsSaved(false)}>
+              Settings saved successfully.
+            </Alert>
+          </motion.div>
+        )}
 
-            {settingsSaved && (
-              <Alert severity='success' onClose={() => setSettingsSaved(false)}>
-                Settings saved successfully.
-              </Alert>
-            )}
-
-            <Box>
-              <Button
-                variant='contained' disableElevation
-                onClick={handleSave}
-                disabled={saveMutation.isPending}
-                sx={{ fontWeight: 700 }}
-              >
-                {saveMutation.isPending ? <CircularProgress size={20} color='inherit' /> : 'Save Settings'}
-              </Button>
-            </Box>
-          </Stack>
-        </CardContent>
-      </Card>
-    </Stack>
+        {/* Save Button */}
+        <motion.div variants={riseIn}>
+          <Button
+            variant='contained'
+            disableElevation
+            onClick={handleSave}
+            disabled={saveMutation.isPending}
+            sx={{
+              background: GRADIENT_CTA,
+              borderRadius: '12px',
+              fontWeight: 700,
+              textTransform: 'none',
+              boxShadow: SHADOW_PRIMARY_SOFT,
+              '&:hover': { boxShadow: SHADOW_PRIMARY_SOFT },
+            }}
+          >
+            {saveMutation.isPending ? <CircularProgress size={20} color='inherit' /> : 'Save Settings'}
+          </Button>
+        </motion.div>
+      </Stack>
+    </motion.div>
   );
 };
 

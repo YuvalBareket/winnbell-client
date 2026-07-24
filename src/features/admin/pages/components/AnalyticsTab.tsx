@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Grid,
-  Card,
   CardContent,
   Stack,
   Chip,
@@ -29,9 +28,16 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts';
+import { motion } from 'framer-motion';
 import { useAdminAnalytics, useAdminBusinesses, useAllDraws, useCampaignComparison, useEntryVolume, useLocationBreakdown } from '../../hooks/useAdmin';
-import { BG_PAGE, CHART_TEAL } from '../../../../shared/colors';
+import {
+  BG_SURFACE, BG_ROW_SUBTLE, BORDER_LIGHT, TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY,
+  METRIC_GOOD, METRIC_BAD,
+  CHART_BLUE, CHART_BLUE_TINT, CHART_ORANGE, CHART_PURPLE, CHART_TEAL, CHART_GRID,
+} from '../../../../shared/colors';
 import { formatShortDay } from '../../../../shared/utils/date';
+import { riseIn } from '../../../../shared/motion';
+import { AdminCard } from '../components/adminUi';
 import GrowthDashboard from '../../components/GrowthDashboard';
 
 interface Props {
@@ -155,128 +161,131 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
       ) : (
         <Stack spacing={3}>
           {/* Row 1: User Growth + Entry Source Mix side by side */}
-          <Grid container spacing={2}>
-            {/* User Growth - platform-wide, not affected by business filter */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                    <Typography variant='subtitle1' fontWeight={700}>User Growth</Typography>
-                    {isFiltered && (
-                      <Tooltip title='Showing users who participated in the selected filters.' placement='top'>
-                        <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
-                      </Tooltip>
-                    )}
-                  </Box>
-                  <Stack spacing={2}>
-                    {[
-                      { label: 'New This Week', value: analytics?.userGrowth?.new_this_week ?? 0, bg: '#e3f2fd', color: '#1976d2' },
-                      { label: 'New This Month', value: analytics?.userGrowth?.new_this_month ?? 0, bg: '#e8f5e9', color: '#2e7d32' },
-                      { label: 'Total Users', value: analytics?.userGrowth?.total ?? 0, bg: '#f3e5f5', color: '#7b1fa2' },
-                    ].map((item) => (
-                      <Box key={item.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant='body2' color='text.secondary'>{item.label}</Typography>
-                        <Typography variant='body1' fontWeight={700} sx={{ color: item.color }}>{item.value.toLocaleString()}</Typography>
-                      </Box>
-                    ))}
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Entry Source Mix */}
-            <Grid size={{ xs: 12, md: 8 }}>
-              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant='subtitle1' fontWeight={700}>Entry Source Mix</Typography>
+          <motion.div variants={riseIn} initial='hidden' animate='visible'>
+            <Grid container spacing={2}>
+              {/* User Growth - platform-wide, not affected by business filter */}
+              <Grid size={{ xs: 12, md: 4 }}>
+                <AdminCard sx={{ height: '100%' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                      <Typography variant='subtitle1' sx={{ fontWeight: 800, color: TEXT_HEADING, letterSpacing: '-0.02em' }}>User Growth</Typography>
                       {isFiltered && (
-                        <Tooltip title='Showing data for selected filters.' placement='top'>
-                          <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
+                        <Tooltip title='Showing users who participated in the selected filters.' placement='top'>
+                          <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: CHART_BLUE_TINT, color: CHART_BLUE }} />
                         </Tooltip>
                       )}
                     </Box>
-                    <Typography variant='caption' color='text.secondary'>
-                      Total: {(analytics?.entrySourceMix?.total ?? 0).toLocaleString()} entries
-                    </Typography>
-                  </Box>
-                  <Stack spacing={1.5}>
-                    {[
-                      { label: 'Receipt', key: 'receipt' as const, color: '#2e7d32' },
-                      { label: 'Weekly / AMOE', key: 'free' as const, color: '#f57c00' },
-                      { label: 'Promo', key: 'promo' as const, color: '#7b1fa2' },
-                      { label: 'Referral', key: 'referral' as const, color: CHART_TEAL },
-                    ].map((source) => {
-                      const count = analytics?.entrySourceMix?.[source.key] ?? 0;
-                      const total = analytics?.entrySourceMix?.total ?? 0;
-                      const pct = total > 0 ? (count / total) * 100 : 0;
-                      return (
-                        <Box key={source.key}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                            <Typography variant='body2' fontWeight={500}>{source.label}</Typography>
-                            <Typography variant='body2' color='text.secondary'>{count.toLocaleString()} ({pct.toFixed(1)}%)</Typography>
-                          </Box>
-                          <LinearProgress
-                            variant='determinate'
-                            value={pct}
-                            sx={{ height: 7, borderRadius: 1, backgroundColor: `${source.color}22`, '& .MuiLinearProgress-bar': { backgroundColor: source.color } }}
-                          />
+                    <Stack spacing={2}>
+                      {[
+                        { label: 'New This Week', value: analytics?.userGrowth?.new_this_week ?? 0, color: CHART_BLUE },
+                        { label: 'New This Month', value: analytics?.userGrowth?.new_this_month ?? 0, color: METRIC_GOOD },
+                        { label: 'Total Users', value: analytics?.userGrowth?.total ?? 0, color: CHART_PURPLE },
+                      ].map((item) => (
+                        <Box key={item.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant='body2' color={TEXT_SECONDARY}>{item.label}</Typography>
+                          <Typography variant='body1' fontWeight={700} sx={{ color: item.color }}>{item.value.toLocaleString()}</Typography>
                         </Box>
-                      );
-                    })}
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+                      ))}
+                    </Stack>
+                  </CardContent>
+                </AdminCard>
+              </Grid>
 
-          {/* Row 2: AMOE + Validation + Fraud */}
-          <Grid container spacing={2}>
-            {/* AMOE - platform-wide */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                    <Typography variant='subtitle1' fontWeight={700}>Weekly Entries (AMOE)</Typography>
-                    {analyticsDrawFilter && (
-                      <Tooltip title='Filtered by selected campaign.' placement='top'>
-                        <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
-                      </Tooltip>
-                    )}
-                  </Box>
-                  <Stack spacing={1.5}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='body2' color='text.secondary'>Weekly Entries</Typography>
-                      <Chip label={(analytics?.entrySourceMix?.free ?? 0).toLocaleString()} size='small' color='success' />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='body2' color='text.secondary'>Share of All Entries</Typography>
-                      <Typography variant='body2' fontWeight={700} color='success.main'>
-                        {analytics?.entrySourceMix?.total ? ((analytics.entrySourceMix.free / analytics.entrySourceMix.total) * 100).toFixed(1) : '0'}%
+              {/* Entry Source Mix */}
+              <Grid size={{ xs: 12, md: 8 }}>
+                <AdminCard sx={{ height: '100%' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant='subtitle1' sx={{ fontWeight: 800, color: TEXT_HEADING, letterSpacing: '-0.02em' }}>Entry Source Mix</Typography>
+                        {isFiltered && (
+                          <Tooltip title='Showing data for selected filters.' placement='top'>
+                            <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: CHART_BLUE_TINT, color: CHART_BLUE }} />
+                          </Tooltip>
+                        )}
+                      </Box>
+                      <Typography variant='caption' color={TEXT_TERTIARY}>
+                        Total: {(analytics?.entrySourceMix?.total ?? 0).toLocaleString()} entries
                       </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant='body2' color='text.secondary'>Total Entries (all sources)</Typography>
-                      <Typography variant='body2' fontWeight={700}>{(analytics?.entrySourceMix?.total ?? 0).toLocaleString()}</Typography>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
+                    <Stack spacing={1.5}>
+                      {[
+                        { label: 'Receipt', key: 'receipt' as const, color: METRIC_GOOD },
+                        { label: 'Weekly / AMOE', key: 'free' as const, color: CHART_ORANGE },
+                        { label: 'Promo', key: 'promo' as const, color: CHART_PURPLE },
+                        { label: 'Referral', key: 'referral' as const, color: CHART_TEAL },
+                      ].map((source) => {
+                        const count = analytics?.entrySourceMix?.[source.key] ?? 0;
+                        const total = analytics?.entrySourceMix?.total ?? 0;
+                        const pct = total > 0 ? (count / total) * 100 : 0;
+                        return (
+                          <Box key={source.key}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                              <Typography variant='body2' fontWeight={500}>{source.label}</Typography>
+                              <Typography variant='body2' color={TEXT_SECONDARY}>{count.toLocaleString()} ({pct.toFixed(1)}%)</Typography>
+                            </Box>
+                            <LinearProgress
+                              variant='determinate'
+                              value={pct}
+                              sx={{ height: 7, borderRadius: 1, backgroundColor: source.color + '22', '& .MuiLinearProgress-bar': { backgroundColor: source.color } }}
+                            />
+                          </Box>
+                        );
+                      })}
+                    </Stack>
+                  </CardContent>
+                </AdminCard>
+              </Grid>
             </Grid>
+          </motion.div>
 
-            {/* Validation */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                    <Typography variant='subtitle1' fontWeight={700}>Validation</Typography>
-                    {isFiltered && (
-                      <Tooltip title='Showing data for selected filters.' placement='top'>
-                        <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
-                      </Tooltip>
-                    )}
-                  </Box>
+          {/* Row 2: AMOE + Validation + Fraud */}
+          <motion.div variants={riseIn} initial='hidden' animate='visible'>
+            <Grid container spacing={2}>
+              {/* AMOE - platform-wide */}
+              <Grid size={{ xs: 12, md: 4 }}>
+                <AdminCard sx={{ height: '100%' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                      <Typography variant='subtitle1' sx={{ fontWeight: 800, color: TEXT_HEADING, letterSpacing: '-0.02em' }}>Weekly Entries (AMOE)</Typography>
+                      {analyticsDrawFilter && (
+                        <Tooltip title='Filtered by selected campaign.' placement='top'>
+                          <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: CHART_BLUE_TINT, color: CHART_BLUE }} />
+                        </Tooltip>
+                      )}
+                    </Box>
+                    <Stack spacing={1.5}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant='body2' color={TEXT_SECONDARY}>Weekly Entries</Typography>
+                        <Chip label={(analytics?.entrySourceMix?.free ?? 0).toLocaleString()} size='small' color='success' />
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant='body2' color={TEXT_SECONDARY}>Share of All Entries</Typography>
+                        <Typography variant='body2' fontWeight={700} color='success.main'>
+                          {analytics?.entrySourceMix?.total ? ((analytics.entrySourceMix.free / analytics.entrySourceMix.total) * 100).toFixed(1) : '0'}%
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant='body2' color={TEXT_SECONDARY}>Total Entries (all sources)</Typography>
+                        <Typography variant='body2' fontWeight={700}>{(analytics?.entrySourceMix?.total ?? 0).toLocaleString()}</Typography>
+                      </Box>
+                    </Stack>
+                  </CardContent>
+                </AdminCard>
+              </Grid>
+
+              {/* Validation */}
+              <Grid size={{ xs: 12, md: 4 }}>
+                <AdminCard sx={{ height: '100%' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                      <Typography variant='subtitle1' sx={{ fontWeight: 800, color: TEXT_HEADING, letterSpacing: '-0.02em' }}>Validation</Typography>
+                      {isFiltered && (
+                        <Tooltip title='Showing data for selected filters.' placement='top'>
+                          <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: CHART_BLUE_TINT, color: CHART_BLUE }} />
+                        </Tooltip>
+                      )}
+                    </Box>
                   <Stack spacing={2}>
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
@@ -331,21 +340,21 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                     )}
                   </Stack>
                 </CardContent>
-              </Card>
-            </Grid>
+              </AdminCard>
+              </Grid>
 
-            {/* Fraud & Risk - platform-wide */}
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                    <Typography variant='subtitle1' fontWeight={700}>Fraud & Risk</Typography>
-                    {isFiltered && (
-                      <Tooltip title='Showing risk scores of users who participated in the selected filters.' placement='top'>
-                        <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
-                      </Tooltip>
-                    )}
-                  </Box>
+              {/* Fraud & Risk - platform-wide */}
+              <Grid size={{ xs: 12, md: 4 }}>
+                <AdminCard sx={{ height: '100%' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                      <Typography variant='subtitle1' sx={{ fontWeight: 800, color: TEXT_HEADING, letterSpacing: '-0.02em' }}>Fraud & Risk</Typography>
+                      {isFiltered && (
+                        <Tooltip title='Showing risk scores of users who participated in the selected filters.' placement='top'>
+                          <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: CHART_BLUE_TINT, color: CHART_BLUE }} />
+                        </Tooltip>
+                      )}
+                    </Box>
                   <Stack spacing={1.5}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Box>
@@ -370,21 +379,23 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                     </Box>
                   </Stack>
                 </CardContent>
-              </Card>
+              </AdminCard>
+              </Grid>
             </Grid>
-          </Grid>
+          </motion.div>
 
           {/* Row 3: Repeat Behavior */}
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant='subtitle1' fontWeight={700}>Repeat Behavior</Typography>
-                {isFiltered && (
-                  <Tooltip title='Showing data for selected filters.' placement='top'>
-                    <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: '#e3f2fd', color: '#1565c0' }} />
-                  </Tooltip>
-                )}
-              </Box>
+          <motion.div variants={riseIn} initial='hidden' animate='visible'>
+            <AdminCard>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Typography variant='subtitle1' sx={{ fontWeight: 800, color: TEXT_HEADING, letterSpacing: '-0.02em' }}>Repeat Behavior</Typography>
+                  {isFiltered && (
+                    <Tooltip title='Showing data for selected filters.' placement='top'>
+                      <Chip icon={<FilterAltIcon sx={{ fontSize: '13px !important' }} />} label='Filtered' size='small' sx={{ fontSize: '0.68rem', height: 22, cursor: 'default', bgcolor: CHART_BLUE_TINT, color: CHART_BLUE }} />
+                    </Tooltip>
+                  )}
+                </Box>
               <Grid container spacing={2}>
                 {[
                   { label: 'Users who submitted', value: analytics?.repeatBehavior?.users_with_submissions ?? 0 },
@@ -400,56 +411,60 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                   </Grid>
                 ))}
               </Grid>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </AdminCard>
+          </motion.div>
 
           {/* Entry Volume Chart */}
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-            <CardContent>
-              <Typography variant='subtitle1' fontWeight={700} mb={2}>Entry Volume Over Time</Typography>
-              {!entryVolume || entryVolume.length === 0 ? (
-                <Box sx={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Typography variant='body2' color='text.secondary'>No data for selected filters.</Typography>
-                </Box>
-              ) : (
-                <ResponsiveContainer width='100%' height={200}>
-                  <AreaChart data={entryVolume} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id='entryGrad' x1='0' y1='0' x2='0' y2='1'>
-                        <stop offset='5%' stopColor='#1976d2' stopOpacity={0.25} />
-                        <stop offset='95%' stopColor='#1976d2' stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
-                    <XAxis dataKey='date' tick={{ fontSize: 11 }} tickFormatter={(v) => formatShortDay(v)} />
-                    <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                    <RTooltip formatter={(v) => [Number(v).toLocaleString(), 'Entries']} labelFormatter={(l) => formatShortDay(String(l))} />
-                    <Area type='monotone' dataKey='count' stroke='#1976d2' strokeWidth={2} fill='url(#entryGrad)' dot={false} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
+          <motion.div variants={riseIn} initial='hidden' animate='visible'>
+            <AdminCard>
+              <CardContent>
+                <Typography variant='subtitle1' sx={{ fontWeight: 800, color: TEXT_HEADING, letterSpacing: '-0.02em' }} mb={2}>Entry Volume Over Time</Typography>
+                {!entryVolume || entryVolume.length === 0 ? (
+                  <Box sx={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Typography variant='body2' color={TEXT_SECONDARY}>No data for selected filters.</Typography>
+                  </Box>
+                ) : (
+                  <ResponsiveContainer width='100%' height={200}>
+                    <AreaChart data={entryVolume} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id='entryGrad' x1='0' y1='0' x2='0' y2='1'>
+                          <stop offset='5%' stopColor={CHART_BLUE} stopOpacity={0.25} />
+                          <stop offset='95%' stopColor={CHART_BLUE} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray='3 3' stroke={CHART_GRID} />
+                      <XAxis dataKey='date' tick={{ fontSize: 12, fill: TEXT_TERTIARY }} tickFormatter={(v) => formatShortDay(v)} />
+                      <YAxis tick={{ fontSize: 12, fill: TEXT_TERTIARY }} allowDecimals={false} />
+                      <RTooltip contentStyle={{ backgroundColor: BG_SURFACE, border: `1px solid ${BORDER_LIGHT}`, borderRadius: 12 }} formatter={(v) => [Number(v).toLocaleString(), 'Entries']} labelFormatter={(l) => formatShortDay(String(l))} />
+                      <Area type='monotone' dataKey='count' stroke={CHART_BLUE} strokeWidth={2} fill='url(#entryGrad)' dot={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
+              </CardContent>
+            </AdminCard>
+          </motion.div>
 
           {/* Campaign Comparison Table */}
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-            <CardContent sx={{ pb: 0 }}>
-              <Typography variant='subtitle1' fontWeight={700} mb={2}>Campaign Comparison</Typography>
-            </CardContent>
-            <TableContainer>
-              <Table size='small'>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: BG_PAGE }}>
-                    <TableCell>Campaign</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell align='right'>Prize</TableCell>
-                    <TableCell align='right'>Businesses</TableCell>
-                    <TableCell align='right'>Entries</TableCell>
-                    <TableCell align='right'>Quarantined</TableCell>
-                    <TableCell align='right'>Acceptance</TableCell>
-                  </TableRow>
-                </TableHead>
+          <motion.div variants={riseIn} initial='hidden' animate='visible'>
+            <AdminCard>
+              <CardContent sx={{ pb: 0 }}>
+                <Typography variant='subtitle1' sx={{ fontWeight: 800, color: TEXT_HEADING, letterSpacing: '-0.02em' }} mb={2}>Campaign Comparison</Typography>
+                </CardContent>
+              <TableContainer>
+                <Table size='small'>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: BG_ROW_SUBTLE }}>
+                      <TableCell>Campaign</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell>Date</TableCell>
+                      <TableCell align='right'>Prize</TableCell>
+                      <TableCell align='right'>Businesses</TableCell>
+                      <TableCell align='right'>Entries</TableCell>
+                      <TableCell align='right'>Quarantined</TableCell>
+                      <TableCell align='right'>Acceptance</TableCell>
+                    </TableRow>
+                  </TableHead>
                 <TableBody>
                   {(campaignComparison ?? []).map((c) => {
                     const total = c.total_entries + c.quarantined;
@@ -482,16 +497,18 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                       <TableCell colSpan={8} align='center' sx={{ py: 3, color: 'text.secondary' }}>No campaigns yet.</TableCell>
                     </TableRow>
                   )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Card>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </AdminCard>
+          </motion.div>
 
           {/* Row 4: Location Breakdown - paginated, server-side */}
-          <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
-            <CardContent sx={{ pb: 0 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                <Typography variant='subtitle1' fontWeight={700}>Entries by Location</Typography>
+          <motion.div variants={riseIn} initial='hidden' animate='visible'>
+            <AdminCard>
+              <CardContent sx={{ pb: 0 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                  <Typography variant='subtitle1' sx={{ fontWeight: 800, color: TEXT_HEADING, letterSpacing: '-0.02em' }}>Entries by Location</Typography>
                 <TextField
                   size='small'
                   placeholder='Search business or location…'
@@ -521,37 +538,37 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                   }}
                   sx={{ width: 280 }}
                 />
-              </Box>
-            </CardContent>
-            <TableContainer>
-              <Table size='small'>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: BG_PAGE }}>
-                    <TableCell>Business</TableCell>
-                    <TableCell>Location</TableCell>
-                    <TableCell align='center'>Activated</TableCell>
-                    <TableCell align='center'>Quarantined</TableCell>
-                    {!isMobile && <TableCell align='center'>Receipts</TableCell>}
-                    {!isMobile && <TableCell align='right'>Avg. Transaction</TableCell>}
-                    {!isMobile && <TableCell align='right'>Cap Usage</TableCell>}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {locationLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={7}>
-                        <Skeleton variant='rectangular' height={200} />
-                      </TableCell>
+                </Box>
+              </CardContent>
+              <TableContainer>
+                <Table size='small'>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: BG_ROW_SUBTLE }}>
+                      <TableCell>Business</TableCell>
+                      <TableCell>Location</TableCell>
+                      <TableCell align='center'>Activated</TableCell>
+                      <TableCell align='center'>Quarantined</TableCell>
+                      {!isMobile && <TableCell align='center'>Receipts</TableCell>}
+                      {!isMobile && <TableCell align='right'>Avg. Transaction</TableCell>}
+                      {!isMobile && <TableCell align='right'>Cap Usage</TableCell>}
                     </TableRow>
-                  ) : (locationData?.rows ?? []).length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} align='center' sx={{ py: 4 }}>
-                        <Typography variant='body2' color='text.secondary'>No locations found</Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (locationData?.rows ?? []).map((loc) => {
-                    const capPct = loc.entry_cap ? (loc.activated / loc.entry_cap) * 100 : null;
-                    const capColor = capPct == null ? null : capPct > 80 ? '#c62828' : capPct > 50 ? '#f57c00' : '#2e7d32';
+                  </TableHead>
+                  <TableBody>
+                    {locationLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={7}>
+                          <Skeleton variant='rectangular' height={200} />
+                        </TableCell>
+                      </TableRow>
+                    ) : (locationData?.rows ?? []).length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} align='center' sx={{ py: 4 }}>
+                          <Typography variant='body2' color={TEXT_SECONDARY}>No locations found</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : (locationData?.rows ?? []).map((loc) => {
+                      const capPct = loc.entry_cap ? (loc.activated / loc.entry_cap) * 100 : null;
+                      const capColor = capPct == null ? null : capPct > 80 ? METRIC_BAD : capPct > 50 ? CHART_ORANGE : METRIC_GOOD;
                     return (
                       <TableRow key={loc.location_id} hover>
                         <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{loc.business_name}</TableCell>
@@ -593,22 +610,23 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                             )}
                           </TableCell>
                         )}
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              component='div'
-              count={locationData?.total ?? 0}
-              page={locationPage}
-              onPageChange={(_, p) => setLocationPage(p)}
-              rowsPerPage={locationRowsPerPage}
-              onRowsPerPageChange={(e) => { setLocationRowsPerPage(parseInt(e.target.value, 10)); setLocationPage(0); }}
-              rowsPerPageOptions={[10, 25, 50, 100]}
-            />
-          </Card>
+                    </TableRow>
+                  );
+                })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                component='div'
+                count={locationData?.total ?? 0}
+                page={locationPage}
+                onPageChange={(_, p) => setLocationPage(p)}
+                rowsPerPage={locationRowsPerPage}
+                onRowsPerPageChange={(e) => { setLocationRowsPerPage(parseInt(e.target.value, 10)); setLocationPage(0); }}
+                rowsPerPageOptions={[10, 25, 50, 100]}
+              />
+            </AdminCard>
+          </motion.div>
         </Stack>
       )}
         </>

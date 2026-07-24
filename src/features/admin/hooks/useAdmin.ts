@@ -616,6 +616,9 @@ export const useDrawRejectedWinners = (drawId: number | null) => {
         userRiskScore: number;
         businessName: string | null;
         locationName: string | null;
+        rejectedById: number | null;
+        rejectedByName: string | null;
+        rejectedByEmail: string | null;
       }[];
     },
     enabled: drawId !== null,
