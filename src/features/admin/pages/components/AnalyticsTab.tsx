@@ -332,6 +332,7 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                             superseded_by_admin_decision: 'Superseded (admin)',
                             contest_pending: 'Under Review',
                             contest_not_won: 'Not Verified',
+                            duplicate_document: 'Duplicate Document',
                           };
                           return (
                             <Box key={r.reason} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

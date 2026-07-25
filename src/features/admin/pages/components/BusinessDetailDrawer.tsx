@@ -57,6 +57,7 @@ const QUARANTINE_LABELS: Record<string, string> = {
   superseded_by_admin_decision: 'Superseded (admin)',
   contest_pending: 'Under review',
   contest_not_won: 'Not verified',
+  duplicate_document: 'Duplicate document',
 };
 
 const RISK_FLAG_LABELS: Record<string, string> = {
@@ -71,6 +72,7 @@ const RISK_FLAG_LABELS: Record<string, string> = {
   amount_outlier: 'Amount outlier (>3x avg)',
   suspiciously_fast_input: 'Suspiciously fast input',
   superseded_duplicate_receipt: 'Duplicate receipt (owner verified theirs)',
+  duplicate_document: 'Reused receipt (different number, same image)',
 };
 
 const SUB_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
