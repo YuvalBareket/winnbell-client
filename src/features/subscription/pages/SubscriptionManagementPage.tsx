@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import {
   Box, Typography, Paper, Stack, Chip, Button, Divider, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Alert,
-  Container, Skeleton, alpha,
+  Container, Skeleton, alpha, RadioGroup, FormControlLabel, Radio,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation } from '@tanstack/react-query';
@@ -18,7 +18,7 @@ import {
 } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { safeHttpUrl, isStripeCheckoutUrl } from '../../../shared/utils/url';
-import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSkipCampaign, useSetParticipation } from '../hooks/useSubscription';
+import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSetParticipation } from '../hooks/useSubscription';
 import { updatePaymentMethodApi, foundingRenewalApi } from '../api/subscription.api';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
@@ -46,7 +46,7 @@ export default function SubscriptionManagementPage() {
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelError, setCancelError] = useState('');
-  const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'prorated' | 'none'; refundAmount: number } | null>(null);
+  const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'prorated' | 'none'; refundAmount: number; immediateRemoval?: boolean } | null>(null);
   const [editPlanOpen, setEditPlanOpen] = useState(false);
   const [newTier, setNewTier] = useState<number>(0);
   const [updateError, setUpdateError] = useState('');
@@ -67,9 +67,9 @@ export default function SubscriptionManagementPage() {
   const { mutate: doResume, isPending: resuming } = useResumeSubscription();
 
   const { mutate: doUpdatePlan, isPending: updatingPlan } = useUpdateSubscriptionPlan();
-  const { mutate: doSkipCampaign, isPending: skippingCampaign } = useSkipCampaign();
-  const [skipConfirmOpen, setSkipConfirmOpen] = useState(false);
-  const [skipError, setSkipError] = useState('');
+  // Cancel dialog choice: keep participating in everything already paid for (default)
+  // or be removed from the map and the paid upcoming campaign immediately (no refund).
+  const [cancelMode, setCancelMode] = useState<'stay' | 'immediate'>('stay');
   // Founding cancel (participation pause): permanent opt-out until reactivated.
   const { mutate: doSetParticipation, isPending: settingParticipation } = useSetParticipation();
   const [pauseConfirmOpen, setPauseConfirmOpen] = useState(false);
@@ -126,10 +126,17 @@ export default function SubscriptionManagementPage() {
   // campaign to open. While set, it is what Stripe will bill, so it leads the display.
   const hasPendingPlan = sub?.pending_entries_per_location != null;
 
+  // The business already PAID for the upcoming (not-yet-open) campaign: the 24th charge
+  // landed (status Active) and that campaign has not opened yet. The cancel dialog must
+  // then say explicitly that immediate removal forfeits it with no refund.
+  const paidUpcomingCampaign = !sub?.is_founding && sub?.in_charged_window === true && sub?.status === 'Active';
+
   // Cancelled before ever being charged into a campaign: there is nothing pending (no charge,
   // no draw), so we drop the "cancels on <date> / still active" framing and just show it as
   // cancelled - the future period-end date is meaningless here and only confuses.
-  const cancelledNoCampaign = !!sub?.cancel_at_period_end && !sub?.draw_id;
+  // Excluded: immediate-removal cancels (participation_paused) and charged-window cancels
+  // (paidUpcomingCampaign) DID pay - they keep the "cancels on <date>" framing.
+  const cancelledNoCampaign = !!sub?.cancel_at_period_end && !sub?.draw_id && !sub?.participation_paused && !paidUpcomingCampaign;
 
   const drawDateLabel = sub?.draw_date
     ? new Date(sub.draw_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -183,8 +190,12 @@ export default function SubscriptionManagementPage() {
             sx={{ mb: 3, borderRadius: 2 }}
             onClose={() => setCancelResult(null)}
           >
-            {sub.draw_id
-              ? <>Subscription cancelled. Your plan stays active until {periodEndLabel} and you keep your current campaign. It will not renew after that.</>
+            {cancelResult.immediateRemoval
+              ? <>Subscription cancelled. Your business has been removed from the map and will not participate in upcoming campaigns. Payments already made are not refunded, and you will not be charged again.</>
+              : sub.draw_id
+              ? <>Subscription cancelled. Your plan stays active until {periodEndLabel} and you keep every campaign you have already paid for. It will not renew after that.</>
+              : paidUpcomingCampaign
+              ? <>Subscription cancelled. You keep the upcoming campaign you have already paid for, and you will not be charged again.</>
               : <>Subscription cancelled. You have not been charged and are not entered in any campaign, so nothing further will happen.</>}
           </Alert>
         )}
@@ -410,7 +421,9 @@ export default function SubscriptionManagementPage() {
                             {sub.is_founding
                               ? 'One-time payment. Every campaign through your term is included, no auto-renewal.'
                               : sub.cancel_at_period_end
-                                ? 'You stay in every campaign you have already paid for - no further charges'
+                                ? sub.participation_paused
+                                  ? 'No further charges. Your business is off the map and will not join upcoming campaigns - payments already made are not refunded.'
+                                  : 'You stay in every campaign you have already paid for - no further charges'
                                 : 'Your plan is billed on the 24th of each month. Each payment covers the next month\'s campaign.'}
                           </Typography>
                         </Box>
@@ -501,27 +514,11 @@ export default function SubscriptionManagementPage() {
                       </Alert>
                     )}
 
-                    {sub.skip_next_campaign && (
-                      <Alert
-                        severity='warning'
-                        sx={{ mt: 2.5, borderRadius: 2 }}
-                        action={
-                          <Button
-                            color='inherit'
-                            size='small'
-                            disabled={skippingCampaign}
-                            onClick={() => doSkipCampaign(false, { onError: (err: unknown) => setSkipError(apiErrorMessage(err, 'Could not rejoin the campaign.')) })}
-                            sx={{ fontWeight: 700 }}
-                          >
-                            Rejoin
-                          </Button>
-                        }
-                      >
-                        You have opted out of the next campaign. Your business will not participate in it and will rejoin from the campaign after.
-                      </Alert>
-                    )}
-
-                    {sub.participation_paused && (
+                    {/* Founding pause only: the Reactivate action hits the founding-only
+                        participation endpoint. A monthly immediate-removal cancel also sets
+                        participation_paused, but its state is explained by the cancels-soon
+                        alert below and recovered via the Resume Campaign button instead. */}
+                    {sub.is_founding && sub.participation_paused && (
                       <Alert
                         severity='warning'
                         sx={{ mt: 2.5, borderRadius: 2 }}
@@ -544,9 +541,11 @@ export default function SubscriptionManagementPage() {
                       <Alert severity='error' sx={{ mt: 2.5, borderRadius: 2 }} onClose={() => setPauseError('')}>{pauseError}</Alert>
                     )}
 
-                    {sub.cancel_at_period_end && !cancelledNoCampaign && (
+                    {sub.cancel_at_period_end && !cancelledNoCampaign && !sub.is_founding && (
                       <Alert severity='warning' sx={{ mt: 2.5, borderRadius: 2 }}>
-                        Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. It just will not renew after that.
+                        {sub.participation_paused
+                          ? <>Your plan is cancelled and ends on <strong>{periodEndLabel}</strong>. Your business has been removed from the map and will not participate in upcoming campaigns. Payments already made are not refunded. Resume to restore your participation.</>
+                          : <>Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. You stay in every campaign you have already paid for. It just will not renew after that.</>}
                       </Alert>
                     )}
                     {/* Founding: the plan is fixed for the term (Special Terms) - no Edit Plan at all */}
@@ -668,7 +667,7 @@ export default function SubscriptionManagementPage() {
                           color='error'
                           size='medium'
                           startIcon={<Cancel />}
-                          onClick={() => setConfirmOpen(true)}
+                          onClick={() => { setCancelMode('stay'); setConfirmOpen(true); }}
                           sx={{ borderRadius: 2, fontWeight: 700 }}
                         >
                           Cancel my subscription
@@ -711,33 +710,6 @@ export default function SubscriptionManagementPage() {
                         </Button>
                       )}
 
-                      {/* Skip the next campaign - subtle optional action (monthly plans only;
-                          founding uses the permanent cancel above instead) */}
-                      <AnimatePresence>
-                        {!sub.is_founding && sub.in_charged_window && !sub.skip_next_campaign && sub.status !== 'Cancelled' && !sub.cancel_at_period_end && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <Button
-                              fullWidth
-                              variant='text'
-                              size='small'
-                              onClick={() => { setSkipError(''); setSkipConfirmOpen(true); }}
-                              sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none', justifyContent: 'center' }}
-                            >
-                              cancel your subscription
-                            </Button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      {/* Skip error alert */}
-                      {skipError && (
-                        <Alert severity='error' sx={{ borderRadius: 2 }} onClose={() => setSkipError('')}>{skipError}</Alert>
-                      )}
                     </Stack>
                   </Box>
                 </Paper>
@@ -1059,7 +1031,7 @@ export default function SubscriptionManagementPage() {
                                       },
                                     }}
                                   >
-                                    Invoice
+                                    {isRefunded ? 'Refund' : 'Invoice'}
                                   </Button>
                                 )}
                               </Stack>
@@ -1189,15 +1161,50 @@ export default function SubscriptionManagementPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Confirm dialog */}
+      {/* Confirm dialog. When the business is participating in anything it already paid
+          for (running campaign, or the upcoming one after the 24th charge), cancelling
+          asks ONE choice: keep everything paid for until it ends, or leave immediately
+          (off the map, out of the paid upcoming campaign, no refund). */}
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
         <DialogTitle sx={{ fontWeight: 800 }}>Are you sure you want to cancel?</DialogTitle>
         <DialogContent>
           <Stack spacing={1.5}>
-            {sub.draw_id ? (
-              <DialogContentText>
-                Your plan will not renew and you will not be charged again. You keep your spot in every campaign you have already paid for, and you will not be entered into campaigns after that. No refund is issued.
-              </DialogContentText>
+            {(sub.draw_id || paidUpcomingCampaign) ? (
+              <>
+                <DialogContentText>
+                  Your plan will not renew and you will not be charged again.
+                  {paidUpcomingCampaign && <> You have <strong>already paid for the upcoming campaign</strong>{sub.next_campaign_name ? ` (${sub.next_campaign_name})` : ''}.</>}
+                  {' '}Choose what happens to your participation:
+                </DialogContentText>
+                <RadioGroup value={cancelMode} onChange={(e) => setCancelMode(e.target.value as 'stay' | 'immediate')}>
+                  <FormControlLabel
+                    value='stay'
+                    control={<Radio size='small' />}
+                    sx={{ alignItems: 'flex-start', mb: 1, '& .MuiRadio-root': { pt: 0 } }}
+                    label={
+                      <Box>
+                        <Typography variant='body2' fontWeight={700}>Keep participating until my paid campaigns end</Typography>
+                        <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
+                          Your business stays on the map and stays in every campaign you have already paid for. Your plan simply ends afterward.
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                  <FormControlLabel
+                    value='immediate'
+                    control={<Radio size='small' />}
+                    sx={{ alignItems: 'flex-start', '& .MuiRadio-root': { pt: 0 } }}
+                    label={
+                      <Box>
+                        <Typography variant='body2' fontWeight={700}>Remove my business now</Typography>
+                        <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
+                          Your business leaves the map immediately, customers can no longer submit entries, and it will not join the upcoming campaign. Payments already made are <strong>not refunded</strong>. Entries customers already earned stay valid.
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                </RadioGroup>
+              </>
             ) : (
               <DialogContentText>
                 Cancelling will stop your subscription. You are not in a campaign yet, so you will not be entered into the next campaign and your plan will not renew.
@@ -1210,7 +1217,7 @@ export default function SubscriptionManagementPage() {
             Keep Subscription
           </Button>
           <Button
-            onClick={() => doCancel(undefined, {
+            onClick={() => doCancel(cancelMode === 'immediate', {
               onSuccess: (data) => { setCancelResult(data); setConfirmOpen(false); },
               onError: (err) => { setCancelError(err.response?.data?.error ?? 'Cancellation failed. Please try again.'); setConfirmOpen(false); },
             })}
@@ -1220,37 +1227,6 @@ export default function SubscriptionManagementPage() {
             sx={{ fontWeight: 700 }}
           >
             {cancelling ? <CircularProgress size={20} color='inherit' /> : 'Yes, Cancel'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Skip next campaign dialog */}
-      <Dialog open={skipConfirmOpen} onClose={() => setSkipConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
-        <DialogTitle sx={{ fontWeight: 800 }}>Are you sure you want to cancel?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Your business will not participate in the upcoming campaigns: it will not appear on the map and customers will not earn entries from you during it.
-            The payment already made for it is <strong>not refunded</strong>. Your plan continues normally and you rejoin from the campaign after.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setSkipConfirmOpen(false)} variant='outlined' sx={{ fontWeight: 700 }}>
-            Stay In
-          </Button>
-          <Button
-            onClick={() => {
-              setSkipError('');
-              doSkipCampaign(true, {
-                onSuccess: () => setSkipConfirmOpen(false),
-                onError: (err: unknown) => { setSkipConfirmOpen(false); setSkipError(apiErrorMessage(err, 'Could not skip the campaign. Please try again.')); },
-              });
-            }}
-            color='warning'
-            variant='contained'
-            disabled={skippingCampaign}
-            sx={{ fontWeight: 700 }}
-          >
-            {skippingCampaign ? <CircularProgress size={20} color='inherit' /> : 'Cancel subscription'}
           </Button>
         </DialogActions>
       </Dialog>

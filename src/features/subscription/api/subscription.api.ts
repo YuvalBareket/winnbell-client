@@ -4,11 +4,15 @@ import type { SubscriptionDetails, FoundingAvailability, SubscriptionInvoice } f
 export const fetchSubscription = (): Promise<SubscriptionDetails | null> =>
   api.get('/business/subscription').then(r => r.data);
 
-export const cancelSubscription = (): Promise<{
+// `immediate` is the owner's dialog choice: true = also remove from participation now
+// (off the map, not in the paid upcoming campaign, no refund); false = keep everything
+// already paid for, the plan just does not renew.
+export const cancelSubscription = (immediate: boolean): Promise<{
   removedFromDraw: boolean;
   refundType: 'full' | 'prorated' | 'none';
   refundAmount: number;
-}> => api.post('/business/subscription/cancel').then(r => r.data);
+  immediateRemoval: boolean;
+}> => api.post('/business/subscription/cancel', { immediate }).then(r => r.data);
 
 export const resumeSubscription = (): Promise<void> =>
   api.post('/business/subscription/resume').then(r => r.data);
@@ -21,10 +25,6 @@ export const updateSubscriptionPlan = (entries_per_location: number) =>
 
 export const fetchSubscriptionInvoices = (): Promise<SubscriptionInvoice[]> =>
   api.get('/business/subscription/invoices').then(r => r.data);
-
-// Opt out of (or back into) the campaign already paid for. No refund either way.
-export const skipCampaignApi = (skip: boolean): Promise<{ skipped: boolean }> =>
-  api.post('/business/subscription/skip-campaign', { skip }).then(r => r.data);
 
 // Founding only: cancel participation entirely (no refund, off the map, no upcoming
 // campaigns) or reactivate while the founding term still runs.

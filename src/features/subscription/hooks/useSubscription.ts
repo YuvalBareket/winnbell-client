@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../shared/constants/queryKeys';
-import { fetchSubscription, updateSubscriptionPlan, fetchSubscriptionInvoices, skipCampaignApi, setParticipationApi } from '../api/subscription.api';
+import { fetchSubscription, updateSubscriptionPlan, fetchSubscriptionInvoices, setParticipationApi } from '../api/subscription.api';
 import type { SubscriptionDetails, SubscriptionInvoice } from '../types/subscription.types';
 
 export type { SubscriptionDetails, SubscriptionInvoice };
@@ -26,16 +26,6 @@ export const useUpdateSubscriptionPlan = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (entries_per_location: number) => updateSubscriptionPlan(entries_per_location),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.subscription.all });
-    },
-  });
-};
-
-export const useSkipCampaign = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (skip: boolean) => skipCampaignApi(skip),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.subscription.all });
     },
