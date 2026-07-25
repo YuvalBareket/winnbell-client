@@ -32,7 +32,7 @@ export const userNavItems: NavItem[] = [
   { label: 'My Entries', Icon: ConfirmationNumberOutlined, path: '/tickets' },
   { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
   { label: 'Invite Friends', Icon: CardGiftcardOutlined, path: '/invite' },
-  { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
+  { label: 'Profile Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 
 export const businessNavItems: NavItem[] = [
@@ -42,7 +42,7 @@ export const businessNavItems: NavItem[] = [
   { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
   { label: 'My Plan', Icon: ReceiptLongOutlined, path: '/subscription/manage' },
   { label: 'Grow', Icon: RocketLaunchOutlined, path: '/marketing' },
-  { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
+  { label: 'Profile Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 
 // Managers get the Marketing page where owners have the Business Hub - branch
@@ -51,7 +51,7 @@ export const managerNavItems: NavItem[] = [
   { label: 'Marketing', Icon: RocketLaunchOutlined, path: '/marketing' },
   { label: 'Campaign Dashboard', Icon: CampaignOutlined, path: '/campaign' },
   { label: 'Analytics', Icon: BarChartOutlined, path: '/stats' },
-  { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
+  { label: 'Profile Settings', Icon: SettingsOutlined, path: '/settings' },
 ];
 
 export const adminNavItems: NavItem[] = [

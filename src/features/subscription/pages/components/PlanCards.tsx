@@ -47,29 +47,7 @@ const PlanCards = ({ selectedTier, onSelect, disabled }: PlanCardsProps) => (
             },
           }}
         >
-          {meta.popular && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '-12px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: `linear-gradient(135deg, ${PRIMARY_MAIN}, ${PRIMARY_DEEP})`,
-                color: '#fff',
-                fontSize: '10.5px',
-                fontWeight: 800,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                borderRadius: '999px',
-                padding: '4px 13px',
-                whiteSpace: 'nowrap',
-                boxShadow: '0 6px 14px -4px rgba(21,101,192,.5)',
-              }}
-            >
-              Most popular
-            </Box>
-          )}
-
+        
           {/* Plan name */}
           <Typography
             sx={{

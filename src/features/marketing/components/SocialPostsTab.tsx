@@ -33,7 +33,7 @@ interface Ratio { id: RatioId; label: string; w: number; h: number }
 
 const RATIOS: Ratio[] = [
   { id: 'story', label: 'Story · 9:16', w: 440, h: 780 },
-  { id: 'square-1-1', label: 'Square · 1:1', w: 540, h: 540 },
+  { id: 'square-1-1', label: 'Post · 1:1', w: 540, h: 540 },
 ];
 
 // Style presets: { id, label, background gradient, primary text, accent, fineprint }

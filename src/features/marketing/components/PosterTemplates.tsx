@@ -51,12 +51,6 @@ const ArrowUpIcon = ({ color, size }: { color: string; size: number }) => (
   </svg>
 );
 
-const ArrowRightIcon = ({ color, size }: { color: string; size: number }) => (
-  <svg viewBox='0 0 24 24' width={size} height={size} fill='none' stroke={color} strokeWidth={3} strokeLinecap='round' strokeLinejoin='round'>
-    <path d='M5 12h14M13 6l6 6-6 6' />
-  </svg>
-);
-
 // Soft radial glow as a real SVG (NOT css radial-gradient: html2canvas redraws
 // CSS gradients itself and botches radial ones in the PDF download; inline SVGs
 // are rasterized by the browser first, so download matches the preview exactly).
@@ -132,11 +126,11 @@ const LayoutA = ({ businessName, scanUrl, minAmountLabel, t }: PosterProps & { t
         </Box>
       </Box>
 
-      {/* Hero: stacked Scan. Play. Win. + prize pill */}
+      {/* Hero: stacked Scan. Submit. Win. + prize pill */}
       <Box sx={{ position: 'relative', my: 1 }}>
         <Box sx={{ fontSize: 36, lineHeight: 0.92, fontWeight: 800, letterSpacing: '-1.4px', textTransform: 'uppercase', fontFamily: SANS }}>
           <Typography sx={{ font: 'inherit', letterSpacing: 'inherit', color: 'white' }}>Scan.</Typography>
-          <Typography sx={{ font: 'inherit', letterSpacing: 'inherit', color: 'white' }}>Play.</Typography>
+          <Typography sx={{ font: 'inherit', letterSpacing: 'inherit', color: 'white' }}>Submit.</Typography>
           <Typography sx={{ font: 'inherit', letterSpacing: 'inherit', color: t.winColor }}>Win.</Typography>
         </Box>
         <Box sx={{
@@ -230,18 +224,13 @@ const LayoutB = ({ businessName, scanUrl, minAmountLabel, t }: PosterProps & { t
         }}>
           <GiftIcon color='#fff' size={12} />
         </Box>
-        <Typography sx={{
-          fontFamily: SANS, fontSize: '7px', fontWeight: 800, letterSpacing: '0.2em',
-          textTransform: 'uppercase', color: t.eyebrowColor, mb: '5px',
-        }}>
-          How it works
-        </Typography>
-        <Typography sx={{ fontFamily: SANS, fontSize: 31, lineHeight: 0.98, fontWeight: 800, letterSpacing: '-1.1px', color: '#0f2747' }}>
-          Enter this month's<br /><Box component='span' sx={{ color: t.onUsColor }}>cash prize draw.</Box>
+    
+        <Typography sx={{ fontFamily: SANS, fontSize: 27, lineHeight:1.05, fontWeight: 800, letterSpacing: '-1.1px', color: '#0f2747' }}>
+          Could today's purchase<br /><Box component='span' sx={{ color: t.onUsColor }}>win you a big cash prize?</Box>
         </Typography>
         <Typography sx={{ fontFamily: SANS, fontSize: '8.5px', lineHeight: 1.55, color: '#475569', fontWeight: 500, maxWidth: 215, mt: '9px' }}>
-          It takes <Box component='b' sx={{ color: '#0f2747' }}>seconds</Box> at the register,
-          no app to download. Winners are drawn monthly.
+          It takes seconds,
+          no app to download. 
         </Typography>
       </Box>
 
@@ -282,10 +271,9 @@ const LayoutB = ({ businessName, scanUrl, minAmountLabel, t }: PosterProps & { t
             <Typography sx={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 800, letterSpacing: '-0.02em', color: '#0f2747' }}>
               Scan to join
             </Typography>
-            <ArrowRightIcon color={t.accent} size={11} />
           </Box>
           <Typography sx={{ fontFamily: SANS, fontSize: '7px', color: '#475569', fontWeight: 500, lineHeight: 1.45, mt: '3px' }}>
-            Submit your purchase and get your entry to this month's draw.
+            Submit your purchase details and you may enter this month's draw.
           </Typography>
           <Typography sx={{ fontFamily: SANS, fontSize: '5px', color: '#94a3b8', fontWeight: 500, mt: '5px', lineHeight: 1.35 }}>
             {LEGAL_TEXT}

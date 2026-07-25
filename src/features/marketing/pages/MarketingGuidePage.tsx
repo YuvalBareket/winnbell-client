@@ -149,7 +149,7 @@ const CHAPTERS: Chapter[] = [
     kicker: 'Setup',
     title: 'Upload a Sample Receipt',
     blocks: [
-      { type: 'p', text: 'Uploading a sample receipt or invoice helps your customers quickly recognize which number they should use when submitting their entries through the Winnbell app.' },
+      { type: 'p', text: 'Uploading a sample receipt or invoice helps your customers quickly recognize which number they should use when submitting their entries through Winnbell.' },
       { type: 'p', text: 'After uploading your sample, simply indicate where the **receipt number** appears. This makes it easier for customers to identify the correct number on their own receipts and helps reduce confusion during the submission process.' },
       { type: 'h3', text: 'Best Practices' },
       { type: 'ul', items: [
@@ -454,10 +454,10 @@ const MarketingGuidePage = () => {
       <Container maxWidth='md' sx={{ mt: { xs: 2, md: 1 } }}>
         <Button
           startIcon={<ArrowBackRounded sx={{ fontSize: 18 }} />}
-          onClick={() => navigate('/marketing')}
+          onClick={() => navigate(-1)}
           sx={{ textTransform: 'none', fontWeight: 700, color: PRIMARY_MAIN, mb: 2, px: 1 }}
         >
-          Back to Marketing
+          Back
         </Button>
 
         {/* Intro banner */}
@@ -592,7 +592,7 @@ const MarketingGuidePage = () => {
               onClick={() => navigate('/marketing')}
               sx={{ background: GRADIENT_GOLD_VIVID, color: '#fff', fontWeight: 800, textTransform: 'none', borderRadius: 1.5, px: 3, py: 1, '&:hover': { background: GRADIENT_GOLD_VIVID, opacity: 0.94 } }}
             >
-              Back to Marketing materials
+              Go to Marketing materials
             </Button>
           </Paper>
         </motion.div>

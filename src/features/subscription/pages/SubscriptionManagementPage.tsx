@@ -165,8 +165,8 @@ export default function SubscriptionManagementPage() {
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: { xs: 10, md: 6 } }}>
       <AppPageHero
-        title='Campaign Management'
-        subtitle='Manage your subscription and campaigns'
+        title='My Plan'
+        subtitle='Manage your subscription'
       />
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>
@@ -329,7 +329,7 @@ export default function SubscriptionManagementPage() {
                       </Box>
                       <Box flex={1}>
                         <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                          {sub.is_founding ? 'Founding Partner' : 'Current Plan'}
+                          { 'Current Plan'}
                         </Typography>
                         <Typography variant='h6' fontWeight={800} lineHeight={1.2}>
                           {sub.is_founding
@@ -659,7 +659,7 @@ export default function SubscriptionManagementPage() {
                             href='/founding-terms'
                             target='_blank'
                             rel='noopener'
-                            sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
+                            sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' ,whiteSpace:'nowrap'}}
                           >
                             Founding Partner Special Terms
                           </Box>.
@@ -682,7 +682,7 @@ export default function SubscriptionManagementPage() {
                               onClick={() => { setSkipError(''); setSkipConfirmOpen(true); }}
                               sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none', justifyContent: 'center' }}
                             >
-                              Skip the next campaign
+                              cancel your subscription
                             </Button>
                           </motion.div>
                         )}
@@ -1180,10 +1180,10 @@ export default function SubscriptionManagementPage() {
 
       {/* Skip next campaign dialog */}
       <Dialog open={skipConfirmOpen} onClose={() => setSkipConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
-        <DialogTitle sx={{ fontWeight: 800 }}>Skip the next campaign?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>Are you sure you want to cancel?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Your business will not participate in the upcoming campaign: it will not appear on the map and customers will not earn entries from you during it.
+            Your business will not participate in the upcoming campaigns: it will not appear on the map and customers will not earn entries from you during it.
             The payment already made for it is <strong>not refunded</strong>. Your plan continues normally and you rejoin from the campaign after.
           </DialogContentText>
         </DialogContent>
@@ -1204,7 +1204,7 @@ export default function SubscriptionManagementPage() {
             disabled={skippingCampaign}
             sx={{ fontWeight: 700 }}
           >
-            {skippingCampaign ? <CircularProgress size={20} color='inherit' /> : 'Skip Campaign'}
+            {skippingCampaign ? <CircularProgress size={20} color='inherit' /> : 'Cancel subscription'}
           </Button>
         </DialogActions>
       </Dialog>

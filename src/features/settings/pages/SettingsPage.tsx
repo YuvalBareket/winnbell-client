@@ -347,7 +347,7 @@ const SettingsContent = ({
       {/* Simple header */}
       <Box sx={{ px: 3.25, pt: 1.75, pb: 0.5 }}>
         <Typography sx={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>
-          Settings
+          Profile Settings
         </Typography>
         <Typography sx={{ fontSize: '13px', color: TEXT_TERTIARY, fontWeight: 500, mt: 0.25 }}>
           Manage your account details.

@@ -609,7 +609,7 @@ const PostersTab = ({
                   alignItems: 'center',
                 }}
               >
-                <Box component='img' src='/winnbell_app_name_white.svg' sx={{ height: 22 }} />
+                <Box component='img' src='/winnbell_app_name_white.svg' sx={{ height: 26}} />
                 <Box
                   sx={{
                     borderRadius: '14px',

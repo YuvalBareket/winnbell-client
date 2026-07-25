@@ -155,9 +155,7 @@ const CampaignCard = ({
             <ReceiptLong sx={{ color: business.subscription_status === 'Active' ? 'white' : 'text.disabled', fontSize: 22 }} />
           </Box>
           <Box>
-            <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              Campaign
-            </Typography>
+        
             <Typography variant='body1' fontWeight={700}>
               {business.subscription_status ? 'Winnbell Partner Plan' : 'No active plan'}
             </Typography>

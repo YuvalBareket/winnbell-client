@@ -281,9 +281,9 @@ const SubscriptionSuccessPage = () => {
                   sx={{ fontWeight: 800, bgcolor: alpha(AMBER_HOURGLASS, 0.12), color: ACCENT_GOLD_DARK, border: '1px solid', borderColor: alpha(AMBER_HOURGLASS, 0.3) }}
                 />
                 <Box>
-                  <Typography variant='h4' fontWeight={900} mb={1}>Welcome, Founding Partner!</Typography>
+                  <Typography variant='h4' fontWeight={900} mb={1}>Welcome!</Typography>
                   <Typography variant='body1' color='text.secondary' lineHeight={1.7}>
-                    You're a Founding Partner for your full term. Your business joins each monthly campaign and appears on the Winnbell map as soon as the next campaign opens.
+                    You're now a Founding Partner.
                   </Typography>
                 </Box>
               </motion.div>
