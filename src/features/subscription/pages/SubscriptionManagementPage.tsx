@@ -18,7 +18,7 @@ import {
 } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { safeHttpUrl, isStripeCheckoutUrl } from '../../../shared/utils/url';
-import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSkipCampaign } from '../hooks/useSubscription';
+import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSkipCampaign, useSetParticipation } from '../hooks/useSubscription';
 import { updatePaymentMethodApi, foundingRenewalApi } from '../api/subscription.api';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
@@ -70,6 +70,10 @@ export default function SubscriptionManagementPage() {
   const { mutate: doSkipCampaign, isPending: skippingCampaign } = useSkipCampaign();
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false);
   const [skipError, setSkipError] = useState('');
+  // Founding cancel (participation pause): permanent opt-out until reactivated.
+  const { mutate: doSetParticipation, isPending: settingParticipation } = useSetParticipation();
+  const [pauseConfirmOpen, setPauseConfirmOpen] = useState(false);
+  const [pauseError, setPauseError] = useState('');
 
   const [pmLoading, setPmLoading] = useState(false);
   const [pmError, setPmError] = useState('');
@@ -517,6 +521,29 @@ export default function SubscriptionManagementPage() {
                       </Alert>
                     )}
 
+                    {sub.participation_paused && (
+                      <Alert
+                        severity='warning'
+                        sx={{ mt: 2.5, borderRadius: 2 }}
+                        action={
+                          <Button
+                            color='inherit'
+                            size='small'
+                            disabled={settingParticipation}
+                            onClick={() => doSetParticipation(false, { onError: (err: unknown) => setPauseError(apiErrorMessage(err, 'Could not reactivate your plan.')) })}
+                            sx={{ fontWeight: 700 }}
+                          >
+                            {settingParticipation ? <CircularProgress size={16} color='inherit' /> : 'Reactivate'}
+                          </Button>
+                        }
+                      >
+                        Your participation is cancelled. Your business is not on the map and will not join upcoming campaigns. You can reactivate at any time while your founding term is active.
+                      </Alert>
+                    )}
+                    {pauseError && (
+                      <Alert severity='error' sx={{ mt: 2.5, borderRadius: 2 }} onClose={() => setPauseError('')}>{pauseError}</Alert>
+                    )}
+
                     {sub.cancel_at_period_end && !cancelledNoCampaign && (
                       <Alert severity='warning' sx={{ mt: 2.5, borderRadius: 2 }}>
                         Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. It just will not renew after that.
@@ -648,12 +675,13 @@ export default function SubscriptionManagementPage() {
                         </Button>
                       )}
 
-                      {/* Founding: fixed term per the Special Terms - nothing to cancel.
-                          Month-agnostic wording: a renewed member's remaining term differs
-                          from the initial one, so the end DATE carries the information. */}
+                      {/* Founding: fixed term per the Special Terms - no refund, no early
+                          termination of the TERM. Month-agnostic wording: a renewed member's
+                          remaining term differs from the initial one, so the end DATE carries
+                          the information. */}
                       {sub.is_founding && sub.status !== 'Cancelled' && (
                         <Typography variant='caption' color='text.secondary' textAlign='center' sx={{ lineHeight: 1.6 }}>
-                          Your Founding Partner plan is a one-time purchase for a fixed term{periodEndLabel ? ` ending ${periodEndLabel}` : ''}. It does not renew and there is nothing to cancel. See the{' '}
+                          Your Founding Partner plan is a one-time purchase for a fixed term{periodEndLabel ? ` ending ${periodEndLabel}` : ''}. It does not renew and payments are not refunded. See the{' '}
                           <Box
                             component='a'
                             href='/founding-terms'
@@ -666,9 +694,27 @@ export default function SubscriptionManagementPage() {
                         </Typography>
                       )}
 
-                      {/* Skip the next campaign - subtle optional action */}
+                      {/* Founding cancel - permanent participation opt-out (not a one-campaign
+                          skip). Available anytime while not already paused; no charged-window
+                          gate since there is no recurring billing to time it against. */}
+                      {sub.is_founding && sub.status !== 'Cancelled' && !sub.participation_paused && (
+                        <Button
+                          fullWidth
+                          variant='outlined'
+                          color='error'
+                          size='medium'
+                          startIcon={<Cancel />}
+                          onClick={() => { setPauseError(''); setPauseConfirmOpen(true); }}
+                          sx={{ borderRadius: 2, fontWeight: 700 }}
+                        >
+                          Cancel my plan
+                        </Button>
+                      )}
+
+                      {/* Skip the next campaign - subtle optional action (monthly plans only;
+                          founding uses the permanent cancel above instead) */}
                       <AnimatePresence>
-                        {sub.in_charged_window && !sub.skip_next_campaign && sub.status !== 'Cancelled' && !sub.cancel_at_period_end && (
+                        {!sub.is_founding && sub.in_charged_window && !sub.skip_next_campaign && sub.status !== 'Cancelled' && !sub.cancel_at_period_end && (
                           <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
@@ -1205,6 +1251,44 @@ export default function SubscriptionManagementPage() {
             sx={{ fontWeight: 700 }}
           >
             {skippingCampaign ? <CircularProgress size={20} color='inherit' /> : 'Cancel subscription'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Founding cancel dialog - permanent participation opt-out, reactivatable */}
+      <Dialog open={pauseConfirmOpen} onClose={() => setPauseConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
+        <DialogTitle sx={{ fontWeight: 800 }}>Are you sure you want to cancel?</DialogTitle>
+        <DialogContent>
+          <Stack spacing={1.5}>
+            <DialogContentText>
+              Cancelling stops your participation in Winnbell campaigns. Your business is removed from the map right away, customers can no longer submit entries at your business, and you will not join any upcoming campaigns.
+            </DialogContentText>
+            <DialogContentText>
+              As set out in the Founding Partner Special Terms, payments are <strong>not refunded</strong> and your founding term keeps running while cancelled.
+            </DialogContentText>
+            <DialogContentText>
+              Entries customers already earned stay valid for the current draw. You can reactivate your plan at any time while your founding term is active.
+            </DialogContentText>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setPauseConfirmOpen(false)} variant='outlined' sx={{ fontWeight: 700 }}>
+            Keep My Plan
+          </Button>
+          <Button
+            onClick={() => {
+              setPauseError('');
+              doSetParticipation(true, {
+                onSuccess: () => setPauseConfirmOpen(false),
+                onError: (err: unknown) => { setPauseConfirmOpen(false); setPauseError(apiErrorMessage(err, 'Could not cancel. Please try again.')); },
+              });
+            }}
+            color='error'
+            variant='contained'
+            disabled={settingParticipation}
+            sx={{ fontWeight: 700 }}
+          >
+            {settingParticipation ? <CircularProgress size={20} color='inherit' /> : 'Yes, Cancel'}
           </Button>
         </DialogActions>
       </Dialog>

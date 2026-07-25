@@ -26,6 +26,11 @@ export const fetchSubscriptionInvoices = (): Promise<SubscriptionInvoice[]> =>
 export const skipCampaignApi = (skip: boolean): Promise<{ skipped: boolean }> =>
   api.post('/business/subscription/skip-campaign', { skip }).then(r => r.data);
 
+// Founding only: cancel participation entirely (no refund, off the map, no upcoming
+// campaigns) or reactivate while the founding term still runs.
+export const setParticipationApi = (paused: boolean): Promise<{ paused: boolean }> =>
+  api.post('/business/subscription/participation', { paused }).then(r => r.data);
+
 // Stripe setup session to save a new card; outstanding invoices are retried with it.
 export const updatePaymentMethodApi = (): Promise<{ url: string }> =>
   api.post('/business/subscription/update-payment-method').then(r => r.data);

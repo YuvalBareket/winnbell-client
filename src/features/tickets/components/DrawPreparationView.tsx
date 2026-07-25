@@ -56,7 +56,7 @@ const DrawPreparationView = ({
   // campaign it will join (next_campaign_*) so the card shows a real name, date and prize.
   // Only when it WILL actually join: a cancelling business (effectivelySubscribed false) or
   // one that opted out of the next campaign must not see it presented as theirs.
-  const showNextCampaign = effectivelySubscribed && !subscription?.skip_next_campaign;
+  const showNextCampaign = effectivelySubscribed && !subscription?.skip_next_campaign && !subscription?.participation_paused;
   const drawName = subscription?.draw_name ?? (showNextCampaign ? subscription?.next_campaign_name : null) ?? null;
   const drawDateValue = subscription?.draw_date ?? (showNextCampaign ? subscription?.next_campaign_date : null) ?? null;
   const startDateValue = subscription?.draw_start_date ?? (showNextCampaign ? subscription?.next_campaign_start_date : null) ?? null;

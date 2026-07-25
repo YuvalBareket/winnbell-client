@@ -39,6 +39,9 @@ export interface SubscriptionDetails {
   founding_transition_available?: boolean;
   // Business opted out of the campaign it already paid for (no refund); resets at open.
   skip_next_campaign?: boolean;
+  // Founding cancel: participation voluntarily deactivated (no refund). Off the map,
+  // no new entries, not enrolled at campaign opens - until the owner reactivates.
+  participation_paused?: boolean;
   // True between the 24th charge and the paid campaign's open: opt-out is available and
   // plan/location changes settle their price difference immediately.
   in_charged_window?: boolean;
