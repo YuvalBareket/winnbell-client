@@ -439,6 +439,21 @@ const PlanCheckout = ({
                   Covers your current {effectiveLocations === 1 ? 'location' : `${effectiveLocations} locations`} for the full {foundingTermMonths}-month term. Locations are fixed for the founding term.
                 </Typography>
 
+                {/* Cancellation & Refund Policy surfaced before payment. */}
+                <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mt: 0.75, lineHeight: 1.5 }}>
+                  Charged in full today and non-refundable, except as described in our{' '}
+                  <Box
+                    component='a'
+                    href='/cancellation'
+                    target='_blank'
+                    rel='noopener'
+                    onClick={(e) => e.stopPropagation()}
+                    sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
+                  >
+                    Cancellation &amp; Refund Policy
+                  </Box>.
+                </Typography>
+
                 <Box sx={{ textAlign: 'center', mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                   <Typography variant='caption' color='text.secondary'>
                     Prefer monthly?{' '}
@@ -593,6 +608,20 @@ const PlanCheckout = ({
               </Box>
             </Typography>
           </Stack>
+
+          {/* Cancellation & Refund Policy surfaced before payment (Participating Business consumer-info). */}
+          <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mb: 2.5, lineHeight: 1.5 }}>
+            Fees are non-refundable once charged, except as described in our{' '}
+            <Box
+              component='a'
+              href='/cancellation'
+              target='_blank'
+              rel='noopener'
+              sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
+            >
+              Cancellation &amp; Refund Policy
+            </Box>.
+          </Typography>
 
           {error && <Typography variant='body2' color='error' textAlign='center' mb={2}>{error}</Typography>}
 

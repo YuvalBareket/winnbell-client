@@ -1210,6 +1210,18 @@ export default function SubscriptionManagementPage() {
                 Cancelling will stop your subscription. You are not in a campaign yet, so you will not be entered into the next campaign and your plan will not renew.
               </DialogContentText>
             )}
+            <Typography variant='caption' color='text.secondary' display='block' sx={{ mt: 1, lineHeight: 1.5 }}>
+              Cancellation and refunds are governed by our{' '}
+              <Box
+                component='a'
+                href='/cancellation'
+                target='_blank'
+                rel='noopener'
+                sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
+              >
+                Cancellation &amp; Refund Policy
+              </Box>.
+            </Typography>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>

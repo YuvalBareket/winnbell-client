@@ -331,7 +331,11 @@ const RegisterPage = () => {
                       <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/business-guidelines'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
                         Business Participation Guidelines
                       </Typography>
-                      , Cancellation & Refund Policy, and any Campaign Terms incorporated therein. I understand that checking this box and clicking "Create Account" constitutes my electronic signature and binds the Participating Business to these terms.
+                      ,{' '}
+                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/cancellation'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                        Cancellation &amp; Refund Policy
+                      </Typography>
+                      , and any Campaign Terms incorporated therein. I understand that checking this box and clicking "Create Account" constitutes my electronic signature and binds the Participating Business to these terms.
                     </Typography>
                   ) : (
                     <Typography variant='caption' color='text.secondary'>
