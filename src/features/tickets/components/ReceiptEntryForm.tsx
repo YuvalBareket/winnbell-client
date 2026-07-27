@@ -813,8 +813,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             Just one quick step
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
-            Someone already entered this receipt number. If it's yours, add a clear photo and submit
-            again so we can confirm it and give you your entry. Questions? Contact us anytime.
+           Someone already entered this receipt number. If this receipt is yours, please upload a clear photo so we can verify your entry.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
