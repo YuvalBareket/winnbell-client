@@ -1,11 +1,11 @@
 import {
   Box, Button, Typography, Stack, Divider,
-  CircularProgress, IconButton,
+  CircularProgress, IconButton, Checkbox, FormControlLabel,
 } from '@mui/material';
 import { WorkspacePremium, ArrowBack, Check, CreditCard, LockOutlined } from '@mui/icons-material';
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TIER_MAP, MAX_TIER, PLAN_META } from './subscribeTiers';
+import { TIER_MAP, MAX_TIER, PLAN_META, FOUNDING_TERM_MONTHS, FOUNDING_PRICE_PER_LOCATION } from './subscribeTiers';
 import PlanCards from './PlanCards';
 import { useFoundingAvailability } from '../../hooks/useFoundingAvailability';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -42,8 +42,7 @@ interface Props {
   onBack?: () => void;
 }
 
-const FOUNDING_ENTRIES = 2500;
-const FOUNDING_PRICE   = 1200;
+const FOUNDING_ENTRIES = 2500; // fallback only - availability serves entriesPerLocation
 
 const PlanCheckout = ({
   selectedTier, setSelectedTier,
@@ -53,6 +52,10 @@ const PlanCheckout = ({
   const { data: founding } = useFoundingAvailability();
   const { data: existingSub } = useSubscription();
   const [foundingMode, setFoundingMode] = useState(false);
+  // Founding Partner Special Terms: enrollment requires explicit electronic acceptance
+  // (fixed term, immediate charge, no cancellation refund) before checkout.
+  const [foundingTermsAccepted, setFoundingTermsAccepted] = useState(false);
+  const [foundingTermsError, setFoundingTermsError] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);
 
   // Selecting a plan reveals the Start Campaign action (esp. on mobile, where the
@@ -69,35 +72,31 @@ const PlanCheckout = ({
   // in particular a founding member in their transition window, who is here to start a
   // REGULAR plan (the server rejects a second founding purchase for them anyway).
   const hasLiveSubscription = !!existingSub && existingSub.status !== 'Cancelled';
-  const foundingAvailable = founding && founding.active && founding.remaining > 0 && effectiveLocations <= 3 && !hasLiveSubscription;
+  // Per-location pricing: founding is open to any business size. Price + term lengths
+  // come from the server (admin-set price in Settings, single-source term constants).
+  const foundingAvailable = founding && founding.active && founding.remaining > 0 && !hasLiveSubscription;
+  const foundingPricePerLocation = founding?.price ?? FOUNDING_PRICE_PER_LOCATION;
+  const foundingTermMonths = founding?.termMonths ?? FOUNDING_TERM_MONTHS;
+  const priceLabel = `$${foundingPricePerLocation.toLocaleString()}`;
 
   // Regular plan values
   const pricePerLocation    = TIER_MAP[selectedTier] ?? 0;
 
-  // Savings vs regular monthly plan
+  // Founding totals + savings vs the regular monthly plan over the SAME term length
+  const foundingTotal = foundingPricePerLocation * effectiveLocations;
   const regularMonthlyForFounding = TIER_MAP[FOUNDING_ENTRIES] ?? 0;
-  const regularYearlyCost = regularMonthlyForFounding * effectiveLocations * 12;
-  const foundingSaving = regularYearlyCost - FOUNDING_PRICE;
+  const regularTermCost = regularMonthlyForFounding * effectiveLocations * foundingTermMonths;
+  const foundingSaving = regularTermCost - foundingTotal;
   const totalMonthly        = pricePerLocation * effectiveLocations;
 
   return (
     <Box sx={{ px: { xs: 0, md: 4 }, pt: { xs: 0.5, md: 2 }, pb: { xs: 2, md: 4 } }}>
 
-      {/* Step header - above the founding card (regular mode only) */}
-      {!foundingMode && (
-        <>
-          <Stack direction='row' alignItems='center' spacing={0.5} sx={{ mb: 0.5 }}>
-            {onBack && (
-              <IconButton onClick={onBack} size='small' aria-label='Back' sx={{ ml: -0.75, color: TEXT_TERTIARY }}>
-                <ArrowBack sx={{ fontSize: 22 }} />
-              </IconButton>
-            )}
-            <Typography variant='h6' fontWeight={700}>Pick your plan</Typography>
-          </Stack>
-          <Typography variant='caption' color='text.secondary' display='block' mb={2}>
-            Choose the entry volume that fits your traffic. Change it anytime.
-          </Typography>
-        </>
+      {/* Back button (regular mode only) */}
+      {!foundingMode && onBack && (
+        <IconButton onClick={onBack} size='small' aria-label='Back' sx={{ ml: -0.75, mb: 1, color: TEXT_TERTIARY }}>
+          <ArrowBack sx={{ fontSize: 22 }} />
+        </IconButton>
       )}
 
       {/* ── Founding Partner card (shown when active + spots remain) ── */}
@@ -112,7 +111,7 @@ const PlanCheckout = ({
         >
         <motion.div whileHover={{ scale: 1.012 }} whileTap={{ scale: 0.995 }} animate={{ scale: [1, 1.012, 1] }} transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}>
         <Box
-          onClick={() => !foundingLoading && !loading && setFoundingMode(m => !m)}
+          onClick={() => { if (!foundingLoading && !loading) { setFoundingMode(m => !m); setFoundingTermsError(false); } }}
           sx={{
             mb: { xs: '26px', md: '30px' }, mt: { xs: 1.5, md: 0 },
             p: '2px',
@@ -256,7 +255,7 @@ const PlanCheckout = ({
           {/* ── FOUNDING MODE: confirm + order summary (two-column) ── */}
           <Stack direction='row' alignItems='center' spacing={0.5}>
             <IconButton
-              onClick={() => !foundingLoading && setFoundingMode(false)}
+              onClick={() => { if (!foundingLoading) { setFoundingMode(false); setFoundingTermsError(false); setFoundingTermsAccepted(false); } }}
               size='small'
               aria-label='Back to plans'
               sx={{ ml: -0.75, color: TEXT_TERTIARY }}
@@ -268,7 +267,7 @@ const PlanCheckout = ({
             </Typography>
           </Stack>
           <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5, mb: 3 }}>
-            One-time payment for a full year of campaigns. Review and claim your spot.
+            One-time payment for your full founding term of campaigns. Review and claim your spot.
           </Typography>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 360px' }, gap: { xs: 2, md: 3 }, alignItems: 'start' }}>
@@ -289,7 +288,7 @@ const PlanCheckout = ({
                         <Typography sx={{ fontSize: 11, fontWeight: 800, color: STATUS_ACTIVATED_TEXT }}>Selected</Typography>
                       </Box>
                     </Stack>
-                    <Typography variant='caption' color='text.secondary'>Locked-in founding rate for a full year</Typography>
+                    <Typography variant='caption' color='text.secondary'>Locked-in founding rate for the full term</Typography>
                   </Box>
                 </Stack>
 
@@ -300,9 +299,10 @@ const PlanCheckout = ({
                 </Typography>
                 <Stack spacing={1.5}>
                   {[
-                    <><b style={{ color: PRIMARY_DEEP }}>{FOUNDING_ENTRIES.toLocaleString()} entries</b> per location in every campaign</>,
-                    <>All campaigns for a full <b style={{ color: PRIMARY_DEEP }}>12 months</b></>,
-                    <><b style={{ color: PRIMARY_DEEP }}>One-time payment</b>. No monthly bill for 12 months</>,
+                    <>Everything in the <b style={{ color: PRIMARY_DEEP }}>Medium Volume plan</b></>,
+                    <><b style={{ color: PRIMARY_DEEP }}>{(founding?.entriesPerLocation ?? FOUNDING_ENTRIES).toLocaleString()} entries</b> per location in every campaign</>,
+                    <>All campaigns for <b style={{ color: PRIMARY_DEEP }}>{foundingTermMonths} full months</b></>,
+                    <><b style={{ color: PRIMARY_DEEP }}>One-time payment</b>. No monthly bill during your term</>,
                     <>Your locations shown on the <b style={{ color: PRIMARY_DEEP }}>Winnbell map</b></>,
                   ].map((node, i) => (
                     <Stack key={i} direction='row' spacing={1.25} alignItems='flex-start'>
@@ -325,8 +325,8 @@ const PlanCheckout = ({
                 {foundingSaving > 0 && (
                   <>
                     <Stack direction='row' justifyContent='space-between' sx={{ mb: 1.5 }}>
-                      <Typography variant='body2' color='text.secondary' fontWeight={600}>Regular plan &middot; 12 mo</Typography>
-                      <Typography variant='body2' color='text.secondary' fontWeight={600} sx={{ textDecoration: 'line-through' }}>${regularYearlyCost.toLocaleString()}</Typography>
+                      <Typography variant='body2' color='text.secondary' fontWeight={600}>Regular plan &middot; {foundingTermMonths} mo</Typography>
+                      <Typography variant='body2' color='text.secondary' fontWeight={600} sx={{ textDecoration: 'line-through' }}>${regularTermCost.toLocaleString()}</Typography>
                     </Stack>
                     <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
                       <Typography variant='body2' color='text.secondary' fontWeight={600}>Founding discount</Typography>
@@ -336,27 +336,91 @@ const PlanCheckout = ({
                   </>
                 )}
 
+                {effectiveLocations > 1 && (
+                  <Stack direction='row' justifyContent='space-between' sx={{ mb: 1 }}>
+                    <Typography variant='body2' color='text.secondary' fontWeight={600}>
+                      {effectiveLocations} locations &times; {priceLabel}
+                    </Typography>
+                  </Stack>
+                )}
                 <Stack direction='row' justifyContent='space-between' alignItems='flex-end' sx={{ mb: 0.5 }}>
                   <Typography variant='body2' color='text.secondary' fontWeight={700}>Total today</Typography>
-                  <Typography sx={{ fontSize: 32, fontWeight: 900, letterSpacing: '-0.02em', color: PRIMARY_DEEP, lineHeight: 1 }}>${FOUNDING_PRICE.toLocaleString()}</Typography>
+                  <Typography sx={{ fontSize: 32, fontWeight: 900, letterSpacing: '-0.02em', color: PRIMARY_DEEP, lineHeight: 1 }}>${foundingTotal.toLocaleString()}</Typography>
                 </Stack>
                 <Typography sx={{ textAlign: 'right', fontSize: 11.5, color: 'text.secondary', fontWeight: 600, mb: 2.5 }}>
-                  then $0 / month for 12 months
+                  {priceLabel} per location &middot; then $0 / month for {foundingTermMonths} months
                 </Typography>
 
                 {error && <Typography variant='body2' color='error' textAlign='center' mb={1.5}>{error}</Typography>}
 
+                {/* Founding Partner Special Terms acceptance (electronic signature per the
+                    Terms' Section 9). The claim button stays enabled; clicking without
+                    accepting surfaces the inline error below instead of a dead button. */}
+                    <Stack sx={{mb:1.5}}>
+                <FormControlLabel
+                  sx={{ alignItems: 'flex-start', mr: 0 }}
+                  control={
+                    <Checkbox
+                      size='small'
+                      checked={foundingTermsAccepted}
+                      onChange={(e) => { setFoundingTermsAccepted(e.target.checked); if (e.target.checked) setFoundingTermsError(false); }}
+                      sx={{ mt: -0.5 }}
+                    />
+                  }
+                  label={
+                    <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
+                      I agree to the{' '}
+                      <Box
+                        component='a'
+                        href='/founding-terms'
+                        target='_blank'
+                        rel='noopener'
+                        onClick={(e) => e.stopPropagation()}
+                        sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
+                      >
+                        Founding Partner Special Terms
+                      </Box>
+                      {' '}(a fixed {foundingTermMonths}-month plan, charged in full today, with no refund for early cancellation).
+                    </Typography>
+                  }
+                />
+                <AnimatePresence>
+                  {foundingTermsError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <Typography variant='caption' color='error.main' fontWeight={700} display='block' sx={{ mb: 1 }}>
+                        Please accept the Founding Partner Special Terms to continue.
+                      </Typography>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+</Stack>
+                {/* Dimmed (but still clickable - clicking surfaces the inline error) until the
+                    Special Terms box is checked; lights up to full gold once accepted. */}
                 <Button
                   fullWidth
-                  onClick={onFoundingSubscribe}
+                  onClick={() => {
+                    if (!foundingTermsAccepted) { setFoundingTermsError(true); return; }
+                    onFoundingSubscribe();
+                  }}
                   disabled={foundingLoading || loading}
                   startIcon={foundingLoading ? undefined : <CreditCard sx={{ fontSize: 18 }} />}
                   sx={{
                     background: GOLD_GRADIENT,
                     color: GOLD_INK, fontWeight: 900, fontSize: 15, borderRadius: '13px',
                     py: '13px', textTransform: 'none',
-                    boxShadow: '0 12px 26px -12px rgba(245,158,11,0.7)',
-                    '&:hover': { background: GOLD_GRADIENT, boxShadow: '0 16px 30px -10px rgba(245,158,11,0.75)' },
+                    opacity: foundingTermsAccepted ? 1 : 0.5,
+                    filter: foundingTermsAccepted ? 'none' : 'saturate(0.5)',
+                    boxShadow: foundingTermsAccepted ? '0 12px 26px -12px rgba(245,158,11,0.7)' : 'none',
+                    transition: 'opacity 0.25s ease, filter 0.25s ease, box-shadow 0.25s ease',
+                    '&:hover': {
+                      background: GOLD_GRADIENT,
+                      boxShadow: foundingTermsAccepted ? '0 16px 30px -10px rgba(245,158,11,0.75)' : 'none',
+                    },
                     '&.Mui-disabled': { opacity: 0.7, color: GOLD_INK },
                   }}
                 >
@@ -372,13 +436,28 @@ const PlanCheckout = ({
                   Charged once today. Your locations join the next campaign, since the current one is already open.
                 </Typography>
                 <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mt: 0.75 }}>
-                  Available for businesses with up to 3 locations.
+                  Covers your current {effectiveLocations === 1 ? 'location' : `${effectiveLocations} locations`} for the full {foundingTermMonths}-month term. Locations are fixed for the founding term.
+                </Typography>
+
+                {/* Cancellation & Refund Policy surfaced before payment. */}
+                <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mt: 0.75, lineHeight: 1.5 }}>
+                  Charged in full today and non-refundable, except as described in our{' '}
+                  <Box
+                    component='a'
+                    href='/cancellation'
+                    target='_blank'
+                    rel='noopener'
+                    onClick={(e) => e.stopPropagation()}
+                    sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
+                  >
+                    Cancellation &amp; Refund Policy
+                  </Box>.
                 </Typography>
 
                 <Box sx={{ textAlign: 'center', mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                   <Typography variant='caption' color='text.secondary'>
                     Prefer monthly?{' '}
-                    <Box component='span' onClick={() => !foundingLoading && setFoundingMode(false)} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                    <Box component='span' onClick={() => { if (!foundingLoading) { setFoundingMode(false); setFoundingTermsError(false); setFoundingTermsAccepted(false); } }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
                       Back to plans
                     </Box>
                   </Typography>
@@ -492,7 +571,7 @@ const PlanCheckout = ({
             direction={{ xs: 'column', sm: 'row' }}
             alignItems='center'
             justifyContent='center'
-            gap={2.25}
+            gap={0.5}
             sx={{ flexWrap: 'wrap', mb: 3 }}
           >
             <Typography
@@ -502,7 +581,7 @@ const PlanCheckout = ({
                 fontWeight: 500,
               }}
             >
-              Billed on the 24th each month · you join the next campaign, since this one is already open
+              Billed on the 24th each month | the participation start from the next campaign, since this one is already open
             </Typography>
             <Typography
               sx={{
@@ -511,7 +590,7 @@ const PlanCheckout = ({
                 fontWeight: 500,
               }}
             >
-              Need more than {MAX_TIER.toLocaleString()} entries?{' '}
+             | Need more than {MAX_TIER.toLocaleString()} entries?{' '}
               <Box
                 component='span'
                 onClick={() => { window.location.href = 'mailto:support@winnbell.com'; }}
@@ -529,6 +608,20 @@ const PlanCheckout = ({
               </Box>
             </Typography>
           </Stack>
+
+          {/* Cancellation & Refund Policy surfaced before payment (Participating Business consumer-info). */}
+          <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mb: 2.5, lineHeight: 1.5 }}>
+            Fees are non-refundable once charged, except as described in our{' '}
+            <Box
+              component='a'
+              href='/cancellation'
+              target='_blank'
+              rel='noopener'
+              sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
+            >
+              Cancellation &amp; Refund Policy
+            </Box>.
+          </Typography>
 
           {error && <Typography variant='body2' color='error' textAlign='center' mb={2}>{error}</Typography>}
 

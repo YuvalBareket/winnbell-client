@@ -388,7 +388,7 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
                     ? 'Your final entry in this campaign. Thanks for playing!'
                     : 'Your final entries in this campaign. Thanks for playing!'
                   : isMaxed
-                    ? 'You have the maximum entries for this campaign. Good luck!'
+                    ? 'You have claimed the maximum entries for this campaign. Good luck!'
                     : totalCount === 0
                       ? 'Submit receipts, use promo codes, or claim your weekly entry.'
                       : `You have ${CAP - totalCount} more entries available - don't leave them unclaimed!`}

@@ -54,6 +54,8 @@ const PrivacyPolicyPage = lazy(() => import('../features/legal/pages/PrivacyPoli
 const OfficialRulesPage = lazy(() => import('../features/legal/pages/OfficialRulesPage'));
 const BusinessAgreementPage = lazy(() => import('../features/legal/pages/BusinessAgreementPage'));
 const BusinessGuidelinesPage = lazy(() => import('../features/legal/pages/BusinessGuidelinesPage'));
+const FoundingPartnerTermsPage = lazy(() => import('../features/legal/pages/FoundingPartnerTermsPage'));
+const CancellationRefundPage = lazy(() => import('../features/legal/pages/CancellationRefundPage'));
 const ContactPage = lazy(() => import('../features/contact/pages/ContactPage'));
 const BusinessDashboard = lazy(() => import('../features/admin/pages/BusinessDashboard'));
 const BusinessProfilePage = lazy(() => import('../features/partner/pages/BusinessProfilePage'));
@@ -154,6 +156,8 @@ const AppRoutes = () => {
       <Route path='/rules/:drawId' element={<OfficialRulesPage />} />
       <Route path='/business-agreement' element={<BusinessAgreementPage />} />
       <Route path='/business-guidelines' element={<BusinessGuidelinesPage />} />
+      <Route path='/founding-terms' element={<FoundingPartnerTermsPage />} />
+      <Route path='/cancellation' element={<CancellationRefundPage />} />
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>

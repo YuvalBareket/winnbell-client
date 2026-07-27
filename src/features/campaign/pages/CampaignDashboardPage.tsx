@@ -505,7 +505,6 @@ const CampaignDashboardPage = () => {
   );
 
   // ── Entries feed ─────────────────────────────────────────────
-  const liveText = allEntries[0]?.created_at ? `Live · updated ${formatRelativeTime(allEntries[0].created_at)}` : 'Live';
   // Only surface which location an entry came from when viewing all locations of a multi-branch
   // business (redundant when a single location is filtered, or for a location manager).
   const showEntryLocation = !isManager && selectedLocation === '' && locations.length > 1;
@@ -525,7 +524,6 @@ const CampaignDashboardPage = () => {
         {isDesktop && (
           <Box sx={{ px: '22px', py: '15px', borderBottom: `1px solid ${CHART_GRID}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography sx={{ fontSize: '12px', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: TEXT_SECONDARY }}>Recent entries</Typography>
-            <Typography sx={{ fontSize: '12px', fontWeight: 600, color: TEXT_TERTIARY }}>{liveText}</Typography>
           </Box>
         )}
 

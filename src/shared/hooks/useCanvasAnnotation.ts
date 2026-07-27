@@ -6,11 +6,16 @@ interface Pt { x: number; y: number }
 /** 'highlight' = thin semi-transparent yellow; 'cover' = opaque black for hiding private info. */
 export type MarkerKind = 'highlight' | 'cover';
 
-interface MarkedPath { pts: Pt[]; marker: MarkerKind }
+interface MarkedPath { pts: Pt[]; marker: MarkerKind; width: number }
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 8;
 const EXPORT_MAX_EDGE = 2400; // cap the saved guide so the file stays reasonable
+
+/** Brush thickness presets, as multipliers of the image-fitted base width. Index 1 is the
+ * historical default, so an existing receipt looks identical unless the user changes it. */
+export const BRUSH_LEVELS = [0.5, 1, 1.75, 2.75];
+export const DEFAULT_BRUSH_LEVEL = 1;
 
 const distance = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
 const midpoint = (a: Pt, b: Pt): Pt => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
@@ -45,7 +50,9 @@ export const useCanvasAnnotation = (
   const imgRef = useRef<HTMLImageElement | null>(null);
   const pathsRef = useRef<MarkedPath[]>([]);    // committed lines, image-space
   const currentPathRef = useRef<Pt[]>([]);      // in-progress line, image-space
-  const markerWidthRef = useRef(12);            // image-space px (both markers)
+  const baseWidthRef = useRef(12);              // image-fitted width for the default level
+  const markerWidthRef = useRef(12);            // image-space px (base * current level)
+  const brushLevelRef = useRef(DEFAULT_BRUSH_LEVEL); // index into BRUSH_LEVELS
 
   // View transform (canvas backing-pixel space)
   const scaleRef = useRef(1);                   // user zoom multiplier (1..MAX_SCALE)
@@ -77,6 +84,7 @@ export const useCanvasAnnotation = (
   const [zoom, setZoom] = useState(1);          // mirror of scaleRef for the UI
   const [tool, setToolState] = useState<'draw' | 'pan'>('draw');
   const [marker, setMarkerState] = useState<MarkerKind>('highlight');
+  const [brushLevel, setBrushLevelState] = useState(DEFAULT_BRUSH_LEVEL);
 
   const setTool = useCallback((t: 'draw' | 'pan') => {
     toolRef.current = t;
@@ -86,6 +94,15 @@ export const useCanvasAnnotation = (
   const setMarker = useCallback((m: MarkerKind) => {
     markerRef.current = m;
     setMarkerState(m);
+  }, []);
+
+  // Brush thickness only affects strokes drawn AFTER the change: each committed path stores
+  // its own width, so nudging the slider never resizes what is already on the receipt.
+  const setBrushLevel = useCallback((lvl: number) => {
+    const clamped = Math.min(BRUSH_LEVELS.length - 1, Math.max(0, lvl));
+    brushLevelRef.current = clamped;
+    markerWidthRef.current = Math.max(2, Math.round(baseWidthRef.current * BRUSH_LEVELS[clamped]));
+    setBrushLevelState(clamped);
   }, []);
 
   // ── geometry helpers (read refs only, so they stay correct without deps) ──
@@ -151,18 +168,18 @@ export const useCanvasAnnotation = (
     // marker it was drawn with: thin translucent yellow highlight vs opaque black cover.
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    const drawPath = (pts: Pt[], kind: MarkerKind) => {
+    const drawPath = (pts: Pt[], kind: MarkerKind, width: number) => {
       if (pts.length < 2) return;
       ctx.globalAlpha = kind === 'cover' ? 1 : 0.32;
       ctx.strokeStyle = kind === 'cover' ? MARKER_BLACK : MARKER_YELLOW;
-      ctx.lineWidth = markerWidthRef.current;
+      ctx.lineWidth = width;
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
       ctx.stroke();
     };
-    pathsRef.current.forEach((p) => drawPath(p.pts, p.marker));
-    if (currentPathRef.current.length > 1) drawPath(currentPathRef.current, markerRef.current);
+    pathsRef.current.forEach((p) => drawPath(p.pts, p.marker, p.width));
+    if (currentPathRef.current.length > 1) drawPath(currentPathRef.current, markerRef.current, markerWidthRef.current);
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
@@ -226,7 +243,8 @@ export const useCanvasAnnotation = (
     const url = URL.createObjectURL(imgFile);
     img.onload = () => {
       imgRef.current = img;
-      markerWidthRef.current = Math.max(18, Math.round(Math.min(img.width, img.height) * 0.048));
+      baseWidthRef.current = Math.max(18, Math.round(Math.min(img.width, img.height) * 0.048));
+      markerWidthRef.current = Math.max(2, Math.round(baseWidthRef.current * BRUSH_LEVELS[brushLevelRef.current]));
       pathsRef.current = [];
       currentPathRef.current = [];
       setPathCount(0);
@@ -327,7 +345,7 @@ export const useCanvasAnnotation = (
         if (isDrawingRef.current) {
           isDrawingRef.current = false;
           if (currentPathRef.current.length > 1) {
-            pathsRef.current = [...pathsRef.current, { pts: currentPathRef.current, marker: markerRef.current }];
+            pathsRef.current = [...pathsRef.current, { pts: currentPathRef.current, marker: markerRef.current, width: markerWidthRef.current }];
             setPathCount(pathsRef.current.length);
             onPathCountChangeRef.current?.(pathsRef.current.length);
           }
@@ -411,11 +429,11 @@ export const useCanvasAnnotation = (
       octx.drawImage(img, 0, 0, off.width, off.height);
       octx.lineCap = 'round';
       octx.lineJoin = 'round';
-      for (const { pts, marker: kind } of pathsRef.current) {
+      for (const { pts, marker: kind, width } of pathsRef.current) {
         if (pts.length < 2) continue;
         octx.globalAlpha = kind === 'cover' ? 1 : 0.32;
         octx.strokeStyle = kind === 'cover' ? MARKER_BLACK : MARKER_YELLOW;
-        octx.lineWidth = markerWidthRef.current * s;
+        octx.lineWidth = width * s;
         octx.beginPath();
         octx.moveTo(pts[0].x * s, pts[0].y * s);
         for (let i = 1; i < pts.length; i++) octx.lineTo(pts[i].x * s, pts[i].y * s);
@@ -437,6 +455,9 @@ export const useCanvasAnnotation = (
     setTool,
     marker,
     setMarker,
+    brushLevel,
+    setBrushLevel,
+    brushLevelCount: BRUSH_LEVELS.length,
     minScale: MIN_SCALE,
     maxScale: MAX_SCALE,
     zoomIn,

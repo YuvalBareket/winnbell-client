@@ -19,6 +19,7 @@ import {
   TextField,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { motion } from 'framer-motion';
 import CloseIcon from '@mui/icons-material/Close';
 import GppBadIcon from '@mui/icons-material/GppBad';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -28,6 +29,12 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import {
+  PRIMARY_MAIN, PRIMARY_TINT, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, ALPHA_WHITE_80, BG_ROW_SUBTLE,
+  TEXT_TERTIARY, TEXT_HEADING, BORDER_SUBTLE, STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
+  STATUS_PENDING_BG, STATUS_PENDING_TEXT, METRIC_BAD_TINT, METRIC_BAD,
+} from '../../../../shared/colors';
+import { AdminCard, SectionHeader } from './adminUi';
 import { useBusinessDetail, useAdminImageDecision, useBusinessEntries } from '../../hooks/useAdmin';
 
 interface Props {
@@ -46,6 +53,11 @@ const QUARANTINE_LABELS: Record<string, string> = {
   ocr_validation_failed: 'Image rejected',
   ocr_error_pending_review: 'OCR error',
   shared_receipt_suspected: 'Shared receipt',
+  superseded_by_verified_image: 'Duplicate receipt',
+  superseded_by_admin_decision: 'Superseded (admin)',
+  contest_pending: 'Under review',
+  contest_not_won: 'Not verified',
+  duplicate_document: 'Duplicate document',
 };
 
 const RISK_FLAG_LABELS: Record<string, string> = {
@@ -59,6 +71,8 @@ const RISK_FLAG_LABELS: Record<string, string> = {
   threshold_probing: 'Threshold probing',
   amount_outlier: 'Amount outlier (>3x avg)',
   suspiciously_fast_input: 'Suspiciously fast input',
+  superseded_duplicate_receipt: 'Duplicate receipt (owner verified theirs)',
+  duplicate_document: 'Reused receipt (different number, same image)',
 };
 
 const SUB_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
@@ -123,202 +137,363 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
       onClose={onClose}
       PaperProps={{ sx: { width: { xs: '100vw', sm: 620, md: 920, lg: 1020 }, p: 0, display: 'flex', flexDirection: 'column' } }}
     >
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider', flexShrink: 0 }}>
-        <Typography variant='h6' fontWeight={700}>Business Profile</Typography>
-        <IconButton onClick={onClose} size='small'><CloseIcon /></IconButton>
+      {/* Hero Header with gradient background */}
+      <Box
+        sx={{
+          background: GRADIENT_HERO,
+          color: 'white',
+          px: 3, py: 4,
+          position: 'relative',
+          overflow: 'hidden',
+          flexShrink: 0,
+          borderRadius: '20px 0 0 20px',
+        }}
+      >
+        {/* Glow orb detail */}
+        <Box
+          sx={{
+            position: 'absolute',
+            width: 280,
+            height: 280,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 70%)`,
+            top: -80,
+            right: -80,
+            pointerEvents: 'none',
+          }}
+        />
+
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar
+              sx={{
+                width: 48,
+                height: 48,
+                bgcolor: ALPHA_WHITE_15,
+                border: `2px solid ${ALPHA_WHITE_30}`,
+              }}
+            >
+              {biz?.logo_url
+                ? <Box component='img' src={`${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${biz.logo_url}`} alt={biz?.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <StorefrontIcon sx={{ color: 'white' }} />}
+            </Avatar>
+            <Box>
+              <Typography variant='h6' fontWeight={800} sx={{ color: 'white', lineHeight: 1.2 }}>
+                {biz?.name ?? 'Loading...'}
+              </Typography>
+              <Typography variant='body2' sx={{ color: ALPHA_WHITE_80 }}>
+                {biz?.sector ?? ''}
+              </Typography>
+            </Box>
+          </Box>
+          <IconButton onClick={onClose} size='small' sx={{ color: 'white' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </Box>
 
       <Box sx={{ overflowY: 'auto', flex: 1, p: 3 }}>
         {isLoading ? (
           <Stack spacing={2}>
-            <Skeleton variant='circular' width={56} height={56} />
-            <Skeleton variant='text' width='55%' height={32} />
-            <Skeleton variant='rounded' height={48} />
-            <Skeleton variant='rounded' height={90} />
-            <Skeleton variant='rounded' height={120} />
-            <Skeleton variant='rounded' height={220} />
+            <Skeleton variant='rounded' height={100} />
+            <Skeleton variant='rounded' height={100} />
+            <Skeleton variant='rounded' height={200} />
           </Stack>
         ) : biz ? (
           <Stack spacing={3}>
 
-            {/* Identity */}
-            <Stack direction='row' spacing={2} alignItems='center'>
-              <Avatar sx={{ width: 56, height: 56, bgcolor: 'secondary.main', fontSize: 22, fontWeight: 700 }}>
-                {biz.logo_url
-                  ? <Box component='img' src={`${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${biz.logo_url}`} alt={biz.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <StorefrontIcon />}
-              </Avatar>
-              <Box>
-                <Typography variant='h6' fontWeight={700} lineHeight={1.2}>{biz.name}</Typography>
-                <Typography variant='body2' color='text.secondary'>{biz.sector}</Typography>
-                {biz.description && (
-                  <Typography variant='caption' color='text.secondary'>{biz.description}</Typography>
-                )}
-              </Box>
-            </Stack>
-
             {/* Status chips */}
-            <Stack direction='row' spacing={1} flexWrap='wrap'>
-              <Chip label={biz.subscription_status ?? 'No subscription'} size='small' color={SUB_COLORS[biz.subscription_status ?? ''] ?? 'default'} />
-              <Chip label={biz.in_open_draw ? 'In active campaign' : 'Not in campaign'} size='small' color={biz.in_open_draw ? 'success' : 'default'} variant={biz.in_open_draw ? 'filled' : 'outlined'} />
-            </Stack>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
+              <Stack direction='row' spacing={1} flexWrap='wrap'>
+                <Chip
+                  label={biz.subscription_status ?? 'No subscription'}
+                  size='small'
+                  sx={{
+                    bgcolor: SUB_COLORS[biz.subscription_status ?? ''] === 'success' ? STATUS_ACTIVATED_BG : SUB_COLORS[biz.subscription_status ?? ''] === 'warning' ? STATUS_PENDING_BG : METRIC_BAD_TINT,
+                    color: SUB_COLORS[biz.subscription_status ?? ''] === 'success' ? STATUS_ACTIVATED_TEXT : SUB_COLORS[biz.subscription_status ?? ''] === 'warning' ? STATUS_PENDING_TEXT : METRIC_BAD,
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                  }}
+                />
+                <Chip
+                  label={biz.in_open_draw ? 'In active campaign' : 'Not in campaign'}
+                  size='small'
+                  sx={{
+                    bgcolor: biz.in_open_draw ? STATUS_ACTIVATED_BG : 'transparent',
+                    color: biz.in_open_draw ? STATUS_ACTIVATED_TEXT : TEXT_TERTIARY,
+                    border: biz.in_open_draw ? 'none' : `1px solid ${BORDER_SUBTLE}`,
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                  }}
+                />
+              </Stack>
+            </motion.div>
 
             {/* Campaign selector */}
             {campaignSummary.length > 0 && (
-              <Autocomplete
-                size='small'
-                options={campaignSummary}
-                getOptionLabel={(opt: any) => opt.draw_name}
-                value={campaignSummary.find((c: any) => String(c.draw_id) === selectedDrawId) ?? null}
-                onChange={(_, val) => { setSelectedDrawId(val ? String(val.draw_id) : ALL); setEntriesPage(1); }}
-                isOptionEqualToValue={(a: any, b: any) => a.draw_id === b.draw_id}
-                renderInput={(params) => <TextField {...params} label='Campaign' placeholder='All campaigns' />}
-                sx={{ maxWidth: 280 }}
-              />
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
+                <Autocomplete
+                  size='small'
+                  options={campaignSummary}
+                  getOptionLabel={(opt: any) => opt.draw_name}
+                  value={campaignSummary.find((c: any) => String(c.draw_id) === selectedDrawId) ?? null}
+                  onChange={(_, val) => { setSelectedDrawId(val ? String(val.draw_id) : ALL); setEntriesPage(1); }}
+                  isOptionEqualToValue={(a: any, b: any) => a.draw_id === b.draw_id}
+                  renderInput={(params) => <TextField {...params} label='Campaign' placeholder='All campaigns' />}
+                  sx={{ maxWidth: 280, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                />
+              </motion.div>
             )}
 
             {/* Stats — scoped to selected campaign */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 1.5 }}>
-              {[
-                { label: selectedDrawId === ALL ? 'Total Entries' : 'Entries (campaign)', value: activeEntries },
-                { label: selectedDrawId === ALL ? 'Quarantined' : 'Quarantined (campaign)', value: quarantinedEntries },
-                { label: 'Locations', value: locations.length },
-                { label: 'Active Locations', value: locations.filter((l: any) => l.is_active).length },
-                { label: 'Fee at Entry', value: biz.fee_at_entry != null ? `$${Number(biz.fee_at_entry).toFixed(2)}` : '—' },
-                { label: 'Entry Cap', value: biz.entries_per_location ?? '—' },
-                { label: 'Min. Transaction', value: biz.min_transaction_amount ? `$${Number(biz.min_transaction_amount).toFixed(2)}` : '—' },
-                { label: 'Legal Name', value: biz.legal_name ?? '—' },
-                { label: 'Member Since', value: new Date(biz.created_at).toLocaleDateString() },
-              ].map(({ label, value }) => (
-                <Box key={label} sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-                  <Typography variant='caption' color='text.secondary' display='block'>{label}</Typography>
-                  <Typography variant='body2' fontWeight={700}>{String(value)}</Typography>
-                </Box>
-              ))}
-            </Box>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 1.5 }}>
+                {[
+                  { label: selectedDrawId === ALL ? 'Total Entries' : 'Entries (campaign)', value: activeEntries },
+                  { label: selectedDrawId === ALL ? 'Quarantined' : 'Quarantined (campaign)', value: quarantinedEntries },
+                  { label: 'Locations', value: locations.length },
+                  { label: 'Active Locations', value: locations.filter((l: any) => l.is_active).length },
+                  { label: 'Fee at Entry', value: biz.fee_at_entry != null ? `$${Number(biz.fee_at_entry).toFixed(2)}` : '—' },
+                  { label: 'Entry Cap', value: biz.entries_per_location ?? '—' },
+                  { label: 'Min. Transaction', value: biz.min_transaction_amount ? `$${Number(biz.min_transaction_amount).toFixed(2)}` : '—' },
+                  { label: 'Legal Name', value: biz.legal_name ?? '—' },
+                  { label: 'Member Since', value: new Date(biz.created_at).toLocaleDateString() },
+                ].map(({ label, value }) => (
+                  <AdminCard key={label} sx={{ p: 1.5 }}>
+                    <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', fontWeight: 700 }}>{label}</Typography>
+                    <Typography variant='body2' fontWeight={800} sx={{ color: TEXT_HEADING, mt: 0.5 }}>{String(value)}</Typography>
+                  </AdminCard>
+                ))}
+              </Box>
+            </motion.div>
 
             {/* Owner info */}
             {biz.owner_name && (
-              <Box sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-                <Typography variant='caption' color='text.secondary' display='block' mb={1} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                  Owner
-                </Typography>
-                <Stack direction='row' spacing={1.5} alignItems='center'>
-                  <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontSize: 14 }}>
-                    {(biz.owner_name ?? biz.owner_email ?? '?')[0].toUpperCase()}
-                  </Avatar>
-                  <Box flex={1}>
-                    <Typography variant='body2' fontWeight={600}>{biz.owner_name}</Typography>
-                    <Typography variant='caption' color='text.secondary'>{biz.owner_email}</Typography>
-                  </Box>
-                  <Chip icon={<RiskIcon />} label={`${riskLabel} · ${ownerRisk}`} size='small' color={riskColor} />
-                  {!biz.owner_is_active && <Chip label='Inactive' size='small' color='error' variant='outlined' />}
-                </Stack>
-                {Array.isArray(biz.owner_risk_flags) && biz.owner_risk_flags.length > 0 && (
-                  <Stack direction='row' spacing={0.5} flexWrap='wrap' gap={0.5} mt={1}>
-                    {(biz.owner_risk_flags as string[]).map((flag) => (
-                      <Chip key={flag} label={RISK_FLAG_LABELS[flag] ?? flag} size='small' color='warning' sx={{ fontSize: 11 }} />
-                    ))}
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
+                <AdminCard sx={{ p: 2 }}>
+                  <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', mb: 1, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Owner
+                  </Typography>
+                  <Stack direction='row' spacing={1.5} alignItems='center'>
+                    <Avatar sx={{ width: 36, height: 36, bgcolor: PRIMARY_MAIN, fontSize: 14 }}>
+                      {(biz.owner_name ?? biz.owner_email ?? '?')[0].toUpperCase()}
+                    </Avatar>
+                    <Box flex={1}>
+                      <Typography variant='body2' fontWeight={600} sx={{ color: TEXT_HEADING }}>{biz.owner_name}</Typography>
+                      <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>{biz.owner_email}</Typography>
+                    </Box>
+                    <Chip
+                      icon={<RiskIcon />}
+                      label={`${riskLabel} - ${ownerRisk}`}
+                      size='small'
+                      sx={{
+                        bgcolor: riskColor === 'error' ? METRIC_BAD_TINT : riskColor === 'warning' ? STATUS_PENDING_BG : STATUS_ACTIVATED_BG,
+                        color: riskColor === 'error' ? METRIC_BAD : riskColor === 'warning' ? STATUS_PENDING_TEXT : STATUS_ACTIVATED_TEXT,
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                      }}
+                    />
+                    {!biz.owner_is_active && (
+                      <Chip
+                        label='Inactive'
+                        size='small'
+                        sx={{
+                          bgcolor: METRIC_BAD_TINT,
+                          color: METRIC_BAD,
+                          fontWeight: 700,
+                          borderRadius: '8px',
+                        }}
+                      />
+                    )}
                   </Stack>
-                )}
-              </Box>
+                  {Array.isArray(biz.owner_risk_flags) && biz.owner_risk_flags.length > 0 && (
+                    <Stack direction='row' spacing={0.5} flexWrap='wrap' gap={0.5} mt={1}>
+                      {(biz.owner_risk_flags as string[]).map((flag) => (
+                        <Chip
+                          key={flag}
+                          label={RISK_FLAG_LABELS[flag] ?? flag}
+                          size='small'
+                          sx={{
+                            bgcolor: STATUS_PENDING_BG,
+                            color: STATUS_PENDING_TEXT,
+                            fontWeight: 700,
+                            fontSize: 11,
+                            borderRadius: '8px',
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  )}
+                </AdminCard>
+              </motion.div>
             )}
 
-            <Divider />
+            <Divider sx={{ borderColor: BORDER_SUBTLE }} />
 
             {/* Locations — counts scoped to selected campaign */}
-            <Box>
-              <Stack direction='row' alignItems='center' spacing={1} mb={1.5}>
-                <LocationOnIcon fontSize='small' color='action' />
-                <Typography variant='subtitle2' fontWeight={700}>Locations ({locations.length})</Typography>
-              </Stack>
-              <Stack spacing={0.75}>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
+              <SectionHeader icon={<LocationOnIcon />} tint={PRIMARY_TINT} color={PRIMARY_MAIN} title={`Locations (${locations.length})`} />
+              <Stack spacing={1}>
                 {locations.map((loc: any) => {
                   const counts = locEntryCounts.get(loc.id);
                   const active = counts?.active ?? (selectedDrawId === ALL ? Number(loc.activated_tickets) : 0);
                   const quarantined = counts?.quarantined ?? (selectedDrawId === ALL ? Number(loc.quarantined_tickets) : 0);
                   return (
-                    <Box key={loc.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 1.5, py: 1, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: loc.is_active ? 'transparent' : (theme) => alpha(theme.palette.action.disabled, 0.04) }}>
-                      <Box>
-                        <Typography variant='body2' fontWeight={600}>{loc.name}</Typography>
-                        {loc.address && <Typography variant='caption' color='text.secondary'>{loc.address}</Typography>}
+                    <AdminCard
+                      key={loc.id}
+                      sx={{
+                        p: 1.5,
+                        bgcolor: loc.is_active ? 'transparent' : (theme) => alpha(theme.palette.action.disabled, 0.04),
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography variant='body2' fontWeight={600} sx={{ color: TEXT_HEADING }}>{loc.name}</Typography>
+                          {loc.address && <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>{loc.address}</Typography>}
+                        </Box>
+                        <Stack direction='row' spacing={0.75} alignItems='center'>
+                          <Chip
+                            label={`${active} entries`}
+                            size='small'
+                            sx={{
+                              bgcolor: 'transparent',
+                              border: `1px solid ${BORDER_SUBTLE}`,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              borderRadius: '8px',
+                            }}
+                          />
+                          {quarantined > 0 && (
+                            <Chip
+                              label={`${quarantined} Q`}
+                              size='small'
+                              sx={{
+                                bgcolor: STATUS_PENDING_BG,
+                                color: STATUS_PENDING_TEXT,
+                                fontSize: 11,
+                                fontWeight: 600,
+                                borderRadius: '8px',
+                              }}
+                            />
+                          )}
+                          {!loc.is_active && (
+                            <Chip
+                              label='Inactive'
+                              size='small'
+                              sx={{
+                                bgcolor: 'transparent',
+                                border: `1px solid ${BORDER_SUBTLE}`,
+                                fontSize: 11,
+                                fontWeight: 600,
+                                borderRadius: '8px',
+                              }}
+                            />
+                          )}
+                        </Stack>
                       </Box>
-                      <Stack direction='row' spacing={0.75} alignItems='center'>
-                        <Chip label={`${active} entries`} size='small' variant='outlined' sx={{ fontSize: 11 }} />
-                        {quarantined > 0 && <Chip label={`${quarantined} Q`} size='small' color='warning' sx={{ fontSize: 11 }} />}
-                        {!loc.is_active && <Chip label='Inactive' size='small' color='default' variant='outlined' sx={{ fontSize: 11 }} />}
-                      </Stack>
-                    </Box>
+                    </AdminCard>
                   );
                 })}
-                {locations.length === 0 && <Typography variant='body2' color='text.secondary'>No locations on record.</Typography>}
+                {locations.length === 0 && <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>No locations on record.</Typography>}
               </Stack>
-            </Box>
+            </motion.div>
 
-            <Divider />
+            <Divider sx={{ borderColor: BORDER_SUBTLE }} />
 
             {/* Entry history — scoped to selected campaign */}
-            <Box>
-              <Stack direction='row' alignItems='center' spacing={1} mb={1.5}>
-                <ConfirmationNumberOutlinedIcon fontSize='small' color='action' />
-                <Typography variant='subtitle2' fontWeight={700}>
-                  {activeCampaign ? `${activeCampaign.draw_name} Entries` : 'All Entries'} ({entriesTotal})
-                </Typography>
-              </Stack>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
+              <SectionHeader icon={<ConfirmationNumberOutlinedIcon />} tint={PRIMARY_TINT} color={PRIMARY_MAIN} title={activeCampaign ? `${activeCampaign.draw_name} Entries (${entriesTotal})` : `All Entries (${entriesTotal})`} />
+            </motion.div>
 
-              {entriesLoading ? (
-                <Stack spacing={1}>
-                  {[...Array(5)].map((_, i) => <Skeleton key={i} variant='rounded' height={36} />)}
-                </Stack>
-              ) : entries.length === 0 ? (
-                <Typography variant='body2' color='text.secondary'>No entries{selectedDrawId !== ALL ? ' for this campaign' : ''} yet.</Typography>
-              ) : (
+            {entriesLoading ? (
+              <Stack spacing={1}>
+                {[...Array(5)].map((_, i) => <Skeleton key={i} variant='rounded' height={36} />)}
+              </Stack>
+            ) : entries.length === 0 ? (
+              <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>No entries{selectedDrawId !== ALL ? ' for this campaign' : ''} yet.</Typography>
+            ) : (
+              <AdminCard sx={{ overflow: 'hidden' }}>
                 <Table size='small'>
                   <TableHead>
-                    <TableRow>
-                      {selectedDrawId === ALL && <TableCell>Campaign</TableCell>}
-                      <TableCell>User</TableCell>
-                      <TableCell>Location</TableCell>
-                      <TableCell>Source</TableCell>
-                      <TableCell>Amount</TableCell>
-                      <TableCell>Date</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Receipt</TableCell>
-                      <TableCell>Risk +</TableCell>
+                    <TableRow sx={{ bgcolor: BG_ROW_SUBTLE }}>
+                      {selectedDrawId === ALL && <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 11 }}>Campaign</TableCell>}
+                      <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 11 }}>User</TableCell>
+                      <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 11 }}>Location</TableCell>
+                      <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 11 }}>Source</TableCell>
+                      <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 11 }}>Amount</TableCell>
+                      <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 11 }}>Date</TableCell>
+                      <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 11 }}>Status</TableCell>
+                      <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 11 }}>Receipt</TableCell>
+                      <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 11 }}>Risk</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {entries.map((e: any) => (
-                      <TableRow key={e.id} hover>
+                    {entries.map((e: any, idx: number) => (
+                      <TableRow
+                        key={e.id}
+                        sx={{
+                          '&:hover': { bgcolor: BG_ROW_SUBTLE },
+                          borderBottom: idx < entries.length - 1 ? `1px solid ${BORDER_SUBTLE}` : 'none',
+                        }}
+                      >
                         {selectedDrawId === ALL && (
                           <TableCell>
-                            <Typography variant='caption' fontWeight={600} noWrap>{e.draw_name ?? '—'}</Typography>
+                            <Typography variant='caption' fontWeight={600} noWrap sx={{ color: TEXT_HEADING }}>{e.draw_name ?? '—'}</Typography>
                           </TableCell>
                         )}
                         <TableCell sx={{ maxWidth: 140 }}>
-                          <Typography variant='caption' fontWeight={600} noWrap display='block'>{e.user_name ?? '—'}</Typography>
-                          <Typography variant='caption' color='text.secondary' noWrap>{e.user_email ?? ''}</Typography>
+                          <Typography variant='caption' fontWeight={600} noWrap display='block' sx={{ color: TEXT_HEADING }}>{e.user_name ?? '—'}</Typography>
+                          <Typography variant='caption' sx={{ color: TEXT_TERTIARY }} noWrap>{e.user_email ?? ''}</Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant='caption' noWrap>{e.location_name ?? '—'}</Typography>
+                          <Typography variant='caption' noWrap sx={{ color: TEXT_HEADING }}>{e.location_name ?? '—'}</Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip label={SOURCE_LABELS[e.entry_source] ?? e.entry_source} size='small' variant='outlined' sx={{ fontSize: 11 }} />
+                          <Chip
+                            label={SOURCE_LABELS[e.entry_source] ?? e.entry_source}
+                            size='small'
+                            sx={{
+                              bgcolor: 'transparent',
+                              border: `1px solid ${BORDER_SUBTLE}`,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              borderRadius: '8px',
+                            }}
+                          />
                         </TableCell>
                         <TableCell>
-                          <Typography variant='caption'>
+                          <Typography variant='caption' sx={{ color: TEXT_HEADING, fontWeight: 600 }}>
                             {e.transaction_amount != null ? `$${Number(e.transaction_amount).toFixed(2)}` : '—'}
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant='caption'>{e.activated_at ? new Date(e.activated_at).toLocaleDateString() : '—'}</Typography>
+                          <Typography variant='caption' sx={{ color: TEXT_HEADING }}>{e.activated_at ? new Date(e.activated_at).toLocaleDateString() : '—'}</Typography>
                         </TableCell>
                         <TableCell>
                           {e.is_quarantined ? (
-                            <Chip label={QUARANTINE_LABELS[e.quarantine_reason] ?? 'Quarantined'} size='small' color={e.quarantine_reason === 'ocr_pending' ? 'warning' : 'error'} />
+                            <Chip
+                              label={QUARANTINE_LABELS[e.quarantine_reason] ?? 'Quarantined'}
+                              size='small'
+                              sx={{
+                                bgcolor: e.quarantine_reason === 'ocr_pending' ? STATUS_PENDING_BG : METRIC_BAD_TINT,
+                                color: e.quarantine_reason === 'ocr_pending' ? STATUS_PENDING_TEXT : METRIC_BAD,
+                                fontWeight: 700,
+                                fontSize: 11,
+                                borderRadius: '8px',
+                              }}
+                            />
                           ) : (
-                            <Chip label='Active' size='small' color='success' />
+                            <Chip
+                              label='Active'
+                              size='small'
+                              sx={{
+                                bgcolor: STATUS_ACTIVATED_BG,
+                                color: STATUS_ACTIVATED_TEXT,
+                                fontWeight: 700,
+                                fontSize: 11,
+                                borderRadius: '8px',
+                              }}
+                            />
                           )}
                         </TableCell>
                         <TableCell>
@@ -330,11 +505,11 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                                   src={e.receipt_image_url}
                                   alt='Receipt'
                                   sx={{
-                                    width: 48, height: 48, objectFit: 'cover', borderRadius: 1,
+                                    width: 48, height: 48, objectFit: 'cover', borderRadius: '8px',
                                     border: '1px solid',
                                     borderColor:
-                                      e.image_validation_status === 'failed' || e.image_validation_status === 'ocr_error' ? 'error.main'
-                                      : e.image_validation_status === 'passed' ? 'success.main' : 'divider',
+                                      e.image_validation_status === 'failed' || e.image_validation_status === 'ocr_error' ? METRIC_BAD
+                                      : e.image_validation_status === 'passed' ? STATUS_ACTIVATED_TEXT : BORDER_SUBTLE,
                                     cursor: 'pointer', '&:hover': { opacity: 0.8 },
                                   }}
                                 />
@@ -343,8 +518,14 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                                 <Chip
                                   label={e.image_validation_status === 'passed' ? 'OCR ok' : e.image_validation_status === 'failed' ? 'OCR fail' : e.image_validation_status === 'ocr_error' ? 'OCR err' : 'OCR pending'}
                                   size='small'
-                                  color={e.image_validation_status === 'passed' ? 'success' : e.image_validation_status === 'failed' ? 'error' : e.image_validation_status === 'ocr_error' ? 'warning' : 'default'}
-                                  sx={{ fontSize: 10, height: 18 }}
+                                  sx={{
+                                    bgcolor: e.image_validation_status === 'passed' ? STATUS_ACTIVATED_BG : e.image_validation_status === 'failed' ? METRIC_BAD_TINT : STATUS_PENDING_BG,
+                                    color: e.image_validation_status === 'passed' ? STATUS_ACTIVATED_TEXT : e.image_validation_status === 'failed' ? METRIC_BAD : STATUS_PENDING_TEXT,
+                                    fontSize: 10,
+                                    height: 18,
+                                    fontWeight: 700,
+                                    borderRadius: '6px',
+                                  }}
                                 />
                               )}
                               {e.image_validation_status && e.image_validation_status !== 'not_required' && (
@@ -352,14 +533,13 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                                   {e.image_validation_status !== 'passed' && (
                                     <IconButton
                                       size='small'
-                                      color='success'
                                       disabled={pendingTicket === e.id}
                                       title='Approve image'
                                       onClick={() => {
                                         setPendingTicket(e.id);
                                         imageDecision.mutate({ ticketId: e.id, decision: 'approve' }, { onSettled: () => setPendingTicket(null) });
                                       }}
-                                      sx={{ p: 0.25 }}
+                                      sx={{ p: 0.25, color: STATUS_ACTIVATED_TEXT }}
                                     >
                                       <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />
                                     </IconButton>
@@ -367,14 +547,13 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                                   {e.image_validation_status !== 'failed' && (
                                     <IconButton
                                       size='small'
-                                      color='error'
                                       disabled={pendingTicket === e.id}
                                       title='Reject image'
                                       onClick={() => {
                                         setPendingTicket(e.id);
                                         imageDecision.mutate({ ticketId: e.id, decision: 'reject' }, { onSettled: () => setPendingTicket(null) });
                                       }}
-                                      sx={{ p: 0.25 }}
+                                      sx={{ p: 0.25, color: METRIC_BAD }}
                                     >
                                       <CancelOutlinedIcon sx={{ fontSize: 16 }} />
                                     </IconButton>
@@ -383,7 +562,7 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                               )}
                             </Box>
                           ) : (
-                            <Typography variant='caption' color='text.disabled'>—</Typography>
+                            <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>—</Typography>
                           )}
                         </TableCell>
                         <TableCell>
@@ -391,28 +570,48 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                             <Chip
                               label={e.risk_score_delta > 0 ? `+${e.risk_score_delta}` : `${e.risk_score_delta}`}
                               size='small'
-                              color={e.risk_score_delta > 0 ? 'error' : 'success'}
-                              sx={{ fontSize: 11, height: 20, fontWeight: 700 }}
+                              sx={{
+                                bgcolor: e.risk_score_delta > 0 ? METRIC_BAD_TINT : STATUS_ACTIVATED_BG,
+                                color: e.risk_score_delta > 0 ? METRIC_BAD : STATUS_ACTIVATED_TEXT,
+                                fontSize: 11,
+                                height: 20,
+                                fontWeight: 700,
+                                borderRadius: '8px',
+                              }}
                             />
                           ) : (
-                            <Typography variant='caption' color='text.disabled'>—</Typography>
+                            <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>—</Typography>
                           )}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              )}
-              {entriesTotal > 50 && (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.5 }}>
-                  <Button size='small' disabled={entriesPage === 1} onClick={() => setEntriesPage(p => p - 1)}>Previous</Button>
-                  <Typography variant='caption' color='text.secondary'>
-                    Page {entriesPage} of {Math.ceil(entriesTotal / 50)} ({entriesTotal} total)
-                  </Typography>
-                  <Button size='small' disabled={entriesPage >= Math.ceil(entriesTotal / 50)} onClick={() => setEntriesPage(p => p + 1)}>Next</Button>
-                </Box>
-              )}
-            </Box>
+              </AdminCard>
+            )}
+            {entriesTotal > 50 && (
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.5 }}>
+                <Button
+                  size='small'
+                  disabled={entriesPage === 1}
+                  onClick={() => setEntriesPage(p => p - 1)}
+                  sx={{ textTransform: 'none', fontWeight: 600, color: PRIMARY_MAIN }}
+                >
+                  Previous
+                </Button>
+                <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                  Page {entriesPage} of {Math.ceil(entriesTotal / 50)} ({entriesTotal} total)
+                </Typography>
+                <Button
+                  size='small'
+                  disabled={entriesPage >= Math.ceil(entriesTotal / 50)}
+                  onClick={() => setEntriesPage(p => p + 1)}
+                  sx={{ textTransform: 'none', fontWeight: 600, color: PRIMARY_MAIN }}
+                >
+                  Next
+                </Button>
+              </Box>
+            )}
 
           </Stack>
         ) : (

@@ -96,7 +96,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
                   {draw.prize_amount != null ? formatCurrency(draw.prize_amount) : '$ Revealing soon'}
                 </Typography>
                 <Typography variant='caption' color={TEXT_SECONDARY} fontWeight={600}>
-                  {isOpen ? 'Prize Pool' : hasWinner ? 'Prize Awarded' : 'Prize Pool'}
+                  {isOpen ? 'Prize' : hasWinner ? 'Prize Awarded' : 'Prize'}
                 </Typography>
               </Box>
             </Stack>
@@ -229,7 +229,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
                     Verification in progress
                   </Typography>
                   <Typography variant='body2' color={TEXT_SECONDARY} sx={{ lineHeight: 1.5 }}>
-                    A potential winner has been selected and is undergoing eligibility and fraud verification. We'll announce the final winner soon.
+                    A potential winner has been selected and is undergoing verification and eligibility checks. We'll announce the final winner soon.
                   </Typography>
                 </Box>
               </Stack>

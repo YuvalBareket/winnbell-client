@@ -146,7 +146,7 @@ const BrandKitTab = ({
                 <Paper elevation={0} sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', p: 2, height: '100%' }}>
                   <Stack spacing={2}>
                     <Box>
-                      <Typography variant='subtitle2' fontWeight={800} gutterBottom>Your scan QR</Typography>
+                      <Typography variant='subtitle2' fontWeight={800} gutterBottom>Your QR Code</Typography>
                       <Typography variant='caption' color='text.secondary'>High-res QR for your location</Typography>
                     </Box>
 
@@ -273,7 +273,7 @@ const BrandKitTab = ({
                     {/* Required disclosure - the one thing every custom design must carry */}
                     <Box>
                       <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 0.75, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        Required on custom materials
+                        Include the legal text below and follow the Winnbell guidelines
                       </Typography>
                       <Box ref={legalRef} sx={{ p: 1.25, bgcolor: ALPHA_PRIMARY_06, borderRadius: 1 }}>
                         <Typography variant='caption' sx={{ lineHeight: 1.4, color: TEXT_SECONDARY }}>

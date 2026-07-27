@@ -24,6 +24,7 @@ import {
   ArrowForwardOutlined,
   MenuBookRounded,
   ArrowForwardRounded,
+  WorkspacePremium,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -98,6 +99,10 @@ const BusinessHubPage = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [removingLocation, setRemovingLocation] = useState<BusinessLocation | null>(null);
 
+  // Founding plans pay per location at purchase (admin-set price) and the location set is
+  // FIXED for the term: edits allowed, add/remove hidden (the server blocks them too).
+  const isFounding = !!subscription?.is_founding;
+
   // Live locations plus staged adds (created during a running campaign, going live at the
   // next open) — the owner must still see and manage a location they just added.
   const activeLocations = (business?.locations ?? []).filter((l) => l.is_active || l.activate_at_open);
@@ -171,8 +176,9 @@ const BusinessHubPage = () => {
       const data = await generateInvite(locId);
       setInviteLink(data.inviteLink);
       setInviteDialogOpen(true);
-    } catch {
-      setSnackbar({ open: true, message: 'Failed to generate invite link. Try again.', severity: 'error' });
+    } catch (err) {
+      // Surfaces the server's curated reason (e.g. location already has a manager - remove first)
+      setSnackbar({ open: true, message: apiErrorMessage(err, 'Failed to generate invite link. Try again.'), severity: 'error' });
     }
   };
 
@@ -399,7 +405,7 @@ const BusinessHubPage = () => {
               >
                 Branch Management
               </Typography>
-              {activeLocations.length > 0 && !isManager && (
+              {activeLocations.length > 0 && !isManager && !isFounding && (
                 <Button
                   size='small'
                   variant='outlined'
@@ -412,6 +418,25 @@ const BusinessHubPage = () => {
               )}
             </Stack>
 
+            {/* Founding plans cover a fixed location set for the term - explain why there is
+                no add/remove here and route questions to the contact page. */}
+            {isFounding && !isManager && (
+              <Alert
+                severity='info'
+                icon={<WorkspacePremium sx={{ fontSize: 20 }} />}
+                sx={{ mb: 2, borderRadius: 2 }}
+              >
+                Your Founding Partner plan covers these locations for your entire founding term, so locations cannot be added or removed. You can still edit their details anytime. If you have any questions,{' '}
+                <Box
+                  component='span'
+                  onClick={() => navigate('/contact')}
+                  sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  contact us
+                </Box>
+              </Alert>
+            )}
+
             {activeLocations.length === 0 ? (
               <Paper
                 elevation={0}
@@ -422,7 +447,7 @@ const BusinessHubPage = () => {
                 <Typography variant='body2' color='text.disabled' sx={{ mt: 0.5 }}>
                   Add your first branch to start issuing entries.
                 </Typography>
-                {!isManager && (
+                {!isManager && !isFounding && (
                   <Button
                     variant='contained'
                     onClick={() => setAddLocationOpen(true)}
@@ -441,7 +466,7 @@ const BusinessHubPage = () => {
                     <LocationCard
                       loc={loc}
                       onEdit={setEditingLocation}
-                      onRemove={!isManager ? setRemovingLocation : undefined}
+                      onRemove={!isManager && !isFounding ? setRemovingLocation : undefined}
                       onInvite={handleGenerateInvite}
                       onRemoveManager={setRemoveManagerLocationId}
                       isInviting={isInviting}

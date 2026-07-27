@@ -67,6 +67,7 @@ const CampaignCard = ({
 
   // ── Receipt example state ────────────────────────────
   const [editingReceipt, setEditingReceipt] = useState(false);
+  const [receiptError, setReceiptError] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isSavingReceipt, setIsSavingReceipt] = useState(false);
   const [imgFile, setImgFile] = useState<File | null>(null);
@@ -101,19 +102,25 @@ const CampaignCard = ({
   const cancelReceiptEdit = () => {
     setEditingReceipt(false);
     setImgFile(null);
+    setReceiptError('');
   };
 
   const handleSaveReceipt = async (blob: Blob) => {
     setIsSavingReceipt(true);
+    setReceiptError('');
     try {
       const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg', blob.size);
-      await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+      // A rejected fetch (network/CSP) throws; a non-2xx from R2 (e.g. expired presigned
+      // URL) does NOT, so check res.ok - otherwise a dead image URL gets saved as success.
+      const res = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+      if (!res.ok) throw new Error(`Upload failed (${res.status})`);
       // The receipt example is independent of the threshold, so only send the image.
       updateCampaignSettings?.({ receipt_example_image_url: publicUrl });
       setEditingReceipt(false);
       setImgFile(null);
     } catch (err) {
       console.error('Failed to save receipt example:', err);
+      setReceiptError('Failed to upload the receipt example. Please try again.');
     } finally {
       setIsSavingReceipt(false);
     }
@@ -148,9 +155,7 @@ const CampaignCard = ({
             <ReceiptLong sx={{ color: business.subscription_status === 'Active' ? 'white' : 'text.disabled', fontSize: 22 }} />
           </Box>
           <Box>
-            <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              Campaign
-            </Typography>
+        
             <Typography variant='body1' fontWeight={700}>
               {business.subscription_status ? 'Winnbell Partner Plan' : 'No active plan'}
             </Typography>
@@ -444,6 +449,19 @@ const CampaignCard = ({
                       onSave={handleSaveReceipt}
                       isSaving={isSavingReceipt}
                     />
+
+                    <AnimatePresence>
+                      {receiptError && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.25 }}
+                        >
+                          <Alert severity='error' sx={{ mt: 1.5, borderRadius: 2 }}>{receiptError}</Alert>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
                     <Stack direction='row' spacing={1} justifyContent='flex-end' sx={{ mt: 1 }}>
                       <Button size='small' onClick={cancelReceiptEdit} startIcon={<Close sx={{ fontSize: 16 }} />} sx={btnBase}>

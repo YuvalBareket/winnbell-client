@@ -14,6 +14,19 @@ export interface SubscriptionDetails {
   prize_amount: number | null;
   is_founding: boolean;
   founding_seat_number: number | null;
+  // Special Terms Section 6: second-year renewal at the exact price of the initial term.
+  founding_amount_paid?: number | null;
+  // ONE-TIME option: true once the single renewal was used (no further renewals offered).
+  // Null for location managers (owner billing fact).
+  founding_renewed?: boolean | null;
+  // True while the one-time renewal may be purchased (final window of the term).
+  // Server-computed with the SAME helper the renewal checkout guard uses - the client
+  // never does its own window math, so banner and guard can never disagree.
+  founding_renewal_open?: boolean;
+  // What the one-time renewal will charge, in dollars (original monthly rate x renewal
+  // term). Server-computed with the SAME formula the renewal checkout charges, so the
+  // banner price and the Stripe charge can never disagree. Null for location managers.
+  founding_renewal_price?: number | null;
   fee_at_entry: number | null;
   entries_per_location: number | null;
   // Staged plan change (tier or location count, incl. the founding hand-off): the new plan
@@ -22,10 +35,13 @@ export interface SubscriptionDetails {
   pending_fee_at_entry: number | null;
   pending_entries_per_location: number | null;
   // True while a founding member may start a regular plan (final included month, or the
-  // founding year already ended). Mirrors the server-side checkout guard exactly.
+  // founding term already ended). Mirrors the server-side checkout guard exactly.
   founding_transition_available?: boolean;
   // Business opted out of the campaign it already paid for (no refund); resets at open.
   skip_next_campaign?: boolean;
+  // Founding cancel: participation voluntarily deactivated (no refund). Off the map,
+  // no new entries, not enrolled at campaign opens - until the owner reactivates.
+  participation_paused?: boolean;
   // True between the 24th charge and the paid campaign's open: opt-out is available and
   // plan/location changes settle their price difference immediately.
   in_charged_window?: boolean;
@@ -67,6 +83,14 @@ export interface FoundingAvailability {
   taken: number;
   remaining: number;
   cap: number;
+  // Price per location for the whole founding term (server shared/founding.ts constant).
   price: number;
   active: boolean;
+  // Monthly rate per location - the root value everything derives from.
+  monthlyPrice?: number;
+  // Term lengths in months, served by the server (single source: shared/founding.ts).
+  termMonths?: number;
+  renewalTermMonths?: number;
+  // Campaign entries granted per location, served by the server.
+  entriesPerLocation?: number;
 }

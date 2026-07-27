@@ -1,5 +1,5 @@
 import {
-  Box, Container, Typography, Paper, Chip, Divider, LinearProgress,
+  Box, Container, Typography, Paper, Chip, LinearProgress,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
@@ -56,7 +56,7 @@ const DrawPreparationView = ({
   // campaign it will join (next_campaign_*) so the card shows a real name, date and prize.
   // Only when it WILL actually join: a cancelling business (effectivelySubscribed false) or
   // one that opted out of the next campaign must not see it presented as theirs.
-  const showNextCampaign = effectivelySubscribed && !subscription?.skip_next_campaign;
+  const showNextCampaign = effectivelySubscribed && !subscription?.skip_next_campaign && !subscription?.participation_paused;
   const drawName = subscription?.draw_name ?? (showNextCampaign ? subscription?.next_campaign_name : null) ?? null;
   const drawDateValue = subscription?.draw_date ?? (showNextCampaign ? subscription?.next_campaign_date : null) ?? null;
   const startDateValue = subscription?.draw_start_date ?? (showNextCampaign ? subscription?.next_campaign_start_date : null) ?? null;
@@ -80,7 +80,7 @@ const DrawPreparationView = ({
   // done once business data loads; it is a review reminder, not an open task.
   type ChecklistItem = { label: string; done: boolean; path?: string; info?: boolean; alwaysClickable?: boolean };
   const minSpendItem: ChecklistItem = {
-    label: 'Set your minimum amount to spend',
+    label: 'Set your spending threshold',
     done: minSpend != null,
     path: '/nearby',
     // Stays clickable even when checked: the $20 default counts as "set", but the
@@ -96,7 +96,7 @@ const DrawPreparationView = ({
           : { label: `Registered for ${drawName ?? 'upcoming campaign'}`, done: true },
         { label: 'Add a receipt example for your customers', done: hasReceiptExample, path: '/nearby' },
         minSpendItem,
-        { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
+        { label: 'Add your business description', done: hasDescription, path: '/nearby' },
         { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
         inActiveCampaign
           ? { label: 'Your campaign dashboard opens once your receipt example is set', done: false, info: true }
@@ -106,7 +106,7 @@ const DrawPreparationView = ({
         { label: planLabel, done: false, path: planPath },
         { label: 'Add a receipt example for your customers', done: hasReceiptExample, path: '/nearby' },
         minSpendItem,
-        { label: 'Complete your business description', done: hasDescription, path: '/nearby' },
+        { label: 'Add your business description', done: hasDescription, path: '/nearby' },
         { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
         { label: 'Go live on the map when your campaign opens', done: false, info: true },
       ];
@@ -170,8 +170,8 @@ const DrawPreparationView = ({
               <Box sx={{ p: 2, bgcolor: 'rgba(25,93,230,0.04)', borderRadius: 2, border: '1px solid rgba(25,93,230,0.1)' }}>
                 <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
                   {inActiveCampaign
-                    ? 'Your campaign is live. Customers can submit receipts from your store through the Winnbell app to earn campaign entries, and members also receive one entry every week regardless of any purchase.'
-                    : 'Once the campaign is live, customers can submit receipts from your store through the Winnbell app to earn campaign entries. Members also receive one entry every week regardless of any purchase, once your campaign is live.'}
+                    ? 'Your campaign is live. Customers can submit your receipts through Winnbell and earn campaign entries.'
+                    : 'Once the campaign is live, customers can submit your receipts through Winnbell and earn campaign entries.'}
                 </Typography>
               </Box>
             </Box>
@@ -232,7 +232,7 @@ const DrawPreparationView = ({
             ) : (
               <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant='h6' fontWeight={800}>Preparation Checklist</Typography>
+                <Typography variant='h6' fontWeight={800}>Onboarding Checklist</Typography>
                 <Chip label={`${completedCount}/${taskItems.length}`} size='small' color={completedCount === taskItems.length ? 'success' : 'default'} sx={{ fontWeight: 700 }} />
               </Box>
               <LinearProgress
@@ -272,18 +272,7 @@ const DrawPreparationView = ({
                 })}
               </Box>
 
-              <Divider sx={{ my: 3 }} />
-              <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7 }}>
-                {inActiveCampaign ? (
-                  <>
-                    <strong>Your campaign is live and collecting entries.</strong> Add a receipt example so customers know exactly which number to enter. Your campaign dashboard opens as soon as it is set.
-                  </>
-                ) : (
-                  <>
-                    <strong>Entry generation opens when the campaign starts.</strong> In the meantime, make sure your profile is complete so customers can find you on the map and know what you offer.
-                  </>
-                )}
-              </Typography>
+
               </Paper>
             )}
           </motion.div>

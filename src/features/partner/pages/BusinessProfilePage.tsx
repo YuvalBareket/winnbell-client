@@ -39,7 +39,7 @@ import { Controller, useForm, useFieldArray } from 'react-hook-form';
 import { BUSINESS_SECTORS } from '../../admin/data';
 import type { BusinessSetupInput } from '../types/business.types';
 import { useAppSelector } from '../../../store/hook';
-import { selectCurrentUser, selectIsRequiresBusinessSetup } from '../../../store/selectors/authSelectors';
+import { selectIsRequiresBusinessSetup } from '../../../store/selectors/authSelectors';
 import AddressAutoComplete from '../../../shared/components/AddressAutoComplete';
 import { useBusinessSetup } from '../hooks/useBusinessSetup';
 import {
@@ -88,7 +88,6 @@ const FieldLabel = ({ children, hint }: { children: React.ReactNode; hint?: stri
 );
 
 const BusinessProfilePage = () => {
-  const user = useAppSelector(selectCurrentUser);
   const requiresBusinessSetup = useAppSelector(selectIsRequiresBusinessSetup);
 
   const [step, setStep] = useState(0);
@@ -103,7 +102,7 @@ const BusinessProfilePage = () => {
 
   const { control, handleSubmit, setValue, watch, trigger, setError } = useForm({
     defaultValues: {
-      businessName: user?.fullName || '',
+      businessName: '',
       legal_name: '',
       businessSector: '',
       description: '',
@@ -238,10 +237,9 @@ const BusinessProfilePage = () => {
           <AnimatePresence mode='wait'>
             {step === 0 ? (
               <motion.div key='b1' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.28 }}>
-                <Typography sx={{ fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.12, fontSize: { xs: '1.4rem', md: '2.35rem' }, mb: { xs: 0.5, md: 2 } }}>Tell us about your brand.</Typography>
+                <Typography sx={{ fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.12, fontSize: { xs: '1.4rem', md: '2.35rem' }, mb: { xs: 0.5, md: 2 } }}>Business Setup</Typography>
                 <Typography sx={{ fontSize: { xs: '0.8rem', md: '0.95rem' }, color: ALPHA_WHITE_70, lineHeight: 1.7, maxWidth: 340, mb: { xs: 0, md: 4 } }}>
-                  Your name, logo and category are how customers recognize you on the map and in the app. You can change any of this later.
-                </Typography>
+Tell us about your brand               </Typography>
                 <Box sx={{ display: { xs: 'none', md: 'block' }, maxWidth: 320 }}>
                   <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={SPRING_POP}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.6, p: 2, borderRadius: '16px', bgcolor: ALPHA_WHITE_10, border: `1px solid ${ALPHA_WHITE_20}`, backdropFilter: 'blur(4px)' }}>
@@ -264,9 +262,9 @@ const BusinessProfilePage = () => {
               </motion.div>
             ) : (
               <motion.div key='b2' initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.28 }}>
-                <Typography sx={{ fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.12, fontSize: { xs: '1.4rem', md: '2.35rem' }, mb: { xs: 0.5, md: 2 } }}>Put yourself on the map.</Typography>
+                <Typography sx={{ fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.12, fontSize: { xs: '1.4rem', md: '2.35rem' }, mb: { xs: 0.5, md: 2 } }}>Business Setup</Typography>
                 <Typography sx={{ fontSize: { xs: '0.8rem', md: '0.95rem' }, color: ALPHA_WHITE_70, lineHeight: 1.7, maxWidth: 340, mb: { xs: 0, md: 4 } }}>
-                  Customers discover businesses by location. Drop your pin so nearby members can find you and earn entries.
+                  Put yourself on the Winnbell map
                 </Typography>
                 <Stack spacing={2} sx={{ display: { xs: 'none', md: 'flex' } }}>
                   {[
@@ -314,14 +312,8 @@ const BusinessProfilePage = () => {
                     <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: TEXT_SECONDARY, letterSpacing: '0.5px' }}>Step 2 of 2 - Locations</Typography>
                   </Stack>
 
-                  {/* Title */}
-                  <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING, mb: 0.5 }}>Where can customers find you?</Typography>
-
-                  {/* Subtitle */}
-                  <Typography sx={{ fontSize: '0.9rem', color: TEXT_TERTIARY, fontWeight: 500, mb: 2 }}>Add every branch where customers can earn entries. You can add more anytime.</Typography>
-
-                  {/* List header: "Your locations · {count}" */}
-                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: TEXT_SECONDARY, mb: 1.5 }}>Your locations - {fields.length}</Typography>
+                  {/* Title - desktop only; on mobile the brand band above already carries this */}
+                  <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING, mb: 2 }}>Put yourself on the Winnbell map</Typography>
 
                   {/* Scrollable location cards */}
                   <Stack spacing={1.375} sx={{ mb: 2.5, flex: 1, minHeight: 0, overflowY: 'auto' }}>
@@ -355,7 +347,7 @@ const BusinessProfilePage = () => {
                                       )} />
                                     </Box>
                                     <Box>
-                                      <FieldLabel>Street address</FieldLabel>
+                                      <FieldLabel>Full address</FieldLabel>
                                       <Controller name={`locations.${index}.address`} control={control} rules={{ required: 'Address is required' }} render={({ field: { onChange, value }, fieldState: { error } }) => {
                                         const addressValue = value && locLat != null && locLon != null ? { label: value, lat: locLat, lon: locLon } : null;
                                         return (
@@ -381,13 +373,13 @@ const BusinessProfilePage = () => {
                                     </Box>
                                     <Stack direction='row' spacing={1.75}>
                                       <Box sx={{ flex: 1 }}>
-                                        <FieldLabel>Suite / unit <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
+                                        <FieldLabel>Suite / unit <Box component='span' sx={{ fontSize: '0.72rem', color: TEXT_TERTIARY, fontWeight: 500, whiteSpace: 'nowrap' }}>(optional)</Box></FieldLabel>
                                         <Controller name={`locations.${index}.suite`} control={control} render={({ field }) => (
                                           <TextField {...field} fullWidth size='small' placeholder='e.g. Unit 4' sx={fieldSx} />
                                         )} />
                                       </Box>
                                       <Box sx={{ flex: 1 }}>
-                                        <FieldLabel>Phone <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
+                                        <FieldLabel>Phone <Box component='span' sx={{ fontSize: '0.72rem', color: TEXT_TERTIARY, fontWeight: 500, whiteSpace: 'nowrap' }}>(optional)</Box></FieldLabel>
                                         <Controller name={`locations.${index}.phone`} control={control} render={({ field }) => (
                                           <TextField {...field} fullWidth size='small' placeholder='(302) 555-0142'
                                             InputProps={{ startAdornment: (<InputAdornment position='start'><PhoneOutlined sx={{ color: TEXT_TERTIARY, fontSize: 18 }} /></InputAdornment>) }} sx={fieldSx} />
@@ -501,14 +493,17 @@ const BusinessProfilePage = () => {
               {step === 0 && (
                 <motion.div initial='hidden' animate='visible' variants={staggerContainer}>
                   <Stack spacing={3}>
-                    <motion.div variants={popIn}>
-                      <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>Set up your business</Typography>
-                      <Typography sx={{ fontSize: '0.9rem', color: TEXT_TERTIARY, fontWeight: 500, mt: 0.5 }}>A few details and you'll be live on Winnbell.</Typography>
-                    </motion.div>
+                    {/* Step badge - mobile only (desktop shows the side stepper) */}
+                    <Stack direction='row' alignItems='center' spacing={1} sx={{ display: { xs: 'flex', md: 'none' } }}>
+                      <Box sx={{ width: 20, height: 20, borderRadius: '50%', bgcolor: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Typography sx={{ fontSize: '0.65rem', fontWeight: 800, color: 'white' }}>1</Typography>
+                      </Box>
+                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: TEXT_SECONDARY, letterSpacing: '0.5px' }}>Step 1 of 2 - Business Info</Typography>
+                    </Stack>
 
                     {/* logo + name */}
                     <motion.div variants={popIn}>
-                      <Stack direction='row' spacing={2.25} alignItems='flex-start'>
+                      <Stack direction='row' spacing={2.25} alignItems='flex-start' >
                         <Box onClick={() => logoInputRef.current?.click()} sx={{ width: 96, height: 96, flexShrink: 0, borderRadius: '18px', cursor: 'pointer', overflow: 'hidden', border: uploadedLogoKey ? `1px solid ${BORDER_LIGHT}` : `2px dashed ${BORDER_LIGHT}`, bgcolor: BG_SUBTLE, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, transition: 'border-color 0.15s ease', '&:hover': { borderColor: PRIMARY_MAIN } }}>
                           {uploadedLogoKey
                             ? <Box component='img' src={`${logoBase}/business-logos/${uploadedLogoKey}`} alt='logo' sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -527,16 +522,15 @@ const BusinessProfilePage = () => {
 
                     {/* legal name */}
                     <motion.div variants={popIn}>
-                      <FieldLabel>Business legal name</FieldLabel>
+                      <FieldLabel>Business legal name <Box component='span' sx={{ fontSize: '0.72rem', color: TEXT_TERTIARY, fontWeight: 500, whiteSpace: 'nowrap' }}>(for billing purposes)</Box></FieldLabel>
                       <Controller name='legal_name' control={control} rules={{ required: 'Business legal name is required' }} render={({ field, fieldState: { error } }) => (
                         <TextField {...field} fullWidth size='small' placeholder='Registered legal entity name' error={!!error} helperText={error?.message} sx={fieldSx} />
                       )} />
-                      <Typography sx={{ fontSize: '0.72rem', color: TEXT_TERTIARY, fontWeight: 500, mt: 1 }}>As registered with the state. Never shown to customers.</Typography>
                     </motion.div>
 
                     {/* description */}
                     <motion.div variants={popIn}>
-                      <FieldLabel hint={`${descLen} / 60`}>Short description <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
+                      <FieldLabel hint={`${descLen} / 60`}>Short description <Box component='span' sx={{ fontSize: '0.72rem', color: TEXT_TERTIARY, fontWeight: 500, whiteSpace: 'nowrap' }}>(optional)</Box></FieldLabel>
                       <Controller name='description' control={control} render={({ field }) => (
                         <TextField {...field} fullWidth size='small' placeholder='Neighborhood espresso and fresh pastries' inputProps={{ maxLength: 60 }} sx={fieldSx} />
                       )} />
@@ -544,7 +538,7 @@ const BusinessProfilePage = () => {
 
                     {/* website */}
                     <motion.div variants={popIn}>
-                      <FieldLabel>Website <Box component='span' sx={{ color: TEXT_TERTIARY, fontWeight: 500 }}>(optional)</Box></FieldLabel>
+                      <FieldLabel>Website <Box component='span' sx={{ fontSize: '0.72rem', color: TEXT_TERTIARY, fontWeight: 500, whiteSpace: 'nowrap' }}>(optional)</Box></FieldLabel>
                       <Controller
                         name='website_url'
                         control={control}
@@ -611,7 +605,7 @@ const BusinessProfilePage = () => {
             {step === 0 ? (
               <>
                 <Button fullWidth onClick={goNext} endIcon={<ArrowForward />} sx={{ ...primaryBtnSx, py: 1.6, borderRadius: '14px' }}>Continue</Button>
-                <Typography sx={{ textAlign: 'center', fontSize: '0.75rem', color: TEXT_TERTIARY, fontWeight: 600, mt: 1 }}>You can edit all of this later</Typography>
+                <Typography sx={{ textAlign: 'center', fontSize: '0.75rem', color: TEXT_TERTIARY, fontWeight: 600, mt: 1 }}>You can edit all later</Typography>
               </>
             ) : (
               <Stack direction='row' spacing={1.25} alignItems='center'>

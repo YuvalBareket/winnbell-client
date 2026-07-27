@@ -15,6 +15,225 @@ import {
   BG_PAGE, SHADOW_PRIMARY_SOFT, SHADOW_PRIMARY_MEDIUM, ALPHA_PRIMARY_10,
 } from '../../../shared/colors';
 
+// Both content blocks live at MODULE scope on purpose. When they were defined inside the
+// page component and rendered as <FormContent />, every keystroke re-created the function,
+// React saw a "new" component type, and unmounted/remounted the whole subtree - blurring
+// the focused TextField after each character on mobile and replaying the entrance animation.
+// Stable module-scope identity makes the element form safe.
+
+const SuccessContent = ({ revokeWarning = false }: { revokeWarning?: boolean }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+  >
+    <Box sx={{ textAlign: 'center' }}>
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.15, duration: 0.4, ease: 'easeOut' }}
+      >
+        <CheckCircle sx={{ fontSize: { xs: 56, md: 64 }, mb: 2, color: 'primary.main' }} />
+      </motion.div>
+      <Typography variant='h5' fontWeight={800} gutterBottom sx={{ mb: 1 }}>
+        Password Updated
+      </Typography>
+      <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
+        {revokeWarning ? 'Redirecting to login...' : 'Your account is now secure. Redirecting to login...'}
+      </Typography>
+      {revokeWarning && (
+        <Alert severity='warning' sx={{ mt: 2.5, textAlign: 'left', borderRadius: 2 }}>
+          Your password was changed, but we could not sign out your other devices right now.
+          If you reset your password because you suspect someone else has access, please
+          reset it again in a few minutes or contact support.
+        </Alert>
+      )}
+    </Box>
+  </motion.div>
+);
+
+type FormContentProps = {
+  error: string;
+  password: string;
+  confirm: string;
+  show: boolean;
+  loading: boolean;
+  onPasswordChange: (value: string) => void;
+  onConfirmChange: (value: string) => void;
+  onToggleShow: () => void;
+  onSubmit: () => void;
+  onGoToLogin: () => void;
+};
+
+const FormContent = ({
+  error, password, confirm, show, loading,
+  onPasswordChange, onConfirmChange, onToggleShow, onSubmit, onGoToLogin,
+}: FormContentProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+  >
+    <Stack spacing={3}>
+      <Box>
+        <Typography variant='h5' fontWeight={800} sx={{ mb: 0.5 }}>
+          Set New Password
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
+          Create a strong password to keep your account secure.
+        </Typography>
+      </Box>
+
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Alert
+            severity='error'
+            sx={{ borderRadius: { xs: 2, md: 2.5 } }}
+          >
+            {error}
+          </Alert>
+        </motion.div>
+      )}
+
+      <TextField
+        fullWidth
+        label='New Password'
+        type={show ? 'text' : 'password'}
+        value={password}
+        onChange={(e) => onPasswordChange(e.target.value)}
+        placeholder='Minimum 8 characters'
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              bgcolor: 'background.paper',
+            },
+            '&.Mui-focused': {
+              boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}`,
+            },
+          },
+          '& .MuiOutlinedInput-input': {
+            py: 1.75,
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position='start'>
+              <Lock sx={{ fontSize: 18, color: 'text.secondary' }} />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position='end'>
+              <IconButton
+                size='small'
+                onClick={onToggleShow}
+                edge='end'
+                sx={{
+                  width: 44,
+                  height: 44,
+                  mr: -1,
+                }}
+              >
+                {show ? (
+                  <VisibilityOff fontSize='small' />
+                ) : (
+                  <Visibility fontSize='small' />
+                )}
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      <TextField
+        fullWidth
+        label='Confirm Password'
+        type={show ? 'text' : 'password'}
+        value={confirm}
+        onChange={(e) => onConfirmChange(e.target.value)}
+        placeholder='Repeat your password'
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              bgcolor: 'background.paper',
+            },
+            '&.Mui-focused': {
+              boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}`,
+            },
+          },
+          '& .MuiOutlinedInput-input': {
+            py: 1.75,
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position='start'>
+              <Lock sx={{ fontSize: 18, color: 'text.secondary' }} />
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      <AttractButton
+        fullWidth
+        variant='contained'
+        size='large'
+        onClick={onSubmit}
+        disabled={loading}
+        sx={{
+          fontWeight: 700,
+          py: 1.75,
+          borderRadius: 2,
+          boxShadow: SHADOW_PRIMARY_SOFT,
+          transition: 'all 0.2s ease-in-out',
+          '&:hover:not(:disabled)': {
+            transform: 'translateY(-2px)',
+            boxShadow: SHADOW_PRIMARY_MEDIUM,
+          },
+          '&:active:not(:disabled)': {
+            transform: 'translateY(0)',
+          },
+        }}
+      >
+        {loading ? (
+          <CircularProgress size={24} color='inherit' />
+        ) : (
+          'Update Password'
+        )}
+      </AttractButton>
+
+      <Box sx={{ textAlign: 'center', pt: 1 }}>
+        <Typography variant='body2' color='text.secondary'>
+          Remember your password?{' '}
+          <Typography
+            component='span'
+            onClick={onGoToLogin}
+            sx={{
+              color: 'primary.main',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'opacity 0.2s',
+              '&:hover': {
+                opacity: 0.8,
+              },
+            }}
+          >
+            Sign in
+          </Typography>
+        </Typography>
+      </Box>
+    </Stack>
+  </motion.div>
+);
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
@@ -27,6 +246,7 @@ const ResetPasswordPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [revokeWarning, setRevokeWarning] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -64,207 +284,34 @@ const ResetPasswordPage = () => {
       return;
     }
 
-    await revokeOtherSessions();
+    // Security half of the reset (audit P2-8): kill every other device. The hook retries
+    // internally and reports the outcome - a failure must be SHOWN, not swallowed, because
+    // the user is likely here precisely because someone else may have their account.
+    const revoked = await revokeOtherSessions();
+    if (!revoked) setRevokeWarning(true);
 
     setLoading(false);
     setSuccess(true);
-    setTimeout(() => navigate('/login', { replace: true }), 3000);
+    // Leave time to read the warning before the redirect when the revoke failed.
+    setTimeout(() => navigate('/login', { replace: true }), revoked ? 3000 : 10000);
   };
 
   if (!ready) {
     return <LoadingScreen />;
   }
 
-  const SuccessContent = () => (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-    >
-      <Box sx={{ textAlign: 'center' }}>
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.15, duration: 0.4, ease: 'easeOut' }}
-        >
-          <CheckCircle sx={{ fontSize: { xs: 56, md: 64 }, mb: 2, color: 'primary.main' }} />
-        </motion.div>
-        <Typography variant='h5' fontWeight={800} gutterBottom sx={{ mb: 1 }}>
-          Password Updated
-        </Typography>
-        <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-          Your account is now secure. Redirecting to login...
-        </Typography>
-      </Box>
-    </motion.div>
-  );
-
-  const FormContent = () => (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
-    >
-      <Stack spacing={3}>
-        <Box>
-          <Typography variant='h5' fontWeight={800} sx={{ mb: 0.5 }}>
-            Set New Password
-          </Typography>
-          <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-            Create a strong password to keep your account secure.
-          </Typography>
-        </Box>
-
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Alert
-              severity='error'
-              sx={{ borderRadius: { xs: 2, md: 2.5 } }}
-            >
-              {error}
-            </Alert>
-          </motion.div>
-        )}
-
-        <TextField
-          fullWidth
-          label='New Password'
-          type={show ? 'text' : 'password'}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder='Minimum 8 characters'
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              bgcolor: 'background.paper',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                bgcolor: 'background.paper',
-              },
-              '&.Mui-focused': {
-                boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}`,
-              },
-            },
-            '& .MuiOutlinedInput-input': {
-              py: 1.75,
-            },
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position='start'>
-                <Lock sx={{ fontSize: 18, color: 'text.secondary' }} />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position='end'>
-                <IconButton
-                  size='small'
-                  onClick={() => setShow(!show)}
-                  edge='end'
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    mr: -1,
-                  }}
-                >
-                  {show ? (
-                    <VisibilityOff fontSize='small' />
-                  ) : (
-                    <Visibility fontSize='small' />
-                  )}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        <TextField
-          fullWidth
-          label='Confirm Password'
-          type={show ? 'text' : 'password'}
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          placeholder='Repeat your password'
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              bgcolor: 'background.paper',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                bgcolor: 'background.paper',
-              },
-              '&.Mui-focused': {
-                boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}`,
-              },
-            },
-            '& .MuiOutlinedInput-input': {
-              py: 1.75,
-            },
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position='start'>
-                <Lock sx={{ fontSize: 18, color: 'text.secondary' }} />
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        <AttractButton
-          fullWidth
-          variant='contained'
-          size='large'
-          onClick={handleSubmit}
-          disabled={loading}
-          sx={{
-            fontWeight: 700,
-            py: 1.75,
-            borderRadius: 2,
-            boxShadow: SHADOW_PRIMARY_SOFT,
-            transition: 'all 0.2s ease-in-out',
-            '&:hover:not(:disabled)': {
-              transform: 'translateY(-2px)',
-              boxShadow: SHADOW_PRIMARY_MEDIUM,
-            },
-            '&:active:not(:disabled)': {
-              transform: 'translateY(0)',
-            },
-          }}
-        >
-          {loading ? (
-            <CircularProgress size={24} color='inherit' />
-          ) : (
-            'Update Password'
-          )}
-        </AttractButton>
-
-        <Box sx={{ textAlign: 'center', pt: 1 }}>
-          <Typography variant='body2' color='text.secondary'>
-            Remember your password?{' '}
-            <Typography
-              component='span'
-              onClick={() => navigate('/login')}
-              sx={{
-                color: 'primary.main',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'opacity 0.2s',
-                '&:hover': {
-                  opacity: 0.8,
-                },
-              }}
-            >
-              Sign in
-            </Typography>
-          </Typography>
-        </Box>
-      </Stack>
-    </motion.div>
-  );
+  const formProps: FormContentProps = {
+    error,
+    password,
+    confirm,
+    show,
+    loading,
+    onPasswordChange: setPassword,
+    onConfirmChange: setConfirm,
+    onToggleShow: () => setShow((s) => !s),
+    onSubmit: handleSubmit,
+    onGoToLogin: () => navigate('/login'),
+  };
 
   if (isDesktop) {
     return (
@@ -286,7 +333,7 @@ const ResetPasswordPage = () => {
           }}
         >
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: 400, width: '100%', mx: 'auto' }}>
-            {success ? SuccessContent() : FormContent()}
+            {success ? <SuccessContent revokeWarning={revokeWarning} /> : <FormContent {...formProps} />}
           </Box>
         </Box>
       </Box>
@@ -332,7 +379,7 @@ const ResetPasswordPage = () => {
             </Box>
           )}
 
-          {success ? <SuccessContent /> : <FormContent />}
+          {success ? <SuccessContent revokeWarning={revokeWarning} /> : <FormContent {...formProps} />}
         </Stack>
       </motion.div>
     </Box>

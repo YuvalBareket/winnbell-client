@@ -6,8 +6,8 @@ import { cancelSubscription } from '../api/subscription.api';
 export const useCancelSubscription = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<Awaited<ReturnType<typeof cancelSubscription>>, AxiosError<{ error: string }>, void>({
-    mutationFn: cancelSubscription,
+  return useMutation<Awaited<ReturnType<typeof cancelSubscription>>, AxiosError<{ error: string }>, boolean>({
+    mutationFn: (immediate: boolean) => cancelSubscription(immediate),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.subscription.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.business.myDetails });

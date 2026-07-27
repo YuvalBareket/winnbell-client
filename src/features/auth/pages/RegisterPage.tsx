@@ -53,7 +53,7 @@ const RegisterPage = () => {
   const isBusinessUser = useAppSelector(selectIsBusiness);
   const isManagerUser = useAppSelector(selectIsLocMgr);
 
-  const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', fullName: '', email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -114,7 +114,12 @@ const RegisterPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.fullName) { setError('Please enter your full name.'); return; }
+    if (isBusinessVariant) {
+      if (!formData.fullName.trim()) { setError('Please enter your full name.'); return; }
+    } else {
+      if (!formData.firstName.trim()) { setError('Please enter your first name.'); return; }
+      if (!formData.lastName.trim()) { setError('Please enter your last name.'); return; }
+    }
     if (!formData.email) { setError('Please enter your email address.'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { setTouched((t) => ({ ...t, email: true })); setError('Enter a valid email address.'); return; }
     if (!formData.password) { setError('Please enter a password.'); return; }
@@ -144,7 +149,7 @@ const RegisterPage = () => {
         password: formData.password,
         options: {
           data: {
-            full_name: formData.fullName,
+            full_name: isBusinessVariant ? formData.fullName.trim() : `${formData.firstName.trim()} ${formData.lastName.trim()}`,
             role: roleFormatted,
             invite_token: inviteToken || null,
           },
@@ -178,33 +183,36 @@ const RegisterPage = () => {
   //   ? <Handshake sx={{ color: 'white', fontSize: 36 }} />
   //   : <Person sx={{ color: 'white', fontSize: 36 }} />;
 
-  const roleTitle = addMode ? 'Add Account' : isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Partner Program' : 'Join Winnbell';
+  const roleTitle = addMode ? 'Add Account' : isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Business Registration' : 'Join Winnbell';
   const roleSubtitle = addMode
     ? 'Create a new account to add to this device.'
     : isLocationManager
     ? 'Complete your profile to manage your branch.'
     : isBusinessOwner
-    ? 'Register your brand to start issuing entries.'
+    ? 'Register your business and become a partner.'
     : 'Create an account to start winning.';
 
   // ─── Form content (shared between mobile & desktop) ──────────────────────────
 
   const FormContent = () => (
     <motion.div variants={staggerContainer} initial="hidden" animate="visible">
-      <Stack sx={{ zoom: { xs: 0.85, md: 0.8 } }}>
+      {/* Approved mobile/tablet sizing keeps the zoom; large desktops (lg+) render at 1:1
+          where the responsive lg/xl sizes take over (zoom 0.8 there made the whole form
+          look tiny on big monitors). */}
+      <Stack sx={{ zoom: { xs: 0.85, md: 0.83, xl: 1 } }}>
         {/* Header - desktop only; on mobile the gradient band above carries the title */}
         {isDesktop && (
           <motion.div variants={riseIn}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mb: '24px' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mb: { lg: '24px', xl: '30px' } }}>
               <Stack direction='row' alignItems='center' gap={2} mb='6px'>
                 <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
                   <ArrowBackIosNew fontSize='small' />
                 </IconButton>
-                <Typography sx={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING, textAlign: 'left' }}>
+                <Typography sx={{ fontSize: { lg: '28px', xl: '32px' }, fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING, textAlign: 'left' }}>
                   {roleTitle}
                 </Typography>
               </Stack>
-              <Typography sx={{ fontSize: '14.5px', fontWeight: 500, color: TEXT_TERTIARY, textAlign: 'left' }}>
+              <Typography sx={{ fontSize: { lg: '14.5px', xl: '15px' }, fontWeight: 500, color: TEXT_TERTIARY, textAlign: 'left' }}>
                 {roleSubtitle}
               </Typography>
             </Box>
@@ -233,15 +241,38 @@ const RegisterPage = () => {
 
         <Stack spacing={1.75}>
           <motion.div variants={popIn}>
-            <Box>
-              <Typography sx={authLabelSx}>Full Name</Typography>
-              <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
-                sx={authInputSx}
-                InputProps={{
-                  startAdornment: (<InputAdornment position='start'><Person sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
-                }}
-              />
-            </Box>
+            {isBusinessVariant ? (
+              <Box>
+                <Typography sx={authLabelSx}>Business Representative Full Name</Typography>
+                <TextField fullWidth name='fullName' value={formData.fullName} onChange={handleChange} placeholder='Enter your name'
+                  sx={authInputSx}
+                  InputProps={{
+                    startAdornment: (<InputAdornment position='start'><Person sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
+                  }}
+                />
+              </Box>
+            ) : (
+              <Stack direction='row' spacing={1.5}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={authLabelSx}>First Name</Typography>
+                  <TextField fullWidth name='firstName' value={formData.firstName} onChange={handleChange} placeholder='First name'
+                    sx={authInputSx}
+                    InputProps={{
+                      startAdornment: (<InputAdornment position='start'><Person sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
+                    }}
+                  />
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={authLabelSx}>Last Name</Typography>
+                  <TextField fullWidth name='lastName' value={formData.lastName} onChange={handleChange} placeholder='Last name'
+                    sx={authInputSx}
+                    InputProps={{
+                      startAdornment: (<InputAdornment position='start'><Person sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
+                    }}
+                  />
+                </Box>
+              </Stack>
+            )}
           </motion.div>
 
           <motion.div variants={popIn}>
@@ -300,7 +331,11 @@ const RegisterPage = () => {
                       <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/business-guidelines'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
                         Business Participation Guidelines
                       </Typography>
-                      , Cancellation & Refund Policy, and any Campaign Terms incorporated therein. I understand that checking this box and clicking "Create Account" constitutes my electronic signature and binds the Participating Business to these terms.
+                      ,{' '}
+                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/cancellation'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                        Cancellation &amp; Refund Policy
+                      </Typography>
+                      , and any Campaign Terms incorporated therein. I understand that checking this box and clicking "Create Account" constitutes my electronic signature and binds the Participating Business to these terms.
                     </Typography>
                   ) : (
                     <Typography variant='caption' color='text.secondary'>
@@ -419,12 +454,12 @@ const RegisterPage = () => {
             bgcolor: BG_PAGE,
             display: 'flex',
             flexDirection: 'column',
-            px: 7,
+            px: { lg: 8, xl: 12 },
             py: 6,
             justifyContent: 'center',
           }}
         >
-          <Box sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
+          <Box sx={{ maxWidth: { lg: 420, xl: 480 }, width: '100%', mx: 'auto' }}>
             {FormContent()}
           </Box>
         </Box>
@@ -486,7 +521,7 @@ const RegisterPage = () => {
         {/* Title block */}
         <Box sx={{ position: 'relative', mt: 1.5, px: 1 }}>
           <Typography variant='h5' fontWeight={700} sx={{ letterSpacing: '-0.02em' }}>
-            {addMode ? 'Add Account' : isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Partner Program' : 'Join Winnbell'}
+            {addMode ? 'Add Account' : isLocationManager ? 'Manager Onboarding' : isBusinessOwner ? 'Business Registration' : 'Join Winnbell'}
           </Typography>
           <Typography variant='body2' sx={{ opacity: 0.8, mt: 0.25 }}>
             {addMode
@@ -494,7 +529,7 @@ const RegisterPage = () => {
               : isLocationManager
               ? 'Complete your profile to manage your branch.'
               : isBusinessOwner
-              ? 'Register your brand to start issuing entries.'
+              ? 'Register your business and become a partner.'
               : 'Create an account to start winning.'}
           </Typography>
         </Box>

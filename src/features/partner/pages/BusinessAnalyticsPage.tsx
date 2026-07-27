@@ -886,11 +886,11 @@ const BusinessAnalyticsPage = () => {
               value={formatNum(a?.new_users_acquired)}
               tint={ALPHA_PRIMARY_10}
               iconColor={PRIMARY_MAIN}
-              caption="First-timers you brought to the platform app"
+              caption="First-timers you brought to the platform"
             />
             <StatTile
               icon={<TravelExploreOutlined sx={{ fontSize: 22 }} />}
-              label="New to Your Shop"
+              label="Discovered You via Winnbell"
               value={formatNum(a?.business_discovery)}
               tint={ALPHA_GREEN_10}
               iconColor={STATUS_ACTIVATED_TEXT}
@@ -1033,7 +1033,7 @@ const BusinessAnalyticsPage = () => {
             />
             <StatTile
               icon={<SellOutlined sx={{ fontSize: 22 }} />}
-              label="Entry Minimum"
+              label="Spend Threshold"
               value={formatCurrency(r?.threshold ?? 0)}
               tint={ALPHA_PRIMARY_10}
               iconColor={PRIMARY_MAIN}
@@ -1049,11 +1049,11 @@ const BusinessAnalyticsPage = () => {
             />
             <StatTile
               icon={<TrendingUpOutlined sx={{ fontSize: 22 }} />}
-              label="Above Minimum"
+              label="Above Threshold"
               value={formatCurrency(avgAboveMinimum)}
               tint={ALPHA_PRIMARY_10}
               iconColor={PRIMARY_MAIN}
-              caption="Average spent above the entry minimum"
+              caption="Average spent above the spend threshold"
             />
           </StatGrid>
         </motion.div>
@@ -1062,7 +1062,7 @@ const BusinessAnalyticsPage = () => {
           <ChartCard
             title="Draw Sales Over Time"
             subtitle={spanMonths >= 3
-              ? 'Average spend against each draw’s entry minimum'
+              ? 'Average spend against each draw’s spend threshold'
               : 'Revenue from purchases that qualified for entries'}
             chip={<Chip label={rangeChipLabel} size="small" sx={{ fontWeight: 700 }} />}
           >
@@ -1100,8 +1100,8 @@ const BusinessAnalyticsPage = () => {
                     {/* Three values side by side per draw. Entry minimum is that draw's own threshold
                         snapshot, so it steps as the threshold changed between draws. */}
                     <Bar dataKey="avg_purchase" name="Avg purchase" fill={STATUS_ACTIVATED_TEXT} radius={[4, 4, 0, 0]} maxBarSize={26} />
-                    <Bar dataKey="avg_above_threshold" name="Above minimum" fill={ACCENT_GOLD_DARK} radius={[4, 4, 0, 0]} maxBarSize={26} />
-                    <Bar dataKey="threshold" name="Entry minimum" fill={PRIMARY_MAIN} radius={[4, 4, 0, 0]} maxBarSize={26} />
+                    <Bar dataKey="avg_above_threshold" name="Above Threshold" fill={ACCENT_GOLD_DARK} radius={[4, 4, 0, 0]} maxBarSize={26} />
+                    <Bar dataKey="threshold" name="Spend Threshold" fill={PRIMARY_MAIN} radius={[4, 4, 0, 0]} maxBarSize={26} />
                   </BarChart>
                 </ResponsiveContainer>
               )

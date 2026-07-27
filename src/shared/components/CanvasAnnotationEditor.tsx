@@ -1,6 +1,6 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { Box, Button, CircularProgress, Dialog, Stack, Typography, IconButton, useMediaQuery } from '@mui/material';
-import { CloudUpload, UndoOutlined, DeleteOutlineOutlined, RemoveRounded, AddRounded, EditOutlined, PanToolOutlined, CloseRounded } from '@mui/icons-material';
+import { CloudUpload, UndoOutlined, DeleteOutlineOutlined, RemoveRounded, AddRounded, EditOutlined, PanToolOutlined, CloseRounded, LineWeightRounded } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useCanvasAnnotation } from '../hooks/useCanvasAnnotation';
 import { pdfFirstPageToImage } from '../lib/pdfToImage';
@@ -56,6 +56,9 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
     setTool,
     marker,
     setMarker,
+    brushLevel,
+    setBrushLevel,
+    brushLevelCount,
     minScale,
     maxScale,
     zoomIn,
@@ -157,10 +160,10 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
             <Typography variant='body1' fontWeight={800} color='text.primary'>
               {isProcessing ? 'Reading your PDF...' : 'Upload a receipt photo or PDF'}
             </Typography>
-            <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5, maxWidth: 280 }}>
+            <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.5,  }}>
               {isProcessing
                 ? 'Turning the first page into an image you can mark up.'
-                : "Snap a photo or upload a PDF of one of your receipts. Highlight the receipt number so your customers know exactly what to enter."}
+                : 'Make sure to upload a clear, high-quality image.'}
             </Typography>
           </Stack>
         </Box>
@@ -207,9 +210,9 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
     <>
       {/* Instruction */}
       {!hideInstruction && (
-        <Box sx={{ bgcolor: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 2, p: 1.75, mb: 2, display: 'flex', alignItems: 'flex-start', gap: 1.25 }}>
+        <Box sx={{ bgcolor: 'rgba(251, 234, 73, 0.06)', border: '1px solid rgba(219, 210, 33, 0.42)', borderRadius: 2, p: 1.75, mb: 2, display: 'flex', alignItems: 'flex-start', gap: 1.25 }}>
           <Typography sx={{ fontSize: '1rem', lineHeight: 1, mt: 0.1 }}>✏️</Typography>
-          <Typography variant='body2' sx={{ color: '#b91c1c', fontWeight: 600, lineHeight: 1.5 }}>
+          <Typography variant='body2' sx={{  fontWeight: 600, lineHeight: 1.5 }}>
             {instructionText}
           </Typography>
         </Box>
@@ -358,6 +361,51 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
             <IconButton size='small' onClick={zoomIn} disabled={zoom >= maxScale} aria-label='Zoom in'>
               <AddRounded sx={{ fontSize: 18 }} />
             </IconButton>
+          </Stack>
+        </Box>
+
+        {/* Brush thickness picker: each dot is a preset width. Only strokes drawn after a
+            change take the new width; existing marks keep the size they were drawn at. */}
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          sx={{ position: 'absolute', bottom: 12, left: 12, zIndex: 2 }}
+        >
+          <Stack
+            direction='row'
+            alignItems='center'
+            spacing={0.25}
+            sx={{
+              bgcolor: 'background.paper',
+              borderRadius: 999,
+              px: 0.5,
+              py: 0.25,
+              boxShadow: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <LineWeightRounded sx={{ fontSize: { xs: 15, sm: 18 }, color: 'text.secondary', ml: 0.25, mr: 0.25 }} />
+            {Array.from({ length: brushLevelCount }, (_, i) => (
+              <IconButton
+                key={i}
+                size='small'
+                onClick={() => setBrushLevel(i)}
+                aria-label={`Brush thickness ${i + 1}`}
+                sx={{ width: { xs: 24, sm: 30 }, height: { xs: 24, sm: 30 }, bgcolor: brushLevel === i ? 'action.selected' : 'transparent' }}
+              >
+                <Box
+                  sx={{
+                    width: 5 + i * 4,
+                    height: 5 + i * 4,
+                    borderRadius: '50%',
+                    bgcolor: brushLevel === i ? 'primary.main' : 'text.secondary',
+                  }}
+                />
+              </IconButton>
+            ))}
           </Stack>
         </Box>
       </Box>

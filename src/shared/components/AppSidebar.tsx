@@ -48,7 +48,7 @@ const AppSidebar = () => {
     { label: 'Campaigns Hub', Icon: EmojiEventsOutlined, path: '/draws/history' },
     { label: 'My Plan', Icon: ReceiptLongOutlined, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
     { label: 'Marketing', Icon: CampaignOutlined, path: '/marketing' },
-    { label: 'Settings', Icon: SettingsOutlined, path: '/settings' },
+    { label: 'Profile Settings', Icon: SettingsOutlined, path: '/settings' },
   ];
 
   const mainNavItems = isAdmin ? adminNavItems : isBusiness ? businessNavItems : isManager ? managerNavItems : userNavItems;

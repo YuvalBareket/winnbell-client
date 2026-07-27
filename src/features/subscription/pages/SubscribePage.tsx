@@ -74,8 +74,8 @@ const SubscribePage = () => {
       }}
     >
       <AppPageHero
-        title='Grow Your Business'
-        subtitle='A simple monthly subscription that brings customers back'
+        title='Pick your plan'
+        subtitle='Choose the entry volume that suits your business traffic'
       />
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>

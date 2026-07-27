@@ -8,7 +8,8 @@ import { motion } from 'framer-motion';
 import {
   staggerContainer, popIn,
 } from '../../../shared/motion';
-import { ChevronRight, Lock, Person, DateRange, Wc, Logout, DeleteOutline } from '@mui/icons-material';
+import { ChevronRight, Lock, Person, DateRange, Wc, Logout, DeleteOutline, RestartAlt } from '@mui/icons-material';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAppSelector, useAppDispatch } from '../../../store/hook';
 import { selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { completeProfileSetup, updateProfileName } from '../../../store/slices/authSlice';
@@ -25,6 +26,10 @@ import {
   ERROR_MAIN, ERROR_HOVER_BG, ERROR_BG_TINT, ERROR_BORDER_TINT,
 } from '../../../shared/colors';
 
+// STAGING DEMO ONLY (temporary). The reset control shows outside production; the server
+// still double-gates the action to the demo account. Remove with the demo scaffolding.
+const IS_DEMO_ENV = import.meta.env.VITE_APP_ENV !== 'production';
+
 interface SettingsContentProps {
   setEditDialogOpen: (open: boolean) => void;
   resetLoading: boolean;
@@ -32,6 +37,8 @@ interface SettingsContentProps {
   setResetSuccess: (success: boolean) => void;
   handlePasswordReset: () => void;
   setDeleteDialogOpen: (open: boolean) => void;
+  demoLoading: boolean;
+  setDemoDialogOpen: (open: boolean) => void;
 }
 
 const SettingsContent = ({
@@ -41,6 +48,8 @@ const SettingsContent = ({
   setResetSuccess,
   handlePasswordReset,
   setDeleteDialogOpen,
+  demoLoading,
+  setDemoDialogOpen,
 }: SettingsContentProps) => {
   const user = useAppSelector(selectCurrentUser);
   const handleLogout = useLogout();
@@ -317,6 +326,30 @@ const SettingsContent = ({
                       Delete account
                     </Button>
                   )}
+
+                  {/* STAGING DEMO ONLY (temporary): reset this account's activity between demos. */}
+                  {IS_DEMO_ENV && (
+                    <Button
+                      fullWidth
+                      variant='outlined'
+                      startIcon={<RestartAlt sx={{ fontSize: 18 }} />}
+                      onClick={() => setDemoDialogOpen(true)}
+                      disabled={demoLoading}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 800,
+                        fontSize: '13px',
+                        py: 1.5,
+                        borderRadius: 1.75,
+                        borderStyle: 'dashed',
+                        borderColor: BORDER_MUTED,
+                        color: TEXT_SECONDARY,
+                        '&:hover': { bgcolor: BG_ROW_SUBTLE, borderColor: BORDER_MUTED },
+                      }}
+                    >
+                      {demoLoading ? 'Resetting...' : 'Reset demo data (staging)'}
+                    </Button>
+                  )}
                 </Stack>
               </motion.div>
             </Stack>
@@ -347,7 +380,7 @@ const SettingsContent = ({
       {/* Simple header */}
       <Box sx={{ px: 3.25, pt: 1.75, pb: 0.5 }}>
         <Typography sx={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>
-          Settings
+          Profile Settings
         </Typography>
         <Typography sx={{ fontSize: '13px', color: TEXT_TERTIARY, fontWeight: 500, mt: 0.25 }}>
           Manage your account details.
@@ -588,6 +621,30 @@ const SettingsContent = ({
                   To close your business account, please contact support.
                 </Typography>
               )}
+
+              {/* STAGING DEMO ONLY (temporary): reset this account's activity between demos. */}
+              {IS_DEMO_ENV && (
+                <Button
+                  variant='outlined'
+                  startIcon={<RestartAlt sx={{ fontSize: 18 }} />}
+                  onClick={() => setDemoDialogOpen(true)}
+                  disabled={demoLoading}
+                  sx={{
+                    mt: 2,
+                    textTransform: 'none',
+                    fontWeight: 800,
+                    fontSize: '13px',
+                    py: 1.375,
+                    borderRadius: 1.625,
+                    borderStyle: 'dashed',
+                    borderColor: BORDER_MUTED,
+                    color: TEXT_SECONDARY,
+                    '&:hover': { bgcolor: BG_ROW_SUBTLE, borderColor: BORDER_MUTED },
+                  }}
+                >
+                  {demoLoading ? 'Resetting...' : 'Reset demo data (staging)'}
+                </Button>
+              )}
             </motion.div>
           </Stack>
         </motion.div>
@@ -616,6 +673,7 @@ export default function SettingsPage() {
   const user = useAppSelector(selectCurrentUser);
   const dispatch = useAppDispatch();
   const handleLogout = useLogout();
+  const queryClient = useQueryClient();
 
   // State management
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -625,6 +683,12 @@ export default function SettingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
+  // STAGING DEMO ONLY (temporary): self-service reset of the demo account.
+  const [demoDialogOpen, setDemoDialogOpen] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [demoDone, setDemoDone] = useState(false);
+  const [demoError, setDemoError] = useState('');
+  const [demoSeeded, setDemoSeeded] = useState(0);
 
   // Handlers
   const handleProfileSave = async (data: { fullName: string; dateOfBirth: string | null; gender: string | null; state: string | null }) => {
@@ -671,6 +735,28 @@ export default function SettingsPage() {
     }
   };
 
+  // STAGING DEMO ONLY (temporary): wipe this account's entries/limits so the flow can be
+  // demoed fresh. The server double-gates to the demo account; anyone else gets a 403.
+  const handleDemoReset = async () => {
+    setDemoLoading(true);
+    setDemoError('');
+    try {
+      const { data } = await api.post('/tickets/reset-demo');
+      setDemoSeeded(Number(data?.entriesSeeded) || 0);
+      // Refresh every cached view (entries, weekly status, risk level) so the UI reflects the wipe.
+      await queryClient.invalidateQueries();
+      setDemoDialogOpen(false);
+      setDemoDone(true);
+      setTimeout(() => setDemoDone(false), 4000);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+        || 'Failed to reset demo data.';
+      setDemoError(msg);
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
     setDeleteError('');
@@ -694,6 +780,8 @@ export default function SettingsPage() {
         setResetSuccess={setResetSuccess}
         handlePasswordReset={handlePasswordReset}
         setDeleteDialogOpen={setDeleteDialogOpen}
+        demoLoading={demoLoading}
+        setDemoDialogOpen={setDemoDialogOpen}
       />
 
       {/* Profile edit dialog */}
@@ -784,6 +872,72 @@ export default function SettingsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* STAGING DEMO ONLY (temporary): confirm the demo reset. */}
+      {IS_DEMO_ENV && (
+        <Dialog
+          open={demoDialogOpen}
+          onClose={() => !demoLoading && setDemoDialogOpen(false)}
+          PaperProps={{ sx: { borderRadius: 2, boxShadow: SHADOW_CARD } }}
+        >
+          <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem', color: TEXT_HEADING }}>
+            Reset demo data?
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText sx={{ color: TEXT_SECONDARY, mt: 1 }}>
+              This clears this account's entries, its weekly free-entry usage and its risk score, then
+              adds a few fresh sample entries from participating places so you can run the demo from a
+              clean slate. Your login, email, phone and profile stay. This only works on the staging
+              demo account.
+            </DialogContentText>
+            {demoError && (
+              <Alert
+                severity='error'
+                sx={{
+                  mt: 2, borderRadius: 2, border: 'none',
+                  bgcolor: ERROR_HOVER_BG, color: TEXT_HEADING,
+                  '& .MuiAlert-icon': { color: ERROR_MAIN },
+                }}
+              >
+                {demoError}
+              </Alert>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+            <Button
+              onClick={() => setDemoDialogOpen(false)}
+              variant='outlined'
+              disabled={demoLoading}
+              sx={{ textTransform: 'none', fontWeight: 600 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant='contained'
+              disabled={demoLoading}
+              onClick={handleDemoReset}
+              sx={{
+                fontWeight: 700, textTransform: 'none', transition: 'all 0.3s',
+                '&:hover': { filter: 'brightness(0.92)' },
+                '&:disabled': { opacity: 0.6 },
+              }}
+            >
+              {demoLoading ? 'Resetting...' : 'Yes, reset'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {/* STAGING DEMO ONLY (temporary): reset-done confirmation. */}
+      <Snackbar
+        open={demoDone}
+        autoHideDuration={4000}
+        onClose={() => setDemoDone(false)}
+        message={demoSeeded > 0
+          ? `Demo data reset. ${demoSeeded} fresh ${demoSeeded === 1 ? 'entry' : 'entries'} added.`
+          : 'Demo data reset. This account is clean.'}
+        sx={{ '& .MuiSnackbarContent-root': { bgcolor: SUCCESS_GREEN, fontWeight: 600 } }}
+      />
     </>
   );
 }

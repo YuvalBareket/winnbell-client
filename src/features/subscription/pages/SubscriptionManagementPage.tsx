@@ -2,22 +2,27 @@ import { useState, useRef } from 'react';
 import {
   Box, Typography, Paper, Stack, Chip, Button, Divider, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Alert,
-  Container, Skeleton,
+  Container, Skeleton, alpha, RadioGroup, FormControlLabel, Radio,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useMutation } from '@tanstack/react-query';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import {
   ReceiptLong, CheckCircle, Cancel, EmojiEvents,
-  Lock, LockOpen, WorkspacePremium, Edit, SwapHoriz, CreditCard,
+  Lock, LockOpen, WorkspacePremium, Edit, SwapHoriz, CreditCard, OpenInNew,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
+import {
+  PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
+  AMBER_HOURGLASS, GOLD_TROPHY, ACCENT_GOLD_DARK, GRADIENT_GOLD_VIVID, GOLD_INK,
+} from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
-import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSkipCampaign } from '../hooks/useSubscription';
-import { updatePaymentMethodApi } from '../api/subscription.api';
+import { safeHttpUrl, isStripeCheckoutUrl } from '../../../shared/utils/url';
+import { useSubscription, useUpdateSubscriptionPlan, useSubscriptionInvoices, useSetParticipation } from '../hooks/useSubscription';
+import { updatePaymentMethodApi, foundingRenewalApi } from '../api/subscription.api';
 import { useCancelSubscription } from '../hooks/useCancelSubscription';
 import { useResumeSubscription } from '../hooks/useResumeSubscription';
-import { TIER_MAP } from './components/subscribeTiers';
+import { TIER_MAP, FOUNDING_RENEWAL_TERM_MONTHS } from './components/subscribeTiers';
 import PlanCards from './components/PlanCards';
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
@@ -41,7 +46,7 @@ export default function SubscriptionManagementPage() {
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelError, setCancelError] = useState('');
-  const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'prorated' | 'none'; refundAmount: number } | null>(null);
+  const [cancelResult, setCancelResult] = useState<{ removedFromDraw: boolean; refundType: 'full' | 'prorated' | 'none'; refundAmount: number; immediateRemoval?: boolean } | null>(null);
   const [editPlanOpen, setEditPlanOpen] = useState(false);
   const [newTier, setNewTier] = useState<number>(0);
   const [updateError, setUpdateError] = useState('');
@@ -62,9 +67,13 @@ export default function SubscriptionManagementPage() {
   const { mutate: doResume, isPending: resuming } = useResumeSubscription();
 
   const { mutate: doUpdatePlan, isPending: updatingPlan } = useUpdateSubscriptionPlan();
-  const { mutate: doSkipCampaign, isPending: skippingCampaign } = useSkipCampaign();
-  const [skipConfirmOpen, setSkipConfirmOpen] = useState(false);
-  const [skipError, setSkipError] = useState('');
+  // Cancel dialog choice: keep participating in everything already paid for (default)
+  // or be removed from the map and the paid upcoming campaign immediately (no refund).
+  const [cancelMode, setCancelMode] = useState<'stay' | 'immediate'>('stay');
+  // Founding cancel (participation pause): permanent opt-out until reactivated.
+  const { mutate: doSetParticipation, isPending: settingParticipation } = useSetParticipation();
+  const [pauseConfirmOpen, setPauseConfirmOpen] = useState(false);
+  const [pauseError, setPauseError] = useState('');
 
   const [pmLoading, setPmLoading] = useState(false);
   const [pmError, setPmError] = useState('');
@@ -79,6 +88,19 @@ export default function SubscriptionManagementPage() {
       setPmLoading(false);
     }
   };
+
+  // Founding one-time renewal (Special Terms Section 6): the checkout URL guard lives
+  // in mutationFn so a bad value rejects the mutation instead of throwing in onSuccess.
+  const [renewalError, setRenewalError] = useState('');
+  const { mutate: startFoundingRenewal, isPending: renewingFounding } = useMutation({
+    mutationFn: async () => {
+      const { url } = await foundingRenewalApi();
+      if (!isStripeCheckoutUrl(url)) throw new Error('Invalid checkout URL');
+      return url;
+    },
+    onSuccess: (url) => { window.location.href = url; },
+    onError: (err: unknown) => setRenewalError(apiErrorMessage(err, 'Could not start the renewal. Please try again.')),
+  });
 
   const isDrawLocked = (() => {
     if (!sub?.draw_date) return false;
@@ -104,27 +126,30 @@ export default function SubscriptionManagementPage() {
   // campaign to open. While set, it is what Stripe will bill, so it leads the display.
   const hasPendingPlan = sub?.pending_entries_per_location != null;
 
+  // The business already PAID for the upcoming (not-yet-open) campaign: the 24th charge
+  // landed (status Active) and that campaign has not opened yet. The cancel dialog must
+  // then say explicitly that immediate removal forfeits it with no refund.
+  const paidUpcomingCampaign = !sub?.is_founding && sub?.in_charged_window === true && sub?.status === 'Active';
+
   // Cancelled before ever being charged into a campaign: there is nothing pending (no charge,
   // no draw), so we drop the "cancels on <date> / still active" framing and just show it as
   // cancelled - the future period-end date is meaningless here and only confuses.
-  const cancelledNoCampaign = !!sub?.cancel_at_period_end && !sub?.draw_id;
+  // Excluded: immediate-removal cancels (participation_paused) and charged-window cancels
+  // (paidUpcomingCampaign) DID pay - they keep the "cancels on <date>" framing.
+  const cancelledNoCampaign = !!sub?.cancel_at_period_end && !sub?.draw_id && !sub?.participation_paused && !paidUpcomingCampaign;
 
   const drawDateLabel = sub?.draw_date
     ? new Date(sub.draw_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
 
-  // Founding: 50% of remaining time; regular: no refund
-  const foundingRefundEstimate = (() => {
-    if (!sub?.is_founding || !sub.current_period_end) return 0;
-    const now = new Date();
-    const periodEnd = new Date(sub.current_period_end);
-    const createdAt = new Date(sub.current_period_end);
-    createdAt.setFullYear(createdAt.getFullYear() - 1);
-    const totalMs = periodEnd.getTime() - createdAt.getTime();
-    const remainingMs = Math.max(0, periodEnd.getTime() - now.getTime());
-    const fraction = totalMs > 0 ? remainingMs / totalMs : 0;
-    return Math.round(1200 * fraction * 0.5 * 100) / 100;
-  })();
+  // Founding Partner Special Terms: the plan is a fixed term with NO cancellation
+  // refund and no early termination - the cancel action does not exist for founding at all
+  // (the membership simply runs through its term and does not renew).
+
+  // One-time renewal window (Special Terms Section 6). The server computes this flag
+  // with the same helper its checkout guard uses (single source of truth) - no client
+  // date math, so the banner can never show when the server would reject the renewal.
+  const foundingRenewalOpen = sub?.founding_renewal_open === true;
 
   if (isLoading) {
     return (
@@ -144,13 +169,15 @@ export default function SubscriptionManagementPage() {
   }
 
   const statusColors = STATUS_COLOR[sub.status] ?? { bg: 'action.hover', color: 'text.secondary' };
-  const canCancel = sub.status !== 'Cancelled' && !sub.cancel_at_period_end;
+  // Founding Partner Special Terms: fixed term, no early termination, no refund -
+  // there is no cancel action for founding memberships (they expire on their own).
+  const canCancel = sub.status !== 'Cancelled' && !sub.cancel_at_period_end && !sub.is_founding;
 
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: { xs: 10, md: 6 } }}>
       <AppPageHero
-        title='Campaign Management'
-        subtitle='Manage your subscription and campaigns'
+        title='My Plan'
+        subtitle='Manage your subscription'
       />
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 } }}>
@@ -163,13 +190,13 @@ export default function SubscriptionManagementPage() {
             sx={{ mb: 3, borderRadius: 2 }}
             onClose={() => setCancelResult(null)}
           >
-            {cancelResult.refundType !== 'none' ? (
-              <>Founding membership cancelled. You have been removed from upcoming campaigns and a <strong>refund of ${cancelResult.refundAmount.toFixed(2)}</strong> has been issued.</>
-            ) : (
-              sub.draw_id
-                ? <>Subscription cancelled. Your plan stays active until {periodEndLabel} and you keep your current campaign. It will not renew after that.</>
-                : <>Subscription cancelled. You have not been charged and are not entered in any campaign, so nothing further will happen.</>
-            )}
+            {cancelResult.immediateRemoval
+              ? <>Subscription cancelled. Your business has been removed from the map and will not participate in upcoming campaigns. Payments already made are not refunded, and you will not be charged again.</>
+              : sub.draw_id
+              ? <>Subscription cancelled. Your plan stays active until {periodEndLabel} and you keep every campaign you have already paid for. It will not renew after that.</>
+              : paidUpcomingCampaign
+              ? <>Subscription cancelled. You keep the upcoming campaign you have already paid for, and you will not be charged again.</>
+              : <>Subscription cancelled. You have not been charged and are not entered in any campaign, so nothing further will happen.</>}
           </Alert>
         )}
 
@@ -209,7 +236,7 @@ export default function SubscriptionManagementPage() {
           </Alert>
         )}
 
-        {/* Founding partner final included month: the year still runs, but it no longer covers
+        {/* Founding partner final included month: the term still runs, but it no longer covers
             the next campaign. Subscribing before this month ends means no gap. */}
         <AnimatePresence>
           {sub?.is_founding && sub?.founding_transition_available && sub?.current_period_end && new Date(sub.current_period_end) >= new Date() && (
@@ -219,15 +246,15 @@ export default function SubscriptionManagementPage() {
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.3 }}
             >
-              <Paper elevation={0} sx={{ mb: 3, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'rgba(245,158,11,0.04)' }}>
+              <Paper elevation={0} sx={{ mb: 3, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: alpha(AMBER_HOURGLASS, 0.04) }}>
                 <Stack direction='row' alignItems='center' spacing={2} mb={2}>
-                  <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
+                  <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: alpha(AMBER_HOURGLASS, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <WorkspacePremium sx={{ color: AMBER_HOURGLASS, fontSize: 24 }} />
                   </Box>
                   <Box flex={1}>
-                    <Typography variant='h6' fontWeight={800}>Your founding year is ending</Typography>
+                    <Typography variant='h6' fontWeight={800}>Your founding term is ending</Typography>
                     <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                      Your Founding Partner term ends {periodEndLabel}. The current campaign is the last one included in your founding year.
+                      Your Founding Partner term ends {periodEndLabel}. The current campaign is the last one included in your founding term.
                       Start a plan by <strong>{lastDayOfMonthLabel}</strong> and you will be in the next campaign without missing a day.
                     </Typography>
                   </Box>
@@ -256,14 +283,14 @@ export default function SubscriptionManagementPage() {
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.3 }}
             >
-              <Paper elevation={0} sx={{ mb: 3, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'rgba(245,158,11,0.04)' }}>
+              <Paper elevation={0} sx={{ mb: 3, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: alpha(AMBER_HOURGLASS, 0.04) }}>
                 <Stack direction='row' alignItems='center' spacing={2} mb={2}>
-                  <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
+                  <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: alpha(AMBER_HOURGLASS, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <WorkspacePremium sx={{ color: AMBER_HOURGLASS, fontSize: 24 }} />
                   </Box>
                   <Box flex={1}>
-                    <Typography variant='h6' fontWeight={800}>Your founding year has ended</Typography>
-                    <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>Your founding partner year is complete. Start a plan to keep running campaigns.</Typography>
+                    <Typography variant='h6' fontWeight={800}>Your founding term has ended</Typography>
+                    <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>Your founding partner term is complete. Start a plan to keep running campaigns.</Typography>
                   </Box>
                 </Stack>
                 <Box>
@@ -310,14 +337,14 @@ export default function SubscriptionManagementPage() {
                     }}
                   >
                     <Stack direction='row' alignItems='center' spacing={2} mb={2}>
-                      <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: sub.is_founding ? 'rgba(245,158,11,0.15)' : 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: sub.is_founding ? alpha(AMBER_HOURGLASS, 0.15) : 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         {sub.is_founding
-                          ? <WorkspacePremium sx={{ color: '#f59e0b', fontSize: 24 }} />
+                          ? <WorkspacePremium sx={{ color: AMBER_HOURGLASS, fontSize: 24 }} />
                           : <ReceiptLong sx={{ color: 'white', fontSize: 24 }} />}
                       </Box>
                       <Box flex={1}>
                         <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                          {sub.is_founding ? 'Founding Partner' : 'Current Plan'}
+                          { 'Current Plan'}
                         </Typography>
                         <Typography variant='h6' fontWeight={800} lineHeight={1.2}>
                           {sub.is_founding
@@ -329,7 +356,7 @@ export default function SubscriptionManagementPage() {
                             {hasPendingPlan
                               ? `$${Number(sub.pending_fee_at_entry ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month · starts with the next campaign`
                               : sub.is_founding
-                              ? `$${Number((sub.fee_at_entry ?? 0) * 12).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / year`
+                              ? `$${Number(sub.founding_amount_paid ?? sub.fee_at_entry ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} one-time for your founding term`
                               : sub.billing_interval === 'yearly'
                                 ? `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month · billed yearly`
                                 : `$${Number(sub.fee_at_entry).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / month`}
@@ -377,7 +404,11 @@ export default function SubscriptionManagementPage() {
                           </Typography>
                           <Typography variant='h6' fontWeight={800} color='text.primary'>Cancelled</Typography>
                           <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
-                            You were not charged and are not in any campaign. Resume your plan whenever you're ready.
+                            {sub.status === 'Cancelled'
+                              // Truly ended (period end passed): only a NEW plan can bring it back, and an
+                              // in-window signup pays for the upcoming campaign at checkout.
+                              ? 'You were not charged and are not in any campaign. Start a new plan whenever you are ready to join the next campaign.'
+                              : 'You were not charged and are not in any campaign. Resume your plan whenever you\'re ready.'}
                           </Typography>
                         </Box>
                       ) : periodEndLabel && (
@@ -388,14 +419,75 @@ export default function SubscriptionManagementPage() {
                           <Typography variant='h6' fontWeight={800} color='text.primary'>{periodEndLabel}</Typography>
                           <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 0.5 }}>
                             {sub.is_founding
-                              ? 'One-time payment. All 12 monthly campaigns included, no renewal.'
+                              ? 'One-time payment. Every campaign through your term is included, no auto-renewal.'
                               : sub.cancel_at_period_end
-                                ? 'You stay in every campaign you have already paid for - no further charges'
+                                ? sub.participation_paused
+                                  ? 'No further charges. Your business is off the map and will not join upcoming campaigns - payments already made are not refunded.'
+                                  : 'You stay in every campaign you have already paid for - no further charges'
                                 : 'Your plan is billed on the 24th of each month. Each payment covers the next month\'s campaign.'}
                           </Typography>
                         </Box>
                       )}
                     </Stack>
+
+                    {/* Founding one-time renewal (Special Terms Section 6): offered in the
+                        FINAL 30 days of the term, at the exact original founding price. */}
+                    <AnimatePresence>
+                      {foundingRenewalOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <Box
+                            sx={{
+                              mt: 2.5, p: 2.5, borderRadius: 2,
+                              border: '1px solid', borderColor: alpha(AMBER_HOURGLASS, 0.4),
+                              background: `linear-gradient(120deg, ${alpha(GOLD_TROPHY, 0.08)}, ${alpha(AMBER_HOURGLASS, 0.14)})`,
+                            }}
+                          >
+                            <Stack direction='row' spacing={1.5} alignItems='flex-start'>
+                              <WorkspacePremium sx={{ color: ACCENT_GOLD_DARK, fontSize: 26, mt: 0.25 }} />
+                              <Box flex={1}>
+                                <Typography variant='subtitle2' fontWeight={800} sx={{ color: ACCENT_GOLD_DARK }}>
+                                  Renew your founding plan
+                                </Typography>
+                                <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5, lineHeight: 1.6 }}>
+                                  Your founding term ends {periodEndLabel}. As a Founding Partner you can renew the exact same plan for another {FOUNDING_RENEWAL_TERM_MONTHS} months at your original monthly rate
+                                  {sub.founding_renewal_price ? <> - <strong>${Number(sub.founding_renewal_price).toLocaleString()}</strong> for the full {FOUNDING_RENEWAL_TERM_MONTHS} months</> : null}. Your new term starts right where this one ends.
+                                </Typography>
+                                <Button
+                                  variant='contained'
+                                  size='medium'
+                                  disabled={renewingFounding}
+                                  onClick={() => startFoundingRenewal()}
+                                  sx={{
+                                    mt: 1.5, fontWeight: 800, textTransform: 'none',
+                                    background: GRADIENT_GOLD_VIVID,
+                                    color: GOLD_INK,
+                                    '&:hover': { background: GRADIENT_GOLD_VIVID },
+                                  }}
+                                >
+                                  {renewingFounding ? <CircularProgress size={20} sx={{ color: GOLD_INK }} /> : `Renew for ${FOUNDING_RENEWAL_TERM_MONTHS} months${sub.founding_renewal_price ? ` - $${Number(sub.founding_renewal_price).toLocaleString()}` : ''}`}
+                                </Button>
+                                {renewalError && (
+                                  <Typography variant='caption' color='error.main' fontWeight={700} display='block' sx={{ mt: 1 }}>
+                                    {renewalError}
+                                  </Typography>
+                                )}
+                                <Typography variant='caption' color='text.secondary' display='block' sx={{ mt: 1 }}>
+                                  Renewals follow the{' '}
+                                  <Box component='a' href='/founding-terms' target='_blank' rel='noopener' sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}>
+                                    Founding Partner Special Terms
+                                  </Box>.
+                                </Typography>
+                              </Box>
+                            </Stack>
+                          </Box>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
                     {hasPendingPlan && (
                       <Alert severity='info' sx={{ mt: 2.5, borderRadius: 2 }}>
@@ -422,7 +514,11 @@ export default function SubscriptionManagementPage() {
                       </Alert>
                     )}
 
-                    {sub.skip_next_campaign && (
+                    {/* Founding pause only: the Reactivate action hits the founding-only
+                        participation endpoint. A monthly immediate-removal cancel also sets
+                        participation_paused, but its state is explained by the cancels-soon
+                        alert below and recovered via the Resume Campaign button instead. */}
+                    {sub.is_founding && sub.participation_paused && (
                       <Alert
                         severity='warning'
                         sx={{ mt: 2.5, borderRadius: 2 }}
@@ -430,35 +526,43 @@ export default function SubscriptionManagementPage() {
                           <Button
                             color='inherit'
                             size='small'
-                            disabled={skippingCampaign}
-                            onClick={() => doSkipCampaign(false, { onError: (err: unknown) => setSkipError(apiErrorMessage(err, 'Could not rejoin the campaign.')) })}
+                            disabled={settingParticipation}
+                            onClick={() => doSetParticipation(false, { onError: (err: unknown) => setPauseError(apiErrorMessage(err, 'Could not reactivate your plan.')) })}
                             sx={{ fontWeight: 700 }}
                           >
-                            Rejoin
+                            {settingParticipation ? <CircularProgress size={16} color='inherit' /> : 'Reactivate'}
                           </Button>
                         }
                       >
-                        You have opted out of the next campaign. Your business will not participate in it and will rejoin from the campaign after.
+                        Your participation is cancelled. Your business is not on the map and will not join upcoming campaigns. You can reactivate at any time while your founding term is active.
                       </Alert>
+                    )}
+                    {pauseError && (
+                      <Alert severity='error' sx={{ mt: 2.5, borderRadius: 2 }} onClose={() => setPauseError('')}>{pauseError}</Alert>
                     )}
 
-                    {sub.cancel_at_period_end && !cancelledNoCampaign && (
+                    {sub.cancel_at_period_end && !cancelledNoCampaign && !sub.is_founding && (
                       <Alert severity='warning' sx={{ mt: 2.5, borderRadius: 2 }}>
-                        Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. It just will not renew after that.
+                        {sub.participation_paused
+                          ? <>Your plan is cancelled and ends on <strong>{periodEndLabel}</strong>. Your business has been removed from the map and will not participate in upcoming campaigns. Payments already made are not refunded. Resume to restore your participation.</>
+                          : <>Your plan is still fully active and will continue until <strong>{periodEndLabel}</strong>. You stay in every campaign you have already paid for. It just will not renew after that.</>}
                       </Alert>
                     )}
-                    <Box pt={2}>
-                      <Button
-                        size='small'
-                        variant='outlined'
-                        startIcon={<Edit />}
-                        onClick={() => { setNewTier(sub.pending_entries_per_location ?? sub.entries_per_location ?? 2500); setEditPlanOpen(true); setUpdateError(''); }}
-                        disabled={sub.is_founding || sub.status === 'Cancelled' || sub.cancel_at_period_end}
-                        sx={{ fontWeight: 700, textTransform: 'none' }}
-                      >
-                        Edit Plan
-                      </Button>
-                    </Box>
+                    {/* Founding: the plan is fixed for the term (Special Terms) - no Edit Plan at all */}
+                    {!sub.is_founding && (
+                      <Box pt={2}>
+                        <Button
+                          size='small'
+                          variant='outlined'
+                          startIcon={<Edit />}
+                          onClick={() => { setNewTier(sub.pending_entries_per_location ?? sub.entries_per_location ?? 2500); setEditPlanOpen(true); setUpdateError(''); }}
+                          disabled={sub.status === 'Cancelled' || sub.cancel_at_period_end}
+                          sx={{ fontWeight: 700, textTransform: 'none' }}
+                        >
+                          Edit Plan
+                        </Button>
+                      </Box>
+                    )}
                   </Box>
                 </Paper>
               </motion.div>
@@ -563,39 +667,49 @@ export default function SubscriptionManagementPage() {
                           color='error'
                           size='medium'
                           startIcon={<Cancel />}
-                          onClick={() => setConfirmOpen(true)}
+                          onClick={() => { setCancelMode('stay'); setConfirmOpen(true); }}
                           sx={{ borderRadius: 2, fontWeight: 700 }}
                         >
                           Cancel my subscription
                         </Button>
                       )}
 
-                      {/* Skip the next campaign - subtle optional action */}
-                      <AnimatePresence>
-                        {sub.in_charged_window && !sub.skip_next_campaign && sub.status !== 'Cancelled' && !sub.cancel_at_period_end && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
+                      {/* Founding: fixed term per the Special Terms - no refund, no early
+                          termination of the TERM. Month-agnostic wording: a renewed member's
+                          remaining term differs from the initial one, so the end DATE carries
+                          the information. */}
+                      {sub.is_founding && sub.status !== 'Cancelled' && (
+                        <Typography variant='caption' color='text.secondary' textAlign='center' sx={{ lineHeight: 1.6 }}>
+                          Your Founding Partner plan is a one-time purchase for a fixed term{periodEndLabel ? ` ending ${periodEndLabel}` : ''}. It does not renew and payments are not refunded. See the{' '}
+                          <Box
+                            component='a'
+                            href='/founding-terms'
+                            target='_blank'
+                            rel='noopener'
+                            sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' ,whiteSpace:'nowrap'}}
                           >
-                            <Button
-                              fullWidth
-                              variant='text'
-                              size='small'
-                              onClick={() => { setSkipError(''); setSkipConfirmOpen(true); }}
-                              sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none', justifyContent: 'center' }}
-                            >
-                              Skip the next campaign
-                            </Button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      {/* Skip error alert */}
-                      {skipError && (
-                        <Alert severity='error' sx={{ borderRadius: 2 }} onClose={() => setSkipError('')}>{skipError}</Alert>
+                            Founding Partner Special Terms
+                          </Box>.
+                        </Typography>
                       )}
+
+                      {/* Founding cancel - permanent participation opt-out (not a one-campaign
+                          skip). Available anytime while not already paused; no charged-window
+                          gate since there is no recurring billing to time it against. */}
+                      {sub.is_founding && sub.status !== 'Cancelled' && !sub.participation_paused && (
+                        <Button
+                          fullWidth
+                          variant='outlined'
+                          color='error'
+                          size='medium'
+                          startIcon={<Cancel />}
+                          onClick={() => { setPauseError(''); setPauseConfirmOpen(true); }}
+                          sx={{ borderRadius: 2, fontWeight: 700 }}
+                        >
+                          Cancel my plan
+                        </Button>
+                      )}
+
                     </Stack>
                   </Box>
                 </Paper>
@@ -656,8 +770,9 @@ export default function SubscriptionManagementPage() {
                           <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.75 }}>
                             Current prize pool
                           </Typography>
+                          {/* NULL = prize not revealed yet (admin teaser), never $0.00 */}
                           <Typography variant='h5' fontWeight={900} color='primary.main' sx={{ fontSize: { xs: '1.75rem', md: '2rem' } }}>
-                            ${Number(sub?.prize_amount ?? 0).toFixed(2)}
+                            {sub?.prize_amount != null ? `$${Number(sub.prize_amount).toFixed(2)}` : 'Revealing soon'}
                           </Typography>
                         </Box>
                       </Stack>
@@ -717,8 +832,9 @@ export default function SubscriptionManagementPage() {
                         <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.75 }}>
                           Prize pool
                         </Typography>
+                        {/* NULL = prize not revealed yet (admin teaser), never $0.00 */}
                         <Typography variant='h5' fontWeight={900} color='primary.main' sx={{ fontSize: { xs: '1.75rem', md: '2rem' } }}>
-                          ${Number(sub.next_campaign_prize ?? 0).toFixed(2)}
+                          {sub.next_campaign_prize != null ? `$${Number(sub.next_campaign_prize).toFixed(2)}` : 'Revealing soon'}
                         </Typography>
                       </Box>
                     </Stack>
@@ -832,6 +948,10 @@ export default function SubscriptionManagementPage() {
 
                       const changeReason = invoice.invoice_description
                         ?? (isChangeEntry ? 'Plan or location updated' : null);
+                      // The Stripe link for this row: for recurring invoices it's the clean hosted
+                      // invoice page (invoice.stripe.com/i/...); for founding/one-time rows it's the
+                      // charge receipt page. Synthetic entries (change log, refunds) have none = null.
+                      const receiptUrl = safeHttpUrl(invoice.hosted_invoice_url);
 
                       return (
                         <motion.div
@@ -879,6 +999,42 @@ export default function SubscriptionManagementPage() {
                                     color: isRefunded ? 'text.secondary' : isPaid ? 'success.dark' : 'error.main',
                                   }}
                                 />
+                                {receiptUrl && (
+                                  <Button
+                                    size='small'
+                                    href={receiptUrl}
+                                    target='_blank'
+                                    rel='noopener'
+                                    endIcon={<OpenInNew sx={{ fontSize: '13px !important' }} />}
+                                    sx={{
+                                      ml: 'auto !important',
+                                      textTransform: 'none',
+                                      fontWeight: 600,
+                                      minWidth: 0,
+                                      px: 1.25,
+                                      py: 0.625,
+                                      flexShrink: 0,
+                                      fontSize: '0.875rem',
+                                      borderRadius: '20px',
+                                      border: '1px solid',
+                                      borderColor: alpha(PRIMARY_MAIN, 0.2),
+                                      color: 'text.secondary',
+                                      backgroundColor: alpha(PRIMARY_MAIN, 0.04),
+                                      transition: 'all 0.2s ease-in-out',
+                                      '&:hover': {
+                                        backgroundColor: alpha(PRIMARY_MAIN, 0.08),
+                                        borderColor: alpha(PRIMARY_MAIN, 0.35),
+                                        color: 'primary.main',
+                                        transform: 'translateY(-1px)',
+                                      },
+                                      '&:active': {
+                                        transform: 'translateY(0)',
+                                      },
+                                    }}
+                                  >
+                                    {isRefunded ? 'Refund' : 'Invoice'}
+                                  </Button>
+                                )}
                               </Stack>
                               {subLines.length > 0 && (
                                 <Stack spacing={0.25} pl={0.25}>
@@ -1006,39 +1162,75 @@ export default function SubscriptionManagementPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Confirm dialog */}
+      {/* Confirm dialog. When the business is participating in anything it already paid
+          for (running campaign, or the upcoming one after the 24th charge), cancelling
+          asks ONE choice: keep everything paid for until it ends, or leave immediately
+          (off the map, out of the paid upcoming campaign, no refund). */}
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
         <DialogTitle sx={{ fontWeight: 800 }}>Are you sure you want to cancel?</DialogTitle>
         <DialogContent>
           <Stack spacing={1.5}>
-            {sub.is_founding ? (
+            {(sub.draw_id || paidUpcomingCampaign) ? (
               <>
                 <DialogContentText>
-                  Your founding partner membership will be cancelled immediately. You'll be removed from all upcoming campaigns and receive a refund of 50% of your remaining membership time.
+                  Your plan will not renew and you will not be charged again.
+                  {paidUpcomingCampaign && <> You have <strong>already paid for the upcoming campaign</strong>{sub.next_campaign_name ? ` (${sub.next_campaign_name})` : ''}.</>}
+                  {' '}Choose what happens to your participation:
                 </DialogContentText>
-                {foundingRefundEstimate > 0 && (
-                  <Alert severity='info' icon={<LockOpen />} sx={{ borderRadius: 2, mt: 1.5 }}>
-                    Estimated refund: <strong>${foundingRefundEstimate.toFixed(2)}</strong> (50% of remaining time)
-                  </Alert>
-                )}
+                <RadioGroup value={cancelMode} onChange={(e) => setCancelMode(e.target.value as 'stay' | 'immediate')}>
+                  <FormControlLabel
+                    value='stay'
+                    control={<Radio size='small' />}
+                    sx={{ alignItems: 'flex-start', mb: 1, '& .MuiRadio-root': { pt: 0 } }}
+                    label={
+                      <Box>
+                        <Typography variant='body2' fontWeight={700}>Keep participating until my paid campaigns end</Typography>
+                        <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
+                          Your business stays on the map and stays in every campaign you have already paid for. Your plan simply ends afterward.
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                  <FormControlLabel
+                    value='immediate'
+                    control={<Radio size='small' />}
+                    sx={{ alignItems: 'flex-start', '& .MuiRadio-root': { pt: 0 } }}
+                    label={
+                      <Box>
+                        <Typography variant='body2' fontWeight={700}>Remove my business now</Typography>
+                        <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
+                          Your business leaves the map immediately, customers can no longer submit entries, and it will not join the upcoming campaign. Payments already made are <strong>not refunded</strong>. Entries customers already earned stay valid.
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                </RadioGroup>
               </>
-            ) : sub.draw_id ? (
-              <DialogContentText>
-                Your plan will not renew and you will not be charged again. You keep your spot in every campaign you have already paid for, and you will not be entered into campaigns after that. No refund is issued.
-              </DialogContentText>
             ) : (
               <DialogContentText>
                 Cancelling will stop your subscription. You are not in a campaign yet, so you will not be entered into the next campaign and your plan will not renew.
               </DialogContentText>
             )}
+            <Typography variant='caption' color='text.secondary' display='block' sx={{ mt: 1, lineHeight: 1.5 }}>
+              Cancellation and refunds are governed by our{' '}
+              <Box
+                component='a'
+                href='/cancellation'
+                target='_blank'
+                rel='noopener'
+                sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
+              >
+                Cancellation &amp; Refund Policy
+              </Box>.
+            </Typography>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setConfirmOpen(false)} variant='outlined' sx={{ fontWeight: 700 }}>
-            Keep {sub.is_founding ? 'Membership' : 'Subscription'}
+            Keep Subscription
           </Button>
           <Button
-            onClick={() => doCancel(undefined, {
+            onClick={() => doCancel(cancelMode === 'immediate', {
               onSuccess: (data) => { setCancelResult(data); setConfirmOpen(false); },
               onError: (err) => { setCancelError(err.response?.data?.error ?? 'Cancellation failed. Please try again.'); setConfirmOpen(false); },
             })}
@@ -1052,33 +1244,40 @@ export default function SubscriptionManagementPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Skip next campaign dialog */}
-      <Dialog open={skipConfirmOpen} onClose={() => setSkipConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
-        <DialogTitle sx={{ fontWeight: 800 }}>Skip the next campaign?</DialogTitle>
+      {/* Founding cancel dialog - permanent participation opt-out, reactivatable */}
+      <Dialog open={pauseConfirmOpen} onClose={() => setPauseConfirmOpen(false)} PaperProps={{ sx: { borderRadius: 2, p: 1 } }}>
+        <DialogTitle sx={{ fontWeight: 800 }}>Are you sure you want to cancel?</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Your business will not participate in the upcoming campaign: it will not appear on the map and customers will not earn entries from you during it.
-            The payment already made for it is <strong>not refunded</strong>. Your plan continues normally and you rejoin from the campaign after.
-          </DialogContentText>
+          <Stack spacing={1.5}>
+            <DialogContentText>
+              Cancelling stops your participation in Winnbell campaigns. Your business is removed from the map right away, customers can no longer submit entries at your business, and you will not join any upcoming campaigns.
+            </DialogContentText>
+            <DialogContentText>
+              As set out in the Founding Partner Special Terms, payments are <strong>not refunded</strong> and your founding term keeps running while cancelled.
+            </DialogContentText>
+            <DialogContentText>
+              Entries customers already earned stay valid for the current draw. You can reactivate your plan at any time while your founding term is active.
+            </DialogContentText>
+          </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setSkipConfirmOpen(false)} variant='outlined' sx={{ fontWeight: 700 }}>
-            Stay In
+          <Button onClick={() => setPauseConfirmOpen(false)} variant='outlined' sx={{ fontWeight: 700 }}>
+            Keep My Plan
           </Button>
           <Button
             onClick={() => {
-              setSkipError('');
-              doSkipCampaign(true, {
-                onSuccess: () => setSkipConfirmOpen(false),
-                onError: (err: unknown) => { setSkipConfirmOpen(false); setSkipError(apiErrorMessage(err, 'Could not skip the campaign. Please try again.')); },
+              setPauseError('');
+              doSetParticipation(true, {
+                onSuccess: () => setPauseConfirmOpen(false),
+                onError: (err: unknown) => { setPauseConfirmOpen(false); setPauseError(apiErrorMessage(err, 'Could not cancel. Please try again.')); },
               });
             }}
-            color='warning'
+            color='error'
             variant='contained'
-            disabled={skippingCampaign}
+            disabled={settingParticipation}
             sx={{ fontWeight: 700 }}
           >
-            {skippingCampaign ? <CircularProgress size={20} color='inherit' /> : 'Skip Campaign'}
+            {settingParticipation ? <CircularProgress size={20} color='inherit' /> : 'Yes, Cancel'}
           </Button>
         </DialogActions>
       </Dialog>

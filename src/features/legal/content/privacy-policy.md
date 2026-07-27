@@ -377,7 +377,7 @@ However, certain Platform functions require sufficient information to verify eli
 
 You may submit requests using:
 
-- support@winnbell.com
+- privacy@winnbell.com
 
 **Authorized Agents**
 
@@ -389,7 +389,7 @@ We may verify identity before processing requests. We may decline to fulfill a r
 
 **Appeals (If Applicable)**
 
-If we deny your request, you may appeal our decision by contacting us at support@winnbell.com and describing your request and the reason you believe it should be granted.
+If we deny your request, you may appeal our decision by contacting us at privacy@winnbell.com and describing your request and the reason you believe it should be granted.
 
 ---
 
@@ -451,4 +451,4 @@ Continued use of the Platform after changes become effective constitutes accepta
 
 For questions or requests:
 
-- support@winnbell.com
+- privacy@winnbell.com

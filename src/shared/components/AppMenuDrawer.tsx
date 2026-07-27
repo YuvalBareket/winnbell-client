@@ -113,14 +113,14 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Campaigns Hub', icon: <EmojiEventsOutlined />, path: '/draws/history' },
         { label: 'My Plan', icon: <ReceiptLongOutlined />, path: businessIsActive ? '/subscription/manage' : '/subscribe' },
         { label: 'Marketing', icon: <CampaignOutlined />, path: '/marketing' },
-        { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
+        { label: 'Profile Settings', icon: <SettingsOutlined />, path: '/settings' },
       ]
     : isManager
     ? [
         { label: 'Marketing', icon: <RocketLaunchOutlined />, path: '/marketing' },
         { label: 'Campaign Dashboard', icon: <CampaignOutlined />, path: '/campaign' },
         { label: 'Analytics', icon: <BarChartOutlined />, path: '/stats' },
-        { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
+        { label: 'Profile Settings', icon: <SettingsOutlined />, path: '/settings' },
       ]
     : [
         { label: 'Nearby Businesses', icon: <StorefrontOutlined />, path: '/nearby' },
@@ -128,7 +128,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'My Entries', icon: <ConfirmationNumberOutlined />, path: '/tickets' },
         { label: 'Campaigns Hub', icon: <EmojiEventsOutlined />, path: '/draws/history' },
         { label: 'Invite Friends', icon: <CardGiftcardOutlined />, path: '/invite' },
-        { label: 'Settings', icon: <SettingsOutlined />, path: '/settings' },
+        { label: 'Profile Settings', icon: <SettingsOutlined />, path: '/settings' },
       ];
 
   const legalItems: NavItem[] = [

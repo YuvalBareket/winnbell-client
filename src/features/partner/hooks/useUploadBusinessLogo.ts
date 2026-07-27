@@ -62,11 +62,14 @@ export const useUploadBusinessLogo = () => {
 
       const { uploadUrl, key } = await getUploadUrl('image/webp', webpFile.size);
 
-      await fetch(uploadUrl, {
+      // fetch only rejects on network/CSP failure; a non-2xx from R2 (e.g. expired
+      // presigned URL) resolves normally, so check res.ok or a broken key gets saved.
+      const res = await fetch(uploadUrl, {
         method: 'PUT',
         body: webpFile,
         headers: { 'Content-Type': 'image/webp' },
       });
+      if (!res.ok) throw new Error(`Upload failed (${res.status})`);
 
       await updateBusinessLogo(key);
       dispatch(updateBusinessUser({ businessLogoUrl: key }));
