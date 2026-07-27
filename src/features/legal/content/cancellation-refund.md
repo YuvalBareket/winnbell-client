@@ -6,7 +6,7 @@
 
 This Cancellation & Refund Policy (the "Policy") explains how cancellation of Campaign participation and Subscriptions is handled, including any applicable refunds or financial adjustments.
 
-This Policy forms part of the Winnbell Participating Business Agreement (the "Agreement") and applies to all Participating Businesses. Capitalized terms in this agreement shall have the meaning ascribed to them in the Agreement.
+This Policy forms part of the Winnbell [Participating Business Agreement](/business-agreement) (the "Agreement") and applies to all Participating Businesses. Capitalized terms in this agreement shall have the meaning ascribed to them in the Agreement.
 
 **2. Cancellation Before First Payment**
 

@@ -4,6 +4,7 @@ import {
   Button,
   CircularProgress,
   Container,
+  Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -179,6 +180,17 @@ const RedeemPage = () => {
           onLocationSelect={setReceiptStep2}
           guardEntryAction={(proceed) => requirePhone('receipt', proceed)}
         />
+
+        {/* Sweepstakes disclosure at the point of entry, linking the governing Official Rules. */}
+        <Typography
+          variant='caption'
+          sx={{ display: 'block', textAlign: 'center', color: 'text.secondary', lineHeight: 1.5, mt: 3 }}
+        >
+          No purchase necessary. A purchase will not increase chances of winning. Alternative method of entry available on the platform. 18+. Void where prohibited. See the{' '}
+          <Box component='a' href='/rules' target='_blank' rel='noopener' sx={{ color: PRIMARY_MAIN, fontWeight: 700 }}>
+            Official Rules
+          </Box>.
+        </Typography>
       </Container>
 
       <RedeemFeedback
