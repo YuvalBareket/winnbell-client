@@ -387,14 +387,14 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
               borderColor: 'divider',
             }}
           >
-            <LineWeightRounded sx={{ fontSize: 18, color: 'text.secondary', ml: 0.25, mr: 0.25 }} />
+            <LineWeightRounded sx={{ fontSize: { xs: 15, sm: 18 }, color: 'text.secondary', ml: 0.25, mr: 0.25 }} />
             {Array.from({ length: brushLevelCount }, (_, i) => (
               <IconButton
                 key={i}
                 size='small'
                 onClick={() => setBrushLevel(i)}
                 aria-label={`Brush thickness ${i + 1}`}
-                sx={{ width: 30, height: 30, bgcolor: brushLevel === i ? 'action.selected' : 'transparent' }}
+                sx={{ width: { xs: 24, sm: 30 }, height: { xs: 24, sm: 30 }, bgcolor: brushLevel === i ? 'action.selected' : 'transparent' }}
               >
                 <Box
                   sx={{
