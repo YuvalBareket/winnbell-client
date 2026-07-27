@@ -688,6 +688,7 @@ export default function SettingsPage() {
   const [demoLoading, setDemoLoading] = useState(false);
   const [demoDone, setDemoDone] = useState(false);
   const [demoError, setDemoError] = useState('');
+  const [demoSeeded, setDemoSeeded] = useState(0);
 
   // Handlers
   const handleProfileSave = async (data: { fullName: string; dateOfBirth: string | null; gender: string | null; state: string | null }) => {
@@ -740,7 +741,8 @@ export default function SettingsPage() {
     setDemoLoading(true);
     setDemoError('');
     try {
-      await api.post('/tickets/reset-demo');
+      const { data } = await api.post('/tickets/reset-demo');
+      setDemoSeeded(Number(data?.entriesSeeded) || 0);
       // Refresh every cached view (entries, weekly status, risk level) so the UI reflects the wipe.
       await queryClient.invalidateQueries();
       setDemoDialogOpen(false);
@@ -883,9 +885,10 @@ export default function SettingsPage() {
           </DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ color: TEXT_SECONDARY, mt: 1 }}>
-              This clears this account's entries, its weekly free-entry usage and its risk score, so
-              you can run the demo from a clean slate. Your login, email, phone and profile stay. This
-              only works on the staging demo account.
+              This clears this account's entries, its weekly free-entry usage and its risk score, then
+              adds a few fresh sample entries from participating places so you can run the demo from a
+              clean slate. Your login, email, phone and profile stay. This only works on the staging
+              demo account.
             </DialogContentText>
             {demoError && (
               <Alert
@@ -930,7 +933,9 @@ export default function SettingsPage() {
         open={demoDone}
         autoHideDuration={4000}
         onClose={() => setDemoDone(false)}
-        message='Demo data reset. This account is clean.'
+        message={demoSeeded > 0
+          ? `Demo data reset. ${demoSeeded} fresh ${demoSeeded === 1 ? 'entry' : 'entries'} added.`
+          : 'Demo data reset. This account is clean.'}
         sx={{ '& .MuiSnackbarContent-root': { bgcolor: SUCCESS_GREEN, fontWeight: 600 } }}
       />
     </>
