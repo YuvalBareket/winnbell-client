@@ -948,8 +948,9 @@ export default function SubscriptionManagementPage() {
 
                       const changeReason = invoice.invoice_description
                         ?? (isChangeEntry ? 'Plan or location updated' : null);
-                      // Stripe's hosted receipt page (view + PDF download). Synthetic entries
-                      // (founding payments, change log, refunds) have no Stripe invoice, so null.
+                      // The Stripe link for this row: for recurring invoices it's the clean hosted
+                      // invoice page (invoice.stripe.com/i/...); for founding/one-time rows it's the
+                      // charge receipt page. Synthetic entries (change log, refunds) have none = null.
                       const receiptUrl = safeHttpUrl(invoice.hosted_invoice_url);
 
                       return (
