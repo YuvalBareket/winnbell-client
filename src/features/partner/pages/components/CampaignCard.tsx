@@ -162,8 +162,8 @@ const CampaignCard = ({
             {business.current_period_end && (
               <Typography variant='caption' color='text.secondary'>
                 {business.cancel_at_period_end
-                  ? `Cancels on ${new Date(business.current_period_end).toLocaleDateString()}`
-                  : `Renews ${new Date(business.current_period_end).toLocaleDateString()}`}
+                  ? `Cancels on ${new Date(business.current_period_end).toLocaleDateString('en-US')}`
+                  : `Renews ${new Date(business.current_period_end).toLocaleDateString('en-US')}`}
               </Typography>
             )}
           </Box>

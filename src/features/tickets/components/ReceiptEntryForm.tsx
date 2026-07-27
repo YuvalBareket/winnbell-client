@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import AttractButton from '../../../shared/components/AttractButton';
+import AppDatePicker from '../../../shared/components/AppDatePicker';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { AccessTime, Close, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded, ConfirmationNumberOutlined, CelebrationRounded, PhotoCameraOutlined } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
@@ -75,6 +76,18 @@ const receiptFieldSx = (accentColor: string) => ({
   },
   // 16px keeps mobile Safari from auto-zooming the viewport on focus.
   '& .MuiOutlinedInput-input': { fontSize: '16px' },
+  '& .MuiInputLabel-root.Mui-focused': { color: accentColor },
+});
+
+// Same look as receiptFieldSx, but targeting the x-date-pickers field classes
+// (PickersOutlinedInput) so the date picker matches the other receipt fields.
+const receiptDatePickerSx = (accentColor: string) => ({
+  '& .MuiPickersOutlinedInput-root': {
+    borderRadius: 2.5,
+    // 16px keeps mobile Safari from auto-zooming the viewport on focus.
+    fontSize: '16px',
+    '&.Mui-focused .MuiPickersOutlinedInput-notchedOutline': { borderColor: accentColor },
+  },
   '& .MuiInputLabel-root.Mui-focused': { color: accentColor },
 });
 
@@ -987,17 +1000,15 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           </AnimatePresence>
 
           {/* Purchase Date */}
-          <TextField
-            fullWidth
+          <AppDatePicker
             label="Date of purchase"
-            type="date"
             value={purchaseDate}
-            onChange={(e) => setPurchaseDate(e.target.value)}
-            inputProps={{ max: today, min: sevenDaysAgo }}
-            InputLabelProps={{ shrink: true }}
+            onChange={setPurchaseDate}
+            minDate={sevenDaysAgo}
+            maxDate={today}
             error={purchaseDateTooOld}
             helperText={purchaseDateTooOld ? 'Receipt is older than 7 days and cannot be accepted.' : ''}
-            sx={receiptFieldSx(primaryColor || PRIMARY_MAIN)}
+            sx={receiptDatePickerSx(primaryColor || PRIMARY_MAIN)}
           />
 
           {/* Receipt image upload */}

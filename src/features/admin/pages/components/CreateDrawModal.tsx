@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useCreateDraw } from '../../hooks/useAdmin';
+import AppDatePicker from '../../../../shared/components/AppDatePicker';
 import { lastOfMonth } from '../../utils/drawDates';
 import {
   PRIMARY_MAIN, PRIMARY_TINT, GRADIENT_CTA, SHADOW_PRIMARY_SOFT, TEXT_HEADING, TEXT_SECONDARY,
@@ -88,24 +89,20 @@ const CreateDrawModal: React.FC<{ open: boolean; onClose: () => void }> = ({
             helperText='The total prize amount for this campaign (e.g. 1000)'
             slotProps={{ htmlInput: { min: 1, step: 1 }, input: { sx: { borderRadius: '12px' } } }}
           />
-          <TextField
+          <AppDatePicker
             label='Start Date (optional)'
-            type='date'
-            fullWidth
-            slotProps={{ inputLabel: { shrink: true }, input: { sx: { borderRadius: '12px' } } }}
             value={formData.start_date}
-            onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+            onChange={(v) => setFormData({ ...formData, start_date: v })}
             error={startAfterDraw}
             helperText={startAfterDraw ? 'Must be before the draw date' : 'Leave empty to start on the 1st of the campaign month'}
+            sx={{ '& .MuiPickersOutlinedInput-root': { borderRadius: '12px' } }}
           />
-          <TextField
+          <AppDatePicker
             label='Draw Date'
-            type='date'
-            fullWidth
-            slotProps={{ inputLabel: { shrink: true }, input: { sx: { borderRadius: '12px' } } }}
             value={formData.draw_date}
-            onChange={(e) => setFormData({ ...formData, draw_date: e.target.value })}
+            onChange={(v) => setFormData({ ...formData, draw_date: v })}
             helperText='Moved to the last day of its month automatically'
+            sx={{ '& .MuiPickersOutlinedInput-root': { borderRadius: '12px' } }}
           />
         </Stack>
       </DialogContent>

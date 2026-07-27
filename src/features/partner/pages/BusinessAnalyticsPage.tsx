@@ -442,7 +442,7 @@ const BusinessAnalyticsPage = () => {
     for (let i = 0; i < 18; i++) {
       const dt = new Date(d.getFullYear(), d.getMonth() - i, 1);
       const value = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
-      arr.push({ value, label: dt.toLocaleString('default', { month: 'long', year: 'numeric' }) });
+      arr.push({ value, label: dt.toLocaleString('en-US', { month: 'long', year: 'numeric' }) });
     }
     return arr;
   }, []);

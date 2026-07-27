@@ -239,10 +239,10 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
               <AdminCard sx={{ p: 0, overflow: 'hidden' }}>
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderRadius: '15px' }}>
                   {[
-                    { label: 'Member Since', value: new Date(user.created_at).toLocaleDateString() },
+                    { label: 'Member Since', value: new Date(user.created_at).toLocaleDateString('en-US') },
                     { label: 'Total Entries', value: entries.length },
                     { label: 'Business', value: user.business_name ?? '—' },
-                    { label: 'Last Flagged', value: user.risk_last_flagged_at ? new Date(user.risk_last_flagged_at).toLocaleDateString() : 'Never' },
+                    { label: 'Last Flagged', value: user.risk_last_flagged_at ? new Date(user.risk_last_flagged_at).toLocaleDateString('en-US') : 'Never' },
                   ].map(({ label, value }, idx) => (
                     <Box
                       key={label}
@@ -350,7 +350,7 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                             </TableCell>
                             <TableCell>
                               <Typography variant='caption' sx={{ color: TEXT_HEADING }}>
-                                {e.activated_at ? new Date(e.activated_at).toLocaleDateString() : '—'}
+                                {e.activated_at ? new Date(e.activated_at).toLocaleDateString('en-US') : '—'}
                               </Typography>
                             </TableCell>
                             <TableCell>

@@ -68,7 +68,7 @@ function formatLastActive(value: string | null): string {
   const diffMs = Date.now() - date.getTime();
   const diffHours = diffMs / (1000 * 60 * 60);
   if (diffHours < 24) return 'Today';
-  return date.toLocaleDateString();
+  return date.toLocaleDateString('en-US');
 }
 
 interface Props {

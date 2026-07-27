@@ -953,7 +953,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                               <InfoRow label='Amount' value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.transactionAmount)} />
                             )}
                             {candidate.transactionDate && (
-                              <InfoRow label='Date' value={new Date(candidate.transactionDate).toLocaleDateString()} />
+                              <InfoRow label='Date' value={new Date(candidate.transactionDate).toLocaleDateString('en-US')} />
                             )}
                             {candidate.receiptImageUrl && (
                               <Box sx={{ pt: 0.5 }}>
@@ -1009,7 +1009,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                       </Typography>
                       {candidate.confirmedAt && (
                         <Typography variant='caption' sx={{ color: TEXT_SECONDARY, display: 'block', mt: 0.5 }}>
-                          {new Date(candidate.confirmedAt).toLocaleString()}
+                          {new Date(candidate.confirmedAt).toLocaleString('en-US')}
                           {candidate.confirmedByName ? ` by ${candidate.confirmedByName}` : ''}
                         </Typography>
                       )}
@@ -1121,7 +1121,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                               <Typography variant='caption' sx={{ color: TEXT_SECONDARY }}>
                                 Receipt: {rw.receiptIdentifier}
                                 {rw.transactionAmount != null ? ` - ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(rw.transactionAmount)}` : ''}
-                                {rw.transactionDate ? ` - ${new Date(rw.transactionDate).toLocaleDateString()}` : ''}
+                                {rw.transactionDate ? ` - ${new Date(rw.transactionDate).toLocaleDateString('en-US')}` : ''}
                               </Typography>
                             )}
                             {rw.reason && (
@@ -1130,7 +1130,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                               </Typography>
                             )}
                             <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
-                              Rejected {new Date(rw.rejectedAt).toLocaleString()}{rw.rejectedByName ? ` by ${rw.rejectedByName}` : ''}
+                              Rejected {new Date(rw.rejectedAt).toLocaleString('en-US')}{rw.rejectedByName ? ` by ${rw.rejectedByName}` : ''}
                             </Typography>
                           </Stack>
                         </Box>
