@@ -211,8 +211,10 @@ const SocialPostsTab = ({
   const [copiedLink, setCopiedLink] = useState(false);
   const [selectedRatio, setSelectedRatio] = useState<RatioId>('story');
   const [selectedStyle, setSelectedStyle] = useState<string>('navy');
-  const [headline, setHeadline] = useState('WE ARE NOW ON WINNBELL!');
-  const [subtext, setSubtext] = useState("Every qualifying purchase can enter you into this month's cash prize campaign");
+  // Fixed marketing copy baked into the generated image. No longer user-editable: businesses
+  // share the campaign link (shown in the controls) instead of rewriting the post text.
+  const headline = 'WE ARE NOW ON WINNBELL!';
+  const subtext = "Every qualifying purchase can enter you into this month's cash prize campaign";
   const imageRef = useRef<HTMLDivElement>(null);
 
   const currentRatio = RATIOS.find((r) => r.id === selectedRatio) || RATIOS[0];
@@ -464,8 +466,8 @@ const SocialPostsTab = ({
           }}
         >
           {[
-            'Pick a size and a color, then write your message or keep ours.',
-            'Share or download the image and copy your link with the buttons below.',
+            'Pick a size and a color for your post.',
+            'Download the image and copy your campaign link with the buttons below.',
             'Post it. Add a link sticker on stories, or put the link in your caption or bio.',
           ].map((text, idx) => (
             <Stack key={idx} direction='row' spacing={1.25} alignItems='flex-start'>
@@ -597,78 +599,51 @@ const SocialPostsTab = ({
               </Box>
             </Box>
 
-            {/* Headline Input */}
+            {/* Your campaign link — the business must add this to the post so customers can enter */}
             <Box>
               <Typography sx={{ fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: TEXT_SECONDARY, mb: 1 }}>
-                Headline
+                Your link
               </Typography>
-              <Box
-                component='textarea'
-                value={headline}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val.length <= 90) setHeadline(val);
-                }}
-                placeholder='Enter headline'
-                rows={3}
-                sx={{
-                  width: '100%',
-                  background: '#f7f9fc',
-                  border: '1px solid',
-                  borderColor: BORDER_SUBTLE,
-                  borderRadius: '12px',
-                  p: '12px',
-                  fontFamily: 'inherit',
-                  fontSize: '14px',
-                  fontWeight: 800,
-                  color: TEXT_HEADING,
-                  resize: 'none',
-                  '&:focus': {
-                    outline: 'none',
-                    borderColor: PRIMARY_MAIN,
-                  },
-                }}
-              />
-              <Typography sx={{ fontSize: '11px', color: TEXT_SECONDARY, mt: 0.5 }}>
-                {headline.length} / 90
+              <Typography sx={{ fontSize: '12px', color: TEXT_SECONDARY, mb: 1.25, lineHeight: 1.5 }}>
+                Add this link to your post so customers can join the campaign - put it in your caption or bio, or as a story link sticker.
               </Typography>
-            </Box>
-
-            {/* Subtext */}
-            <Box>
-              <Typography sx={{ fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: TEXT_SECONDARY, mb: 1 }}>
-                Subtext
-              </Typography>
-              <Box
-                component='input'
-                type='text'
-                value={subtext}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val.length <= 100) setSubtext(val);
-                }}
-                placeholder='Optional'
-                sx={{
-                  width: '100%',
-                  background: '#f7f9fc',
-                  border: '1px solid',
-                  borderColor: BORDER_SUBTLE,
-                  borderRadius: '12px',
-                  p: '10px 12px',
-                  fontFamily: 'inherit',
-                  fontSize: '13px',
-                  fontWeight: 800,
-                  color: TEXT_HEADING,
-                  boxSizing: 'border-box',
-                  '&:focus': {
-                    outline: 'none',
-                    borderColor: PRIMARY_MAIN,
-                  },
-                }}
-              />
-              <Typography sx={{ fontSize: '11px', color: TEXT_SECONDARY, mt: 0.5 }}>
-                {subtext.length} / 100
-              </Typography>
+              <Stack direction='row' spacing={1} alignItems='stretch'>
+                <Box
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: '#f7f9fc',
+                    border: '1px solid',
+                    borderColor: BORDER_SUBTLE,
+                    borderRadius: '12px',
+                    px: 1.5,
+                  }}
+                >
+                  <Typography noWrap sx={{ fontSize: '13px', fontWeight: 700, color: TEXT_HEADING }}>
+                    {scanUrl}
+                  </Typography>
+                </Box>
+                <Button
+                  variant='contained'
+                  onClick={handleCopyLink}
+                  startIcon={<ContentCopy sx={{ fontSize: 16 }} />}
+                  sx={{
+                    flexShrink: 0,
+                    textTransform: 'none',
+                    fontWeight: 800,
+                    fontSize: '13px',
+                    borderRadius: '12px',
+                    px: 2,
+                    py: 1.2,
+                    background: copiedLink ? undefined : GRADIENT_PRIMARY,
+                    bgcolor: copiedLink ? 'success.main' : undefined,
+                  }}
+                >
+                  {copiedLink ? 'Copied!' : 'Copy'}
+                </Button>
+              </Stack>
             </Box>
 
             {/* Color Swatches */}
@@ -706,49 +681,25 @@ const SocialPostsTab = ({
 
             {/* Buttons */}
             <Stack spacing={1.5} sx={{ mt: 'auto' }}>
-              {/* Column on mobile (two side-by-side labels overflow narrow screens), row on sm+ */}
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-                <Button
-                  variant='contained'
-                  startIcon={savingImage ? <CircularProgress size={16} color='inherit' /> : (isTouchDevice ? <IosShare sx={{ fontSize: 16 }} /> : <FileDownload sx={{ fontSize: 16 }} />)}
-                  onClick={handleSaveImage}
-                  disabled={savingImage}
-                  sx={{
-                    flex: 1,
-                    minWidth: 0,
-                    background: GRADIENT_PRIMARY,
-                    textTransform: 'none',
-                    fontWeight: 800,
-                    fontSize: '13px',
-                    borderRadius: '12px',
-                    py: 1.2,
-                  }}
-                >
-                  {savingImage ? 'Preparing...' : (isTouchDevice ? 'Post image' : 'Download image')}
-                </Button>
-
-                <Button
-                  variant='outlined'
-                  startIcon={<ContentCopy sx={{ fontSize: 16 }} />}
-                  onClick={handleCopyLink}
-                  sx={{
-                    flex: 1,
-                    minWidth: 0,
-                    textTransform: 'none',
-                    fontWeight: 800,
-                    fontSize: '13px',
-                    borderRadius: '12px',
-                    py: 1.2,
-                    borderColor: copiedLink ? 'success.main' : BORDER_SUBTLE,
-                    color: copiedLink ? 'success.main' : TEXT_HEADING,
-                  }}
-                >
-                  {copiedLink ? 'Copied!' : 'Copy your link'}
-                </Button>
-              </Stack>
+              <Button
+                variant='contained'
+                startIcon={savingImage ? <CircularProgress size={16} color='inherit' /> : (isTouchDevice ? <IosShare sx={{ fontSize: 16 }} /> : <FileDownload sx={{ fontSize: 16 }} />)}
+                onClick={handleSaveImage}
+                disabled={savingImage}
+                sx={{
+                  background: GRADIENT_PRIMARY,
+                  textTransform: 'none',
+                  fontWeight: 800,
+                  fontSize: '13px',
+                  borderRadius: '12px',
+                  py: 1.2,
+                }}
+              >
+                {savingImage ? 'Preparing...' : (isTouchDevice ? 'Post image' : 'Download image')}
+              </Button>
 
               <Typography sx={{ fontSize: '12px', color: TEXT_SECONDARY, fontWeight: 500, textAlign: 'center' }}>
-                Post it to your story with a link sticker, or drop your link in the caption or bio.
+                Download the image and post it, then add your link (above) in the caption, bio, or a story link sticker.
               </Typography>
             </Stack>
           </Stack>
