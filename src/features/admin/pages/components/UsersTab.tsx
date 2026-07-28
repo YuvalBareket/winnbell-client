@@ -296,7 +296,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
 
                             <Stack direction='row' spacing={2}>
                               <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
-                                Entries: <strong style={{ color: TEXT_HEADING }}>{user.entry_count > 0 ? user.entry_count : '—'}</strong>
+                                Entries: <strong style={{ color: TEXT_HEADING }}>{user.entry_count > 0 ? user.entry_count : '-'}</strong>
                               </Typography>
                               <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
                                 Last: <strong style={{ color: TEXT_HEADING }}>{formatLastActive(user.last_active_at)}</strong>
@@ -436,7 +436,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                                 </Stack>
                               </TableCell>
                               <TableCell align='right'>
-                                <Typography variant='body2'>{user.entry_count > 0 ? user.entry_count : '—'}</Typography>
+                                <Typography variant='body2'>{user.entry_count > 0 ? user.entry_count : '-'}</Typography>
                               </TableCell>
                               <TableCell>
                                 <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>{formatLastActive(user.last_active_at)}</Typography>
