@@ -12,6 +12,7 @@ import {
 import { useNavigate, useParams, useSearchParams, useLocation, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AuthBrandPanel from '../components/AuthBrandPanel';
+import LoadingScreen from '../../../shared/components/LoadingScreen';
 import { api } from '../../../shared/api/client';
 import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
 import { useAppSelector } from '../../../store/hook';
@@ -407,6 +408,14 @@ const RegisterPage = () => {
   if (syncLoaded && isAuth && !addMode) {
     const dest = isAdminUser ? '/admin' : (isBusinessUser || isManagerUser) ? '/campaign' : '/scan';
     return <Navigate to={dest} replace />;
+  }
+
+  // Returned from the Google OAuth round-trip and the sign-up sync is still finishing: show the
+  // app loading screen instead of this form, so the user sees a seamless loader straight into the
+  // app rather than a split-second flash of the register page. Only for a FRESH sign-up -
+  // add-account must stay on the form to create the second account, so its UI is untouched.
+  if (!addMode && googlePending && cameFromSso) {
+    return <LoadingScreen />;
   }
 
   // ─── Desktop layout ──────────────────────────────────────────────────────────

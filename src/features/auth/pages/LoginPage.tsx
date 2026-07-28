@@ -10,6 +10,7 @@ import {
   Google,
 } from '@mui/icons-material';
 import AuthBrandPanel from '../components/AuthBrandPanel';
+import LoadingScreen from '../../../shared/components/LoadingScreen';
 import { useNavigate, useSearchParams, useParams, useLocation, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../../../shared/lib/supabase';
@@ -335,6 +336,14 @@ const LoginPage = () => {
   if (isLoaded && isAuthenticated && !addMode) {
     const dest = isAdmin ? '/admin' : (isBusinessAdmin || isManager) ? '/campaign' : '/scan';
     return <Navigate to={dest} replace />;
+  }
+
+  // Returned from the Google OAuth round-trip and the sign-in sync is still finishing: show the
+  // app loading screen instead of this form, so the user sees a seamless loader straight into the
+  // app rather than a split-second flash of the login page. Only for a FRESH sign-in - add-account
+  // must stay on the form to sign in the second account, so its UI is untouched.
+  if (!addMode && googlePending && cameFromSso) {
+    return <LoadingScreen />;
   }
 
   // ─── Desktop layout ──────────────────────────────────────────────────────────
