@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import {
   Box, Typography, Stack, Alert, TextField, CircularProgress,
@@ -210,9 +211,9 @@ const PhoneVerifyForm = ({ onVerified }: Props) => {
             <Typography variant='caption' sx={{ color: TEXT_SECONDARY, lineHeight: 1.5, mt: 0, pb: 1.5 }}>
               By entering your phone number and tapping Send Code, you agree to receive a one-time verification code via SMS from Winnbell at that number, for account verification only. Message frequency: 1 message per request. Message and data rates may apply. Reply STOP to opt out, HELP for help.
               {' '}
-              <a href='/privacy' target='_blank' rel='noopener noreferrer' style={{ color: PRIMARY_MAIN }}>Privacy Policy</a>
+              <Link to='/privacy' style={{ color: PRIMARY_MAIN }}>Privacy Policy</Link>
               {' | '}
-              <a href='/terms' target='_blank' rel='noopener noreferrer' style={{ color: PRIMARY_MAIN }}>Terms of Service</a>
+              <Link to='/terms' style={{ color: PRIMARY_MAIN }}>Terms of Service</Link>
             </Typography>
 
             <AttractButton

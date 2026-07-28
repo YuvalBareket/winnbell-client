@@ -442,7 +442,7 @@ const BusinessAnalyticsPage = () => {
     for (let i = 0; i < 18; i++) {
       const dt = new Date(d.getFullYear(), d.getMonth() - i, 1);
       const value = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
-      arr.push({ value, label: dt.toLocaleString('default', { month: 'long', year: 'numeric' }) });
+      arr.push({ value, label: dt.toLocaleString('en-US', { month: 'long', year: 'numeric' }) });
     }
     return arr;
   }, []);
@@ -917,23 +917,34 @@ const BusinessAnalyticsPage = () => {
 
         <motion.div variants={itemVariants}>
           <ChartCard
-            title="New Customers and Profile Views"
-            subtitle="How customers are finding your business on Winnbell"
+            title="New Customers Over Time"
+            subtitle="New customers you gained on Winnbell over time."
             chip={<Chip label={rangeChipLabel} size="small" sx={{ fontWeight: 700 }} />}
           >
             {acqData.length === 0 ? (
               <EmptyChart message="Discovery data will appear here as it accrues" />
             ) : (
               <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-                <BarChart data={acqData} margin={{ left: -14, right: 8 }}>
+                <AreaChart data={acqData} margin={{ left: -14, right: 8 }}>
+                  <defs>
+                    <linearGradient id="acqGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={ACCENT_GOLD_DARK} stopOpacity={0.35} />
+                      <stop offset="95%" stopColor={ACCENT_GOLD_DARK} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                   <XAxis dataKey="label" tick={AXIS_TICK} axisLine={false} tickLine={false} minTickGap={16} />
                   <YAxis tick={AXIS_TICK} allowDecimals={false} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }} content={<ChartTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="profile_views" name="Profile Views" fill={PRIMARY_LIGHT} radius={[5, 5, 0, 0]} maxBarSize={36} />
-                  <Bar dataKey="new_users" name="New Users" fill={ACCENT_GOLD_DARK} radius={[5, 5, 0, 0]} maxBarSize={36} />
-                </BarChart>
+                  <Tooltip cursor={{ stroke: ACCENT_GOLD_DARK, strokeWidth: 1 }} content={<ChartTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="new_users"
+                    name="New Customers"
+                    stroke={ACCENT_GOLD_DARK}
+                    strokeWidth={2.5}
+                    fill="url(#acqGrad)"
+                  />
+                </AreaChart>
               </ResponsiveContainer>
             )}
           </ChartCard>

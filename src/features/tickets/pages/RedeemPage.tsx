@@ -8,7 +8,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 import { selectIsAuthenticated } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
@@ -187,7 +187,7 @@ const RedeemPage = () => {
           sx={{ display: 'block', textAlign: 'center', color: 'text.secondary', lineHeight: 1.5, mt: 3 }}
         >
           No purchase necessary. A purchase will not increase chances of winning. Alternative method of entry available on the platform. 18+. Void where prohibited. See the{' '}
-          <Box component='a' href='/rules' target='_blank' rel='noopener' sx={{ color: PRIMARY_MAIN, fontWeight: 700 }}>
+          <Box component={Link} to='/rules' sx={{ color: PRIMARY_MAIN, fontWeight: 700 }}>
             Official Rules
           </Box>.
         </Typography>

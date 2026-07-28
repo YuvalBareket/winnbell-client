@@ -42,13 +42,31 @@ self.addEventListener('push', (event: PushEvent) => {
 
 self.addEventListener('notificationclick', (event: NotificationEvent) => {
   event.notification.close();
-  const url = (event.notification.data as { url: string }).url;
+  const rawUrl = (event.notification.data as { url?: string }).url ?? '/';
+  // Resolve to an absolute same-origin URL so we can compare it against an open window.
+  let target = rawUrl;
+  try { target = new URL(rawUrl, self.location.origin).href; } catch { /* keep raw */ }
+
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clientList) => {
       for (const client of clientList) {
-        if ('focus' in client) return (client as WindowClient).focus();
+        if ('focus' in client) {
+          const wc = client as WindowClient;
+          // App already open: take it to the notification's target BEFORE focusing, otherwise a
+          // deep-linked notification (winner announcement, admin broadcast URL) just refocuses the
+          // current page and drops the link. navigate() only works for a same-origin, SW-controlled
+          // client; if it isn't there / throws / is unsupported we simply focus - never worse than
+          // the previous focus-only behaviour.
+          if ('navigate' in wc && wc.url !== target) {
+            try {
+              const navigated = await wc.navigate(target);
+              return (navigated ?? wc).focus();
+            } catch { /* cross-origin or unsupported — fall through to focus */ }
+          }
+          return wc.focus();
+        }
       }
-      return self.clients.openWindow(url);
+      return self.clients.openWindow(target);
     }),
   );
 });

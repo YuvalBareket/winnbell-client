@@ -173,7 +173,7 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                   <Typography variant='body2' sx={{ opacity: 0.9 }}>
-                    Draw Date: {new Date(currentOpenDraw.draw_date).toLocaleDateString()}
+                    Draw Date: {new Date(currentOpenDraw.draw_date).toLocaleDateString('en-US')}
                   </Typography>
                   {daysUntilDraw !== null && (
                     <Chip

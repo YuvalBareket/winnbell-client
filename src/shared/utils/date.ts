@@ -85,20 +85,24 @@ export const formatTicketDate = (dateString: string) => {
 export const formatMonth = (m: string): string => {
   const [y, mo] = m.split('-');
   const d = new Date(Number(y), Number(mo) - 1);
-  return d.toLocaleString('default', { month: 'short', year: '2-digit' });
+  return d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
 };
 
-/** Format date string → "5 Mar 2024" */
+/** Format date string → "Mar 5, 2024" (USA month/day order) */
 export const formatDateShort = (d: string): string =>
-  new Date(d).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' });
+  new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
 export const formatRelativeTime = (dateStr: string): string => {
-  const diff = Date.now() - new Date(dateStr).getTime();
+  const date = new Date(dateStr);
+  const diff = Date.now() - date.getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return 'just now';
   if (mins < 60) return `${mins} min ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs} hr ago`;
   const days = Math.floor(hrs / 24);
-  return `${days} day${days !== 1 ? 's' : ''} ago`;
+  if (days <= 30) return `${days} day${days !== 1 ? 's' : ''} ago`;
+  // Past a month a "148 days ago" count is hard to read, so show the actual
+  // date instead (USA month/day order).
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };

@@ -14,6 +14,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import { useForm, Controller } from 'react-hook-form';
 import { useUpdateDraw } from '../../hooks/useAdmin';
+import AppDatePicker from '../../../../shared/components/AppDatePicker';
 import { apiErrorMessage } from '../../../../shared/utils/apiError';
 import { firstOfMonth, lastOfMonth } from '../../utils/drawDates';
 import type { Draw } from '../../types/admin.types';
@@ -128,15 +129,14 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
             // against that boundary, not the raw day typed in the draw field.
             rules={{ validate: (v) => !v || v < lastOfMonth(getValues('draw_date')) || 'Must be before the draw date' }}
             render={({ field, fieldState }) => (
-              <TextField
-                {...field}
+              <AppDatePicker
                 label='Start Date'
-                type='date'
-                fullWidth
                 size='small'
-                slotProps={{ inputLabel: { shrink: true }, input: { sx: { borderRadius: '12px' } } }}
+                value={field.value}
+                onChange={field.onChange}
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
+                sx={{ '& .MuiPickersOutlinedInput-root': { borderRadius: '12px' } }}
               />
             )}
           />
@@ -145,24 +145,23 @@ const EditDrawModal: React.FC<Props> = ({ open, draw, onClose, onSuccess, onErro
             control={control}
             rules={{ required: 'Draw date is required', validate: (v) => v >= today || 'Date must be today or later' }}
             render={({ field, fieldState }) => (
-              <TextField
-                {...field}
+              <AppDatePicker
                 label='Draw Date'
-                type='date'
-                fullWidth
                 size='small'
-                onChange={(e) => {
+                minDate={today}
+                sx={{ '& .MuiPickersOutlinedInput-root': { borderRadius: '12px' } }}
+                value={field.value}
+                onChange={(v) => {
                   const prev = field.value;
-                  field.onChange(e);
+                  field.onChange(v);
                   // A start that was just the default (1st of the old draw month) keeps
                   // tracking the default when the month moves; a custom start stays put.
                   if (getValues('start_date') === firstOfMonth(prev)) {
-                    setValue('start_date', firstOfMonth(e.target.value), { shouldDirty: true });
+                    setValue('start_date', firstOfMonth(v), { shouldDirty: true });
                   }
                   // Re-check the start against the new draw month either way.
                   void trigger('start_date');
                 }}
-                slotProps={{ htmlInput: { min: today }, inputLabel: { shrink: true }, input: { sx: { borderRadius: '12px' } } }}
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
               />

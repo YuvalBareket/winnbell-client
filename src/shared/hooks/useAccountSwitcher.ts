@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { broadcastLogout } from '../lib/crossTabLogout';
 import { logoutFn } from '../../features/auth/api/auth.api';
 import { clearOtpSession } from '../../features/tickets/lib/phoneOtpSession';
+import { api } from '../api/client';
 import type { User } from '../../features/auth/types/auth.types';
 
 // Role-aware home for an account (mirrors the redirect logic in AppRoutes/useSupabaseSync).
@@ -18,6 +19,23 @@ export const homePathForUser = (user: User | null | undefined): string => {
     return '/campaign'; // owners and managers (location_id set) both live on the campaign dashboard
   }
   return '/scan'; // regular user
+};
+
+// After an identity change, re-bind THIS device's existing push subscription to the now-active
+// account so the previous account stops receiving this device's pushes and the new account starts
+// (P2-13: without this the endpoint stayed mapped to whoever first subscribed, so a switched-to
+// account got no pushes and the switched-away account's pushes landed on a device now used by
+// someone else). Best-effort and fire-and-forget: it must never block or fail the switch. The
+// server upserts endpoint -> user_id and the axios interceptor carries the newly-active account's
+// token, so this rebinds to the account we just switched to. Does nothing (no prompt, no new
+// subscription) when the device has no existing subscription.
+const rebindPushSubscription = async () => {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) await api.post('/notifications/subscribe', sub.toJSON());
+  } catch { /* non-critical - a failed rebind just leaves the endpoint on the previous account */ }
 };
 
 // Clear all cached React Query data so one account never sees another's data.
@@ -54,6 +72,7 @@ export const useAccountSwitcher = () => {
     // page. Flushing first lets our navigate be the final, deterministic destination.
     flushSync(() => { dispatch(switchAccount({ id })); });
     navigate(homePathForUser(target.user), { replace: true });
+    void rebindPushSubscription(); // re-bind this device's push endpoint to the now-active account
   };
 
   // Remove a saved account. If it is the active one, fall back to the remaining account
@@ -88,6 +107,7 @@ export const useAccountSwitcher = () => {
     if (removedRefresh) logoutFn(removedRefresh); // revoke the removed account's session
     if (id === activeAccountId) {
       navigate(homePathForUser(remaining[0].user), { replace: true });
+      void rebindPushSubscription(); // active account removed -> rebind this device to the remaining one
     }
     return { loggedOut: false };
   };

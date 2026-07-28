@@ -257,7 +257,7 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                   { label: 'Entry Cap', value: biz.entries_per_location ?? '—' },
                   { label: 'Min. Transaction', value: biz.min_transaction_amount ? `$${Number(biz.min_transaction_amount).toFixed(2)}` : '—' },
                   { label: 'Legal Name', value: biz.legal_name ?? '—' },
-                  { label: 'Member Since', value: new Date(biz.created_at).toLocaleDateString() },
+                  { label: 'Member Since', value: new Date(biz.created_at).toLocaleDateString('en-US') },
                 ].map(({ label, value }) => (
                   <AdminCard key={label} sx={{ p: 1.5 }}>
                     <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', fontWeight: 700 }}>{label}</Typography>
@@ -467,7 +467,7 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant='caption' sx={{ color: TEXT_HEADING }}>{e.activated_at ? new Date(e.activated_at).toLocaleDateString() : '—'}</Typography>
+                          <Typography variant='caption' sx={{ color: TEXT_HEADING }}>{e.activated_at ? new Date(e.activated_at).toLocaleDateString('en-US') : '—'}</Typography>
                         </TableCell>
                         <TableCell>
                           {e.is_quarantined ? (

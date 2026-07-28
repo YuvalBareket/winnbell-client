@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Box, CircularProgress, Dialog, DialogContent, IconButton, Typography } from '@mui/material';
 import { Close, CloudUpload, Visibility } from '@mui/icons-material';
-import { PRIMARY_MAIN } from '../../../shared/colors';
+import {
+  PRIMARY_MAIN, SUCCESS_RECEIPT, SUCCESS_RECEIPT_BG_LIGHT, SUCCESS_RECEIPT_BG_MEDIUM,
+  SUCCESS_RECEIPT_BG_HOVER, SUCCESS_RECEIPT_DARK, ALPHA_BLACK_60, ALPHA_BLACK_85
+} from '../../../shared/colors';
 
 interface Props {
   primaryColor: string;
@@ -46,13 +49,13 @@ const ReceiptImageUploadField: React.FC<Props> = ({
           display: 'flex', alignItems: 'center', gap: 2,
           p: 2, borderRadius: 2.5,
           border: '1.5px dashed',
-          borderColor: receiptImageUrl ? '#16a34a' : `${primaryColor || PRIMARY_MAIN}50`,
-          bgcolor: receiptImageUrl ? '#f0fdf4' : `${primaryColor || PRIMARY_MAIN}06`,
+          borderColor: receiptImageUrl ? SUCCESS_RECEIPT : `${primaryColor || PRIMARY_MAIN}50`,
+          bgcolor: receiptImageUrl ? SUCCESS_RECEIPT_BG_LIGHT : `${primaryColor || PRIMARY_MAIN}06`,
           cursor: isUploading ? 'wait' : 'pointer',
           transition: 'border-color 150ms ease-out, background-color 150ms ease-out',
           '&:hover': {
-            borderColor: receiptImageUrl ? '#16a34a' : primaryColor || PRIMARY_MAIN,
-            bgcolor: receiptImageUrl ? '#dcfce7' : `${primaryColor || PRIMARY_MAIN}10`,
+            borderColor: receiptImageUrl ? SUCCESS_RECEIPT : primaryColor || PRIMARY_MAIN,
+            bgcolor: receiptImageUrl ? SUCCESS_RECEIPT_BG_MEDIUM : `${primaryColor || PRIMARY_MAIN}10`,
           },
         }}
       >
@@ -66,17 +69,17 @@ const ReceiptImageUploadField: React.FC<Props> = ({
           </>
         ) : receiptImageUrl ? (
           <>
-            <Box sx={{ width: 40, height: 40, borderRadius: 2, overflow: 'hidden', flexShrink: 0, border: '2px solid #16a34a' }}>
+            <Box sx={{ width: 40, height: 40, borderRadius: 2, overflow: 'hidden', flexShrink: 0, border: `2px solid ${SUCCESS_RECEIPT}` }}>
               <Box component="img" src={receiptImageUrl} alt="receipt" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </Box>
             <Box flex={1} minWidth={0}>
-              <Typography variant="body2" sx={{ fontWeight: 700, color: '#15803d' }}>Receipt attached</Typography>
-              <Typography variant="caption" sx={{ color: '#16a34a' }}>Tap to replace</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 700, color: SUCCESS_RECEIPT_DARK }}>Receipt attached</Typography>
+              <Typography variant="caption" sx={{ color: SUCCESS_RECEIPT }}>Tap to replace</Typography>
             </Box>
             <IconButton
               size="small"
               onClick={(e) => { e.preventDefault(); setPreviewOpen(true); }}
-              sx={{ color: '#15803d', bgcolor: '#dcfce7', '&:hover': { bgcolor: '#bbf7d0' } }}
+              sx={{ color: SUCCESS_RECEIPT_DARK, bgcolor: SUCCESS_RECEIPT_BG_MEDIUM, '&:hover': { bgcolor: SUCCESS_RECEIPT_BG_HOVER } }}
             >
               <Visibility fontSize="small" />
             </IconButton>
@@ -104,11 +107,11 @@ const ReceiptImageUploadField: React.FC<Props> = ({
       )}
 
       <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="sm" fullWidth>
-        <DialogContent sx={{ p: 1, position: 'relative', bgcolor: '#000' }}>
+        <DialogContent sx={{ p: 1, position: 'relative', bgcolor: 'common.black' }}>
           <IconButton
             onClick={() => setPreviewOpen(false)}
             size="small"
-            sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1, bgcolor: 'rgba(0,0,0,0.6)', color: '#fff', '&:hover': { bgcolor: 'rgba(0,0,0,0.85)' } }}
+            sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1, bgcolor: ALPHA_BLACK_60, color: 'common.white', '&:hover': { bgcolor: ALPHA_BLACK_85 } }}
           >
             <Close fontSize="small" />
           </IconButton>

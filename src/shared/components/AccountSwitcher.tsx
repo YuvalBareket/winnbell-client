@@ -2,7 +2,7 @@ import {
   Box, Avatar, Typography, Stack, Chip, IconButton, Menu, List, ListItem,
 } from '@mui/material';
 import {
-  Check, PersonAdd, Delete,
+  Check, PersonAdd, Logout,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -12,8 +12,8 @@ import { selectCanAddAccount } from '../../store/selectors/authSelectors';
 import { useAccountSwitcher } from '../hooks/useAccountSwitcher';
 import { getUserInitials, getRoleLabel, getRoleColor } from '../utils/string';
 import {
-  TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY, ALPHA_PRIMARY_04,
-  ALPHA_PRIMARY_06, BORDER_LIGHT, PRIMARY_MAIN,
+  TEXT_HEADING, TEXT_SECONDARY, ALPHA_PRIMARY_04,
+  ALPHA_PRIMARY_06, BORDER_LIGHT, PRIMARY_MAIN, ERROR_MAIN, ERROR_HOVER_BG,
 } from '../colors';
 
 interface AccountSwitcherProps {
@@ -134,13 +134,13 @@ const AccountSwitcher = ({ variant = 'menu', anchorEl = null, open = false, onCl
                         disabled={removingId === user.id}
                         aria-label={isActive ? 'Log out of this account' : 'Remove this account'}
                         sx={{
-                          width: 28, height: 28, color: TEXT_TERTIARY,
+                          width: 28, height: 28, color: ERROR_MAIN,
                           transition: 'all 0.15s ease',
-                          '&:hover': { color: 'error.main', bgcolor: 'rgba(211,47,47,0.08)' },
+                          '&:hover': { color: ERROR_MAIN, bgcolor: ERROR_HOVER_BG },
                           '&:disabled': { opacity: 0.4 },
                         }}
                       >
-                        <Delete sx={{ fontSize: 16 }} />
+                        <Logout sx={{ fontSize: 16 }} />
                       </IconButton>
                     )}
                   </Stack>

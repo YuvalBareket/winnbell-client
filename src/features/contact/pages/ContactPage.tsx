@@ -39,6 +39,9 @@ const ContactPage = () => {
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  // Honeypot: a hidden field real users never touch. The server fake-accepts (200, no email) when
+  // it arrives non-empty, so a bot that autofills every field silently traps itself.
+  const [website, setWebsite] = useState('');
 
   const handleSend = async () => {
     setError('');
@@ -53,6 +56,7 @@ const ContactPage = () => {
         email: email.trim(),
         topic,
         message: message.trim(),
+        website, // honeypot (empty for real users)
       });
       setSent(true);
     } catch (err) {
@@ -113,6 +117,17 @@ const ContactPage = () => {
   const form = (
     <motion.div variants={staggerContainer} initial='hidden' animate='visible'>
       <Stack spacing={2.25}>
+        {/* Honeypot: off-screen, not tabbable, not announced to AT. Real users never fill it; bots do. */}
+        <input
+          type='text'
+          name='website'
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          tabIndex={-1}
+          autoComplete='off'
+          aria-hidden='true'
+          style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+        />
         {error && (
           <motion.div variants={riseIn}>
             <Typography sx={{ fontSize: '13px', fontWeight: 600, color: 'error.main' }}>{error}</Typography>

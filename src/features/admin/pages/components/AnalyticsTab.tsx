@@ -482,7 +482,7 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                         <TableCell>
                           <Chip label={c.status} size='small' color={c.status === 'Open' ? 'primary' : c.status === 'Closed' ? 'success' : 'default'} />
                         </TableCell>
-                        <TableCell>{new Date(c.draw_date).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(c.draw_date).toLocaleDateString('en-US')}</TableCell>
                         <TableCell align='right'>${Number(c.prize_amount).toLocaleString()}</TableCell>
                         <TableCell align='right'>{c.business_count}</TableCell>
                         <TableCell align='right' sx={{ fontWeight: 700 }}>{c.total_entries.toLocaleString()}</TableCell>

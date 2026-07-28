@@ -317,7 +317,7 @@ const NotificationsTab: React.FC = () => {
                               Sent: {item.sent_count.toLocaleString()}
                             </Typography>
                             <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
-                              {new Date(item.created_at).toLocaleDateString(undefined, {
+                              {new Date(item.created_at).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
                                 year: 'numeric',

@@ -29,7 +29,12 @@ export const useNotifications = () => {
     );
   }, []);
 
-  const { mutateAsync: subscribe, isPending: isSubscribing } = useMutation({
+  // Fire-and-forget `mutate` (NOT mutateAsync): declining the browser permission prompt is the
+  // common path and throws 'Permission denied'; a network/VAPID failure rejects too. With mutate
+  // the rejection is routed to onError instead of becoming an UNHANDLED promise rejection (console
+  // noise + false Sentry errors on every ordinary decline). onError is intentionally silent - the
+  // bell just stays off, and the mutationFn already recorded the denied permission state above.
+  const { mutate: subscribe, isPending: isSubscribing } = useMutation({
     mutationFn: async () => {
       const result = await Notification.requestPermission();
       setPermission(result);
@@ -45,9 +50,10 @@ export const useNotifications = () => {
       setIsSubscribed(true);
       return subscription;
     },
+    onError: () => { /* expected on decline / transient failure — swallow, bell stays off */ },
   });
 
-  const { mutateAsync: unsubscribe, isPending: isUnsubscribing } = useMutation({
+  const { mutate: unsubscribe, isPending: isUnsubscribing } = useMutation({
     mutationFn: async () => {
       const reg = await navigator.serviceWorker.ready;
       const subscription = await reg.pushManager.getSubscription();
@@ -57,6 +63,7 @@ export const useNotifications = () => {
       }
       setIsSubscribed(false);
     },
+    onError: () => { /* best-effort toggle; a failed unsubscribe is non-fatal */ },
   });
 
   return {
