@@ -96,6 +96,12 @@ export function useNearbyWithZoom(sector?: string | null, search?: string) {
   const doFetch = useCallback(async (viewport: ViewportBounds, force = false) => {
     lastViewportRef.current = viewport;
 
+    // Abort any in-flight request UP FRONT (P3-5). If we don't, the covered-area / cache-hit early
+    // returns below leave a previous request running; when it resolves it calls applyResults with
+    // its OLD snapped box - drawing stale markers and, worse, resetting coveredAreaRef to a stale
+    // box (which can then skip a fetch the current viewport actually needs).
+    abortRef.current?.abort();
+
     // Skip when the viewport is still inside an area we hold COMPLETE data for.
     // Zooming out or panning beyond the covered box refetches naturally.
     const covered = coveredAreaRef.current;
@@ -117,8 +123,7 @@ export function useNearbyWithZoom(sector?: string | null, search?: string) {
       return;
     }
 
-    // Cancel any in-flight request for a stale viewport
-    abortRef.current?.abort();
+    // Fresh controller for this request (the previous one was already aborted at the top).
     const controller = new AbortController();
     abortRef.current = controller;
 
@@ -136,7 +141,7 @@ export function useNearbyWithZoom(sector?: string | null, search?: string) {
       if (controller.signal.aborted) return;
       cellCacheRef.current.set(cacheKey, { results, ts: Date.now() });
       applyResults(results, snapped);
-    } catch (err: unknown) {
+    } catch {
       // If this controller was aborted, the request was superseded (native abort OR axios
       // CanceledError) — bail silently. Only surface a real network/server failure.
       if (controller.signal.aborted) return;

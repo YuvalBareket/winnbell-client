@@ -3,6 +3,7 @@ import {
   CircularProgress, IconButton, Checkbox, FormControlLabel,
 } from '@mui/material';
 import { WorkspacePremium, ArrowBack, Check, CreditCard, LockOutlined } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TIER_MAP, MAX_TIER, PLAN_META, FOUNDING_TERM_MONTHS, FOUNDING_PRICE_PER_LOCATION } from './subscribeTiers';
@@ -371,10 +372,8 @@ const PlanCheckout = ({
                     <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
                       I agree to the{' '}
                       <Box
-                        component='a'
-                        href='/founding-terms'
-                        target='_blank'
-                        rel='noopener'
+                        component={Link}
+                        to='/founding-terms'
                         onClick={(e) => e.stopPropagation()}
                         sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
                       >
@@ -443,10 +442,8 @@ const PlanCheckout = ({
                 <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mt: 0.75, lineHeight: 1.5 }}>
                   Charged in full today and non-refundable, except as described in our{' '}
                   <Box
-                    component='a'
-                    href='/cancellation'
-                    target='_blank'
-                    rel='noopener'
+                    component={Link}
+                    to='/cancellation'
                     onClick={(e) => e.stopPropagation()}
                     sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
                   >
@@ -613,10 +610,8 @@ const PlanCheckout = ({
           <Typography variant='caption' color='text.secondary' textAlign='center' display='block' sx={{ mb: 2.5, lineHeight: 1.5 }}>
             Fees are non-refundable once charged, except as described in our{' '}
             <Box
-              component='a'
-              href='/cancellation'
-              target='_blank'
-              rel='noopener'
+              component={Link}
+              to='/cancellation'
               sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
             >
               Cancellation &amp; Refund Policy

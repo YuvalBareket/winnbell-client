@@ -11,7 +11,7 @@ import {
   ReceiptLong, CheckCircle, Cancel, EmojiEvents,
   Lock, LockOpen, WorkspacePremium, Edit, SwapHoriz, CreditCard, OpenInNew,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
   AMBER_HOURGLASS, GOLD_TROPHY, ACCENT_GOLD_DARK, GRADIENT_GOLD_VIVID, GOLD_INK,
@@ -478,7 +478,7 @@ export default function SubscriptionManagementPage() {
                                 )}
                                 <Typography variant='caption' color='text.secondary' display='block' sx={{ mt: 1 }}>
                                   Renewals follow the{' '}
-                                  <Box component='a' href='/founding-terms' target='_blank' rel='noopener' sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}>
+                                  <Box component={Link} to='/founding-terms' sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}>
                                     Founding Partner Special Terms
                                   </Box>.
                                 </Typography>
@@ -682,10 +682,8 @@ export default function SubscriptionManagementPage() {
                         <Typography variant='caption' color='text.secondary' textAlign='center' sx={{ lineHeight: 1.6 }}>
                           Your Founding Partner plan is a one-time purchase for a fixed term{periodEndLabel ? ` ending ${periodEndLabel}` : ''}. It does not renew and payments are not refunded. See the{' '}
                           <Box
-                            component='a'
-                            href='/founding-terms'
-                            target='_blank'
-                            rel='noopener'
+                            component={Link}
+                            to='/founding-terms'
                             sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' ,whiteSpace:'nowrap'}}
                           >
                             Founding Partner Special Terms
@@ -1214,10 +1212,8 @@ export default function SubscriptionManagementPage() {
             <Typography variant='caption' color='text.secondary' display='block' sx={{ mt: 1, lineHeight: 1.5 }}>
               Cancellation and refunds are governed by our{' '}
               <Box
-                component='a'
-                href='/cancellation'
-                target='_blank'
-                rel='noopener'
+                component={Link}
+                to='/cancellation'
                 sx={{ color: 'primary.main', fontWeight: 700, textDecoration: 'underline' }}
               >
                 Cancellation &amp; Refund Policy
