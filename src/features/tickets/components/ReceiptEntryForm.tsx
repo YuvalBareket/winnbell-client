@@ -33,6 +33,8 @@ import {
   GRADIENT_CELEBRATION, GRADIENT_DRAW_CARD, SHADOW_ELEVATED,
   ALPHA_WHITE_20, ALPHA_WHITE_30,
   ALPHA_PRIMARY_06, ALPHA_PRIMARY_10, ALPHA_PRIMARY_20,
+  ALPHA_AMBER_06, ALPHA_AMBER_25, ALPHA_AMBER_80,
+  ERROR_BG_TINT, ERROR_BORDER_TINT, ERROR_DARK,
 } from '../../../shared/colors';
 import { apiErrorMessage, apiErrorCode } from '../../../shared/utils/apiError';
 import { staggerContainer, riseIn, popIn, pressable, pressableCard, SPRING_SNAPPY, heroPop } from '../../../shared/motion';
@@ -563,10 +565,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     <Box sx={{
       display: 'flex', alignItems: 'flex-start', gap: 1.5,
       p: 2, borderRadius: 2.5,
-      bgcolor: '#fef2f2', border: '1px solid #fecaca',
+      bgcolor: ERROR_BG_TINT, border: `1px solid ${ERROR_BORDER_TINT}`,
     }}>
       <Typography sx={{ fontSize: '1rem', lineHeight: 1, mt: 0.1 }}>⚠️</Typography>
-      <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 500, lineHeight: 1.5 }}>
+      <Typography variant="body2" sx={{ color: ERROR_DARK, fontWeight: 500, lineHeight: 1.5 }}>
         {errorMessage}
       </Typography>
     </Box>
@@ -790,10 +792,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           <SelectedLocationPill primaryColor={primaryColor} location={selectedLocation} onChangeLocation={handleChangeLocation} />
           <Box sx={{
             p: 3, borderRadius: 2.5, textAlign: 'center',
-            bgcolor: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)',
+            bgcolor: ALPHA_AMBER_06, border: `1px solid ${ALPHA_AMBER_25}`,
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
           }}>
-            <EventBusy sx={{ fontSize: 32, color: 'rgba(245,158,11,0.8)' }} />
+            <EventBusy sx={{ fontSize: 32, color: ALPHA_AMBER_80 }} />
             <Typography variant='subtitle2' fontWeight={800} color='text.primary'>
               This location is full
             </Typography>
@@ -864,7 +866,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             <Close fontSize="small" />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ p: 2, bgcolor: '#fff' }}>
+        <DialogContent sx={{ p: 2, bgcolor: 'common.white' }}>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5, fontWeight: 500 }}>
             Use this to find the unique number on your receipt
           </Typography>
@@ -1155,7 +1157,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             <GppGood
               sx={{
                 fontSize: 40,
-                color: '#ffffff',
+                color: 'common.white',
               }}
             />
           </Box>
@@ -1165,7 +1167,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             sx={{
               fontWeight: 900,
               fontSize: '1.5rem',
-              color: '#ffffff',
+              color: 'common.white',
               textAlign: 'center',
               letterSpacing: -0.3,
               position: 'relative',
@@ -1251,7 +1253,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               borderRadius: 2.5,
               height: 48,
               bgcolor: primaryColor || PRIMARY_MAIN,
-              color: '#ffffff',
+              color: 'common.white',
               boxShadow: `0 6px 20px ${alpha(primaryColor || PRIMARY_MAIN, 0.4)}`,
               transition: 'all 180ms cubic-bezier(0.2, 0, 0, 1)',
               position: 'relative',

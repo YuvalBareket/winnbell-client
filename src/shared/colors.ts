@@ -50,6 +50,13 @@ export const ERROR_BORDER_TINT  = '#f1c9c9';   // danger button border (solid li
 export const STATUS_ACTIVATED_BG   = '#e8f5e9';
 export const STATUS_ACTIVATED_TEXT = '#2e7d32';
 
+// ── Receipt validation green (receipts & uploads) ────
+export const SUCCESS_RECEIPT       = '#16a34a';  // receipt success border / icon color
+export const SUCCESS_RECEIPT_BG_LIGHT = '#f0fdf4';  // receipt upload background (very light green)
+export const SUCCESS_RECEIPT_BG_MEDIUM = '#dcfce7';  // receipt upload hover bg (medium light green)
+export const SUCCESS_RECEIPT_BG_HOVER = '#bbf7d0';  // receipt icon button hover bg
+export const SUCCESS_RECEIPT_DARK   = '#15803d';  // receipt text / dark accents on green bg
+
 // ── Status - Pending (amber) ─────────────────
 export const STATUS_PENDING_BG     = '#fff3e0';
 export const STATUS_PENDING_TEXT   = '#e65100';
@@ -57,6 +64,7 @@ export const STATUS_PENDING_TEXT   = '#e65100';
 // ── Error / Danger (red) ─────────────────────
 export const ERROR_MAIN            = '#d32f2f';
 export const ERROR_LIGHT           = '#ef5350';
+export const ERROR_DARK            = '#b91c1c';  // error message text (deep red)
 export const ERROR_BG_SUBTLE       = 'rgba(211, 47, 47, 0.02)';
 export const ERROR_ICON_BG         = 'rgba(211, 47, 47, 0.1)';
 export const ERROR_BORDER_LIGHT    = 'rgba(211, 47, 47, 0.3)';
@@ -151,14 +159,18 @@ export const SHADOW_GOLD_GLOW      = `0 0 18px rgba(251,191,36,0.55), 0 1px 2px 
 // ── Alpha / Overlay utilities ─────────────────
 export const ALPHA_BLACK_04    = 'rgba(0,0,0,0.04)';
 export const ALPHA_BLACK_06    = 'rgba(0,0,0,0.06)';
+export const ALPHA_BLACK_60    = 'rgba(0,0,0,0.6)';   // image-preview close-button backdrop
+export const ALPHA_BLACK_85    = 'rgba(0,0,0,0.85)';  // image-preview close-button backdrop (hover)
 export const ALPHA_SUCCESS_04  = 'rgba(16,185,129,0.04)';
 export const ALPHA_SUCCESS_08  = 'rgba(16,185,129,0.08)';
 export const ALPHA_SUCCESS_12  = 'rgba(16,185,129,0.12)';
 export const ALPHA_SUCCESS_25  = 'rgba(16,185,129,0.25)';
 export const ALPHA_AMBER_04    = 'rgba(245,158,11,0.04)';
+export const ALPHA_AMBER_06    = 'rgba(245,158,11,0.06)';  // location cap reached notice bg
 export const ALPHA_AMBER_08    = 'rgba(245,158,11,0.08)';
 export const ALPHA_AMBER_12    = 'rgba(245,158,11,0.12)';
 export const ALPHA_AMBER_25    = 'rgba(245,158,11,0.25)';
+export const ALPHA_AMBER_80    = 'rgba(245,158,11,0.8)';   // location cap reached icon color
 export const ALPHA_PRIMARY_10  = 'rgba(21,101,192,0.1)';
 export const ALPHA_PRIMARY_20  = 'rgba(21,101,192,0.2)';
 export const ALPHA_PRIMARY_25  = 'rgba(21,101,192,0.25)';
