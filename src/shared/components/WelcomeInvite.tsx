@@ -1,15 +1,20 @@
 import type { ReactNode } from 'react';
 import { Box, Typography, Button, Stack, Container, useMediaQuery, useTheme } from '@mui/material';
-import { ArrowForward } from '@mui/icons-material';
+import { ArrowForward, AccessTimeOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import AttractButton from './AttractButton';
 import AuthBrandPanel from '../../features/auth/components/AuthBrandPanel';
 import { staggerContainer, popIn, riseIn } from '../motion';
+import { formatDrawDate } from '../utils/date';
+import { getActiveDraws } from '../../features/draw/api/draw.api';
+import { queryKeys } from '../constants/queryKeys';
 import {
-  GRADIENT_HERO, PRIMARY_MAIN, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30,
-  BG_PAGE, TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT, SHADOW_CARD,
+  GRADIENT_HERO, PRIMARY_MAIN, BG_PAGE, BG_SUBTLE, BG_SURFACE, TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY,
+  BORDER_LIGHT, SHADOW_CARD, PRIMARY_TINT,
 } from '../colors';
+import { formatCurrency } from '../utils/date';
 
 export interface WelcomeStep {
   icon: ReactNode;
@@ -25,6 +30,12 @@ interface WelcomeInviteProps {
   brandTagline: string;     // AuthBrandPanel tagline (desktop split panel)
   headline: string;         // the main headline (desktop content + mobile)
   subtext?: string;
+  headerSubline?: string;   // mobile-only subline in the gradient header
+  highlight?: {             // mobile-only highlight card (icon + title + subtitle)
+    icon: ReactNode;
+    title: string;
+    subtitle: string;
+  };
   steps: WelcomeStep[];
 }
 
@@ -33,11 +44,27 @@ const DEFAULT_SUBTEXT = 'You are one step from entering this month\'s draw. Here
 // Shared "friendly welcome" screen for logged-out visitors arriving via a referral link (JoinPage)
 // or a location flyer QR (ScanWelcomePage). Identical layout + CTAs; only the copy and the
 // how-it-works steps differ (passed as props). Desktop = split brand/content panel matching the
-// auth pages; mobile = a full-bleed gradient tuned to fit ONE screen without scrolling.
-const WelcomeInvite = ({ brandHeadline, brandTagline, headline, subtext = DEFAULT_SUBTEXT, steps }: WelcomeInviteProps) => {
+// auth pages; mobile = a card-based white-on-light design with prize card + how-it-works.
+const WelcomeInvite = ({
+  brandHeadline,
+  brandTagline,
+  headline,
+  subtext = DEFAULT_SUBTEXT,
+  headerSubline,
+  highlight,
+  steps
+}: WelcomeInviteProps) => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+
+  // Fetch the active draw for the prize card (mobile only)
+  const { data: draws } = useQuery({
+    queryKey: queryKeys.draws.active,
+    queryFn: getActiveDraws,
+    staleTime: 2 * 60_000,
+  });
+  const openDraw = draws?.find(d => d.status?.toLowerCase() === 'open');
 
   // ─── Desktop: split screen (brand panel + light content panel), matching the auth pages ──
   if (isDesktop) {
@@ -131,98 +158,248 @@ const WelcomeInvite = ({ brandHeadline, brandTagline, headline, subtext = DEFAUL
     );
   }
 
-  // ─── Mobile: full-bleed gradient welcome ──────────────────────────────────────
+  // ─── Mobile: gradient header + light card-based body ──────────────────────────
   return (
-    // overflow hidden: clips the decorative orbs (they extend past the container via negative
-    // offsets) so they never create a scroll; the compressed content fits one screen on its own.
-    <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', background: GRADIENT_HERO, color: 'white', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
-      {/* Decorative orbs */}
-      <Box sx={{ position: 'absolute', top: '-18%', right: '-8%', width: 400, height: 400, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.05)', filter: 'blur(60px)', pointerEvents: 'none' }} />
-      <Box sx={{ position: 'absolute', bottom: '-12%', left: '-8%', width: 320, height: 320, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.04)', filter: 'blur(55px)', pointerEvents: 'none' }} />
+    <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', bgcolor: BG_SUBTLE, display: 'flex', flexDirection: 'column' }}>
+      {/* Gradient header band with rounded bottom corners */}
+      <Box
+        sx={{
+          background: GRADIENT_HERO,
+          color: 'white',
+          borderRadius: '0 0 28px 28px',
+          px: 2,
+          pt: 2,
+          pb: 3.5,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Decorative glow orb - top right, soft white */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '-110px',
+            right: '-90px',
+            width: 320,
+            height: 320,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 68%)',
+            pointerEvents: 'none',
+          }}
+        />
 
-      {/* Brand */}
-      <Box sx={{ px: { xs: 2.5, md: 6 }, py: { xs: 2.5, md: 3 }, position: 'relative', zIndex: 1 }}>
-        <Box component="img" src="/winnbell_app_name_white.svg" alt="Winnbell" sx={{ height: { xs: 34, md: 38 }, width: 'auto' }} />
+        {/* Wordmark + Sign in link row */}
+        <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+          <Box
+            component="img"
+            src="/winnbell_app_name_white.svg"
+            alt="Winnbell"
+            onClick={() => navigate('/')}
+            sx={{ height: 34, width: 'auto', cursor: 'pointer' }}
+          />
+          <Button
+            onClick={() => navigate('/login')}
+            disableRipple
+            sx={{
+              minWidth: 'auto',
+              p: 0,
+              color: 'white',
+              fontFamily: 'inherit',
+              fontSize: '13px',
+              fontWeight: 700,
+              letterSpacing: '-0.01em',
+              textTransform: 'none',
+              whiteSpace: 'nowrap',
+              mr: '5px', minHeight:'0px',
+              '&:hover': { bgcolor: 'transparent', opacity: 0.8 },
+            }}
+          >
+            Sign in
+          </Button>
+        </Box>
+
+        {/* Headline + subline */}
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Typography sx={{ fontSize: 21, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2, mb: 0.5 }}>
+            {headline}
+          </Typography>
+          {headerSubline && (
+            <Typography sx={{ fontSize: 13, fontWeight: 500, opacity: 0.8 }}>
+              {headerSubline}
+            </Typography>
+          )}
+        </Box>
       </Box>
 
-      {/* Content: top-aligned (starts just under the brand) and spacing tuned so the whole page
-          fits one mobile screen without scrolling. flexGrow (basis auto) keeps the gradient
-          filling the viewport below the content. */}
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', px: 2.5, py: { xs: 1.5, md: 3 }, position: 'relative', zIndex: 1 }}>
-        <Container maxWidth="xs" disableGutters sx={{ textAlign: 'center' }}>
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
-            <Typography variant="h1" sx={{ fontWeight: 900, fontSize: { xs: '2rem', md: '2.7rem' }, lineHeight: 1.1, letterSpacing: '-0.03em', color: 'white', mb: 1 }}>
-              {headline}
-            </Typography>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.18 }}>
-            <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: { xs: '0.9rem', md: '1.05rem' }, lineHeight: 1.5, mb: 2.5, fontWeight: 400 }}>
-              {subtext}
-            </Typography>
-          </motion.div>
-
-          {/* How it works card */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.26 }}>
+      {/* Light page body with cards */}
+      <Box sx={{ flex: 1, overflowY: 'auto', px: 2, py: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* Prize card - only if draw exists */}
+        {openDraw && openDraw.prize_amount && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
             <Box
               sx={{
-                bgcolor: ALPHA_WHITE_15,
-                border: `1px solid ${ALPHA_WHITE_20}`,
-                borderRadius: 4,
-                p: { xs: 2, md: 3 },
-                mb: 2.5,
-                backdropFilter: 'blur(10px)',
-                textAlign: 'left',
+                bgcolor: BG_SURFACE,
+                border: `1px solid ${BORDER_LIGHT}`,
+                borderRadius: '15px',
+                boxShadow: SHADOW_CARD,
+                p: '22px 20px',
               }}
             >
-              <Stack spacing={1.75}>
-                {steps.map((step, i) => (
-                  <Stack key={i} direction="row" spacing={1.75} alignItems="flex-start">
-                    <Box sx={{ width: 38, height: 38, flexShrink: 0, borderRadius: 2, bgcolor: ALPHA_WHITE_20, border: `1px solid ${ALPHA_WHITE_30}`, display: 'flex', alignItems: 'center', justifyContent: 'center', '& svg': { fontSize: 20, color: 'white' } }}>
-                      {step.icon}
-                    </Box>
-                    <Box>
-                      <Typography sx={{ fontWeight: 800, fontSize: '0.9rem', lineHeight: 1.3 }}>{step.title}</Typography>
-                      <Typography sx={{ fontSize: '0.8rem', lineHeight: 1.45, color: 'rgba(255,255,255,0.78)' }}>{step.text}</Typography>
-                    </Box>
-                  </Stack>
-                ))}
-              </Stack>
+              {/* Label + Live pill */}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Typography sx={{ fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: TEXT_TERTIARY }}>
+                  This month's draw
+                </Typography>
+                <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, bgcolor: PRIMARY_TINT, borderRadius: '999px', px: 1.125, py: 0.5 }}>
+                  <Box sx={{ width: '5px', height: '5px', borderRadius: '50%', bgcolor: PRIMARY_MAIN }} />
+                  <Typography sx={{ fontSize: '9.5px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: PRIMARY_MAIN }}>
+                    Live
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Prize amount */}
+              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
+                <Typography sx={{ fontSize: '38px', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: TEXT_HEADING, fontVariantNumeric: 'tabular-nums' }}>
+                  {formatCurrency(openDraw.prize_amount)}
+                </Typography>
+                <Typography sx={{ fontSize: 13, fontWeight: 700, color: TEXT_TERTIARY }}>
+                  cash
+                </Typography>
+              </Box>
+
+              {/* Draw date with clock icon */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '12.5px', fontWeight: 600, color: TEXT_SECONDARY, mt: 1 }}>
+                <AccessTimeOutlined sx={{ fontSize: 15, color: TEXT_TERTIARY }} />
+                <span>Drawn {formatDrawDate(openDraw.draw_date)}</span>
+              </Box>
             </Box>
           </motion.div>
+        )}
 
-          {/* CTAs */}
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.34 }}>
-            <Stack spacing={1}>
-              <AttractButton onLightBackground
-                variant="contained"
-                size="large"
-                endIcon={<ArrowForward />}
-                onClick={() => navigate('/register')}
-                sx={{ bgcolor: 'white', color: PRIMARY_MAIN, fontWeight: 800, fontSize: '1rem', py: 1.25, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' } }}
-              >
-                Create your free account
-              </AttractButton>
-              <Button
-                variant="text"
-                onClick={() => navigate('/login')}
-                sx={{ color: 'white', fontWeight: 700, fontSize: '0.9rem', opacity: 0.9, '&:hover': { bgcolor: 'transparent', opacity: 1 } }}
-              >
-                Already a member? Sign in
-              </Button>
-            </Stack>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.5 }}>
-            <Button
-              variant="text"
-              onClick={() => navigate('/')}
-              sx={{ mt: 0.5, textTransform: 'none', color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: '0.85rem', '&:hover': { bgcolor: 'transparent', color: 'white' } }}
+        {/* Highlight card - icon tile + bold title + muted subtitle */}
+        {highlight && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
+            <Box
+              sx={{
+                bgcolor: BG_SURFACE,
+                border: `1px solid ${BORDER_LIGHT}`,
+                borderRadius: '15px',
+                boxShadow: SHADOW_CARD,
+                p: '13px 15px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+              }}
             >
-              What is Winnbell?
-            </Button>
+              <Box
+                sx={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '11px',
+                  flexShrink: 0,
+                  bgcolor: PRIMARY_TINT,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  '& svg': { fontSize: 21, color: PRIMARY_MAIN },
+                }}
+              >
+                {highlight.icon}
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: '13.5px', fontWeight: 800, letterSpacing: '-0.01em', color: TEXT_HEADING, lineHeight: 1.2 }}>
+                  {highlight.title}
+                </Typography>
+                <Typography sx={{ fontSize: '11.5px', fontWeight: 600, color: TEXT_TERTIARY, mt: 0.25 }}>
+                  {highlight.subtitle}
+                </Typography>
+              </Box>
+            </Box>
           </motion.div>
-        </Container>
+        )}
+
+        {/* How it works card */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+          <Box
+            sx={{
+              bgcolor: BG_SURFACE,
+              border: `1px solid ${BORDER_LIGHT}`,
+              borderRadius: '15px',
+              boxShadow: SHADOW_CARD,
+              p: '18px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.875,
+            }}
+          >
+            <Typography sx={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT_TERTIARY }}>
+              How it works
+            </Typography>
+            <Stack spacing={1.875}>
+              {steps.map((step, i) => (
+                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '9px',
+                      flexShrink: 0,
+                      bgcolor: PRIMARY_TINT,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      '& svg': { fontSize: 18, color: PRIMARY_MAIN },
+                    }}
+                  >
+                    {step.icon}
+                  </Box>
+                  <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_SECONDARY, lineHeight: 1.2 }}>
+                    {step.title}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        </motion.div>
+
+        {/* CTA + fine print */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }}>
+          <Stack spacing={1.25} sx={{ mt: 0.5 }}>
+            <Button
+              onClick={() => navigate('/register')}
+              endIcon={<ArrowForward />}
+              sx={{
+                width: '100%',
+                borderRadius: '14px',
+                p: 2,
+                fontFamily: 'inherit',
+                fontSize: '15.5px',
+                fontWeight: 800,
+                letterSpacing: '-0.01em',
+                color: 'white',
+                background: GRADIENT_HERO,
+                boxShadow: '0 8px 20px rgba(21,101,192,0.3)',
+                textTransform: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 1,
+                '&:hover': {
+                  boxShadow: '0 12px 28px rgba(21,101,192,0.4)',
+                },
+              }}
+            >
+              Create your free account
+            </Button>
+            <Typography sx={{ textAlign: 'center', fontSize: '10.5px', fontWeight: 600, color: TEXT_TERTIARY }}>
+              No purchase necessary. Alternative method of entry available. 18+.
+            </Typography>
+          </Stack>
+        </motion.div>
+
+        {/* Bottom spacing for mobile scroll */}
+        <Box sx={{ height: 1 }} />
       </Box>
     </Box>
   );

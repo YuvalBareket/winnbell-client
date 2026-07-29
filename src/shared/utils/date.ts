@@ -106,3 +106,10 @@ export const formatRelativeTime = (dateStr: string): string => {
   // date instead (USA month/day order).
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
+
+/** Format a draw date (ISO string) as "Month D" in ET. Draw dates are stored at midnight ET,
+ * so we show only the date (a time component would render a misleading "12:00 AM"). */
+export const formatDrawDate = (dateStr: string | undefined): string => {
+  if (!dateStr) return 'TBD';
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'America/New_York' });
+};

@@ -41,6 +41,7 @@ const JoinPage = () => {
           : 'You have been invited to Winnbell. Create your free account and claim a bonus entry just for joining.'
       }
       headline={referrerName ? `${referrerName} invited you to Winnbell` : 'You are invited to Winnbell'}
+      headerSubline="Create your account to claim your bonus entry."
       steps={[
         {
           icon: <PersonAddOutlined />,
