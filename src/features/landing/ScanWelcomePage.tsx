@@ -5,8 +5,8 @@ import { ReceiptLongOutlined, EmojiEventsOutlined, CardGiftcardOutlined } from '
 import { api } from '../../shared/api/client';
 import { useAppSelector } from '../../store/hook';
 import { selectIsAuthenticated } from '../../store/selectors/authSelectors';
-import { formatCurrency } from '../../shared/utils/date';
 import WelcomeInvite from '../../shared/components/WelcomeInvite';
+import { formatCurrency } from '../../shared/utils/date';
 import {
   PRIMARY_MAIN, ALPHA_PRIMARY_10, ALPHA_GREEN_10, STATUS_ACTIVATED_TEXT,
   ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
@@ -56,7 +56,8 @@ const ScanWelcomePage = () => {
           ? `You scanned a flyer from ${loc.business_name}. Create your free account to submit your receipt and join the draw.`
           : 'You scanned a flyer. Create your free account to submit your receipt and join the draw.'
       }
-      headline="Happy to see you."
+      headline={loc?.business_name ? `Welcome to ${loc.business_name}` : 'Welcome to Winnbell'}
+      headerSubline="Create your account to claim your welcome entry."
       steps={[
         {
           icon: <ReceiptLongOutlined />,
