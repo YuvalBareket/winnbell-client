@@ -12,7 +12,6 @@ import {
   useAllDraws,
   useAdminOverview,
 } from '../hooks/useAdmin';
-import CreateBusinessModal from './components/CreateBusinessModal';
 import CreateDrawModal from './components/CreateDrawModal';
 import OverviewTab from './components/OverviewTab';
 import UsersTab from './components/UsersTab';
@@ -27,17 +26,19 @@ const BusinessDashboard: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
 
-  const [isBizModalOpen, setIsBizModalOpen] = useState(false);
   const [isDrawModalOpen, setIsDrawModalOpen] = useState(false);
   const [snackError, setSnackError] = useState('');
   const [snackSuccess, setSnackSuccess] = useState('');
 
-  const { data: overview } = useAdminOverview();
-  const { data: draws } = useAllDraws();
+  const path = location.pathname;
+
+  // This shell serves every /admin/* tab; only fetch what the ACTIVE tab consumes.
+  // Overview (the default '/admin' branch) needs both; Campaigns needs the draws list.
+  const isOverviewTab = !['/admin/campaigns', '/admin/users', '/admin/businesses', '/admin/analytics', '/admin/settings', '/admin/notifications'].includes(path);
+  const { data: overview } = useAdminOverview(isOverviewTab);
+  const { data: draws } = useAllDraws(isOverviewTab || path === '/admin/campaigns');
 
   const currentOpenDraw = draws?.find((d) => d.status?.toUpperCase() === 'OPEN');
-
-  const path = location.pathname;
 
   const renderContent = () => {
     if (path === '/admin/campaigns') {
@@ -61,12 +62,7 @@ const BusinessDashboard: React.FC = () => {
       );
     }
     if (path === '/admin/businesses') {
-      return (
-        <BusinessesTab
-          isMobile={isMobile}
-          onCreateBusiness={() => setIsBizModalOpen(true)}
-        />
-      );
+      return <BusinessesTab isMobile={isMobile} />;
     }
     if (path === '/admin/analytics') {
       return <AnalyticsTab isMobile={isMobile} />;
@@ -105,7 +101,6 @@ const BusinessDashboard: React.FC = () => {
       <Box p={3}>
         {renderContent()}
 
-        <CreateBusinessModal open={isBizModalOpen} onClose={() => setIsBizModalOpen(false)} />
         <CreateDrawModal open={isDrawModalOpen} onClose={() => setIsDrawModalOpen(false)} />
 
         <Snackbar open={!!snackError} autoHideDuration={4000} onClose={() => setSnackError('')}>

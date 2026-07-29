@@ -12,18 +12,30 @@ export const useAnalyticsSection = <C extends AnalyticsCategory>(
   category: C,
   params: FetchAnalyticsParams,
   enabled: boolean = true,
+  adminBusinessId?: number,
 ) => {
   return useQuery<AnalyticsResponseMap[C]>({
-    queryKey: [
-      'business',
-      'analytics',
-      category,
-      params.locationId ?? 'all',
-      params.from,
-      params.to,
-      params.bucket,
-    ],
-    queryFn: () => fetchAnalyticsSection(category, params),
+    queryKey: adminBusinessId
+      ? [
+          'admin',
+          'business-analytics',
+          adminBusinessId,
+          category,
+          params.locationId ?? 'all',
+          params.from,
+          params.to,
+          params.bucket,
+        ]
+      : [
+          'business',
+          'analytics',
+          category,
+          params.locationId ?? 'all',
+          params.from,
+          params.to,
+          params.bucket,
+        ],
+    queryFn: () => fetchAnalyticsSection(category, params, adminBusinessId),
     staleTime: 60_000,
     gcTime: 5 * 60_000,
     refetchOnWindowFocus: false,

@@ -62,7 +62,9 @@ import {
   selectIsBusiness,
   selectIsLocationManager,
 } from '../../../store/selectors/authSelectors';
+import { useQuery } from '@tanstack/react-query';
 import { useBusinessData } from '../hooks/useBusinessData';
+import { fetchAdminBusinessLocations } from '../../admin/api/adminApi';
 import { useAnalyticsSection } from '../hooks/useBusinessAnalytics';
 import type { AnalyticsBucket } from '../api/analytics.api';
 import type { BusinessLocation } from '../types/business.types';
@@ -425,7 +427,11 @@ const CHART_HEIGHT = 260;
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
-const BusinessAnalyticsPage = () => {
+interface BusinessAnalyticsPageProps {
+  adminBusinessId?: number;
+}
+
+const BusinessAnalyticsPage: React.FC<BusinessAnalyticsPageProps> = ({ adminBusinessId }) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const user = useAppSelector(selectCurrentUser);
@@ -453,9 +459,19 @@ const BusinessAnalyticsPage = () => {
     [duration, selectedMonth],
   );
 
-  const { data: bizData } = useBusinessData(isBusiness);
-  const activeLocations = (bizData?.locations ?? []).filter((l) => l.is_active) as BusinessLocation[];
-  const showLocationFilter = isBusiness && activeLocations.length > 1;
+  const { data: bizData } = useBusinessData(!adminBusinessId && isBusiness);
+  // Admin read-only view: locations come from the admin business detail endpoint (the owner's
+  // useBusinessData is scoped to the logged-in user and returns nothing for an admin).
+  const { data: adminLocations } = useQuery({
+    queryKey: ['admin', 'business-locations', adminBusinessId],
+    queryFn: () => fetchAdminBusinessLocations(adminBusinessId as number),
+    enabled: !!adminBusinessId,
+    staleTime: 60_000,
+  });
+  const activeLocations: Array<{ id: number; name: string }> = adminBusinessId
+    ? (adminLocations ?? [])
+    : ((bizData?.locations ?? []).filter((l) => l.is_active) as BusinessLocation[]);
+  const showLocationFilter = (isBusiness || !!adminBusinessId) && activeLocations.length > 1;
 
   const locationIdForQuery = isManager
     ? (user?.location_id ?? undefined)
@@ -466,10 +482,10 @@ const BusinessAnalyticsPage = () => {
   // Per-section requests: only the active tab fetches. Each (category, filters) caches independently,
   // so switching tabs or durations loads just that section instead of the whole page.
   const queryParams = { locationId: locationIdForQuery, from, to, bucket };
-  const overviewQ = useAnalyticsSection('overview', queryParams, category === 'overview');
-  const acquisitionQ = useAnalyticsSection('acquisition', queryParams, category === 'acquisition');
-  const engagementQ = useAnalyticsSection('engagement', queryParams, category === 'engagement');
-  const revenueQ = useAnalyticsSection('revenue', queryParams, category === 'revenue');
+  const overviewQ = useAnalyticsSection('overview', queryParams, category === 'overview', adminBusinessId);
+  const acquisitionQ = useAnalyticsSection('acquisition', queryParams, category === 'acquisition', adminBusinessId);
+  const engagementQ = useAnalyticsSection('engagement', queryParams, category === 'engagement', adminBusinessId);
+  const revenueQ = useAnalyticsSection('revenue', queryParams, category === 'revenue', adminBusinessId);
 
   const activeQuery =
     category === 'overview' ? overviewQ

@@ -2,18 +2,19 @@ import { api } from '../../../shared/api/client';
 import type {
   AdminUsersPage,
   BusinessStatsPage,
-  CreateBusinessInput,
   CreateDrawInput,
   Draw,
   UpdateDrawInput,
   GrowthAnalytics,
+  BusinessHealthSummary,
+  UserAnalyticsSummary,
 } from '../types/admin.types';
 
-export const fetchBusinesses = (params: { page: number; limit: number; search?: string }) =>
+export const fetchBusinesses = (params: { page: number; limit: number; search?: string; filter?: string; excludeDrawId?: number }) =>
   api.get<BusinessStatsPage>('/admin/businesses', { params });
+export const fetchHealthSummary = () =>
+  api.get<BusinessHealthSummary>('/admin/businesses/health-summary');
 export const fetchActiveDraws = () => api.get<Draw[]>('/admin/draws');
-export const createBusiness = (data: CreateBusinessInput) =>
-  api.post('/admin/business', data);
 export const fetchAllDraws = () => api.get<Draw[]>('/admin/draws-all');
 export const createDraw = (data: CreateDrawInput) =>
   api.post('/admin/draw', data);
@@ -36,12 +37,15 @@ export const reopenDraw = (drawId: number) =>
 export const setDrawPrizeRevealed = (drawId: number, revealed: boolean) =>
   api.patch(`/admin/draws/${drawId}/prize-reveal`, { revealed });
 export const fetchAdminOverview = () => api.get('/admin/overview');
+export const fetchUserAnalyticsSummary = () =>
+  api.get<UserAnalyticsSummary>('/admin/users/analytics-summary');
 export const fetchAllUsers = (params: {
   page: number;
   limit: number;
   search?: string;
   role?: string;
   riskLevel?: string;
+  segment?: string;
 }) => api.get<AdminUsersPage>('/admin/users', { params });
 export const setUserRiskScore = async (userId: number, riskScore: number): Promise<void> => {
   await api.patch(`/admin/users/${userId}/risk`, { risk_score: riskScore });
@@ -123,6 +127,9 @@ export const addBusinessToDraw = (drawId: number, businessId: number) =>
 export const removeBusinessFromDraw = (drawId: number, businessId: number) =>
   api.delete(`/admin/draws/${drawId}/businesses/${businessId}`);
 
+export const setBusinessParticipation = (drawId: number, businessId: number, paused: boolean) =>
+  api.patch(`/admin/draws/${drawId}/businesses/${businessId}/participation`, { paused });
+
 export const fetchBusinessDetail = (businessId: number) =>
   api.get(`/admin/businesses/${businessId}`);
 
@@ -142,3 +149,10 @@ export const fetchNotificationHistory = () =>
 
 export const fetchGrowthAnalytics = () =>
   api.get<GrowthAnalytics>('/admin/analytics/growth');
+
+// Admin business view (read-only dashboard): active locations for the filter dropdowns.
+// Derived from the business detail endpoint - the server has no dedicated /locations route.
+export const fetchAdminBusinessLocations = (businessId: number) =>
+  api
+    .get<{ locations?: Array<{ id: number; name: string; is_active: boolean }> }>(`/admin/businesses/${businessId}`)
+    .then((r) => (r.data.locations ?? []).filter((l) => l.is_active).map(({ id, name }) => ({ id, name })));

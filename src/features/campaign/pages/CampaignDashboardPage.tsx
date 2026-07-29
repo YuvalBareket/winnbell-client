@@ -35,7 +35,9 @@ import AppPageHero from '../../../shared/components/AppPageHero';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser, selectIsBusiness, selectIsLocationManager, selectBusinessIsActive } from '../../../store/selectors/authSelectors';
+import { useQuery } from '@tanstack/react-query';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
+import { fetchAdminBusinessLocations } from '../../admin/api/adminApi';
 import { useCampaignHeader, useCampaignKpis, useCampaignEntries, useCampaigns } from '../hooks/useCampaignData';
 import { useSubscription } from '../../subscription/hooks/useSubscription';
 import DrawPreparationView from '../../tickets/components/DrawPreparationView';
@@ -87,7 +89,11 @@ const sourceBadge = (source: string) => {
   }
 };
 
-const CampaignDashboardPage = () => {
+interface CampaignDashboardPageProps {
+  adminBusinessId?: number;
+}
+
+const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusinessId }) => {
   const navigate = useNavigate();
   const user = useAppSelector(selectCurrentUser);
   const isBusiness = useAppSelector(selectIsBusiness);
@@ -102,8 +108,18 @@ const CampaignDashboardPage = () => {
   const [entriesPage, setEntriesPage] = useState(0);
   const entriesTopRef = useRef<HTMLDivElement | null>(null);
 
-  const { data: bizData } = useBusinessData(true);
-  const locations = (bizData?.locations ?? []).filter((l) => l.is_active) as BusinessLocation[];
+  const { data: bizData } = useBusinessData(!adminBusinessId);
+  // Admin read-only view: locations come from the admin business detail endpoint (the owner's
+  // useBusinessData is scoped to the logged-in user and would 403 / return nothing for an admin).
+  const { data: adminLocations } = useQuery({
+    queryKey: ['admin', 'business-locations', adminBusinessId],
+    queryFn: () => fetchAdminBusinessLocations(adminBusinessId as number),
+    enabled: !!adminBusinessId,
+    staleTime: 60_000,
+  });
+  const locations: Array<{ id: number; name: string }> = adminBusinessId
+    ? (adminLocations ?? [])
+    : ((bizData?.locations ?? []).filter((l) => l.is_active) as BusinessLocation[]);
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
@@ -112,7 +128,7 @@ const CampaignDashboardPage = () => {
   const hasDescription = !!(bizData?.description?.trim());
   const hasLocations = (bizData?.locations?.length ?? 0) > 0;
 
-  const { data: campaignsData, isLoading: campaignsLoading } = useCampaigns();
+  const { data: campaignsData, isLoading: campaignsLoading } = useCampaigns(adminBusinessId);
   const campaigns = campaignsData ?? [];
   const selectedCampaign = campaigns.find(c => c.draw_id === selectedCampaignId) ?? campaigns.find(c => c.is_current) ?? campaigns[0] ?? null;
   const campaignIdForQuery = selectedCampaign?.draw_id;
@@ -124,8 +140,8 @@ const CampaignDashboardPage = () => {
     : (selectedLocation !== '' ? (selectedLocation as number) : undefined);
 
   // Queries
-  const { data: headerData, isLoading: isHeaderLoading } = useCampaignHeader(locationIdForQuery, campaignIdForQuery, true);
-  const { data: kpiData, isLoading: isKpiLoading } = useCampaignKpis(dateRange, locationIdForQuery, isCurrentCampaign ? undefined : campaignIdForQuery, true);
+  const { data: headerData, isLoading: isHeaderLoading } = useCampaignHeader(locationIdForQuery, campaignIdForQuery, true, adminBusinessId);
+  const { data: kpiData, isLoading: isKpiLoading } = useCampaignKpis(dateRange, locationIdForQuery, isCurrentCampaign ? undefined : campaignIdForQuery, true, adminBusinessId);
   const {
     data: entriesData,
     isLoading: isEntriesLoading,
@@ -134,7 +150,7 @@ const CampaignDashboardPage = () => {
     fetchNextPage,
     // The feed shows the SAME period the KPI toggle selects (live campaign only - past
     // campaigns have no toggle and show their full history).
-  } = useCampaignEntries(locationIdForQuery, campaignIdForQuery, isCurrentCampaign ? dateRange : undefined);
+  } = useCampaignEntries(locationIdForQuery, campaignIdForQuery, isCurrentCampaign ? dateRange : undefined, adminBusinessId);
 
   const loadedPages = entriesData?.pages ?? [];
   const allEntries = loadedPages.flatMap((p) => p.items);
@@ -178,6 +194,21 @@ const CampaignDashboardPage = () => {
   // add it. Managers are not gated - they cannot upload the receipt example.
   const ownerMissingReceipt = isBusiness && !!bizData && !hasReceiptExample;
 
+  // Admin read-only view of a business with no campaigns: a plain empty state. The owner's
+  // DrawPreparationView below is a setup checklist keyed to the LOGGED-IN user's own
+  // subscription/business state, which is meaningless (and misleading) for an admin viewer.
+  if (adminBusinessId && !campaignsLoading && campaigns.length === 0) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ bgcolor: 'white', border: `1px solid ${BORDER_SUBTLE}`, borderRadius: '18px', p: 4, boxShadow: SHADOW_CARD, textAlign: 'center' }}>
+          <CampaignOutlined sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+          <Typography sx={{ fontSize: '18px', fontWeight: 800, color: TEXT_HEADING, mb: 1 }}>No campaigns yet</Typography>
+          <Typography sx={{ fontSize: '14px', color: TEXT_SECONDARY }}>This business has not participated in any campaign.</Typography>
+        </Box>
+      </Box>
+    );
+  }
+
   // A business with no campaigns yet (just subscribed, waiting for the next draw to open, or
   // not subscribed at all) sees the preparation / "getting ready" view instead of an empty dashboard.
   if (!campaignsLoading && (campaigns.length === 0 || ownerMissingReceipt)) {
@@ -196,9 +227,10 @@ const CampaignDashboardPage = () => {
     );
   }
 
-  // Campaign selector, location filter, date-range toggle. On DESKTOP they go into the page
-  // header card (actions slot); on MOBILE they stay in the body above the KPIs (the mobile hero
-  // is a gradient band where these white controls would look out of place).
+  // Campaign selector, location filter, date-range toggle - pure READ filters, so they stay
+  // available in the admin read-only view too. On DESKTOP they go into the page header card
+  // (actions slot); on MOBILE they stay in the body above the KPIs (the mobile hero is a
+  // gradient band where these white controls would look out of place).
   const headerControls = noCampaign ? null : (
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }} sx={{ width: { xs: '100%', sm: 'auto' } }}>
       {campaigns.length > 1 && (
@@ -213,7 +245,7 @@ const CampaignDashboardPage = () => {
           sx={{ minWidth: 190 }}
         />
       )}
-      {isBusiness && locations.length > 0 && (
+      {(isBusiness || !!adminBusinessId) && locations.length > 0 && (
         <Autocomplete
           size="small"
           options={locations}
@@ -254,7 +286,7 @@ const CampaignDashboardPage = () => {
   // Mobile controls: clean white pills (campaign + location) over a full-width segmented
   // date toggle, matching the design. Desktop keeps the labelled inputs in the hero.
   const showCampaignPill = campaigns.length > 1;
-  const showLocationPill = isBusiness && locations.length > 0;
+  const showLocationPill = (isBusiness || !!adminBusinessId) && locations.length > 0;
   const selectedLocationName = locations.find((l) => l.id === selectedLocation)?.name ?? 'All locations';
   const pillSx = {
     flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0.75,
@@ -646,7 +678,7 @@ const CampaignDashboardPage = () => {
       <CampaignOutlined sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
       <Typography sx={{ fontSize: '18px', fontWeight: 800, color: TEXT_HEADING, mb: 1 }}>No active campaign</Typography>
       <Typography sx={{ fontSize: '14px', color: TEXT_SECONDARY, mb: 3 }}>Start a campaign to begin issuing entries to customers.</Typography>
-      {isBusiness && (
+      {isBusiness && !adminBusinessId && (
         <Button variant="contained" onClick={() => navigate('/subscribe')} sx={{ fontWeight: 700, textTransform: 'none' }}>
           Start Campaign
         </Button>

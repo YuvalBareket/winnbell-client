@@ -1,8 +1,8 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import {
   fetchBusinesses,
+  fetchHealthSummary,
   fetchActiveDraws,
-  createBusiness,
   fetchAllDraws,
   createDraw,
   openDraw,
@@ -16,6 +16,7 @@ import {
   fetchDrawAuditLog,
   fetchAdminOverview,
   fetchAllUsers,
+  fetchUserAnalyticsSummary,
   updateUserRole,
   toggleUserActive,
   fetchDrawBusinesses,
@@ -32,6 +33,7 @@ import {
   duplicateDraw,
   addBusinessToDraw,
   removeBusinessFromDraw,
+  setBusinessParticipation,
   fetchBusinessDetail,
   fetchBusinessEntries,
   adminImageDecision,
@@ -39,17 +41,19 @@ import {
   fetchNotificationHistory,
   fetchGrowthAnalytics,
 } from '../api/adminApi';
-import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics } from '../types/admin.types';
+import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics, BusinessHealthSummary, UserAnalyticsSummary, DrawBusiness } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
-export const useAdminBusinesses = (params: { limit: number; search: string }) => {
+export const useAdminBusinesses = (params: { limit: number; search: string; filter?: string; excludeDrawId?: number; enabled?: boolean }) => {
   return useInfiniteQuery({
-    queryKey: [...queryKeys.admin.businesses, params.limit, params.search],
+    queryKey: [...queryKeys.admin.businesses, params.limit, params.search, params.filter || '', params.excludeDrawId ?? 0],
     queryFn: async ({ pageParam }) => {
       const { data } = await fetchBusinesses({
         page: pageParam as number,
         limit: params.limit,
         search: params.search || undefined,
+        filter: params.filter || undefined,
+        excludeDrawId: params.excludeDrawId,
       });
       return data as BusinessStatsPage;
     },
@@ -58,6 +62,18 @@ export const useAdminBusinesses = (params: { limit: number; search: string }) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     staleTime: 2 * 60_000,
     placeholderData: keepPreviousData,
+    enabled: params.enabled ?? true,
+  });
+};
+
+export const useHealthSummary = () => {
+  return useQuery({
+    queryKey: queryKeys.admin.healthSummary,
+    queryFn: async () => {
+      const { data } = await fetchHealthSummary();
+      return data as BusinessHealthSummary;
+    },
+    staleTime: 60_000,
   });
 };
 
@@ -72,17 +88,7 @@ export const useActiveDraws = () => {
   });
 };
 
-export const useCreateBusiness = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: createBusiness,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses });
-    },
-  });
-};
-
-export const useAllDraws = () => {
+export const useAllDraws = (enabled: boolean = true) => {
   return useQuery({
     queryKey: queryKeys.admin.drawsAll,
     queryFn: async () => {
@@ -90,6 +96,7 @@ export const useAllDraws = () => {
       return data;
     },
     staleTime: 30_000,
+    enabled,
   });
 };
 
@@ -182,7 +189,7 @@ export const useSetDrawPrizeRevealed = () => {
   });
 };
 
-export const useAdminOverview = () => {
+export const useAdminOverview = (enabled: boolean = true) => {
   return useQuery({
     queryKey: queryKeys.admin.overview,
     queryFn: async () => {
@@ -190,6 +197,18 @@ export const useAdminOverview = () => {
       return data;
     },
     staleTime: 2 * 60_000,
+    enabled,
+  });
+};
+
+export const useUserAnalyticsSummary = () => {
+  return useQuery({
+    queryKey: queryKeys.admin.userAnalyticsSummary,
+    queryFn: async () => {
+      const { data } = await fetchUserAnalyticsSummary();
+      return data as UserAnalyticsSummary;
+    },
+    staleTime: 60_000,
   });
 };
 
@@ -198,9 +217,10 @@ export const useAdminUsers = (params: {
   search: string;
   role: string;
   riskLevel: string;
+  segment?: string;
 }) => {
   return useInfiniteQuery({
-    queryKey: [...queryKeys.admin.users, params.limit ?? null, params.search ?? '', params.role ?? '', params.riskLevel ?? ''],
+    queryKey: [...queryKeys.admin.users, params.limit ?? null, params.search ?? '', params.role ?? '', params.riskLevel ?? '', params.segment ?? ''],
     queryFn: async ({ pageParam }) => {
       const { data } = await fetchAllUsers({
         page: pageParam as number,
@@ -208,6 +228,7 @@ export const useAdminUsers = (params: {
         search: params.search || undefined,
         role: params.role || undefined,
         riskLevel: params.riskLevel || undefined,
+        segment: params.segment || undefined,
       });
       return data as AdminUsersPage;
     },
@@ -243,12 +264,9 @@ export const useUpdateUserRole = () => {
   });
 };
 
-type DrawBusinessRow = {
-  id: number; name: string; sector: string; logo_url: string | null;
-  fee_at_entry: number; joined_at: string;
-};
-
-type DrawBusinessesPage = { rows: DrawBusinessRow[]; total: number };
+// Row shape lives in admin.types.ts (DrawBusiness) - single source of truth for the
+// /admin/draws/:id/businesses contract.
+type DrawBusinessesPage = { rows: DrawBusiness[]; total: number };
 
 export const useDrawBusinesses = (drawId: number | null, search = '', sector = '') => {
   return useInfiniteQuery({
@@ -453,6 +471,18 @@ export const useRemoveBusinessFromDraw = () => {
   return useMutation({
     mutationFn: ({ drawId, businessId }: { drawId: number; businessId: number }) =>
       removeBusinessFromDraw(drawId, businessId),
+    onSuccess: (_, { drawId }) => {
+      // Prefix-invalidate all variants of draw-businesses for this drawId
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawBusinessesAll(drawId) });
+    },
+  });
+};
+
+export const useSetBusinessParticipation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ drawId, businessId, paused }: { drawId: number; businessId: number; paused: boolean }) =>
+      setBusinessParticipation(drawId, businessId, paused),
     onSuccess: (_, { drawId }) => {
       // Prefix-invalidate all variants of draw-businesses for this drawId
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawBusinessesAll(drawId) });

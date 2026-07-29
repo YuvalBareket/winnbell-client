@@ -3,35 +3,43 @@ import { fetchCampaigns, fetchCampaignHeader, fetchCampaignKpis, fetchCampaignEn
 import { getDrawResult } from '../../draw/api/draw.api';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
-export const useCampaigns = () => {
+export const useCampaigns = (adminBusinessId?: number) => {
   return useQuery({
-    queryKey: queryKeys.campaign.list(),
-    queryFn: fetchCampaigns,
+    queryKey: adminBusinessId
+      ? ['admin', 'business-campaign-list', adminBusinessId]
+      : queryKeys.campaign.list(),
+    queryFn: () => fetchCampaigns(adminBusinessId),
     staleTime: 60_000,
   });
 };
 
-export const useCampaignHeader = (locationId?: number, campaignId?: number, enabled: boolean = true) => {
+export const useCampaignHeader = (locationId?: number, campaignId?: number, enabled: boolean = true, adminBusinessId?: number) => {
   return useQuery({
-    queryKey: queryKeys.campaign.header(locationId, campaignId),
-    queryFn: () => fetchCampaignHeader(locationId, campaignId),
+    queryKey: adminBusinessId
+      ? ['admin', 'business-campaign-header', adminBusinessId, locationId ?? 'all', campaignId ?? 'current']
+      : queryKeys.campaign.header(locationId, campaignId),
+    queryFn: () => fetchCampaignHeader(locationId, campaignId, adminBusinessId),
     staleTime: 30_000,
     enabled,
   });
 };
 
-export const useCampaignKpis = (dateRange: DateRange, locationId?: number, campaignId?: number, enabled: boolean = true) => {
+export const useCampaignKpis = (dateRange: DateRange, locationId?: number, campaignId?: number, enabled: boolean = true, adminBusinessId?: number) => {
   return useQuery({
-    queryKey: queryKeys.campaign.kpis(dateRange, locationId, campaignId),
-    queryFn: () => fetchCampaignKpis(dateRange, locationId, campaignId),
+    queryKey: adminBusinessId
+      ? ['admin', 'business-campaign-kpis', adminBusinessId, dateRange, locationId ?? 'all', campaignId ?? 'current']
+      : queryKeys.campaign.kpis(dateRange, locationId, campaignId),
+    queryFn: () => fetchCampaignKpis(dateRange, locationId, campaignId, adminBusinessId),
     staleTime: 30_000,
     enabled,
   });
 };
 
-export const useCampaignEntries = (locationId?: number, campaignId?: number, range?: DateRange) => {
+export const useCampaignEntries = (locationId?: number, campaignId?: number, range?: DateRange, adminBusinessId?: number) => {
   return useInfiniteQuery({
-    queryKey: queryKeys.campaign.entries(locationId, campaignId, range),
+    queryKey: adminBusinessId
+      ? ['admin', 'business-campaign-entries', adminBusinessId, locationId ?? 'all', campaignId ?? 'current', range ?? 'all-time']
+      : queryKeys.campaign.entries(locationId, campaignId, range),
     queryFn: ({ pageParam }) =>
       fetchCampaignEntries({
         location_id: locationId,
@@ -39,6 +47,7 @@ export const useCampaignEntries = (locationId?: number, campaignId?: number, ran
         limit: 20,
         campaign_id: campaignId,
         range,
+        admin_business_id: adminBusinessId,
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,

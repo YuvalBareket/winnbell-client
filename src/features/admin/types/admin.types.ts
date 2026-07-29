@@ -38,6 +38,17 @@ export interface BusinessStats {
   fee_at_entry: number | null;
   location_count: number;
   total_activated: number;
+  enrolled?: boolean;
+  next_campaign_ready?: boolean;
+  entries_current?: number;
+  entries_7d?: number;
+  unique_customers?: number;
+  repeat_customers?: number;
+  last_entry_at?: string | null;
+  views_30d?: number;
+  total_cap?: number | null;
+  flags?: string[];
+  health?: 'at_risk' | 'watch' | 'good';
 }
 
 export interface BusinessStatsPage {
@@ -46,6 +57,38 @@ export interface BusinessStatsPage {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface BusinessHealthSummary {
+  total: number;
+  attention: number;
+  no_recent_entries: number;
+  low_engagement: number;
+  billing: number;
+  setup: number;
+  next_ready: number;
+}
+
+export interface UserAnalyticsSummary {
+  total: number;
+  users: number;
+  businesses: number;
+  high_risk: number;
+  medium_risk: number;
+  suspended: number;
+  unverified: number;
+  new_7d: number;
+  active_30d: number;
+}
+
+export interface DrawBusiness {
+  id: number;
+  name: string;
+  sector: string;
+  logo_url: string | null;
+  fee_at_entry: number;
+  joined_at: string;
+  is_paused?: boolean;
 }
 
 export interface Draw {
@@ -70,16 +113,6 @@ export interface UpdateDrawInput {
   prize_amount?: number;
   draw_date?: string;
   start_date?: string;
-}
-
-export interface CreateBusinessInput {
-  owner_user_id: number;
-  name: string;
-  sector: string;
-  location: string;
-  latitude?: number;
-  longitude?: number;
-  terms_text?: string;
 }
 
 export interface CreateDrawInput {

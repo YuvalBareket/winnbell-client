@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
 import GppBadIcon from '@mui/icons-material/GppBad';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -82,6 +83,7 @@ const SUB_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default'> = 
 const ALL = '__all__';
 
 const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
+  const navigate = useNavigate();
   const { data, isLoading } = useBusinessDetail(businessId);
   const [selectedDrawId, setSelectedDrawId] = useState<string>(ALL);
   const [entriesPage, setEntriesPage] = useState(1);
@@ -98,6 +100,13 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
   const biz = data?.business;
   const locations = data?.locations ?? [];
   const campaignSummary = data?.campaignSummary ?? [];
+
+  const handleViewDashboard = () => {
+    if (businessId) {
+      navigate(`/admin/businesses/${businessId}/view`);
+      onClose();
+    }
+  };
 
   const drawIdForEntries = selectedDrawId !== ALL ? parseInt(selectedDrawId, 10) : null;
   const { data: entriesData, isLoading: entriesLoading } = useBusinessEntries(businessId, drawIdForEntries, entriesPage);
@@ -163,32 +172,52 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
           }}
         />
 
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1, gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
             <Avatar
               sx={{
                 width: 48,
                 height: 48,
                 bgcolor: ALPHA_WHITE_15,
                 border: `2px solid ${ALPHA_WHITE_30}`,
+                flexShrink: 0,
               }}
             >
               {biz?.logo_url
                 ? <Box component='img' src={`${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${biz.logo_url}`} alt={biz?.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <StorefrontIcon sx={{ color: 'white' }} />}
             </Avatar>
-            <Box>
-              <Typography variant='h6' fontWeight={800} sx={{ color: 'white', lineHeight: 1.2 }}>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant='h6' fontWeight={800} sx={{ color: 'white', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {biz?.name ?? 'Loading...'}
               </Typography>
-              <Typography variant='body2' sx={{ color: ALPHA_WHITE_80 }}>
+              <Typography variant='body2' sx={{ color: ALPHA_WHITE_80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {biz?.sector ?? ''}
               </Typography>
             </Box>
           </Box>
-          <IconButton onClick={onClose} size='small' sx={{ color: 'white' }}>
-            <CloseIcon />
-          </IconButton>
+          <Stack direction='row' spacing={0.75} sx={{ flexShrink: 0 }}>
+            <Button
+              size='small'
+              onClick={handleViewDashboard}
+              disabled={isLoading}
+              sx={{
+                bgcolor: 'rgba(255, 255, 255, 0.15)',
+                color: 'white',
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                px: 1.5,
+                py: 0.75,
+                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.25)' },
+                '&:disabled': { bgcolor: 'rgba(255, 255, 255, 0.1)', color: 'rgba(255, 255, 255, 0.5)' },
+              }}
+            >
+              Dashboard
+            </Button>
+            <IconButton onClick={onClose} size='small' sx={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
+          </Stack>
         </Box>
       </Box>
 
