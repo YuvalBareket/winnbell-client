@@ -69,6 +69,16 @@ export interface BusinessHealthSummary {
   next_ready: number;
 }
 
+export interface DrawBusiness {
+  id: number;
+  name: string;
+  sector: string;
+  logo_url: string | null;
+  fee_at_entry: number;
+  joined_at: string;
+  is_paused?: boolean;
+}
+
 export interface Draw {
   id: number;
   name: string;

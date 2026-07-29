@@ -123,6 +123,9 @@ export const addBusinessToDraw = (drawId: number, businessId: number) =>
 export const removeBusinessFromDraw = (drawId: number, businessId: number) =>
   api.delete(`/admin/draws/${drawId}/businesses/${businessId}`);
 
+export const setBusinessParticipation = (drawId: number, businessId: number, paused: boolean) =>
+  api.patch(`/admin/draws/${drawId}/businesses/${businessId}/participation`, { paused });
+
 export const fetchBusinessDetail = (businessId: number) =>
   api.get(`/admin/businesses/${businessId}`);
 

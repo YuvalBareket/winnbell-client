@@ -32,6 +32,7 @@ import {
   duplicateDraw,
   addBusinessToDraw,
   removeBusinessFromDraw,
+  setBusinessParticipation,
   fetchBusinessDetail,
   fetchBusinessEntries,
   adminImageDecision,
@@ -39,7 +40,7 @@ import {
   fetchNotificationHistory,
   fetchGrowthAnalytics,
 } from '../api/adminApi';
-import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics, BusinessHealthSummary } from '../types/admin.types';
+import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics, BusinessHealthSummary, DrawBusiness } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useAdminBusinesses = (params: { limit: number; search: string; filter?: string; excludeDrawId?: number; enabled?: boolean }) => {
@@ -249,12 +250,9 @@ export const useUpdateUserRole = () => {
   });
 };
 
-type DrawBusinessRow = {
-  id: number; name: string; sector: string; logo_url: string | null;
-  fee_at_entry: number; joined_at: string;
-};
-
-type DrawBusinessesPage = { rows: DrawBusinessRow[]; total: number };
+// Row shape lives in admin.types.ts (DrawBusiness) - single source of truth for the
+// /admin/draws/:id/businesses contract.
+type DrawBusinessesPage = { rows: DrawBusiness[]; total: number };
 
 export const useDrawBusinesses = (drawId: number | null, search = '', sector = '') => {
   return useInfiniteQuery({
@@ -459,6 +457,18 @@ export const useRemoveBusinessFromDraw = () => {
   return useMutation({
     mutationFn: ({ drawId, businessId }: { drawId: number; businessId: number }) =>
       removeBusinessFromDraw(drawId, businessId),
+    onSuccess: (_, { drawId }) => {
+      // Prefix-invalidate all variants of draw-businesses for this drawId
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawBusinessesAll(drawId) });
+    },
+  });
+};
+
+export const useSetBusinessParticipation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ drawId, businessId, paused }: { drawId: number; businessId: number; paused: boolean }) =>
+      setBusinessParticipation(drawId, businessId, paused),
     onSuccess: (_, { drawId }) => {
       // Prefix-invalidate all variants of draw-businesses for this drawId
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawBusinessesAll(drawId) });

@@ -60,6 +60,7 @@ import {
   useDuplicateDraw,
   useAddBusinessToDraw,
   useRemoveBusinessFromDraw,
+  useSetBusinessParticipation,
   useAdminBusinesses,
   useDrawCandidate,
   useDrawRejectedWinners,
@@ -72,6 +73,7 @@ import {
   ACCENT_GOLD_LIGHT, ACCENT_GOLD_CREAM, ACCENT_GOLD_DARK, ACCENT_GOLD, GOLD_INK,
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_80, GOLD_TROPHY,
   BG_SURFACE, BORDER_LIGHT, GRADIENT_SUCCESS_GREEN, ERROR_BORDER_LIGHT, ERROR_HOVER_BG,
+  METRIC_WARN, METRIC_WARN_TINT,
 } from '../../../../shared/colors';
 import { staggerContainer, popIn } from '../../../../shared/motion';
 import { AdminCard, IconTile } from './adminUi';
@@ -99,11 +101,13 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
   } = useDrawBusinesses(drawId, filterSearchDebounced, filterSector);
   const addBiz = useAddBusinessToDraw();
   const removeBiz = useRemoveBusinessFromDraw();
+  const setPauseBiz = useSetBusinessParticipation();
   const [adding, setAdding] = useState(false);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedBiz, setSelectedBiz] = useState<{ id: number; name: string } | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<{ id: number; name: string } | null>(null);
+  const [confirmPause, setConfirmPause] = useState<{ id: number; name: string } | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   // Filter state is reset via key={draw.id} on the panel render site (2.16).
@@ -172,6 +176,16 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
     if (!confirmRemove) return;
     await removeBiz.mutateAsync({ drawId, businessId: confirmRemove.id });
     setConfirmRemove(null);
+  };
+
+  const handlePauseConfirmed = async () => {
+    if (!confirmPause) return;
+    await setPauseBiz.mutateAsync({ drawId, businessId: confirmPause.id, paused: true });
+    setConfirmPause(null);
+  };
+
+  const handleReinstate = async (businessId: number) => {
+    await setPauseBiz.mutateAsync({ drawId, businessId, paused: false });
   };
 
   if (isLoading) return <Box sx={{ p: 2 }}><Skeleton variant='rectangular' height={60} /></Box>;
@@ -262,12 +276,38 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
       ) : (
         <Stack spacing={0.5}>
           {allRows.map((b) => (
-            <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 2, bgcolor: BG_ROW_SUBTLE, border: `1px solid ${BORDER_SUBTLE}` }}>
-              <Typography variant='body2' fontWeight={600}>{b.name}</Typography>
+            <Box key={b.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.75, px: 1.5, borderRadius: 2, bgcolor: b.is_paused ? METRIC_WARN_TINT : BG_ROW_SUBTLE, border: `1px solid ${BORDER_SUBTLE}`, opacity: b.is_paused ? 0.7 : 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                <Typography variant='body2' fontWeight={600} sx={{ color: TEXT_HEADING }}>{b.name}</Typography>
+                {b.is_paused && (
+                  <Chip label='Paused' size='small' sx={{ bgcolor: METRIC_WARN, color: 'white', fontWeight: 700, fontSize: 11 }} />
+                )}
+              </Box>
               {canEdit && (
-                <IconButton size='small' color='error' onClick={() => setConfirmRemove({ id: b.id, name: b.name })} disabled={removeBiz.isPending}>
-                  <DeleteIcon fontSize='small' />
-                </IconButton>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  {drawStatus?.toUpperCase() === 'OPEN' && (
+                    <>
+                      {/* All buttons disable while any mutation runs (double-fire guard), but the
+                          spinner shows only on the ROW being acted on (mutation variables). */}
+                      {b.is_paused ? (
+                        <Button size='small' variant='contained' sx={{ fontWeight: 600, textTransform: 'none', fontSize: 11 }} onClick={() => handleReinstate(b.id)} disabled={setPauseBiz.isPending}>
+                          {setPauseBiz.isPending && setPauseBiz.variables?.businessId === b.id ? <CircularProgress size={14} sx={{ mr: 0.5 }} /> : null}
+                          Reinstate
+                        </Button>
+                      ) : (
+                        <Button size='small' variant='outlined' sx={{ fontWeight: 600, textTransform: 'none', fontSize: 11, borderColor: METRIC_WARN, color: METRIC_WARN, '&:hover': { bgcolor: METRIC_WARN_TINT } }} onClick={() => setConfirmPause({ id: b.id, name: b.name })} disabled={setPauseBiz.isPending}>
+                          {setPauseBiz.isPending && setPauseBiz.variables?.businessId === b.id ? <CircularProgress size={14} sx={{ mr: 0.5 }} /> : null}
+                          Pause
+                        </Button>
+                      )}
+                    </>
+                  )}
+                  {drawStatus?.toUpperCase() !== 'OPEN' && (
+                    <IconButton size='small' color='error' onClick={() => setConfirmRemove({ id: b.id, name: b.name })} disabled={removeBiz.isPending}>
+                      <DeleteIcon fontSize='small' />
+                    </IconButton>
+                  )}
+                </Box>
               )}
             </Box>
           ))}
@@ -290,6 +330,21 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
           <Button onClick={() => setConfirmRemove(null)}>Cancel</Button>
           <Button variant='contained' color='error' onClick={handleRemoveConfirmed} disabled={removeBiz.isPending}>
             {removeBiz.isPending ? 'Removing...' : 'Remove'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!confirmPause} onClose={() => setConfirmPause(null)} maxWidth='xs' fullWidth>
+        <DialogTitle>Pause participation?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This hides the business from the map and stops new entries. Entries already earned by customers stay valid and can still win. You can reinstate it any time.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmPause(null)}>Cancel</Button>
+          <Button variant='contained' onClick={handlePauseConfirmed} disabled={setPauseBiz.isPending} sx={{ bgcolor: METRIC_WARN, '&:hover': { bgcolor: METRIC_WARN, opacity: 0.9 }, color: 'white' }}>
+            {setPauseBiz.isPending ? 'Pausing...' : 'Pause Business'}
           </Button>
         </DialogActions>
       </Dialog>
