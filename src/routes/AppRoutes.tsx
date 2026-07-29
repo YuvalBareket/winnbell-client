@@ -17,6 +17,7 @@ import { useSupabaseSync } from '../shared/hooks/useSupabaseSync';
 import { SyncStatusContext } from '../shared/context/SyncStatusContext';
 
 import MainLayout from '../shared/components/MainLayout';
+import PageTitle from '../shared/components/PageTitle';
 import ProtectedRoute from './ProtectedRoute';
 import RegionGate from '../shared/components/RegionGate';
 import LoadingScreen from '../shared/components/LoadingScreen';
@@ -129,6 +130,7 @@ const AppRoutes = () => {
   return (
     <SyncStatusContext.Provider value={{ syncError, retry, isLoaded, isSignedIn }}>
     <ErrorBoundary fallback={routeFallback} resetKeys={[location.pathname, isAuthenticated, isSignedIn]}>
+    <PageTitle />
     <Suspense fallback={<RouteFallback />}>
     <Routes>
       {/* --- Public Routes --- */}

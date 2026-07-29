@@ -1,2 +1,28 @@
 User-agent: *
-Disallow: /
+Allow: /
+
+# App-only routes (behind sign-in or parameterized entry points; no SEO value)
+Disallow: /admin
+Disallow: /scan
+Disallow: /start
+Disallow: /join
+Disallow: /tickets
+Disallow: /draws
+Disallow: /nearby
+Disallow: /campaign
+Disallow: /stats
+Disallow: /marketing
+Disallow: /subscribe
+Disallow: /subscription
+Disallow: /settings
+Disallow: /invite
+Disallow: /freeTicket
+Disallow: /profile-setup
+Disallow: /partner
+Disallow: /sso-callback
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /activate
+Disallow: /region-blocked
+
+Sitemap: https://www.winnbell.com/sitemap.xml

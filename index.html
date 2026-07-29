@@ -6,8 +6,33 @@
          is under 16px (the zoomed auth forms shrink even 16px text below that threshold).
          iOS still allows user pinch-zoom regardless of this cap (accessibility, iOS 10+). -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Winnbell</title>
-    <meta name="robots" content="noindex, nofollow" />
+    <title>Winnbell - Shop Local. Win Monthly Cash Prizes.</title>
+    <meta name="description" content="Turn everyday shopping into chances to win real monthly cash prizes. Earn entries through participating businesses or claim your weekly entry today. No purchase necessary." />
+
+    <!-- ── Social sharing (Open Graph / Twitter) ── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Winnbell" />
+    <meta property="og:title" content="Winnbell - Shop Local. Win Monthly Cash Prizes." />
+    <meta property="og:description" content="Turn everyday shopping into chances to win real monthly cash prizes. Earn entries through participating businesses or claim your weekly entry today. No purchase necessary." />
+    <meta property="og:url" content="https://www.winnbell.com/" />
+    <meta property="og:image" content="https://www.winnbell.com/winnbell_logo.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Winnbell - Shop Local. Win Monthly Cash Prizes." />
+    <meta name="twitter:description" content="Turn everyday shopping into chances to win real monthly cash prizes. Earn entries through participating businesses or claim your weekly entry today. No purchase necessary." />
+    <meta name="twitter:image" content="https://www.winnbell.com/winnbell_logo.png" />
+
+    <!-- ── Structured data: lets Google show the brand name/logo for "winnbell" searches.
+         type=application/ld+json is a data block (never executed), so strict CSP allows it. ── -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Winnbell",
+        "url": "https://www.winnbell.com/",
+        "logo": "https://www.winnbell.com/winnbell_logo.png",
+        "email": "support@winnbell.com"
+      }
+    </script>
 
     <!-- ── PWA / Icons ── -->
     <link rel="icon" type="image/png" href="/winnbell_app_icon.png" />
