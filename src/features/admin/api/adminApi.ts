@@ -142,3 +142,10 @@ export const fetchNotificationHistory = () =>
 
 export const fetchGrowthAnalytics = () =>
   api.get<GrowthAnalytics>('/admin/analytics/growth');
+
+// Admin business view (read-only dashboard): active locations for the filter dropdowns.
+// Derived from the business detail endpoint - the server has no dedicated /locations route.
+export const fetchAdminBusinessLocations = (businessId: number) =>
+  api
+    .get<{ locations?: Array<{ id: number; name: string; is_active: boolean }> }>(`/admin/businesses/${businessId}`)
+    .then((r) => (r.data.locations ?? []).filter((l) => l.is_active).map(({ id, name }) => ({ id, name })));

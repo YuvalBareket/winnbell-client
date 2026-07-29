@@ -47,16 +47,18 @@ export interface CampaignEntriesResult {
   next_cursor: string | null;
 }
 
-export const fetchCampaigns = async (): Promise<CampaignListItem[]> => {
-  const res = await api.get<CampaignListItem[]>('/business/campaign/list');
+export const fetchCampaigns = async (adminBusinessId?: number): Promise<CampaignListItem[]> => {
+  const endpoint = adminBusinessId ? `/admin/businesses/${adminBusinessId}/campaign/list` : '/business/campaign/list';
+  const res = await api.get<CampaignListItem[]>(endpoint);
   return res.data;
 };
 
-export const fetchCampaignHeader = async (locationId?: number, campaignId?: number): Promise<CampaignHeaderData> => {
+export const fetchCampaignHeader = async (locationId?: number, campaignId?: number, adminBusinessId?: number): Promise<CampaignHeaderData> => {
   const params: Record<string, unknown> = {};
   if (locationId) params.location_id = locationId;
   if (campaignId != null) params.draw_id = campaignId;
-  const res = await api.get<CampaignHeaderData>('/business/campaign/header', { params });
+  const endpoint = adminBusinessId ? `/admin/businesses/${adminBusinessId}/campaign/header` : '/business/campaign/header';
+  const res = await api.get<CampaignHeaderData>(endpoint, { params });
   return res.data;
 };
 
@@ -64,11 +66,13 @@ export const fetchCampaignKpis = async (
   dateRange: DateRange,
   locationId?: number,
   campaignId?: number,
+  adminBusinessId?: number,
 ): Promise<CampaignKpiData> => {
   const params: Record<string, unknown> = { date_range: dateRange };
   if (locationId) params.location_id = locationId;
   if (campaignId != null) params.draw_id = campaignId;
-  const res = await api.get<CampaignKpiData>('/business/campaign/kpis', { params });
+  const endpoint = adminBusinessId ? `/admin/businesses/${adminBusinessId}/campaign/kpis` : '/business/campaign/kpis';
+  const res = await api.get<CampaignKpiData>(endpoint, { params });
   return res.data;
 };
 
@@ -77,8 +81,8 @@ export const fetchCampaignEntries = async (params: {
   cursor?: string;
   limit?: number;
   campaign_id?: number;
-  // Same period the KPI toggle uses - keeps the feed consistent with the counters.
   range?: DateRange;
+  admin_business_id?: number;
 }): Promise<CampaignEntriesResult> => {
   const queryParams: Record<string, unknown> = {};
   if (params.location_id !== undefined) queryParams.location_id = params.location_id;
@@ -87,7 +91,10 @@ export const fetchCampaignEntries = async (params: {
   if (params.campaign_id !== undefined) queryParams.draw_id = params.campaign_id;
   if (params.range !== undefined) queryParams.range = params.range;
 
-  const res = await api.get<CampaignEntriesResult>('/business/campaign/entries', {
+  const endpoint = params.admin_business_id
+    ? `/admin/businesses/${params.admin_business_id}/campaign/entries`
+    : '/business/campaign/entries';
+  const res = await api.get<CampaignEntriesResult>(endpoint, {
     params: queryParams,
   });
   return res.data;

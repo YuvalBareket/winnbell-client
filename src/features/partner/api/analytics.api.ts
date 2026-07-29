@@ -90,9 +90,13 @@ export interface FetchAnalyticsParams {
 export const fetchAnalyticsSection = async <C extends AnalyticsCategory>(
   category: C,
   { locationId, from, to, bucket }: FetchAnalyticsParams,
+  adminBusinessId?: number,
 ): Promise<AnalyticsResponseMap[C]> => {
   const params: Record<string, string | number> = { from, to, bucket };
   if (locationId !== undefined) params.locationId = locationId;
-  const res = await api.get<AnalyticsResponseMap[C]>(`/business/analytics/${category}`, { params });
+  const endpoint = adminBusinessId
+    ? `/admin/businesses/${adminBusinessId}/analytics/${category}`
+    : `/business/analytics/${category}`;
+  const res = await api.get<AnalyticsResponseMap[C]>(endpoint, { params });
   return res.data;
 };

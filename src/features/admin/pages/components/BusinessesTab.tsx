@@ -14,10 +14,14 @@ import {
   TextField,
   InputAdornment,
   Skeleton,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import StorefrontIcon from '@mui/icons-material/Storefront';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BUSINESS_SECTORS } from '../../data';
 import {
@@ -47,6 +51,7 @@ const SUB_COLOR: Record<string, { label: string; color: 'success' | 'warning' | 
 const LIMIT = 25;
 
 const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [selectedBizId, setSelectedBizId] = useState<number | null>(null);
@@ -177,47 +182,61 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
             : mobileRows.map((biz) => {
                 const sectorData = BUSINESS_SECTORS[biz.sector as keyof typeof BUSINESS_SECTORS];
                 return (
-                  <motion.div key={biz.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }} onClick={() => setSelectedBizId(biz.id)}>
-                    <AdminCard sx={{ cursor: 'pointer' }} hover>
-                      <Box sx={{ p: 2 }}>
-                        <Stack spacing={1.5}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box
-                              sx={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                width: 40, height: 40, borderRadius: '12px',
-                                bgcolor: PRIMARY_TINT, color: PRIMARY_MAIN,
-                              }}
-                            >
-                              {sectorData?.icon || <StorefrontIcon />}
-                            </Box>
-                            <Box flex={1} minWidth={0}>
-                              <Typography variant='subtitle2' fontWeight={800} noWrap sx={{ color: TEXT_HEADING }}>{biz.name}</Typography>
-                              <Typography variant='caption' sx={{ color: TEXT_TERTIARY }} noWrap>
-                                {biz.owner_name ?? biz.owner_email ?? '—'}
-                              </Typography>
-                            </Box>
-                            {subChip(biz.subscription_status)}
-                          </Box>
-                          <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Box>
-                              <Typography variant='h6' fontWeight={800} sx={{ color: TEXT_HEADING }}>{biz.total_activated}</Typography>
-                              <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>entries</Typography>
-                            </Box>
-                            <Box>
-                              <Typography variant='h6' fontWeight={800} sx={{ color: TEXT_HEADING }}>{biz.location_count}</Typography>
-                              <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>locations</Typography>
-                            </Box>
-                            {biz.entry_cap && (
-                              <Box>
-                                <Typography variant='h6' fontWeight={800} sx={{ color: TEXT_HEADING }}>{biz.entry_cap}</Typography>
-                                <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>cap</Typography>
+                  <motion.div key={biz.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
+                    <Box sx={{ cursor: 'pointer' }} onClick={() => setSelectedBizId(biz.id)}>
+                      <AdminCard sx={{ cursor: 'pointer' }} hover>
+                        <Box sx={{ p: 2 }}>
+                          <Stack spacing={1.5}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <Box
+                                sx={{
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  width: 40, height: 40, borderRadius: '12px',
+                                  bgcolor: PRIMARY_TINT, color: PRIMARY_MAIN,
+                                }}
+                              >
+                                {sectorData?.icon || <StorefrontIcon />}
                               </Box>
-                            )}
-                          </Box>
-                        </Stack>
-                      </Box>
-                    </AdminCard>
+                              <Box flex={1} minWidth={0}>
+                                <Typography variant='subtitle2' fontWeight={800} noWrap sx={{ color: TEXT_HEADING }}>{biz.name}</Typography>
+                                <Typography variant='caption' sx={{ color: TEXT_TERTIARY }} noWrap>
+                                  {biz.owner_name ?? biz.owner_email ?? '—'}
+                                </Typography>
+                              </Box>
+                              <Tooltip title='View dashboard'>
+                                <IconButton
+                                  size='small'
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/admin/businesses/${biz.id}/view`);
+                                  }}
+                                  sx={{ color: PRIMARY_MAIN }}
+                                >
+                                  <OpenInNewIcon fontSize='small' />
+                                </IconButton>
+                              </Tooltip>
+                              {subChip(biz.subscription_status)}
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                              <Box>
+                                <Typography variant='h6' fontWeight={800} sx={{ color: TEXT_HEADING }}>{biz.total_activated}</Typography>
+                                <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>entries</Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant='h6' fontWeight={800} sx={{ color: TEXT_HEADING }}>{biz.location_count}</Typography>
+                                <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>locations</Typography>
+                              </Box>
+                              {biz.entry_cap && (
+                                <Box>
+                                  <Typography variant='h6' fontWeight={800} sx={{ color: TEXT_HEADING }}>{biz.entry_cap}</Typography>
+                                  <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>cap</Typography>
+                                </Box>
+                              )}
+                            </Box>
+                          </Stack>
+                        </Box>
+                      </AdminCard>
+                    </Box>
                   </motion.div>
                 );
               })}
@@ -237,13 +256,14 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
                 <TableCell align='center' sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 12 }}>Locations</TableCell>
                 <TableCell align='center' sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 12 }}>Entries</TableCell>
                 <TableCell align='center' sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 12 }}>Cap</TableCell>
+                <TableCell align='center' sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 12 }}>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {isLoading
                 ? Array.from({ length: 8 }).map((_, i) => (
                     <TableRow key={i} sx={{ '&:hover': { bgcolor: BG_ROW_SUBTLE } }}>
-                      {Array.from({ length: 7 }).map((__, j) => (
+                      {Array.from({ length: 8 }).map((__, j) => (
                         <TableCell key={j}><Skeleton /></TableCell>
                       ))}
                     </TableRow>
@@ -286,12 +306,26 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
                         <TableCell align='center' sx={{ color: TEXT_TERTIARY }}>
                           {biz.entry_cap ?? '—'}
                         </TableCell>
+                        <TableCell align='center'>
+                          <Tooltip title='View dashboard'>
+                            <IconButton
+                              size='small'
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/admin/businesses/${biz.id}/view`);
+                              }}
+                              sx={{ color: PRIMARY_MAIN }}
+                            >
+                              <OpenInNewIcon fontSize='small' />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
               {!isLoading && desktopRows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} align='center' sx={{ py: 4, color: TEXT_TERTIARY }}>
+                  <TableCell colSpan={8} align='center' sx={{ py: 4, color: TEXT_TERTIARY }}>
                     No businesses found.
                   </TableCell>
                 </TableRow>

@@ -59,6 +59,7 @@ const FoundingPartnerTermsPage = lazy(() => import('../features/legal/pages/Foun
 const CancellationRefundPage = lazy(() => import('../features/legal/pages/CancellationRefundPage'));
 const ContactPage = lazy(() => import('../features/contact/pages/ContactPage'));
 const BusinessDashboard = lazy(() => import('../features/admin/pages/BusinessDashboard'));
+const AdminBusinessViewPage = lazy(() => import('../features/admin/pages/AdminBusinessViewPage'));
 const BusinessProfilePage = lazy(() => import('../features/partner/pages/BusinessProfilePage'));
 const BusinessHubPage = lazy(() => import('../features/partner/pages/BusinessHubPage'));
 const BusinessAnalyticsPage = lazy(() => import('../features/partner/pages/BusinessAnalyticsPage'));
@@ -175,6 +176,7 @@ const AppRoutes = () => {
               <Route path='/admin/campaigns' element={<BusinessDashboard />} />
               <Route path='/admin/users' element={<BusinessDashboard />} />
               <Route path='/admin/businesses' element={<BusinessDashboard />} />
+              <Route path='/admin/businesses/:businessId/view' element={<AdminBusinessViewPage />} />
               <Route path='/admin/analytics' element={<BusinessDashboard />} />
               <Route path='/admin/settings' element={<BusinessDashboard />} />
               <Route path='/admin/notifications' element={<BusinessDashboard />} />
