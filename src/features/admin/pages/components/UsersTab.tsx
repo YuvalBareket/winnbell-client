@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Stack,
-  Alert,
   Chip,
   TextField,
   InputAdornment,
@@ -13,6 +12,7 @@ import {
   InputLabel,
   Table,
   TableContainer,
+  TablePagination,
   TableHead,
   TableBody,
   TableRow,
@@ -39,6 +39,7 @@ import {
   useAdminUsers,
   useToggleUserActive,
   useSetUserRisk,
+  useUserAnalyticsSummary,
 } from '../../hooks/useAdmin';
 import { useDebounce } from '../../../../shared/hooks/useDebounce';
 import type { AdminUser } from '../../types/admin.types';
@@ -56,9 +57,8 @@ import {
   METRIC_GOOD,
   METRIC_WARN_TINT,
   METRIC_WARN,
-  PRIMARY_MAIN,
 } from '../../../../shared/colors';
-import { riseIn, staggerContainer } from '../../../../shared/motion';
+import { riseIn, staggerContainer, popIn } from '../../../../shared/motion';
 import { AdminCard } from './adminUi';
 import UserDetailDrawer from './UserDetailDrawer';
 
@@ -71,6 +71,19 @@ function formatLastActive(value: string | null): string {
   return date.toLocaleDateString('en-US');
 }
 
+const tipContent = (title: string, lines: readonly string[]) => (
+  <Box sx={{ p: 0.5, maxWidth: 260 }}>
+    <Typography sx={{ fontWeight: 700, fontSize: 12.5, mb: 0.75 }}>{title}</Typography>
+    <Stack spacing={0.75}>
+      {lines.map((line, i) => (
+        <Typography key={i} sx={{ fontSize: 12, lineHeight: 1.45 }}>{line}</Typography>
+      ))}
+    </Stack>
+  </Box>
+);
+
+const LIMIT = 25;
+
 interface Props {
   isMobile: boolean;
   onSnackError: (msg: string) => void;
@@ -82,26 +95,49 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
   const debouncedSearch = useDebounce(search, 400);
   const [role, setRole] = useState('');
   const [riskLevel, setRiskLevel] = useState('');
+  const [segment, setSegment] = useState<string>('');
+  const [page, setPage] = useState(0);
   const [riskConfirmUser, setRiskConfirmUser] = useState<{ id: number; name: string; action: 'disqualify' | 'clear' } | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
+  const { data: summary, isLoading: summaryLoading } = useUserAnalyticsSummary();
+
   const {
     data,
     isLoading,
+    isFetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
   } = useAdminUsers({
-    limit: 50,
+    limit: LIMIT,
     search: debouncedSearch,
     role,
     riskLevel,
+    segment: segment || undefined,
   });
 
-  const rows: AdminUser[] = data?.pages.flatMap((p) => p.rows) ?? [];
+  // Refetch overlay: keepPreviousData shows the STALE list while a new filter/segment/search
+  // loads, which reads as "the click did nothing". Blur + spinner make the refresh visible.
+  const isRefreshing = isFetching && !isLoading && !isFetchingNextPage;
 
+  // Desktop: one page at a time via Back/Next. Mobile: accumulate for infinite scroll.
+  const desktopRows: AdminUser[] = data?.pages[page]?.rows ?? [];
+  const mobileRows: AdminUser[] = data?.pages.flatMap((p) => p.rows) ?? [];
+  const total = data?.pages[0]?.total ?? 0;
+
+  const handlePageChange = useCallback(
+    (_e: unknown, newPage: number) => {
+      setPage(newPage);
+      const pagesLoaded = data?.pages.length ?? 0;
+      if (newPage + 1 > pagesLoaded && hasNextPage) fetchNextPage();
+    },
+    [data?.pages.length, hasNextPage, fetchNextPage],
+  );
+
+  // Mobile-only infinite scroll.
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
@@ -112,12 +148,13 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
   );
 
   useEffect(() => {
+    if (!isMobile) return;
     const el = sentinelRef.current;
     if (!el) return;
-    const observer = new IntersectionObserver(handleObserver, { threshold: 0.1 });
+    const observer = new IntersectionObserver(handleObserver as IntersectionObserverCallback, { threshold: 0.1 });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [handleObserver]);
+  }, [isMobile, handleObserver]);
 
   const toggleUserActive = useToggleUserActive();
   const setUserRisk = useSetUserRisk();
@@ -149,25 +186,155 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
     setRiskConfirmUser(null);
   };
 
-  const flaggedCount = rows.filter((u: AdminUser) => u.risk_score >= 20).length;
-  const isEmpty = !isLoading && rows.length === 0;
+  const isEmpty = !isLoading && (isMobile ? mobileRows.length : desktopRows.length) === 0;
+
+  type SegmentKey = 'high_risk' | 'medium_risk' | 'suspended' | 'unverified' | 'new_7d' | 'active_30d';
+
+  const SEGMENT_FILTERS: Array<{
+    key: SegmentKey;
+    label: string;
+    tipTitle: string;
+    tipLines: readonly string[];
+  }> = [
+    {
+      key: 'high_risk',
+      label: 'High risk',
+      tipTitle: 'High risk',
+      tipLines: [
+        'Risk score 20 or higher.',
+        'Entries are shadow-excluded from draws.',
+        'Review for fraud.',
+      ],
+    },
+    {
+      key: 'medium_risk',
+      label: 'Medium risk',
+      tipTitle: 'Medium risk',
+      tipLines: [
+        'Risk score 10 to 19.',
+        'Image required on entries. Monitor.',
+      ],
+    },
+    {
+      key: 'suspended',
+      label: 'Suspended',
+      tipTitle: 'Suspended',
+      tipLines: [
+        'Account deactivated.',
+        'Cannot log in or enter.',
+      ],
+    },
+    {
+      key: 'unverified',
+      label: 'Unverified',
+      tipTitle: 'Unverified',
+      tipLines: [
+        'User has not verified their phone.',
+        'They cannot enter draws until they do.',
+        'A spike can signal bot signups.',
+      ],
+    },
+    {
+      key: 'new_7d',
+      label: 'New this week',
+      tipTitle: 'New this week',
+      tipLines: [
+        'Signed up in the last 7 days.',
+        'Watch for sudden spikes (bot waves).',
+      ],
+    },
+    {
+      key: 'active_30d',
+      label: 'Active this month',
+      tipTitle: 'Active this month',
+      tipLines: [
+        'Submitted at least one entry in the last 30 days.',
+        'Your genuinely engaged users.',
+      ],
+    },
+  ];
 
   return (
     <>
       <Stack spacing={3}>
-        {/* Flagged users banner */}
-        {flaggedCount > 0 && (
-          <Alert severity='error'>
-            <strong>{flaggedCount} {flaggedCount === 1 ? 'user' : 'users'} flagged for review</strong>. Risk score &ge; 20. Their draw entries are quarantined.
-          </Alert>
-        )}
+        {/* User Triage Analytics Strip */}
+        <motion.div variants={staggerContainer} initial='hidden' animate='visible'>
+          <Stack spacing={1.5}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+              <Typography variant='subtitle2' sx={{ fontWeight: 700, color: TEXT_HEADING, fontSize: '0.875rem' }}>
+                User Triage
+              </Typography>
+              {summary && (
+                <Typography variant='caption' sx={{ color: TEXT_TERTIARY, fontSize: '0.75rem' }}>
+                  Total: {summary.total} (Users {summary.users} / Businesses {summary.businesses})
+                </Typography>
+              )}
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {summaryLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <motion.div key={i} variants={popIn}>
+                    <Skeleton variant='rounded' width={120} height={48} />
+                  </motion.div>
+                ))
+              ) : (
+                SEGMENT_FILTERS.map((filter) => {
+                  const count = summary ? (summary[filter.key as keyof typeof summary] as number) || 0 : 0;
+                  const isActive = segment === filter.key;
+                  const isMuted = count === 0;
+                  const accent = filter.key === 'active_30d'
+                    ? { main: METRIC_GOOD, tint: METRIC_GOOD_TINT }
+                    : filter.key === 'high_risk' || filter.key === 'suspended'
+                    ? { main: METRIC_BAD, tint: METRIC_BAD_TINT }
+                    : { main: METRIC_WARN, tint: METRIC_WARN_TINT };
+                  const countLabel = count > 0 ? `(${count})` : '';
+
+                  return (
+                    <motion.div key={filter.key} variants={popIn}>
+                      <Tooltip title={tipContent(filter.tipTitle, filter.tipLines)} enterTouchDelay={50} leaveTouchDelay={4000} arrow>
+                        <Button
+                          variant='outlined'
+                          onClick={() => {
+                            if (isMuted) return;
+                            setSegment(isActive ? '' : filter.key);
+                            setPage(0);
+                          }}
+                          sx={{
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            px: 1.5,
+                            py: 1,
+                            borderRadius: '10px',
+                            borderColor: isActive ? accent.main : 'transparent',
+                            bgcolor: isActive ? accent.tint : (isMuted ? BG_ROW_SUBTLE : 'transparent'),
+                            color: isActive ? accent.main : (isMuted ? TEXT_TERTIARY : TEXT_HEADING),
+                            border: isActive ? '2px solid' : 'none',
+                            '&:hover': {
+                              borderColor: isActive ? accent.main : undefined,
+                              bgcolor: isActive ? accent.tint : (isMuted ? BG_ROW_SUBTLE : 'transparent'),
+                            },
+                            cursor: isMuted ? 'default' : 'pointer',
+                            opacity: isMuted ? 0.5 : 1,
+                          }}
+                        >
+                          {filter.label} {countLabel}
+                        </Button>
+                      </Tooltip>
+                    </motion.div>
+                  );
+                })
+              )}
+            </Box>
+          </Stack>
+        </motion.div>
 
         {/* Search bar */}
         <TextField
           placeholder='Search by name or email'
           size='small'
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
@@ -191,7 +358,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
             <Select
               value={role}
               label='Role'
-              onChange={(e) => setRole(e.target.value)}
+              onChange={(e) => { setRole(e.target.value); setPage(0); }}
               sx={{
                 borderRadius: '12px',
                 '& .MuiOutlinedInput-root': {
@@ -210,7 +377,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
             <Select
               value={riskLevel}
               label='Risk'
-              onChange={(e) => setRiskLevel(e.target.value)}
+              onChange={(e) => { setRiskLevel(e.target.value); setPage(0); }}
               sx={{
                 borderRadius: '12px',
                 '& .MuiOutlinedInput-root': {
@@ -226,7 +393,9 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
           </FormControl>
         </Stack>
 
-        {/* Users table / cards */}
+        {/* Users table / cards - blurred while a filter/search refetch is in flight */}
+        <Box sx={{ position: 'relative' }}>
+        <Box sx={{ filter: isRefreshing ? 'blur(3px)' : 'none', pointerEvents: isRefreshing ? 'none' : 'auto', transition: 'filter 0.2s ease' }}>
         {isMobile ? (
           <motion.div variants={staggerContainer} initial='hidden' animate='visible'>
             <Stack spacing={2}>
@@ -234,7 +403,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                 ? Array.from({ length: 5 }).map((_, i) => (
                     <Skeleton key={i} variant='rounded' height={140} />
                   ))
-                : rows.map((user: AdminUser) => {
+                : mobileRows.map((user: AdminUser) => {
                     const isDisqualified = user.risk_score >= 20;
                     const riskBgColor = user.risk_score >= 20 ? METRIC_BAD_TINT : user.risk_score >= 10 ? METRIC_WARN_TINT : METRIC_GOOD_TINT;
                     const riskTextColor = user.risk_score >= 20 ? METRIC_BAD : user.risk_score >= 10 ? METRIC_WARN : METRIC_GOOD;
@@ -261,14 +430,6 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                             </Box>
 
                             <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-                              <Chip
-                                label={user.role}
-                                size='small'
-                                sx={{
-                                  bgcolor: user.role === 'Business' ? PRIMARY_MAIN : 'default',
-                                  color: user.role === 'Business' ? 'white' : 'default',
-                                }}
-                              />
                               <Chip
                                 label={user.is_active ? 'Active' : 'Inactive'}
                                 size='small'
@@ -351,9 +512,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                     <TableRow sx={{ bgcolor: BG_ROW_SUBTLE }}>
                       <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Name</TableCell>
                       <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Email</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Role</TableCell>
                       <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Status</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Business</TableCell>
                       <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Risk</TableCell>
                       <TableCell align='right' sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Entries</TableCell>
                       <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Last Active</TableCell>
@@ -364,12 +523,12 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                     {isLoading
                       ? Array.from({ length: 5 }).map((_, i) => (
                           <TableRow key={i}>
-                            {Array.from({ length: 9 }).map((__, j) => (
+                            {Array.from({ length: 7 }).map((__, j) => (
                               <TableCell key={j}><Skeleton variant='text' /></TableCell>
                             ))}
                           </TableRow>
                         ))
-                      : rows.map((user: AdminUser) => {
+                      : desktopRows.map((user: AdminUser) => {
                           const isDisqualified = user.risk_score >= 20;
                           const riskBgColor = user.risk_score >= 20 ? METRIC_BAD_TINT : user.risk_score >= 10 ? METRIC_WARN_TINT : METRIC_GOOD_TINT;
                           const riskTextColor = user.risk_score >= 20 ? METRIC_BAD : user.risk_score >= 10 ? METRIC_WARN : METRIC_GOOD;
@@ -392,16 +551,6 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                               <TableCell>{user.email}</TableCell>
                               <TableCell>
                                 <Chip
-                                  label={user.role}
-                                  size='small'
-                                  sx={{
-                                    bgcolor: user.role === 'Business' ? PRIMARY_MAIN : 'default',
-                                    color: user.role === 'Business' ? 'white' : 'default',
-                                  }}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Chip
                                   label={user.is_active ? 'Active' : 'Inactive'}
                                   size='small'
                                   sx={{
@@ -412,11 +561,6 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                                     borderRadius: '8px',
                                   }}
                                 />
-                              </TableCell>
-                              <TableCell>
-                                {user.business_name
-                                  ? <Typography variant='body2'>{user.business_name}</Typography>
-                                  : <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>-</Typography>}
                               </TableCell>
                               <TableCell>
                                 <Stack direction='row' spacing={0.5} alignItems='center'>
@@ -481,6 +625,15 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                   </TableBody>
                 </Table>
               </TableContainer>
+              <TablePagination
+                component='div'
+                count={total}
+                page={page}
+                rowsPerPage={LIMIT}
+                rowsPerPageOptions={[LIMIT]}
+                onPageChange={handlePageChange}
+                sx={{ borderTop: `1px solid ${BORDER_SUBTLE}` }}
+              />
             </AdminCard>
           </motion.div>
         )}
@@ -491,11 +644,20 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
             <Typography variant='body2' color='text.secondary'>Try adjusting your search or filters.</Typography>
           </Box>
         )}
-
-        {/* Infinite scroll sentinel */}
-        <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
-          {isFetchingNextPage && <CircularProgress size={24} />}
         </Box>
+        {isRefreshing && (
+          <Box sx={{ position: 'absolute', inset: 0, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CircularProgress size={36} thickness={4} />
+          </Box>
+        )}
+        </Box>
+
+        {/* Infinite scroll sentinel (mobile only; desktop uses pagination) */}
+        {isMobile && (
+          <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+            {isFetchingNextPage && <CircularProgress size={24} />}
+          </Box>
+        )}
       </Stack>
 
       <UserDetailDrawer userId={selectedUserId} onClose={() => setSelectedUserId(null)} />

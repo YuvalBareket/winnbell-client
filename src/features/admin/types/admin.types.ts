@@ -69,6 +69,18 @@ export interface BusinessHealthSummary {
   next_ready: number;
 }
 
+export interface UserAnalyticsSummary {
+  total: number;
+  users: number;
+  businesses: number;
+  high_risk: number;
+  medium_risk: number;
+  suspended: number;
+  unverified: number;
+  new_7d: number;
+  active_30d: number;
+}
+
 export interface DrawBusiness {
   id: number;
   name: string;

@@ -16,6 +16,7 @@ import {
   fetchDrawAuditLog,
   fetchAdminOverview,
   fetchAllUsers,
+  fetchUserAnalyticsSummary,
   updateUserRole,
   toggleUserActive,
   fetchDrawBusinesses,
@@ -40,7 +41,7 @@ import {
   fetchNotificationHistory,
   fetchGrowthAnalytics,
 } from '../api/adminApi';
-import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics, BusinessHealthSummary, DrawBusiness } from '../types/admin.types';
+import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics, BusinessHealthSummary, UserAnalyticsSummary, DrawBusiness } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
 export const useAdminBusinesses = (params: { limit: number; search: string; filter?: string; excludeDrawId?: number; enabled?: boolean }) => {
@@ -200,14 +201,26 @@ export const useAdminOverview = (enabled: boolean = true) => {
   });
 };
 
+export const useUserAnalyticsSummary = () => {
+  return useQuery({
+    queryKey: queryKeys.admin.userAnalyticsSummary,
+    queryFn: async () => {
+      const { data } = await fetchUserAnalyticsSummary();
+      return data as UserAnalyticsSummary;
+    },
+    staleTime: 60_000,
+  });
+};
+
 export const useAdminUsers = (params: {
   limit: number;
   search: string;
   role: string;
   riskLevel: string;
+  segment?: string;
 }) => {
   return useInfiniteQuery({
-    queryKey: [...queryKeys.admin.users, params.limit ?? null, params.search ?? '', params.role ?? '', params.riskLevel ?? ''],
+    queryKey: [...queryKeys.admin.users, params.limit ?? null, params.search ?? '', params.role ?? '', params.riskLevel ?? '', params.segment ?? ''],
     queryFn: async ({ pageParam }) => {
       const { data } = await fetchAllUsers({
         page: pageParam as number,
@@ -215,6 +228,7 @@ export const useAdminUsers = (params: {
         search: params.search || undefined,
         role: params.role || undefined,
         riskLevel: params.riskLevel || undefined,
+        segment: params.segment || undefined,
       });
       return data as AdminUsersPage;
     },

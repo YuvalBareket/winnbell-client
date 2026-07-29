@@ -7,6 +7,7 @@ import type {
   UpdateDrawInput,
   GrowthAnalytics,
   BusinessHealthSummary,
+  UserAnalyticsSummary,
 } from '../types/admin.types';
 
 export const fetchBusinesses = (params: { page: number; limit: number; search?: string; filter?: string; excludeDrawId?: number }) =>
@@ -36,12 +37,15 @@ export const reopenDraw = (drawId: number) =>
 export const setDrawPrizeRevealed = (drawId: number, revealed: boolean) =>
   api.patch(`/admin/draws/${drawId}/prize-reveal`, { revealed });
 export const fetchAdminOverview = () => api.get('/admin/overview');
+export const fetchUserAnalyticsSummary = () =>
+  api.get<UserAnalyticsSummary>('/admin/users/analytics-summary');
 export const fetchAllUsers = (params: {
   page: number;
   limit: number;
   search?: string;
   role?: string;
   riskLevel?: string;
+  segment?: string;
 }) => api.get<AdminUsersPage>('/admin/users', { params });
 export const setUserRiskScore = async (userId: number, riskScore: number): Promise<void> => {
   await api.patch(`/admin/users/${userId}/risk`, { risk_score: riskScore });

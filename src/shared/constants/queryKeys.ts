@@ -19,6 +19,7 @@ export const queryKeys = {
     drawsAll:   ['admin', 'draws-all']           as const,
     overview:   ['admin', 'overview']            as const,
     users:      ['admin', 'users']               as const,
+    userAnalyticsSummary: ['admin', 'users-analytics-summary'] as const,
     platformSettings:     ['admin', 'platform-settings']    as const,
     notificationHistory:  ['admin', 'notification-history'] as const,
     campaignComparison:   ['admin', 'campaign-comparison']  as const,
