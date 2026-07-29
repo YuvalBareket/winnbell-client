@@ -2,7 +2,6 @@ import { api } from '../../../shared/api/client';
 import type {
   AdminUsersPage,
   BusinessStatsPage,
-  CreateBusinessInput,
   CreateDrawInput,
   Draw,
   UpdateDrawInput,
@@ -12,8 +11,6 @@ import type {
 export const fetchBusinesses = (params: { page: number; limit: number; search?: string }) =>
   api.get<BusinessStatsPage>('/admin/businesses', { params });
 export const fetchActiveDraws = () => api.get<Draw[]>('/admin/draws');
-export const createBusiness = (data: CreateBusinessInput) =>
-  api.post('/admin/business', data);
 export const fetchAllDraws = () => api.get<Draw[]>('/admin/draws-all');
 export const createDraw = (data: CreateDrawInput) =>
   api.post('/admin/draw', data);

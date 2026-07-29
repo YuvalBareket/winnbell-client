@@ -12,7 +12,6 @@ import {
   useAllDraws,
   useAdminOverview,
 } from '../hooks/useAdmin';
-import CreateBusinessModal from './components/CreateBusinessModal';
 import CreateDrawModal from './components/CreateDrawModal';
 import OverviewTab from './components/OverviewTab';
 import UsersTab from './components/UsersTab';
@@ -27,7 +26,6 @@ const BusinessDashboard: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
 
-  const [isBizModalOpen, setIsBizModalOpen] = useState(false);
   const [isDrawModalOpen, setIsDrawModalOpen] = useState(false);
   const [snackError, setSnackError] = useState('');
   const [snackSuccess, setSnackSuccess] = useState('');
@@ -61,12 +59,7 @@ const BusinessDashboard: React.FC = () => {
       );
     }
     if (path === '/admin/businesses') {
-      return (
-        <BusinessesTab
-          isMobile={isMobile}
-          onCreateBusiness={() => setIsBizModalOpen(true)}
-        />
-      );
+      return <BusinessesTab isMobile={isMobile} />;
     }
     if (path === '/admin/analytics') {
       return <AnalyticsTab isMobile={isMobile} />;
@@ -105,7 +98,6 @@ const BusinessDashboard: React.FC = () => {
       <Box p={3}>
         {renderContent()}
 
-        <CreateBusinessModal open={isBizModalOpen} onClose={() => setIsBizModalOpen(false)} />
         <CreateDrawModal open={isDrawModalOpen} onClose={() => setIsDrawModalOpen(false)} />
 
         <Snackbar open={!!snackError} autoHideDuration={4000} onClose={() => setSnackError('')}>

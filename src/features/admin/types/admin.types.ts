@@ -72,16 +72,6 @@ export interface UpdateDrawInput {
   start_date?: string;
 }
 
-export interface CreateBusinessInput {
-  owner_user_id: number;
-  name: string;
-  sector: string;
-  location: string;
-  latitude?: number;
-  longitude?: number;
-  terms_text?: string;
-}
-
 export interface CreateDrawInput {
   name: string;
   prize_amount: number;

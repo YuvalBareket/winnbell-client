@@ -4,7 +4,6 @@ import {
   Typography,
   Stack,
   Chip,
-  Button,
   Table,
   TableHead,
   TableBody,
@@ -17,7 +16,6 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -27,7 +25,7 @@ import { BUSINESS_SECTORS } from '../../data';
 import {
   PRIMARY_MAIN, PRIMARY_TINT, BG_ROW_SUBTLE, TEXT_TERTIARY, TEXT_HEADING,
   BORDER_SUBTLE, STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT, STATUS_PENDING_BG, STATUS_PENDING_TEXT,
-  METRIC_BAD_TINT, METRIC_BAD, GRADIENT_DRAW_CARD, SHADOW_PRIMARY_SOFT,
+  METRIC_BAD_TINT, METRIC_BAD,
 } from '../../../../shared/colors';
 import { riseIn } from '../../../../shared/motion';
 import { AdminCard } from './adminUi';
@@ -37,7 +35,6 @@ import BusinessDetailDrawer from './BusinessDetailDrawer';
 
 interface Props {
   isMobile: boolean;
-  onCreateBusiness: () => void;
 }
 
 const SUB_COLOR: Record<string, { label: string; color: 'success' | 'warning' | 'error' | 'default' }> = {
@@ -50,7 +47,7 @@ const SUB_COLOR: Record<string, { label: string; color: 'success' | 'warning' | 
 
 const LIMIT = 25;
 
-const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
+const BusinessesTab: React.FC<Props> = ({ isMobile }) => {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
@@ -159,20 +156,6 @@ const BusinessesTab: React.FC<Props> = ({ isMobile, onCreateBusiness }) => {
             '& .MuiOutlinedInput-root': { borderRadius: '12px' },
           }}
         />
-        <Button
-          variant='contained'
-          startIcon={<AddIcon />}
-          onClick={onCreateBusiness}
-          sx={{
-            background: GRADIENT_DRAW_CARD,
-            textTransform: 'none',
-            fontWeight: 700,
-            borderRadius: '12px',
-            boxShadow: SHADOW_PRIMARY_SOFT,
-          }}
-        >
-          New Business
-        </Button>
       </Box>
 
       {isMobile ? (

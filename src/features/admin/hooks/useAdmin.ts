@@ -2,7 +2,6 @@ import { useQuery, useInfiniteQuery, useMutation, useQueryClient, keepPreviousDa
 import {
   fetchBusinesses,
   fetchActiveDraws,
-  createBusiness,
   fetchAllDraws,
   createDraw,
   openDraw,
@@ -69,16 +68,6 @@ export const useActiveDraws = () => {
       return data;
     },
     staleTime: 30_000,
-  });
-};
-
-export const useCreateBusiness = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: createBusiness,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses });
-    },
   });
 };
 
