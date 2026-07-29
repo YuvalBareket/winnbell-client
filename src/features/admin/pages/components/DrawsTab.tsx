@@ -27,6 +27,7 @@ import {
   FormControlLabel,
   Checkbox,
   Collapse,
+  CircularProgress,
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -143,13 +144,19 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
     debounceRef.current = setTimeout(() => setDebouncedSearch(value), 300);
   }, []);
 
-  const { data: bizPage } = useAdminBusinesses({ limit: 20, search: debouncedSearch });
+  // Non-participating search: the server excludes businesses already in this draw
+  // (excludeDrawId), so the results are complete and need no client-side filtering.
+  // Only fetch while the add box is open.
+  const { data: bizPage, isFetching: isBizFetching } = useAdminBusinesses({
+    limit: 20,
+    search: debouncedSearch,
+    excludeDrawId: drawId,
+    enabled: adding,
+  });
 
   const allRows = data?.pages.flatMap((p) => p.rows) ?? [];
   const total = data?.pages[0]?.total ?? 0;
-  const enrolledIds = new Set(allRows.map((b) => b.id));
-  const bizRows = bizPage?.pages.flatMap((p) => p.rows) ?? [];
-  const availableBiz = bizRows.filter((b: any) => !enrolledIds.has(b.id)).slice(0, 20);
+  const availableBiz = bizPage?.pages.flatMap((p) => p.rows) ?? [];
   const canEdit = drawStatus?.toUpperCase() !== 'CLOSED';
 
   const handleAdd = async () => {
@@ -216,12 +223,30 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
             options={availableBiz}
             getOptionLabel={(o: any) => o.name}
             filterOptions={(x) => x}
+            isOptionEqualToValue={(o: { id: number }, v: { id: number }) => o.id === v.id}
             inputValue={search}
             value={selectedBiz}
             onInputChange={handleInputChange}
             onChange={(_: React.SyntheticEvent, val: any) => setSelectedBiz(val)}
-            noOptionsText={debouncedSearch ? 'No businesses found' : 'Type to search...'}
-            renderInput={(params) => <TextField {...params} label='Search business' />}
+            loading={isBizFetching}
+            noOptionsText={
+              isBizFetching ? 'Searching...' : debouncedSearch ? 'No non-participating businesses found' : 'Type a business name to search'
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label='Search business'
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {isBizFetching ? <CircularProgress color='inherit' size={16} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
           />
           <Button size='small' variant='contained' onClick={handleAdd} disabled={!selectedBiz || addBiz.isPending}>
             {addBiz.isPending ? 'Adding...' : 'Add'}

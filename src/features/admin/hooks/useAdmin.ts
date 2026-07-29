@@ -42,15 +42,16 @@ import {
 import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics, BusinessHealthSummary } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
-export const useAdminBusinesses = (params: { limit: number; search: string; filter?: string }) => {
+export const useAdminBusinesses = (params: { limit: number; search: string; filter?: string; excludeDrawId?: number; enabled?: boolean }) => {
   return useInfiniteQuery({
-    queryKey: [...queryKeys.admin.businesses, params.limit, params.search, params.filter || ''],
+    queryKey: [...queryKeys.admin.businesses, params.limit, params.search, params.filter || '', params.excludeDrawId ?? 0],
     queryFn: async ({ pageParam }) => {
       const { data } = await fetchBusinesses({
         page: pageParam as number,
         limit: params.limit,
         search: params.search || undefined,
         filter: params.filter || undefined,
+        excludeDrawId: params.excludeDrawId,
       });
       return data as BusinessStatsPage;
     },
@@ -59,6 +60,7 @@ export const useAdminBusinesses = (params: { limit: number; search: string; filt
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     staleTime: 2 * 60_000,
     placeholderData: keepPreviousData,
+    enabled: params.enabled ?? true,
   });
 };
 

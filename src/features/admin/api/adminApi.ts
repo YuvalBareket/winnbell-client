@@ -9,7 +9,7 @@ import type {
   BusinessHealthSummary,
 } from '../types/admin.types';
 
-export const fetchBusinesses = (params: { page: number; limit: number; search?: string; filter?: string }) =>
+export const fetchBusinesses = (params: { page: number; limit: number; search?: string; filter?: string; excludeDrawId?: number }) =>
   api.get<BusinessStatsPage>('/admin/businesses', { params });
 export const fetchHealthSummary = () =>
   api.get<BusinessHealthSummary>('/admin/businesses/health-summary');
