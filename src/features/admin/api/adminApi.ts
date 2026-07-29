@@ -6,10 +6,13 @@ import type {
   Draw,
   UpdateDrawInput,
   GrowthAnalytics,
+  BusinessHealthSummary,
 } from '../types/admin.types';
 
-export const fetchBusinesses = (params: { page: number; limit: number; search?: string }) =>
+export const fetchBusinesses = (params: { page: number; limit: number; search?: string; filter?: string }) =>
   api.get<BusinessStatsPage>('/admin/businesses', { params });
+export const fetchHealthSummary = () =>
+  api.get<BusinessHealthSummary>('/admin/businesses/health-summary');
 export const fetchActiveDraws = () => api.get<Draw[]>('/admin/draws');
 export const fetchAllDraws = () => api.get<Draw[]>('/admin/draws-all');
 export const createDraw = (data: CreateDrawInput) =>

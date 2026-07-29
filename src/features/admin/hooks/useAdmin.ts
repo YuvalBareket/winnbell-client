@@ -1,6 +1,7 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import {
   fetchBusinesses,
+  fetchHealthSummary,
   fetchActiveDraws,
   fetchAllDraws,
   createDraw,
@@ -38,17 +39,18 @@ import {
   fetchNotificationHistory,
   fetchGrowthAnalytics,
 } from '../api/adminApi';
-import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics } from '../types/admin.types';
+import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics, BusinessHealthSummary } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
-export const useAdminBusinesses = (params: { limit: number; search: string }) => {
+export const useAdminBusinesses = (params: { limit: number; search: string; filter?: string }) => {
   return useInfiniteQuery({
-    queryKey: [...queryKeys.admin.businesses, params.limit, params.search],
+    queryKey: [...queryKeys.admin.businesses, params.limit, params.search, params.filter || ''],
     queryFn: async ({ pageParam }) => {
       const { data } = await fetchBusinesses({
         page: pageParam as number,
         limit: params.limit,
         search: params.search || undefined,
+        filter: params.filter || undefined,
       });
       return data as BusinessStatsPage;
     },
@@ -57,6 +59,17 @@ export const useAdminBusinesses = (params: { limit: number; search: string }) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     staleTime: 2 * 60_000,
     placeholderData: keepPreviousData,
+  });
+};
+
+export const useHealthSummary = () => {
+  return useQuery({
+    queryKey: queryKeys.admin.healthSummary,
+    queryFn: async () => {
+      const { data } = await fetchHealthSummary();
+      return data as BusinessHealthSummary;
+    },
+    staleTime: 60_000,
   });
 };
 
@@ -71,7 +84,7 @@ export const useActiveDraws = () => {
   });
 };
 
-export const useAllDraws = () => {
+export const useAllDraws = (enabled: boolean = true) => {
   return useQuery({
     queryKey: queryKeys.admin.drawsAll,
     queryFn: async () => {
@@ -79,6 +92,7 @@ export const useAllDraws = () => {
       return data;
     },
     staleTime: 30_000,
+    enabled,
   });
 };
 
@@ -171,7 +185,7 @@ export const useSetDrawPrizeRevealed = () => {
   });
 };
 
-export const useAdminOverview = () => {
+export const useAdminOverview = (enabled: boolean = true) => {
   return useQuery({
     queryKey: queryKeys.admin.overview,
     queryFn: async () => {
@@ -179,6 +193,7 @@ export const useAdminOverview = () => {
       return data;
     },
     staleTime: 2 * 60_000,
+    enabled,
   });
 };
 

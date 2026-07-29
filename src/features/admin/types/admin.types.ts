@@ -38,6 +38,17 @@ export interface BusinessStats {
   fee_at_entry: number | null;
   location_count: number;
   total_activated: number;
+  enrolled?: boolean;
+  next_campaign_ready?: boolean;
+  entries_current?: number;
+  entries_7d?: number;
+  unique_customers?: number;
+  repeat_customers?: number;
+  last_entry_at?: string | null;
+  views_30d?: number;
+  total_cap?: number | null;
+  flags?: string[];
+  health?: 'at_risk' | 'watch' | 'good';
 }
 
 export interface BusinessStatsPage {
@@ -46,6 +57,16 @@ export interface BusinessStatsPage {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface BusinessHealthSummary {
+  total: number;
+  attention: number;
+  no_recent_entries: number;
+  low_engagement: number;
+  billing: number;
+  setup: number;
+  next_ready: number;
 }
 
 export interface Draw {

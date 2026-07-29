@@ -14,6 +14,7 @@ export const queryKeys = {
   admin: {
     all:        ['admin']                        as const,
     businesses: ['admin', 'businesses']          as const,
+    healthSummary: ['admin', 'health-summary']   as const,
     draws:      ['admin', 'draws']               as const,
     drawsAll:   ['admin', 'draws-all']           as const,
     overview:   ['admin', 'overview']            as const,
