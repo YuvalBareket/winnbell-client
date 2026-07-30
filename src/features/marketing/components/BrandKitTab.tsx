@@ -13,6 +13,10 @@ import {
 import { svgToPngDataUrl } from '../utils/capture';
 import { LEGAL_TEXT } from './posterConstants';
 import { useLocationGatedActions } from '../hooks/useLocationGatedActions';
+import GuidelinesAgreementDialog from './GuidelinesAgreementDialog';
+
+// Persists the "don't show again" choice for the brand-guidelines download agreement.
+const GUIDELINES_AGREED_KEY = 'winnbell:brandkit:guidelinesAgreed';
 
 interface BrandKitTabProps {
   scanUrl: string;
@@ -40,8 +44,38 @@ const BrandKitTab = ({
   const [downloadingQr, setDownloadingQr] = useState(false);
   const [copiedLegal, setCopiedLegal] = useState(false);
 
+  // Brand-guidelines agreement gate for every Brand Kit download. The pending download is held
+  // in a ref (no re-render needed) and run once the business agrees.
+  const [agreementOpen, setAgreementOpen] = useState(false);
+  const pendingDownloadRef = useRef<(() => void) | null>(null);
+
   const qrRef = useRef<HTMLDivElement>(null);
   const legalRef = useRef<HTMLDivElement>(null);
+
+  // Route every download through the guidelines agreement. If the business ticked "don't show
+  // again" previously, download straight away; otherwise open the dialog and hold the action.
+  const requestDownload = (action: () => void) => {
+    let agreed = false;
+    try { agreed = localStorage.getItem(GUIDELINES_AGREED_KEY) === 'true'; } catch { /* private mode */ }
+    if (agreed) { action(); return; }
+    pendingDownloadRef.current = action;
+    setAgreementOpen(true);
+  };
+
+  const handleAgree = (dontShowAgain: boolean) => {
+    if (dontShowAgain) {
+      try { localStorage.setItem(GUIDELINES_AGREED_KEY, 'true'); } catch { /* private mode */ }
+    }
+    setAgreementOpen(false);
+    const action = pendingDownloadRef.current;
+    pendingDownloadRef.current = null;
+    action?.();
+  };
+
+  const handleCancelAgreement = () => {
+    setAgreementOpen(false);
+    pendingDownloadRef.current = null;
+  };
 
   const handleDownloadQr = async () => {
     const svg = qrRef.current?.querySelector('svg');
@@ -175,7 +209,7 @@ const BrandKitTab = ({
                       variant='contained'
                       size='small'
                       startIcon={downloadingQr ? <CircularProgress size={16} color='inherit' /> : <FileDownload sx={{ fontSize: 16 }} />}
-                      onClick={() => runGated('qr')}
+                      onClick={() => requestDownload(() => runGated('qr'))}
                       disabled={downloadingQr}
                       sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.85rem' }}
                     >
@@ -197,7 +231,7 @@ const BrandKitTab = ({
                     {/* Wordmark on light bg */}
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, bgcolor: '#f5f5f5', borderRadius: 1.5 }}>
                       <Box component='img' src='/winnbell_app_name.svg' alt='Winnbell' sx={{ height: 20 }} />
-                      <Button size='small' startIcon={<Download sx={{ fontSize: 14 }} />} onClick={() => handleDownloadLogo('winnbell_app_name.svg')} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem' }}>
+                      <Button size='small' startIcon={<Download sx={{ fontSize: 14 }} />} onClick={() => requestDownload(() => handleDownloadLogo('winnbell_app_name.svg'))} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem' }}>
                         Download
                       </Button>
                     </Box>
@@ -205,7 +239,7 @@ const BrandKitTab = ({
                     {/* Wordmark on dark bg */}
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, bgcolor: TEXT_HEADING, borderRadius: 1.5 }}>
                       <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: 20 }} />
-                      <Button size='small' startIcon={<Download sx={{ fontSize: 14 }} />} onClick={() => handleDownloadLogo('winnbell_app_name_white.svg')} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem', color: '#fff', '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' } }}>
+                      <Button size='small' startIcon={<Download sx={{ fontSize: 14 }} />} onClick={() => requestDownload(() => handleDownloadLogo('winnbell_app_name_white.svg'))} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem', color: '#fff', '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' } }}>
                         Download
                       </Button>
                     </Box>
@@ -213,7 +247,7 @@ const BrandKitTab = ({
                     {/* App icon */}
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, bgcolor: '#f5f5f5', borderRadius: 1.5 }}>
                       <Box component='img' src='/winnbell_icon.svg' alt='Winnbell Icon' sx={{ height: 32 }} />
-                      <Button size='small' startIcon={<Download sx={{ fontSize: 14 }} />} onClick={() => handleDownloadLogo('winnbell_icon.svg')} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem' }}>
+                      <Button size='small' startIcon={<Download sx={{ fontSize: 14 }} />} onClick={() => requestDownload(() => handleDownloadLogo('winnbell_icon.svg'))} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem' }}>
                         Download
                       </Button>
                     </Box>
@@ -221,7 +255,7 @@ const BrandKitTab = ({
                     {/* App icon on dark bg (white) */}
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, bgcolor: TEXT_HEADING, borderRadius: 1.5 }}>
                       <Box component='img' src='/winnbell_icon_white.svg' alt='Winnbell Icon White' sx={{ height: 32 }} />
-                      <Button size='small' startIcon={<Download sx={{ fontSize: 14 }} />} onClick={() => handleDownloadLogo('winnbell_icon_white.svg')} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem', color: '#fff', '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' } }}>
+                      <Button size='small' startIcon={<Download sx={{ fontSize: 14 }} />} onClick={() => requestDownload(() => handleDownloadLogo('winnbell_icon_white.svg'))} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem', color: '#fff', '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' } }}>
                         Download
                       </Button>
                     </Box>
@@ -306,6 +340,12 @@ const BrandKitTab = ({
           </Stack>
         </Paper>
       </Box>
+
+      <GuidelinesAgreementDialog
+        open={agreementOpen}
+        onClose={handleCancelAgreement}
+        onAgree={handleAgree}
+      />
     </motion.div>
   );
 };
