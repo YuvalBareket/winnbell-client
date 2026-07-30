@@ -620,10 +620,9 @@ const PostersTab = ({
                     justifyContent: 'center',
                   }}
                 >
-                  <QRCodePlain value={scanUrl} size={136} level='H' fgColor={stickerTheme.color} />
+                  <QRCodePlain value={scanUrl} size={160} level='H' fgColor={stickerTheme.color} />
                 </Box>
-                {/* Fixed 3-line break, shortest line at the bottom, so nothing touches the
-                    curved edge (near the circle's bottom the usable width is the chord). */}
+                {/* Single-line disclaimer; full official rules live at Winnbell.com. */}
                 <Typography
                   sx={{
                     color: 'white',
@@ -636,7 +635,7 @@ const PostersTab = ({
                     mb: '-5px',
                   }}
                 >
-                  {'No purchase necessary.\nAlternative method of entry & official rules\navailable at Winnbell.com'}
+                  {'No purchase necessary.'}
                 </Typography>
               </Box>
             </Stack>
