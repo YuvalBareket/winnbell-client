@@ -13,11 +13,13 @@ interface ScriptsTabProps {
   onToast: (msg: string) => void;
 }
 
+// Lawyer-approved staff scripts (supersedes the earlier deferred version). Bracketed tokens
+// [amount]/[prize]/[product]/[number] are placeholders staff fill in at the register.
 const SCRIPTS = [
-  { label: 'At checkout', text: 'By the way, we\'re on Winnbell. Scan this code, submit your receipt, and you\'re in this month\'s prize draw. It takes seconds.' },
-  { label: 'New to Winnbell', text: 'Have you tried Winnbell? Join through our code and you\'re in this month\'s draw.' },
-  { label: 'Regulars', text: 'Don\'t forget to submit your receipt for this month\'s Winnbell draw. Scan our code and it opens ready to go.' },
-  { label: 'Already a member', text: 'Already on Winnbell? Our code is the fastest way in. It takes you straight to receipt submission with our store already selected.' },
+  { label: 'Near the threshold', text: 'You\'re only $[amount] away from qualifying for a Winnbell entry. Would you like to add anything so you can enter this month\'s draw for a chance to win $[prize]?' },
+  { label: 'Suggest an add-on', text: 'If you add [product], your purchase will reach the Winnbell threshold, and you can enter this month\'s draw for a chance to win $[prize]. Would you like to add one?' },
+  { label: 'New to Winnbell', text: 'Have you tried Winnbell yet? Today\'s purchase may qualify you to enter this month\'s draw for a chance to win $[prize]. Just scan the QR code and submit your receipt. It takes seconds.' },
+  { label: 'Complete the entry', text: 'Your purchase may qualify for [number] Winnbell entry/entries. Just scan the QR code and submit your receipt now. It takes seconds, and you\'ll be in the draw for a chance to win $[prize].' },
 ];
 
 const ScriptsTab = ({
@@ -49,10 +51,10 @@ const ScriptsTab = ({
                 <RecordVoiceOverOutlined sx={{ color: PRIMARY_MAIN, fontSize: 24, flexShrink: 0, mt: 0.5 }} />
                 <Stack spacing={1} sx={{ flex: 1 }}>
                   <Typography variant='body2' fontWeight={800}>
-                    Your team is your best marketing.
+                    Your team can turn a quick mention into customer action.
                   </Typography>
                   <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.6 }}>
-                    A five-second mention at the register is the single biggest driver of scans, far more than any sign. The shops that grow fastest on Winnbell are the ones whose team asks on every order. It costs nothing and takes seconds.
+                    The best time to mention Winnbell is before payment, while the customer can still adjust the order. Research shows that staff prompts increase the likelihood customers notice an offer and act on it. Tell them exactly how close they are to qualifying, suggest a relevant add-on, and make the next step feel effortless.
                   </Typography>
                 </Stack>
               </Stack>
