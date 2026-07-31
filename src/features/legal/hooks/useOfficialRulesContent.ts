@@ -13,15 +13,18 @@ const TIME_ZONE = 'Eastern Time (ET)';
 // Eligible Jurisdictions (Section 2, and through it the residency rule in 4.1) mirror the
 // admin's allowed-states platform setting - the same source the signup region gate and the
 // profile state pickers use, so the legal text can never drift from what the gate enforces.
-// Lawyer instruction 2026-07-31 (Ido): default is Florida only; an empty/unloaded setting
-// falls back to that.
-const DEFAULT_JURISDICTIONS = 'State of Florida, United States only';
+// Semantics match the gate exactly: an EMPTY list means no restriction (all USA). Only when
+// the setting could not be loaded (fetch error) do we fall back to the narrowest scope,
+// Florida only (lawyer instruction 2026-07-31, Ido) - under-promising is the safe failure.
+const ERROR_FALLBACK_JURISDICTIONS = 'State of Florida, United States only';
+const UNRESTRICTED_JURISDICTIONS = 'United States (excluding where prohibited by applicable law)';
 
 const formatJurisdictions = (codes: string[] | undefined): string => {
-  const names = (codes ?? [])
+  if (codes === undefined) return ERROR_FALLBACK_JURISDICTIONS;
+  if (codes.length === 0) return UNRESTRICTED_JURISDICTIONS;
+  const names = codes
     .map((code) => US_STATES.find((s) => s.code === code)?.name ?? code)
     .sort();
-  if (names.length === 0) return DEFAULT_JURISDICTIONS;
   const list = names.length === 1
     ? names[0]
     : names.length === 2
