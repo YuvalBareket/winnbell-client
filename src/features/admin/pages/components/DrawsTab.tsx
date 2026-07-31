@@ -47,6 +47,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import DownloadIcon from '@mui/icons-material/Download';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   useOpenDraw,
@@ -65,6 +66,7 @@ import {
   useDrawCandidate,
   useDrawRejectedWinners,
 } from '../../hooks/useAdmin';
+import { downloadDrawRulesPdf } from '../../api/adminApi';
 import {
   BG_PAGE, PRIMARY_MAIN,
   STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT, STATUS_PENDING_BG, STATUS_PENDING_TEXT,
@@ -416,6 +418,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const reopenDraw = useReopenDraw();
   const deleteDraw = useDeleteDraw();
   const duplicateDraw = useDuplicateDraw();
+  const [downloadingRulesId, setDownloadingRulesId] = useState<number | null>(null);
   const setPrizeRevealed = useSetDrawPrizeRevealed();
 
   const { data: candidate, isLoading: candidateLoading } = useDrawCandidate(effectiveReviewDrawId);
@@ -521,6 +524,29 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
     }
   };
 
+  const handleDownloadRules = async (draw: { id: number; name?: string }) => {
+    setDownloadingRulesId(draw.id);
+    try {
+      const response = await downloadDrawRulesPdf(draw.id);
+      // Use the server's month-year filename (Content-Disposition) so the local file
+      // matches the R2 archive name exactly.
+      const disposition = String(response.headers?.['content-disposition'] ?? '');
+      const serverName = disposition.match(/filename="([^"]+)"/)?.[1];
+      const url = URL.createObjectURL(response.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = serverName ?? `winnbell-official-rules-${String(draw.name ?? 'campaign').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: unknown) {
+      onSnackError(apiErrorMessage(e, 'Failed to download the rules PDF'));
+    } finally {
+      setDownloadingRulesId(null);
+    }
+  };
+
   const active = draws?.filter((d) => d.status?.toUpperCase() === 'OPEN') ?? [];
   // Upcoming reads soonest-first (the next campaign to open sits on top); the server
   // returns everything draw_date DESC, which is right for history but backwards here.
@@ -594,6 +620,11 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       <Button size='small' variant='outlined' startIcon={<ContentCopyIcon />} onClick={(e) => { e.stopPropagation(); handleDuplicate(draw.id); }} fullWidth={!inline} disabled={duplicateDraw.isPending}>
         Duplicate
       </Button>
+      <Tooltip title='Download the Official Rules PDF for this campaign (same document the legal archive stores at close).'>
+        <Button size='small' variant='outlined' startIcon={downloadingRulesId === draw.id ? <CircularProgress size={14} /> : <DownloadIcon />} onClick={(e) => { e.stopPropagation(); handleDownloadRules(draw); }} fullWidth={!inline} disabled={downloadingRulesId === draw.id}>
+          Rules PDF
+        </Button>
+      </Tooltip>
     </Stack>
   );
 

@@ -121,6 +121,10 @@ export const fetchCampaignComparison = () =>
 export const duplicateDraw = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/duplicate`);
 
+// Official Rules PDF for a draw - same generator as the close-time R2 legal archive.
+export const downloadDrawRulesPdf = (drawId: number) =>
+  api.get<Blob>(`/admin/draws/${drawId}/rules-pdf`, { responseType: 'blob' });
+
 export const addBusinessToDraw = (drawId: number, businessId: number) =>
   api.post(`/admin/draws/${drawId}/businesses/${businessId}`);
 
