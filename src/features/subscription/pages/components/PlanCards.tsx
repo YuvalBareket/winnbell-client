@@ -18,8 +18,9 @@ interface PlanCardsProps {
 
 // The 3-plan picker (Low / Medium / High Volume). Shared by the subscribe flow and the
 // plan-change management page so both stay in sync with subscribeTiers.
-// Matches the design precisely: white cards, price-forward layout, blue capacity highlight,
-// green check icons, select/selected buttons, popular badge on the Medium Volume plan.
+// Matches the design precisely: white cards, price-forward layout, green check icons,
+// select/selected buttons, popular badge on the Medium Volume plan. Capacity is a plain
+// bullet inside the Included list (deliberately not a highlight), see subscribeTiers.
 const PlanCards = ({ selectedTier, onSelect, disabled }: PlanCardsProps) => (
   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
     {TIER_KEYS.map((tier) => {
@@ -95,19 +96,6 @@ const PlanCards = ({ selectedTier, onSelect, disabled }: PlanCardsProps) => (
               / location / month
             </Typography>
           </Box>
-
-          {/* Capacity line - describes campaign capacity, never per-entry value */}
-          <Typography
-            sx={{
-              fontSize: '13px',
-              fontWeight: 700,
-              color: PRIMARY_MAIN,
-              marginTop: '10px',
-              marginBottom: '16px',
-            }}
-          >
-            Monthly campaign capacity: up to {tier.toLocaleString()} entries
-          </Typography>
 
           {/* Divider (hidden on mobile with the feature list) */}
           <Box sx={{ display: { xs: 'none', sm: 'block' }, height: '1px', background: BORDER_SUBTLE, marginBottom: '16px' }} />
