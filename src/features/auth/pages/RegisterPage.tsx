@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Button, Typography, TextField, IconButton, InputAdornment, Container,
   Stack, Alert, CircularProgress, Divider, Checkbox, FormControlLabel,
-  useMediaQuery, useTheme,
+  useMediaQuery, useTheme, Dialog,
 } from '@mui/material';
 import AttractButton from '../../../shared/components/AttractButton';
 import {
@@ -13,6 +13,26 @@ import { useNavigate, useParams, useSearchParams, useLocation, Navigate } from '
 import { motion } from 'framer-motion';
 import AuthBrandPanel from '../components/AuthBrandPanel';
 import LoadingScreen from '../../../shared/components/LoadingScreen';
+// Lazy: the clickwrap dialog bundles the full agreement markdown; only the business
+// register variant needs it. A failed chunk load (offline, deploy race) must never
+// crash the register form to the route error boundary, so it degrades to a minimal
+// accept dialog - the checkbox label still links to the full agreement page.
+const BusinessAgreementAcceptDialog = React.lazy(() =>
+  import('../../legal/components/BusinessAgreementAcceptDialog').catch(() => ({
+    default: ({ open, onClose, onAccept }: { open: boolean; onClose: () => void; onAccept: () => void }) => (
+      <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
+        <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Alert severity='warning'>
+            We could not load the agreement viewer. Please read the full Winnbell Participating Business Agreement using the link in the checkbox label, then confirm below.
+          </Alert>
+          <Button fullWidth variant='contained' onClick={onAccept} sx={{ py: 1.25, fontWeight: 700 }}>
+            I have read and agree
+          </Button>
+        </Box>
+      </Dialog>
+    ),
+  }))
+);
 import { api } from '../../../shared/api/client';
 import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
 import { useAppSelector } from '../../../store/hook';
@@ -67,6 +87,8 @@ const RegisterPage = () => {
   const googlePending = googleLoading
     || (cameFromSso && !syncError && !error && !(syncLoaded && !isSignedIn));
   const [termsAccepted, setTermsAccepted] = useState(false);
+  // Business clickwrap: the agreement checkbox only checks through the dialog's accept button.
+  const [agreementDialogOpen, setAgreementDialogOpen] = useState(false);
   // Surface the same rules the submit enforces, but on blur so the user gets feedback early.
   const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({});
   const emailError = touched.email && formData.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
@@ -125,7 +147,7 @@ const RegisterPage = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { setTouched((t) => ({ ...t, email: true })); setError('Enter a valid email address.'); return; }
     if (!formData.password) { setError('Please enter a password.'); return; }
     if (formData.password.length < 8) { setTouched((t) => ({ ...t, password: true })); setError('Password must be at least 8 characters.'); return; }
-    if (!termsAccepted) { setError('Please accept the terms to continue.'); return; }
+    if (!termsAccepted) { setError(isBusinessOwner ? 'Please read and accept the Business Agreement to continue.' : 'Please accept the Terms of Service to continue.'); return; }
     setLoading(true);
     setError('');
     try {
@@ -316,7 +338,15 @@ const RegisterPage = () => {
             <Stack spacing={1}>
               <FormControlLabel
                 sx={{ alignItems: 'flex-start', py: 1, '& .MuiCheckbox-root': { pt: 0 } }}
-                control={<Checkbox checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} size='small' />}
+                control={<Checkbox checked={termsAccepted} onChange={(e) => {
+                  // Business clickwrap: checking is only possible through the agreement dialog's
+                  // accept button. A direct check opens the dialog; unchecking is always allowed.
+                  if (isBusinessOwner && e.target.checked) {
+                    setAgreementDialogOpen(true);
+                    return;
+                  }
+                  setTermsAccepted(e.target.checked);
+                }} size='small' />}
                 label={
                   isBusinessOwner ? (
                     <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
@@ -343,9 +373,14 @@ const RegisterPage = () => {
                       I agree to the{' '}
                       <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
                         Terms of Service
-                      </Typography>{' '}and{' '}
+                      </Typography>
+                      ,{' '}
                       <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
                         Privacy Policy
+                      </Typography>
+                      , and{' '}
+                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/rules'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                        Official Rules
                       </Typography>
                       , and I confirm that I am a legal U.S. resident.
                     </Typography>
@@ -373,7 +408,13 @@ const RegisterPage = () => {
               <Button
                 fullWidth
                 startIcon={googlePending ? <CircularProgress size={18} color='inherit' /> : <Google sx={{ fontSize: 18 }} />}
-                onClick={() => termsAccepted ? handleSocialSignUp('google') : setError('Please approve the terms first.')}
+                onClick={() => {
+                  if (!termsAccepted) {
+                    setError(isBusinessOwner ? 'Please read and accept the Business Agreement to continue.' : 'Please accept the Terms of Service to continue.');
+                    return;
+                  }
+                  handleSocialSignUp('google');
+                }}
                 disabled={googlePending || loading}
                 sx={authGoogleBtnSx}>
                 {googlePending ? 'Signing up...' : 'Continue with Google'}
@@ -398,6 +439,19 @@ const RegisterPage = () => {
           </Box>
         </Stack>
       </Stack>
+
+      {isBusinessOwner && (
+        <React.Suspense fallback={null}>
+          <BusinessAgreementAcceptDialog
+            open={agreementDialogOpen}
+            onClose={() => setAgreementDialogOpen(false)}
+            onAccept={() => {
+              setTermsAccepted(true);
+              setAgreementDialogOpen(false);
+            }}
+          />
+        </React.Suspense>
+      )}
     </motion.div>
   );
 
