@@ -84,6 +84,11 @@ export async function captureNodeToBlob(node: HTMLElement, scale = 2, format: 'p
       logoSwaps.push({ img: imgEl, originalSrc });
     }
 
+    // Ensure Plus Jakarta Sans (and any other web fonts) are fully loaded
+    // before capture; html2canvas snapshots the DOM synchronously so any
+    // font still swapping would render in the fallback face.
+    await document.fonts.ready;
+
     const canvas = await html2canvas(node, {
       scale,
       width: node.clientWidth,

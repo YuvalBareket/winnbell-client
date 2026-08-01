@@ -23,22 +23,26 @@ const STICKER_THEMES = [
   { color: BRAND_ICON_BLUE },
 ];
 import {
-  POSTER_W, POSTER_H,
+  POSTER_W, POSTER_H, DESIGN_W, DESIGN_H,
   THUMB_SCALE, THUMB_W, THUMB_H,
   THUMB_SCALE_MOBILE, THUMB_W_MOBILE, THUMB_H_MOBILE,
 } from './posterConstants';
 import {
-  PosterBlue, PosterEmerald, PosterCream, PosterSunset,
+  PosterBlue, PosterNavy, PosterCream, PosterLight,
+  PosterBlueCanvas, PosterNavyCanvas, PosterCreamCanvas, PosterLightCanvas,
 } from './PosterTemplates';
 
-// Capture scale for PDF/print: 8 x 320px over an 8.5in US Letter page ~= 300 DPI.
-const PDF_SCALE = 8;
+// Print capture: 2x the 1414x2000 design canvas = 2828x4000 output, ~340 DPI on A4
+// (above the 300 DPI print standard). SVGs rasterize at capture resolution so the
+// QR and wordmark edges stay sharp at print size.
+const PRINT_SCALE = 2;
+const SVG_RASTER_SCALE = PRINT_SCALE * 2;
 
 const TEMPLATES = [
-  { id: 'blue',    label: 'Bold Blue',    Component: PosterBlue },
-  { id: 'cream',   label: 'Cream Gold',   Component: PosterCream },
-  { id: 'emerald', label: 'Emerald',      Component: PosterEmerald },
-  { id: 'sunset',  label: 'Sunset Pink',  Component: PosterSunset },
+  { id: 'blue',  label: 'Blue',  Component: PosterBlue,  Canvas: PosterBlueCanvas },
+  { id: 'navy',  label: 'Navy',  Component: PosterNavy,  Canvas: PosterNavyCanvas },
+  { id: 'cream', label: 'Cream', Component: PosterCream, Canvas: PosterCreamCanvas },
+  { id: 'light', label: 'Light', Component: PosterLight, Canvas: PosterLightCanvas },
 ];
 
 // Convert an <img src="...svg"> element to a PNG data URL at 2x rendered size.
@@ -98,7 +102,8 @@ const PostersTab = ({
   const [selectedId, setSelectedId] = useState('blue');
   const [downloading, setDownloading] = useState(false);
 
-  const posterRef = useRef<HTMLDivElement>(null);
+  // Hidden full-size (1414x2000) canvas of the selected template - the capture target.
+  const captureRef = useRef<HTMLDivElement>(null);
 
   // Mobile print keeps its hidden overlay + print CSS mounted until the next
   // print or unmount; iOS re-renders the preview on any setting change (zoom,
@@ -136,29 +141,20 @@ const PostersTab = ({
   const thumbW = isDesktop ? THUMB_W : THUMB_W_MOBILE;
   const thumbH = isDesktop ? THUMB_H : THUMB_H_MOBILE;
 
-  // ── PDF download: swap SVGs → PNG imgs before html2canvas ─────────────────
-  const handleDownload = async () => {
-    if (!posterRef.current) return;
-    setDownloading(true);
-    const selected = TEMPLATES.find(t => t.id === selectedId) ?? TEMPLATES[0];
+  // ── Shared capture: rasterize the HIDDEN full-size canvas (1414x2000) 1:1 ──
+  // The capture node is unscaled design pixels, so no transform juggling and no
+  // fractional-px text metrics; output is exactly the design canvas resolution.
+  const capturePosterJpeg = async (): Promise<string> => {
+    if (!captureRef.current) throw new Error('capture node missing');
+    const node = captureRef.current;
     const swaps: Array<{ svg: SVGSVGElement; img: HTMLImageElement }> = [];
     const logoSwaps: Array<{ img: HTMLImageElement; originalSrc: string }> = [];
-
-    // Remove mobile CSS transform so html2canvas captures at full size
-    const scaleWrapper = posterRef.current.parentElement;
-    const savedTransform = scaleWrapper?.style.transform ?? '';
-    const savedMarginBottom = scaleWrapper?.style.marginBottom ?? '';
-    if (scaleWrapper) {
-      scaleWrapper.style.transform = 'none';
-      scaleWrapper.style.marginBottom = '0';
-    }
-
     try {
-      // 1. Convert every SVG inside the poster to a PNG img. Rasterize at the same
-      //    scale as the final capture so the QR stays sharp at print resolution.
-      const svgEls = Array.from(posterRef.current.querySelectorAll<SVGSVGElement>('svg'));
+      // 1. Convert every inline SVG (QR, glows, pin) to a PNG img - html2canvas
+      //    otherwise drops or blurs them.
+      const svgEls = Array.from(node.querySelectorAll<SVGSVGElement>('svg'));
       for (const svg of svgEls) {
-        const pngUrl = await svgToPngDataUrl(svg, PDF_SCALE);
+        const pngUrl = await svgToPngDataUrl(svg, SVG_RASTER_SCALE);
         const img = document.createElement('img');
         img.src = pngUrl;
         const w = svg.clientWidth || Number(svg.getAttribute('width') ?? 150);
@@ -169,123 +165,68 @@ const PostersTab = ({
         swaps.push({ svg, img });
       }
 
-      // 1b. Convert <img src="...svg"> elements (e.g. wordmark) to PNG data URLs so
-      //     html2canvas does not leave them blank in the captured output.
-      const svgImgEls = Array.from(
-        posterRef.current.querySelectorAll<HTMLImageElement>('img[src$=".svg"]'),
-      );
+      // 1b. Convert <img src="...svg"> elements (the wordmark) to PNG data URLs.
+      const svgImgEls = Array.from(node.querySelectorAll<HTMLImageElement>('img[src$=".svg"]'));
       for (const imgEl of svgImgEls) {
         const originalSrc = imgEl.src;
-        const pngUrl = await svgImgToPngDataUrl(imgEl, PDF_SCALE);
+        const pngUrl = await svgImgToPngDataUrl(imgEl, SVG_RASTER_SCALE);
         imgEl.src = pngUrl;
-        // Wait one microtask so the browser applies the new src before capture.
         await new Promise<void>((r) => { const t = new Image(); t.onload = () => r(); t.onerror = () => r(); t.src = pngUrl; });
         logoSwaps.push({ img: imgEl, originalSrc });
       }
 
-      // 2. Capture poster canvas - PDF_SCALE x 320px over an 8.5in page ~= 300 DPI print
-      const canvas = await html2canvas(posterRef.current, {
-        scale: PDF_SCALE,
-        width: POSTER_W,
-        height: POSTER_H,
+      // 2. Fonts must be resident or the capture falls back to system type.
+      await document.fonts.ready;
+      const canvas = await html2canvas(node, {
+        scale: PRINT_SCALE,
+        width: DESIGN_W,
+        height: DESIGN_H,
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
         imageTimeout: 0,
       });
-
-      // 3. Restore SVGs and logo imgs
-      swaps.forEach(({ svg, img }) => {
-        svg.style.display = '';
-        img.remove();
-      });
+      // JPEG not PNG: gradient backgrounds compress far smaller at identical quality.
+      // 0.85 halves the file vs 0.95; at ~340 DPI the extra compression is invisible
+      // in print - the high pixel density masks JPEG artifacts.
+      return canvas.toDataURL('image/jpeg', 0.85);
+    } finally {
+      swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
       logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
+    }
+  };
 
-      // 4. Build PDF - US Letter, image fills entire page. JPEG, not PNG: the gradient
-      //    backgrounds make PNGs huge (multi-MB) while JPEG at 0.92 is visually identical.
-      const imgData = canvas.toDataURL('image/jpeg', 0.92);
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+  // ── PDF download ────────────────────────────────────────────────────────────
+  const handleDownload = async () => {
+    setDownloading(true);
+    const selected = TEMPLATES.find(t => t.id === selectedId) ?? TEMPLATES[0];
+    try {
+      const imgData = await capturePosterJpeg();
+      // A4 portrait: same 1:1.414 ratio as the 1414x2000 design canvas.
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
       pdf.save(`winnbell-${selected.id}-poster.pdf`);
       onToast('Poster downloaded!');
     } catch (err) {
-      swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
-      logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
       console.error(err);
       onToast('Download failed. Please try again.');
     } finally {
-      // Restore mobile transform
-      if (scaleWrapper) {
-        scaleWrapper.style.transform = savedTransform;
-        scaleWrapper.style.marginBottom = savedMarginBottom;
-      }
       setDownloading(false);
     }
   };
 
-  // ── Print: render poster to a new window and trigger browser print dialog ──
-  // handlePrint also rasterizes via html2canvas, so SVG img elements need the
-  // same swap treatment as handleDownload to avoid blank wordmarks in the output.
+  // ── Print: same full-size capture, then the platform-specific print path ──
   const handlePrint = async () => {
-    if (!posterRef.current) return;
     setDownloading(true);
-    const swaps: Array<{ svg: SVGSVGElement; img: HTMLImageElement }> = [];
-    const logoSwaps: Array<{ img: HTMLImageElement; originalSrc: string }> = [];
-
-    const scaleWrapper = posterRef.current.parentElement;
-    const savedTransform = scaleWrapper?.style.transform ?? '';
-    const savedMarginBottom = scaleWrapper?.style.marginBottom ?? '';
-    if (scaleWrapper) {
-      scaleWrapper.style.transform = 'none';
-      scaleWrapper.style.marginBottom = '0';
-    }
-
     try {
-      const svgEls = Array.from(posterRef.current.querySelectorAll<SVGSVGElement>('svg'));
-      for (const svg of svgEls) {
-        const pngUrl = await svgToPngDataUrl(svg, PDF_SCALE);
-        const img = document.createElement('img');
-        img.src = pngUrl;
-        const w = svg.clientWidth || Number(svg.getAttribute('width') ?? 150);
-        const h = svg.clientHeight || Number(svg.getAttribute('height') ?? 150);
-        img.style.cssText = `width:${w}px;height:${h}px;display:block;`;
-        svg.parentNode!.insertBefore(img, svg);
-        svg.style.display = 'none';
-        swaps.push({ svg, img });
-      }
-
-      const svgImgEls = Array.from(
-        posterRef.current.querySelectorAll<HTMLImageElement>('img[src$=".svg"]'),
-      );
-      for (const imgEl of svgImgEls) {
-        const originalSrc = imgEl.src;
-        const pngUrl = await svgImgToPngDataUrl(imgEl, PDF_SCALE);
-        imgEl.src = pngUrl;
-        await new Promise<void>((r) => { const t = new Image(); t.onload = () => r(); t.onerror = () => r(); t.src = pngUrl; });
-        logoSwaps.push({ img: imgEl, originalSrc });
-      }
-
-      const canvas = await html2canvas(posterRef.current, {
-        scale: PDF_SCALE,
-        width: POSTER_W,
-        height: POSTER_H,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        imageTimeout: 0,
-      });
-
-      swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
-      logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      const imgData = await capturePosterJpeg();
 
       if (isDesktop) {
-        // Desktop: build the exact same US Letter PDF the Download button produces
+        // Desktop: build the exact same A4 PDF the Download button produces
         // and print it from a hidden iframe (popup-free, gesture-free).
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
         pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
@@ -338,15 +279,9 @@ const PostersTab = ({
         window.print();
       }
     } catch (err) {
-      swaps.forEach(({ svg, img }) => { svg.style.display = ''; img.remove(); });
-      logoSwaps.forEach(({ img, originalSrc }) => { img.src = originalSrc; });
       console.error(err);
       onToast('Print failed. Please try again.');
     } finally {
-      if (scaleWrapper) {
-        scaleWrapper.style.transform = savedTransform;
-        scaleWrapper.style.marginBottom = savedMarginBottom;
-      }
       setDownloading(false);
     }
   };
@@ -367,12 +302,21 @@ const PostersTab = ({
     },
   });
 
+  const SelectedCanvas = (TEMPLATES.find(t => t.id === selectedId) ?? TEMPLATES[0]).Canvas;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.05 }}
     >
+      {/* Offscreen full-resolution capture node (kept mounted so downloads are instant). */}
+      <Box aria-hidden style={{ position: 'fixed', left: -20000, top: 0, width: DESIGN_W, height: DESIGN_H, pointerEvents: 'none', zIndex: -1 }}>
+        <Box ref={captureRef} style={{ width: DESIGN_W, height: DESIGN_H }}>
+          <SelectedCanvas businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} />
+        </Box>
+      </Box>
+
       <Box sx={{ pb: 4 }}>
         <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', p: { xs: 2.5, md: 3.5 } }}>
           <Stack spacing={3}>
@@ -460,7 +404,7 @@ const PostersTab = ({
                       transform: { xs: 'scale(0.92)', sm: 'none' },
                       mb: { xs: `-${Math.round(POSTER_H * 0.08)}px`, sm: 0 },
                     }}>
-                      <Box ref={posterRef} style={{ width: POSTER_W, height: POSTER_H, overflow: 'hidden' }}>
+                      <Box style={{ width: POSTER_W, height: POSTER_H, overflow: 'hidden' }}>
                         {TEMPLATES.find(t => t.id === selectedId)?.Component
                           ? (() => {
                             const Comp = TEMPLATES.find(t => t.id === selectedId)!.Component;

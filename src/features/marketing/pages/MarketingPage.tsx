@@ -205,7 +205,13 @@ const MarketingPage = () => {
         {/* Tab content */}
         {activeTab === 0 && (
           <PostersTab
-            businessName={businessName}
+            // Poster chip shows "Business · Location" like the approved design; falls back
+            // to the bare business name until a location is selected (or for managers,
+            // whose location list is not loaded here).
+            businessName={(() => {
+              const loc = locations.find((l) => l.id === effectiveLocationId);
+              return loc ? `${businessName} · ${loc.name}` : businessName;
+            })()}
             scanUrl={scanUrl}
             effectiveLocationId={effectiveLocationId}
             onToast={setSnackbar}
