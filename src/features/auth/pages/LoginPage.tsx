@@ -45,6 +45,12 @@ const LoginPage = () => {
   const addMode = searchParams.get('add') === '1';
   // Business variant if role=business or an invite token present
   const isBusinessVariant = role?.toLowerCase() === 'business' || !!inviteToken;
+  const registerDest = (() => {
+    let dest = isBusinessVariant && !inviteToken ? '/register/business' : '/register';
+    if (inviteToken) dest += `?token=${inviteToken}`;
+    if (addMode) dest += `${dest.includes('?') ? '&' : '?'}add=1`;
+    return dest;
+  })();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -274,10 +280,10 @@ const LoginPage = () => {
               label={
                 <Typography variant='caption' color='text.secondary'>
                   I agree to the{' '}
-                  <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                  <Typography component='a' href='/terms' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
                     Terms of Service
                   </Typography>{' '}and{' '}
-                  <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                  <Typography component='a' href='/privacy' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
                     Privacy Policy
                   </Typography>
                 </Typography>
@@ -313,14 +319,8 @@ const LoginPage = () => {
         <Box sx={{ mt: 'auto', pt: 2.5, textAlign: 'center' }}>
           <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY_AA }}>
             Don't have an account?{' '}
-            <Typography component='span' onClick={() => {
-              let dest = '/register';
-              if (isBusinessVariant && !inviteToken) dest = '/register/business';
-              if (inviteToken) dest += `?token=${inviteToken}`;
-              if (addMode) dest += `${dest.includes('?') ? '&' : '?'}add=1`;
-              navigate(dest);
-            }}
-              sx={{ fontSize: '13.5px', color: 'primary.main', fontWeight: 800, cursor: 'pointer' }}>
+            <Typography component='a' href={registerDest} onClick={(e) => { e.preventDefault(); navigate(registerDest); }}
+              sx={{ fontSize: '13.5px', color: 'primary.main', fontWeight: 800, cursor: 'pointer', textDecoration: 'none' }}>
               Create new account
             </Typography>
           </Typography>

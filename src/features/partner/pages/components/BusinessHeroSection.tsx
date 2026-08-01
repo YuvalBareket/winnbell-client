@@ -63,6 +63,7 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
               }}
             >
               <Avatar
+                alt=''
                 src={business.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${business.logo_url}` : undefined}
                 sx={{
                   width: 72, height: 72,

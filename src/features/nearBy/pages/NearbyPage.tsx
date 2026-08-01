@@ -166,9 +166,9 @@ const NearbyPage = () => {
             elevation={3}
             sx={{ flex: 1, p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 4, height: 48 }}
           >
-            <IconButton sx={{ p: '10px' }}>
+            <Box sx={{ p: '10px', display: 'flex', alignItems: 'center' }}>
               <Search sx={{ color: 'text.secondary' }} />
-            </IconButton>
+            </Box>
             <InputBase
               sx={{ ml: 1, flex: 1, fontWeight: 600 }}
               placeholder='Search businesses...'
@@ -206,6 +206,7 @@ const NearbyPage = () => {
         {/* Recenter Button */}
         <IconButton
           component={motion.button}
+          aria-label='Recenter map on my location'
           onClick={() => refreshLocation()}
           {...pressableIcon}
           initial={{ opacity: 0, scale: 0.8 }}
@@ -409,6 +410,7 @@ const NearbyPage = () => {
                   >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
                     <Avatar
+                      alt=''
                       src={partner.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${partner.logo_url}` : undefined}
                       sx={{
                         width: 42,
@@ -424,7 +426,8 @@ const NearbyPage = () => {
                     </Avatar>
 
                     <Box>
-                      <Typography variant='body2' sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                      {/* Real button for keyboard/AT; no handler - its click bubbles to the card's onClick */}
+                      <Typography component='button' type='button' variant='body2' sx={{ fontWeight: 700, lineHeight: 1.2, display: 'block', background: 'none', border: 0, p: 0, textAlign: 'left', color: 'inherit', cursor: 'pointer' }}>
                         {partner.name}
                       </Typography>
 

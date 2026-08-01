@@ -91,6 +91,7 @@ const AccountSwitcher = ({ variant = 'menu', anchorEl = null, open = false, onCl
                   onClick={() => !isActive && handleSwitchTo(user.id)}
                 >
                   <Avatar
+                    alt=''
                     src={user.businessLogoUrl ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${user.businessLogoUrl}` : undefined}
                     sx={{
                       width: 36, height: 36,
@@ -157,7 +158,10 @@ const AccountSwitcher = ({ variant = 'menu', anchorEl = null, open = false, onCl
             transition={{ delay: accounts.length * 0.05, duration: 0.2, ease: 'easeOut' }}
           >
             <Box
+              role="button"
+              tabIndex={0}
               onClick={handleAddAccount}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAddAccount(); } }}
               sx={{
                 display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1,
                 borderRadius: 1.5, cursor: 'pointer', transition: 'all 0.15s ease',

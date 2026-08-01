@@ -117,7 +117,11 @@ const DrawHistoryPage = () => {
                   key={i}
                   component={motion.div}
                   variants={popIn}
+                  role='button'
+                  tabIndex={0}
+                  aria-label={`Go to campaign ${i + 1}`}
                   onClick={() => swiperInst?.slideTo(i)}
+                  onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); swiperInst?.slideTo(i); } }}
                   sx={{ height: 6, borderRadius: '3px', cursor: 'pointer', transition: 'all 0.3s', width: i === effectiveIndex ? 20 : 6, bgcolor: i === effectiveIndex ? PRIMARY_MAIN : BORDER_LIGHT }}
                 />
               ))}

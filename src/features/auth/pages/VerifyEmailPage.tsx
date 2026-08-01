@@ -288,9 +288,10 @@ const VerifyEmailPage = () => {
     <Typography sx={{ textAlign: 'center', fontSize: '13.5px', color: TEXT_TERTIARY, fontWeight: 600 }}>
       Wrong address?{' '}
       <Box
-        component='span'
+        component='button'
+        type='button'
         onClick={handleChangeEmail}
-        sx={{ color: PRIMARY_MAIN, fontWeight: 800, cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+        sx={{ font: 'inherit', background: 'none', border: 0, p: 0, color: PRIMARY_MAIN, fontWeight: 800, cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
       >
         Change email
       </Box>

@@ -141,7 +141,10 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
         </Typography>
 
         <Box
+          role="button"
+          tabIndex={0}
           onClick={() => !isProcessing && fileInputRef.current?.click()}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!isProcessing) fileInputRef.current?.click(); } }}
           sx={{
             border: '2px dashed', borderColor: fileError ? 'error.main' : 'divider', borderRadius: 2,
             minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -176,7 +179,11 @@ const CanvasAnnotationEditor = forwardRef<CanvasEditorHandle, CanvasAnnotationEd
         {/* Full-screen viewer for the example receipt */}
         <Dialog fullScreen open={exampleOpen} onClose={() => setExampleOpen(false)} PaperProps={{ sx: { bgcolor: 'common.black' } }}>
           <Box
+            role="button"
+            tabIndex={0}
+            aria-label="Close example"
             onClick={() => setExampleOpen(false)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExampleOpen(false); } }}
             sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'zoom-out' }}
           >
             <Box

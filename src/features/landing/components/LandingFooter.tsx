@@ -14,14 +14,18 @@ const LandingFooter = ({ onNavigate }: LandingFooterProps) => {
         bgcolor: 'background.default',
         borderTop: '1px solid', borderColor: 'divider',
         display: 'flex',
+        // Mobile: one row cannot hold logo + 4 links + copyright - stack centered instead.
+        flexDirection: { xs: 'column', md: 'row' },
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: { md: 'space-between' },
+        gap: { xs: 1.5, md: 0 },
       }}
     >
       <Box component='img' src='/winnbell_app_name.svg' alt='Winnbell' sx={{ height: { xs: 20, md: 28 }, width: 'auto', objectFit: 'contain' }} />
-      <Stack direction='row' spacing={{ xs: 2, md: 2.5 }} alignItems='center'>
+      <Stack direction='row' spacing={{ xs: 2, md: 2.5 }} alignItems='center' justifyContent='center' flexWrap='wrap' useFlexGap>
+        {/* Real hrefs: keyboard-focusable and announced as links; SPA navigation via preventDefault */}
         {[{ label: 'Terms', path: '/terms' }, { label: 'Privacy', path: '/privacy' }, { label: 'Contact', path: '/contact' }, { label: 'Accessibility', path: '/accessibility' }].map(({ label, path }) => (
-          <Typography key={label} component='a' onClick={() => onNavigate(path)} variant='caption' sx={{ color: TEXT_SECONDARY, cursor: 'pointer', textDecoration: 'none', fontWeight: 500, fontSize: { xs: '0.7rem', md: '0.875rem' }, '&:hover': { color: PRIMARY_MAIN } }}>
+          <Typography key={label} component='a' href={path} onClick={(e) => { e.preventDefault(); onNavigate(path); }} variant='caption' sx={{ color: TEXT_SECONDARY, cursor: 'pointer', textDecoration: 'none', fontWeight: 500, fontSize: { xs: '0.75rem', md: '0.875rem' }, '&:hover': { color: PRIMARY_MAIN } }}>
             {label}
           </Typography>
         ))}

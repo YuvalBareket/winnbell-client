@@ -42,6 +42,11 @@ const TicketRowWrapper = ({ children, index, isClickable = false, onClick }: { c
   >
     <Box
       onClick={isClickable ? onClick : undefined}
+      {...(isClickable ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } },
+      } : {})}
       sx={{
         border: '1px solid',
         borderColor: BORDER_SUBTLE,
@@ -85,6 +90,7 @@ const UserTicketRow = ({ ticket, index, onLocationClick }: { ticket: UserTicket;
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
         <Avatar
+          alt=''
           src={ticket.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${ticket.logo_url}` : undefined}
           sx={{ ...iconBoxStyle, bgcolor: sectorInfo.bgColor, color: sectorInfo.color, '& svg': { fontSize: 28 } }}
         >

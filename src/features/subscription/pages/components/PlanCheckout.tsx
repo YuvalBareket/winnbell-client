@@ -454,7 +454,7 @@ const PlanCheckout = ({
                 <Box sx={{ textAlign: 'center', mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
                   <Typography variant='caption' color='text.secondary'>
                     Prefer monthly?{' '}
-                    <Box component='span' onClick={() => { if (!foundingLoading) { setFoundingMode(false); setFoundingTermsError(false); setFoundingTermsAccepted(false); } }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                    <Box component='button' type='button' onClick={() => { if (!foundingLoading) { setFoundingMode(false); setFoundingTermsError(false); setFoundingTermsAccepted(false); } }} sx={{ font: 'inherit', background: 'none', border: 0, p: 0, color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
                       Back to plans
                     </Box>
                   </Typography>

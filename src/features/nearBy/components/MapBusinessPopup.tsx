@@ -281,6 +281,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
               >
             <Stack direction='row' spacing={2} alignItems='flex-start'>
               <Avatar
+                alt=''
                 src={location.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${location.logo_url}` : undefined}
                 sx={{
                   width: 80, height: 80,

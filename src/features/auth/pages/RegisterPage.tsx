@@ -67,6 +67,12 @@ const RegisterPage = () => {
   const isBusinessOwner = roleLower === 'business' && !inviteToken;
   const isLocationManager = inviteToken !== null;
   const isBusinessVariant = isBusinessOwner || isLocationManager;
+  const loginDest = (() => {
+    let dest = isBusinessVariant && !inviteToken ? '/login/business' : '/login';
+    if (inviteToken) dest += `?token=${inviteToken}`;
+    if (addMode) dest += `${dest.includes('?') ? '&' : '?'}add=1`;
+    return dest;
+  })();
 
   const { isLoaded: syncLoaded, isSignedIn, syncError } = useSyncStatus();
   const isAuth = useAppSelector(selectIsAuthenticated);
@@ -358,19 +364,19 @@ const RegisterPage = () => {
                   isBusinessOwner ? (
                     <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.5 }}>
                       I certify that I am authorized to bind the Participating Business identified above. I have read and agree to the{' '}
-                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/business-agreement'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                      <Typography component='a' href='/business-agreement' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/business-agreement'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
                         Winnbell Participating Business Agreement
                       </Typography>
                       , including the{' '}
-                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                      <Typography component='a' href='/privacy' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
                         Privacy Policy
                       </Typography>
                       ,{' '}
-                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/business-guidelines'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                      <Typography component='a' href='/business-guidelines' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/business-guidelines'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
                         Business Participation Guidelines
                       </Typography>
                       ,{' '}
-                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/cancellation'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                      <Typography component='a' href='/cancellation' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/cancellation'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
                         Cancellation &amp; Refund Policy
                       </Typography>
                       , and any Campaign Terms incorporated therein. I understand that checking this box and clicking "Create Account" constitutes my electronic signature and binds the Participating Business to these terms.
@@ -378,15 +384,15 @@ const RegisterPage = () => {
                   ) : (
                     <Typography variant='caption' color='text.secondary'>
                       I agree to the{' '}
-                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                      <Typography component='a' href='/terms' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/terms'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
                         Terms of Service
                       </Typography>
                       ,{' '}
-                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                      <Typography component='a' href='/privacy' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
                         Privacy Policy
                       </Typography>
                       , and{' '}
-                      <Typography component='span' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/rules'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer' }}>
+                      <Typography component='a' href='/rules' variant='caption' onClick={(e) => { e.preventDefault(); navigate('/rules'); }} sx={{ color: 'primary.main', fontWeight: 700, cursor: 'pointer', textDecoration: 'none' }}>
                         Official Rules
                       </Typography>
                       , and I confirm that I am a legal U.S. resident.
@@ -432,14 +438,8 @@ const RegisterPage = () => {
           <Box sx={{ pt: 1, textAlign: 'center' }}>
             <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY_AA }}>
               Already have an account?{' '}
-              <Typography component='span' onClick={() => {
-                let dest = '/login';
-                if (isBusinessVariant && !inviteToken) dest = '/login/business';
-                if (inviteToken) dest += `?token=${inviteToken}`;
-                if (addMode) dest += `${dest.includes('?') ? '&' : '?'}add=1`;
-                navigate(dest);
-              }}
-                sx={{ fontSize: '13.5px', color: 'primary.main', fontWeight: 800, cursor: 'pointer' }}>
+              <Typography component='a' href={loginDest} onClick={(e) => { e.preventDefault(); navigate(loginDest); }}
+                sx={{ fontSize: '13.5px', color: 'primary.main', fontWeight: 800, cursor: 'pointer', textDecoration: 'none' }}>
                 Sign In
               </Typography>
             </Typography>

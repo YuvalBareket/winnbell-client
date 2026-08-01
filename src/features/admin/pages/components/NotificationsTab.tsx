@@ -167,6 +167,10 @@ const NotificationsTab: React.FC = () => {
                             setSendSuccess(false);
                             setConfirming(false);
                           }}
+                          role='button'
+                          tabIndex={0}
+                          aria-pressed={audience === option.value}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setAudience(option.value); setSendSuccess(false); setConfirming(false); } }}
                           sx={{
                             px: 2,
                             py: 1,

@@ -108,6 +108,9 @@ export const DrawSwiper = ({ onDrawChange, draw_id, compact = false }: DrawSwipe
             component={motion.div}
             {...pressableCard}
             onClick={() => onDrawChange(draw.id)}
+            role='button'
+            tabIndex={0}
+            onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDrawChange(draw.id); } }}
             sx={{ cursor: 'pointer' }}
           >
             <CampaignMiniCard draw={draw} selected={draw_id === draw.id} />

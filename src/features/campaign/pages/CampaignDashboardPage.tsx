@@ -299,7 +299,7 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
       {(showCampaignPill || showLocationPill) && (
         <Stack direction="row" spacing={1}>
           {showCampaignPill && (
-            <Box onClick={(e) => setCampaignAnchor(e.currentTarget)} sx={pillSx}>
+            <Box onClick={(e) => setCampaignAnchor(e.currentTarget)} role='button' tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCampaignAnchor(e.currentTarget as HTMLElement); } }} sx={pillSx}>
               <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {selectedCampaign?.name ?? 'Campaign'}
               </Box>
@@ -307,7 +307,7 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
             </Box>
           )}
           {showLocationPill && (
-            <Box onClick={(e) => setLocationAnchor(e.currentTarget)} sx={pillSx}>
+            <Box onClick={(e) => setLocationAnchor(e.currentTarget)} role='button' tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLocationAnchor(e.currentTarget as HTMLElement); } }} sx={pillSx}>
               <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
                 <PlaceOutlined sx={{ fontSize: 16, color: TEXT_TERTIARY, flexShrink: 0 }} />
                 <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedLocationName}</Box>
@@ -324,6 +324,10 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
             <Box
               key={r}
               onClick={() => setDateRange(r)}
+              role='button'
+              tabIndex={0}
+              aria-pressed={dateRange === r}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDateRange(r); } }}
               sx={{
                 flex: 1, textAlign: 'center', py: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
                 bgcolor: dateRange === r ? PRIMARY_MAIN : 'transparent',

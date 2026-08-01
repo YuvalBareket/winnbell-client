@@ -504,7 +504,7 @@ Tell us about your brand               </Typography>
                     {/* logo + name */}
                     <motion.div variants={popIn}>
                       <Stack direction='row' spacing={2.25} alignItems='flex-start' >
-                        <Box onClick={() => logoInputRef.current?.click()} sx={{ width: 96, height: 96, flexShrink: 0, borderRadius: '18px', cursor: 'pointer', overflow: 'hidden', border: uploadedLogoKey ? `1px solid ${BORDER_LIGHT}` : `2px dashed ${BORDER_LIGHT}`, bgcolor: BG_SUBTLE, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, transition: 'border-color 0.15s ease', '&:hover': { borderColor: PRIMARY_MAIN } }}>
+                        <Box onClick={() => logoInputRef.current?.click()} role='button' tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); logoInputRef.current?.click(); } }} sx={{ width: 96, height: 96, flexShrink: 0, borderRadius: '18px', cursor: 'pointer', overflow: 'hidden', border: uploadedLogoKey ? `1px solid ${BORDER_LIGHT}` : `2px dashed ${BORDER_LIGHT}`, bgcolor: BG_SUBTLE, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75, transition: 'border-color 0.15s ease', '&:hover': { borderColor: PRIMARY_MAIN } }}>
                           {uploadedLogoKey
                             ? <Box component='img' src={`${logoBase}/business-logos/${uploadedLogoKey}`} alt='logo' sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             : (<><ImageOutlined sx={{ fontSize: 24, color: TEXT_TERTIARY }} /><Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: TEXT_TERTIARY, textAlign: 'center', lineHeight: 1.35 }}>Add logo<Box component='span' sx={{ display: 'block', fontWeight: 500, fontSize: '0.62rem' }}>(optional)</Box></Typography></>)}
@@ -574,7 +574,7 @@ Tell us about your brand               </Typography>
                       <Controller name='businessSector' control={control} rules={{ required: 'Please select a category' }} render={({ fieldState: { error } }) => (
                         <Box>
                           <FieldLabel>Category</FieldLabel>
-                          <Box onClick={() => setCategoryPickerOpen(true)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, bgcolor: 'white', borderRadius: '12px', px: 1.75, py: sector ? 1.25 : 1.5, cursor: 'pointer', border: `${sector ? 1.5 : 1}px solid ${sector ? PRIMARY_MAIN : BORDER_LIGHT}`, boxShadow: sector ? `0 0 0 3px ${ALPHA_PRIMARY_10}` : 'none', transition: 'all 0.15s ease', '&:hover': { borderColor: PRIMARY_MAIN } }}>
+                          <Box onClick={() => setCategoryPickerOpen(true)} role='button' tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCategoryPickerOpen(true); } }} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, bgcolor: 'white', borderRadius: '12px', px: 1.75, py: sector ? 1.25 : 1.5, cursor: 'pointer', border: `${sector ? 1.5 : 1}px solid ${sector ? PRIMARY_MAIN : BORDER_LIGHT}`, boxShadow: sector ? `0 0 0 3px ${ALPHA_PRIMARY_10}` : 'none', transition: 'all 0.15s ease', '&:hover': { borderColor: PRIMARY_MAIN } }}>
                             {sector ? (
                               <Stack direction='row' alignItems='center' spacing={1.4} sx={{ minWidth: 0 }}>
                                 <Box sx={{ width: 34, height: 34, borderRadius: '10px', flexShrink: 0, bgcolor: alpha(sector.color, 0.14), color: sector.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19 }}>{sector.icon}</Box>
@@ -673,7 +673,7 @@ const CategoryPicker = ({ open, onClose, sectors, selectedSector, searchValue, o
           const isSel = key === selectedSector;
           return (
             <motion.div key={key} whileTap={{ scale: 0.98 }}>
-              <Box onClick={() => onSelectSector(key)} sx={{ display: 'flex', alignItems: 'center', gap: 1.4, px: 1.4, py: 1.1, borderRadius: '10px', cursor: 'pointer', bgcolor: isSel ? ALPHA_PRIMARY_06 : 'transparent', transition: 'background 0.12s ease', '&:hover': { bgcolor: isSel ? ALPHA_PRIMARY_06 : BG_SUBTLE } }}>
+              <Box onClick={() => onSelectSector(key)} role='button' tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectSector(key); } }} sx={{ display: 'flex', alignItems: 'center', gap: 1.4, px: 1.4, py: 1.1, borderRadius: '10px', cursor: 'pointer', bgcolor: isSel ? ALPHA_PRIMARY_06 : 'transparent', transition: 'background 0.12s ease', '&:hover': { bgcolor: isSel ? ALPHA_PRIMARY_06 : BG_SUBTLE } }}>
                 <Box sx={{ width: 34, height: 34, borderRadius: '10px', flexShrink: 0, bgcolor: alpha(s.color, 0.14), color: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19 }}>{s.icon}</Box>
                 <Typography sx={{ flex: 1, fontSize: '0.92rem', fontWeight: isSel ? 800 : 600, color: isSel ? TEXT_HEADING : TEXT_SECONDARY }}>{s.label}</Typography>
                 {isSel && <CheckRounded sx={{ fontSize: 19, color: PRIMARY_MAIN }} />}

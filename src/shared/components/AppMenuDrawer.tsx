@@ -208,6 +208,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
             onClick={() => showSwitcher && setSwitcherExpanded((v) => !v)}
           >
             <Avatar
+              alt=''
               src={businessLogoUrl ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${businessLogoUrl}` : undefined}
               sx={{
                 width: { xs: 44, sm: 56 },

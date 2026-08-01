@@ -3,7 +3,7 @@ import { Box, Typography, Button, Stack, Container, Accordion, AccordionSummary,
 import AttractButton from '../../shared/components/AttractButton';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowForward, Storefront, ExpandMore,
+  ArrowForward, ExpandMore,
   TravelExploreRounded, QrCodeScannerRounded, ConfirmationNumberRounded, AutoAwesomeRounded,
   TrendingUpRounded, AutorenewRounded, TrackChangesRounded, SavingsRounded, CampaignRounded,
   PsychologyRounded, PaidRounded, BoltRounded, InsightsRounded, DesignServicesRounded,
@@ -21,7 +21,6 @@ import LandingNavbar from './components/LandingNavbar';
 import LandingFooter from './components/LandingFooter';
 import {
   GRADIENT_HERO_WARM,
-  ALPHA_WHITE_15,
   PRIMARY_MAIN,
   TEXT_HEADING,
   TEXT_SECONDARY,
@@ -54,29 +53,6 @@ const BusinessLandingPage = () => {
         <LandingNavbar onNavigate={navigate} variant='business' />
 
         <Container maxWidth='md' sx={{ position: 'relative', zIndex: 1, textAlign: 'center', pt: { xs: 5, md: 5 } }}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            <Box
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: { xs: 0.5, md: 0.75 },
-                borderRadius: 99, px: { xs: 1.25, md: 1.5 }, py: { xs: 0.4, md: 0.5 },
-                fontSize: { xs: '0.6rem', md: '0.65rem' }, fontWeight: 700,
-                letterSpacing: '0.15em', textTransform: 'uppercase',
-                bgcolor: ALPHA_WHITE_15,
-                color: 'white',
-                mb: { xs: 2, md: 3 },
-              }}
-            >
-              <Storefront sx={{ fontSize: { xs: '0.75rem', md: '0.85rem' } }} />
-              For business owners
-            </Box>
-          </motion.div>
-
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}

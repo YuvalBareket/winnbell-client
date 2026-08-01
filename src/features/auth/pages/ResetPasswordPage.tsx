@@ -215,12 +215,14 @@ const FormContent = ({
         <Typography variant='body2' color='text.secondary'>
           Remember your password?{' '}
           <Typography
-            component='span'
-            onClick={onGoToLogin}
+            component='a'
+            href='/login'
+            onClick={(e) => { e.preventDefault(); onGoToLogin(); }}
             sx={{
               color: 'primary.main',
               fontWeight: 700,
               cursor: 'pointer',
+              textDecoration: 'none',
               transition: 'opacity 0.2s',
               '&:hover': {
                 opacity: 0.8,

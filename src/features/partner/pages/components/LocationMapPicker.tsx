@@ -88,7 +88,7 @@ export default function LocationMapPicker({ lat, lng, onChange }: Props) {
         <OpenWith sx={{ fontSize: 14, color: PRIMARY_MAIN }} />
         <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: TEXT_SECONDARY }}>Drag pin to adjust</Typography>
       </Stack>
-      <Box onClick={recenter} role='button' aria-label='Recenter map' sx={{ position: 'absolute', bottom: 12, right: 12, width: 40, height: 40, borderRadius: '12px', bgcolor: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 6px 14px -6px ${alpha(TEXT_HEADING, 0.3)}` }}>
+      <Box onClick={recenter} role='button' tabIndex={0} aria-label='Recenter map' onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); recenter(); } }} sx={{ position: 'absolute', bottom: 12, right: 12, width: 40, height: 40, borderRadius: '12px', bgcolor: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 6px 14px -6px ${alpha(TEXT_HEADING, 0.3)}` }}>
         <MyLocation sx={{ fontSize: 19, color: PRIMARY_MAIN }} />
       </Box>
     </Box>

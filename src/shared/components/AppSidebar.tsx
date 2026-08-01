@@ -162,6 +162,7 @@ const AppSidebar = () => {
           }}
         >
           <Avatar
+            alt=''
             src={businessLogoUrl ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${businessLogoUrl}` : undefined}
             sx={{ width: 38, height: 38, background: businessLogoUrl ? undefined : '#fff', color: 'primary.main', fontWeight: 800, fontSize: 14, borderRadius: '11px', flexShrink: 0 }}
           >

@@ -17,7 +17,7 @@ const TrustItem = ({ icon: Icon, label, delay }: { icon: React.ComponentType<any
     >
       <Box
         component={isLink ? 'a' : 'div'}
-        onClick={isLink ? () => window.location.href = '/rules' : undefined}
+        href={isLink ? '/rules' : undefined}
         sx={{
           flex: 1,
           display: 'flex',

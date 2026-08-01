@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react';
 import {
   Box, Container, Typography, Paper, Chip, LinearProgress,
 } from '@mui/material';
@@ -247,6 +248,7 @@ const DrawPreparationView = ({
                   <Box
                     key={i}
                     onClick={() => clickable && navigate(item.path!)}
+                    {...(clickable ? { role: 'button' as const, tabIndex: 0, onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(item.path!); } } } : {})}
                     sx={{
                       display: 'flex', alignItems: 'center', gap: 1.5,
                       p: 1.5, borderRadius: 2,

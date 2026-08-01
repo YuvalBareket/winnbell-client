@@ -2,7 +2,7 @@ import { Box, Typography, Button, Stack, Container } from '@mui/material';
 import AttractButton from '../../../shared/components/AttractButton';
 import { ArrowForward } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { PRIMARY_MAIN, GRADIENT_HERO, ALPHA_WHITE_15 } from '../../../shared/colors';
+import { PRIMARY_MAIN, GRADIENT_HERO } from '../../../shared/colors';
 import LandingNavbar from './LandingNavbar';
 
 interface LandingHeroProps {
@@ -29,26 +29,6 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
       <LandingNavbar onNavigate={onNavigate} />
 
       <Container maxWidth='md' sx={{ position: 'relative', zIndex: 1, textAlign: 'center', pt: { xs: 5, md: 5 } }}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          <Box
-            sx={{
-              display: 'inline-block',
-              borderRadius: 99, px: { xs: 1.25, md: 1.5 }, py: { xs: 0.4, md: 0.5 },
-              fontSize: { xs: '0.6rem', md: '0.65rem' }, fontWeight: 700,
-              letterSpacing: '0.15em', textTransform: 'uppercase',
-              bgcolor: ALPHA_WHITE_15,
-              color: 'white',
-              mb: { xs: 2, md: 3 },
-            }}
-          >
-            Win real prizes
-          </Box>
-        </motion.div>
-
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}

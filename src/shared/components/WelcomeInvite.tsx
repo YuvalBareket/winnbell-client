@@ -244,12 +244,19 @@ const WelcomeInvite = ({
         {/* Wordmark + Sign in link row */}
         <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
           <Box
-            component="img"
-            src="/winnbell_app_name_white.svg"
-            alt="Winnbell"
-            onClick={() => navigate('/')}
-            sx={{ height: 34, width: 'auto', cursor: 'pointer' }}
-          />
+            component="a"
+            href="/"
+            aria-label="Winnbell home"
+            onClick={(e) => { e.preventDefault(); navigate('/'); }}
+            sx={{ display: 'inline-flex', textDecoration: 'none', cursor: 'pointer' }}
+          >
+            <Box
+              component="img"
+              src="/winnbell_app_name_white.svg"
+              alt="Winnbell"
+              sx={{ height: 34, width: 'auto' }}
+            />
+          </Box>
           <Button
             onClick={() => navigate('/login')}
             disableRipple

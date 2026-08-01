@@ -142,6 +142,9 @@ const MarketingPage = () => {
                   key={r.title}
                   elevation={0}
                   onClick={r.onClick}
+                  role='button'
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); r.onClick(); } }}
                   sx={{
                     // minWidth 0: grid items default to min-width auto, which stops them
                     // shrinking below their text width and overflows narrow screens.

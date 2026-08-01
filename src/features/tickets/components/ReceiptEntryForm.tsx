@@ -930,8 +930,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 {selectedLocation?.receipt_example_image_url && (
                   <>
                     {' · '}
-                    <Box component="span" onClick={() => setExampleOpen(true)}
-                      sx={{ color: primaryColor || PRIMARY_MAIN, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}>
+                    <Box component="button" type="button" onClick={() => setExampleOpen(true)}
+                      sx={{ font: 'inherit', background: 'none', border: 0, p: 0, color: primaryColor || PRIMARY_MAIN, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}>
                       Can't find it? See example
                     </Box>
                   </>
