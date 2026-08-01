@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Box, Typography, Button, Stack, Container, useMediaQuery, useTheme } from '@mui/material';
-import { ArrowForward, AccessTimeOutlined } from '@mui/icons-material';
+import { ArrowForward, AccessTimeOutlined, EmojiEventsOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -13,8 +13,61 @@ import { queryKeys } from '../constants/queryKeys';
 import {
   GRADIENT_HERO, PRIMARY_MAIN, BG_PAGE, BG_SUBTLE, BG_SURFACE, TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY,
   BORDER_LIGHT, SHADOW_CARD, PRIMARY_TINT,
+  ACCENT_GOLD, ACCENT_GOLD_LIGHT, ACCENT_GOLD_CREAM, ACCENT_GOLD_DARK, GOLD_INK,
 } from '../colors';
 import { formatCurrency } from '../utils/date';
+
+// Gold-highlighted draw card: the mobile body's eye-catcher (deliberately mobile-only -
+// the desktop panel keeps its original steps-focused layout, per user 2026-08-01).
+const DrawPrizeCard = ({ prizeAmount, drawDate }: { prizeAmount: number; drawDate: string }) => (
+  <Box
+    sx={{
+      background: `linear-gradient(135deg, ${ACCENT_GOLD_LIGHT} 0%, ${BG_SURFACE} 58%, ${ACCENT_GOLD_LIGHT} 130%)`,
+      border: `1px solid ${ACCENT_GOLD}`,
+      borderRadius: '15px',
+      boxShadow: `0 10px 28px -8px ${ACCENT_GOLD}55, ${SHADOW_CARD}`,
+      p: '20px',
+      position: 'relative',
+      overflow: 'hidden',
+    }}
+  >
+    {/* Soft gold glow orb, top-right */}
+    <Box sx={{ position: 'absolute', top: -70, right: -50, width: 190, height: 190, borderRadius: '50%', background: `radial-gradient(circle, ${ACCENT_GOLD_CREAM} 0%, transparent 68%)`, pointerEvents: 'none' }} />
+
+    {/* Label + Live pill */}
+    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+      <Typography sx={{ fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: ACCENT_GOLD_DARK }}>
+        This month's draw
+      </Typography>
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, bgcolor: ACCENT_GOLD_CREAM, borderRadius: '999px', px: 1.125, py: 0.5 }}>
+        <Box sx={{ width: '5px', height: '5px', borderRadius: '50%', bgcolor: ACCENT_GOLD_DARK }} />
+        <Typography sx={{ fontSize: '9.5px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: GOLD_INK }}>
+          Live
+        </Typography>
+      </Box>
+    </Box>
+
+    {/* Prize amount + trophy */}
+    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+          <Typography sx={{ fontSize: '40px', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: TEXT_HEADING, fontVariantNumeric: 'tabular-nums' }}>
+            {formatCurrency(prizeAmount)}
+          </Typography>
+        
+        </Box>
+        {/* Draw date with clock icon */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '12.5px', fontWeight: 600, color: TEXT_SECONDARY, mt: 1.25 }}>
+          <AccessTimeOutlined sx={{ fontSize: 15, color: ACCENT_GOLD_DARK }} />
+          <span>Drawn {formatDrawDate(drawDate)}</span>
+        </Box>
+      </Box>
+      <Box sx={{ width: 52, height: 52, flexShrink: 0, borderRadius: '14px', background: `linear-gradient(135deg, ${ACCENT_GOLD_CREAM}, ${ACCENT_GOLD_LIGHT})`, border: `1px solid ${ACCENT_GOLD}66`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <EmojiEventsOutlined sx={{ fontSize: 28, color: ACCENT_GOLD_DARK }} />
+      </Box>
+    </Box>
+  </Box>
+);
 
 export interface WelcomeStep {
   icon: ReactNode;
@@ -233,47 +286,10 @@ const WelcomeInvite = ({
 
       {/* Light page body with cards */}
       <Box sx={{ flex: 1, overflowY: 'auto', px: 2, py: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {/* Prize card - only if draw exists */}
+        {/* Gold draw card - the eye-catcher, only if a draw is live */}
         {openDraw && openDraw.prize_amount && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
-            <Box
-              sx={{
-                bgcolor: BG_SURFACE,
-                border: `1px solid ${BORDER_LIGHT}`,
-                borderRadius: '15px',
-                boxShadow: SHADOW_CARD,
-                p: '22px 20px',
-              }}
-            >
-              {/* Label + Live pill */}
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                <Typography sx={{ fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: TEXT_TERTIARY }}>
-                  This month's draw
-                </Typography>
-                <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, bgcolor: PRIMARY_TINT, borderRadius: '999px', px: 1.125, py: 0.5 }}>
-                  <Box sx={{ width: '5px', height: '5px', borderRadius: '50%', bgcolor: PRIMARY_MAIN }} />
-                  <Typography sx={{ fontSize: '9.5px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: PRIMARY_MAIN }}>
-                    Live
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* Prize amount */}
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
-                <Typography sx={{ fontSize: '38px', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: TEXT_HEADING, fontVariantNumeric: 'tabular-nums' }}>
-                  {formatCurrency(openDraw.prize_amount)}
-                </Typography>
-                <Typography sx={{ fontSize: 13, fontWeight: 700, color: TEXT_TERTIARY }}>
-                  cash
-                </Typography>
-              </Box>
-
-              {/* Draw date with clock icon */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '12.5px', fontWeight: 600, color: TEXT_SECONDARY, mt: 1 }}>
-                <AccessTimeOutlined sx={{ fontSize: 15, color: TEXT_TERTIARY }} />
-                <span>Drawn {formatDrawDate(openDraw.draw_date)}</span>
-              </Box>
-            </Box>
+            <DrawPrizeCard prizeAmount={openDraw.prize_amount} drawDate={openDraw.draw_date} />
           </motion.div>
         )}
 

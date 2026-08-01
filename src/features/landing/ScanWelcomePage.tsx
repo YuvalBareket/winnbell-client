@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ReceiptLongOutlined, EmojiEventsOutlined, CardGiftcardOutlined } from '@mui/icons-material';
+import { ReceiptLongOutlined, EmojiEventsOutlined, PersonAddOutlined } from '@mui/icons-material';
 import { api } from '../../shared/api/client';
 import { useAppSelector } from '../../store/hook';
 import { selectIsAuthenticated } from '../../store/selectors/authSelectors';
@@ -60,6 +60,13 @@ const ScanWelcomePage = () => {
       headerSubline="Create your account to claim your welcome entry."
       steps={[
         {
+          icon: <PersonAddOutlined />,
+          title: 'Join for free',
+          text: 'Create an account in seconds, no payment required.',
+          tint: ALPHA_GREEN_10,
+          iconColor: STATUS_ACTIVATED_TEXT,
+        },
+        {
           icon: <ReceiptLongOutlined />,
           title: 'Submit your receipt',
           text: loc?.business_name
@@ -76,13 +83,6 @@ const ScanWelcomePage = () => {
             : "Every entry competes for this month's cash prize.",
           tint: ACCENT_GOLD_LIGHT,
           iconColor: ACCENT_GOLD_DARK,
-        },
-        {
-          icon: <CardGiftcardOutlined />,
-          title: 'Always free to play',
-          text: 'No purchase is ever necessary. Every member can claim a weekly entry in the app.',
-          tint: ALPHA_GREEN_10,
-          iconColor: STATUS_ACTIVATED_TEXT,
         },
       ]}
     />
