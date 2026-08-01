@@ -135,7 +135,6 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
     { label: 'Contact us', icon: <MailOutline />, path: '/contact' },
     { label: 'Terms of Service', icon: <GavelOutlined />, path: '/terms' },
     { label: 'Privacy Policy', icon: <PrivacyTipOutlined />, path: '/privacy' },
-    { label: 'Accessibility', icon: <ArticleOutlined />, path: '/accessibility' },
     ...((isBusiness || isManager) ? [{ label: 'Business Agreement', icon: <ArticleOutlined />, path: '/business-agreement' }] : []),
   ];
 
