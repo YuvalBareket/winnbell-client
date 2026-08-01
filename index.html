@@ -5,19 +5,25 @@
     <!-- maximum-scale=1 stops the iOS auto-zoom on focused inputs whose effective font size
          is under 16px (the zoomed auth forms shrink even 16px text below that threshold).
          iOS still allows user pinch-zoom regardless of this cap (accessibility, iOS 10+). -->
-    <!-- Base viewport has NO maximum-scale: capping it blocks Android pinch-zoom, which
-         is a WCAG 2.1 AA violation (and what ADA lawsuit scanners flag). The script below
-         re-adds the cap on iOS ONLY, where it exists purely to stop Safari's auto-zoom on
-         focused inputs under 16px: iOS has ignored maximum-scale for USER pinch-zoom since
-         iOS 10, so accessibility is unharmed there. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Viewport strategy (do not "simplify" - each side is load-bearing):
+         - The STATIC tag carries maximum-scale=1 because iOS browsers (Safari AND
+           Chrome-on-iOS) only reliably honor the cap when it is present at parse time;
+           it exists purely to stop the auto-zoom on focused inputs under 16px. iOS has
+           ignored maximum-scale for USER pinch-zoom since iOS 10, so zooming still works.
+         - The script REMOVES the cap on every non-iOS platform (Android honors dynamic
+           viewport changes) because a capped viewport blocks Android pinch-zoom - a WCAG
+           2.1 AA violation and a standard ADA-lawsuit-scanner finding. Runtime scanners
+           therefore see a clean viewport. Touch-capable "Mac" UA = modern iPad. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <script>
-      // Modern iPads report "Macintosh" in the UA (iPadOS 13+), so also treat any
-      // touch-capable "Mac" as iPad.
-      if (/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes('Mac') && navigator.maxTouchPoints > 1)) {
-        var wbViewport = document.querySelector('meta[name="viewport"]');
-        if (wbViewport) wbViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1');
-      }
+      (function () {
+        var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
+          || (navigator.userAgent.includes('Mac') && navigator.maxTouchPoints > 1);
+        if (!isIOS) {
+          var wbViewport = document.querySelector('meta[name="viewport"]');
+          if (wbViewport) wbViewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        }
+      })();
     </script>
     <title>Winnbell - Shop Local. Win Monthly Cash Prizes</title>
     <meta name="description" content="Turn everyday shopping into chances to win real monthly cash prizes. Earn entries through participating businesses or claim your weekly entry today. No purchase necessary." />
