@@ -9,19 +9,12 @@ import {
 } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import QRCodePlain from 'react-qr-code';
-import {
-  PRIMARY_MAIN, BRAND_ICON_BLUE, BRAND_NAVY, SHADOW_CARD,
-} from '../../../shared/colors';
+import { PRIMARY_MAIN, SHADOW_CARD } from '../../../shared/colors';
 import { svgToPngDataUrl, downloadNodeAsPng } from '../utils/capture';
 import { useLocationGatedActions } from '../hooks/useLocationGatedActions';
-
-// Sticker color themes
-const STICKER_THEMES = [
-  { color: PRIMARY_MAIN },
-  { color: BRAND_NAVY },
-  { color: BRAND_ICON_BLUE },
-];
+import { StickerCanvas, StickerPreview } from './StickerTemplates';
+import { STICKER_COLORWAYS } from './stickerConstants';
+import type { StickerShape } from './stickerConstants';
 import {
   POSTER_W, POSTER_H, DESIGN_W, DESIGN_H,
   THUMB_SCALE, THUMB_W, THUMB_H,
@@ -115,19 +108,25 @@ const PostersTab = ({
   };
   useEffect(() => removePrintNodes, []);
 
-  // ── Partner sticker (moved here from the Scripts tab) ─────────────────────
+  // ── Partner sticker (approved sticker-colorways design: 2 shapes x 3 colorways) ──
+  const [stickerShape, setStickerShape] = useState<StickerShape>('round');
   const [stickerIdx, setStickerIdx] = useState(0);
   const [downloadingSticker, setDownloadingSticker] = useState(false);
-  const stickerRef = useRef<HTMLDivElement>(null);
-  const stickerTheme = STICKER_THEMES[stickerIdx];
+  // Hidden full-size (design px) sticker canvas - the capture target.
+  const stickerCaptureRef = useRef<HTMLDivElement>(null);
+  const stickerCw = STICKER_COLORWAYS[stickerIdx];
 
   const handleDownloadSticker = async () => {
-    if (!stickerRef.current) return;
+    if (!stickerCaptureRef.current) return;
     setDownloadingSticker(true);
     try {
-      // Shared capture util: also swaps the svg wordmark img, which html2canvas
-      // otherwise leaves blank in the exported sticker.
-      await downloadNodeAsPng(stickerRef.current, 'winnbell-sticker.png', 3);
+      // Scale 3: round 410 -> 1230px (4in at ~307 DPI), square 308 -> 924px (3in at
+      // ~308 DPI). PNG keeps the round sticker's transparent corners for cutting.
+      await downloadNodeAsPng(
+        stickerCaptureRef.current,
+        `winnbell-sticker-${stickerShape}-${stickerCw.id}.png`,
+        3,
+      );
       onToast('Sticker downloaded!');
     } catch (err) {
       console.error(err);
@@ -501,25 +500,49 @@ const PostersTab = ({
 
                 <Box>
                   <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 1.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Shape
+                  </Typography>
+                  <Stack direction='row' spacing={1.5}>
+                    {(['round', 'square'] as StickerShape[]).map((shape) => (
+                      <Button
+                        key={shape}
+                        size='small'
+                        variant={stickerShape === shape ? 'contained' : 'outlined'}
+                        onClick={() => setStickerShape(shape)}
+                        sx={{ textTransform: 'none', fontWeight: 700, px: 2.5 }}
+                      >
+                        {shape === 'round' ? 'Round · 4 in' : 'Square · 3 in'}
+                      </Button>
+                    ))}
+                  </Stack>
+                </Box>
+
+                <Box>
+                  <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 1.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                     Sticker color
                   </Typography>
                   <Stack direction='row' spacing={1.5}>
-                    {STICKER_THEMES.map((option, i) => (
-                      <Box
-                        key={i}
-                        onClick={() => setStickerIdx(i)}
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: '8px',
-                          background: option.color,
-                          cursor: 'pointer',
-                          border: stickerIdx === i ? `2px solid ${PRIMARY_MAIN}` : '2px solid transparent',
-                          boxShadow: stickerIdx === i ? `0 0 0 2px white, 0 0 0 4px ${PRIMARY_MAIN}` : 'none',
-                          transition: 'all 0.2s',
-                          '&:hover': { borderColor: PRIMARY_MAIN },
-                        }}
-                      />
+                    {STICKER_COLORWAYS.map((option, i) => (
+                      <Box key={option.id} sx={{ textAlign: 'center' }}>
+                        <Box
+                          onClick={() => setStickerIdx(i)}
+                          title={option.label}
+                          sx={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: '8px',
+                            background: option.bg,
+                            cursor: 'pointer',
+                            border: stickerIdx === i ? `2px solid ${PRIMARY_MAIN}` : '2px solid transparent',
+                            boxShadow: stickerIdx === i ? `0 0 0 2px white, 0 0 0 4px ${PRIMARY_MAIN}` : `inset 0 0 0 1px rgba(0,0,0,0.12)`,
+                            transition: 'all 0.2s',
+                            '&:hover': { borderColor: PRIMARY_MAIN },
+                          }}
+                        />
+                        <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, color: 'text.secondary', mt: 0.5 }}>
+                          {option.label}
+                        </Typography>
+                      </Box>
                     ))}
                   </Stack>
                 </Box>
@@ -536,51 +559,21 @@ const PostersTab = ({
                 </Button>
               </Stack>
 
-              {/* Sticker preview */}
-              <Box
-                ref={stickerRef}
-                sx={{
-                  background: `linear-gradient(160deg, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 42%, rgba(0,0,0,0.34) 100%), ${stickerTheme.color}`,
-                  borderRadius: '50%',
-                  padding: '26px',
-                  width: 290,
-                  height: 290,
-                  alignSelf: 'center',
-                  flexShrink: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-evenly',
-                  alignItems: 'center',
-                }}
-              >
-                <Box component='img' src='/winnbell_app_name_white.svg' sx={{ height: 26}} />
-                <Box
-                  sx={{
-                    borderRadius: '14px',
-                    backgroundColor: 'white',
-                    padding: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <QRCodePlain value={scanUrl} size={160} level='H' fgColor={stickerTheme.color} />
+              {/* Sticker preview (scaled; square shown smaller to reflect 3in vs 4in) */}
+              <Box sx={{ alignSelf: 'center', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 290, height: 290 }}>
+                <StickerPreview
+                  shape={stickerShape}
+                  colorway={stickerCw}
+                  scanUrl={scanUrl}
+                  displayWidth={stickerShape === 'round' ? 290 : 218}
+                />
+              </Box>
+
+              {/* Offscreen full-size sticker canvas - the download capture target */}
+              <Box aria-hidden style={{ position: 'fixed', left: -20000, top: 0, pointerEvents: 'none', zIndex: -1 }}>
+                <Box ref={stickerCaptureRef} style={{ display: 'inline-block' }}>
+                  <StickerCanvas shape={stickerShape} colorway={stickerCw} scanUrl={scanUrl} />
                 </Box>
-                {/* Single-line disclaimer; full official rules live at Winnbell.com. */}
-                <Typography
-                  sx={{
-                    color: 'white',
-                    fontSize: '0.55rem',
-                    textAlign: 'center',
-                    opacity: 0.85,
-                    letterSpacing: 0.2,
-                    lineHeight: 1.45,
-                    whiteSpace: 'pre-line',
-                    mb: '-5px',
-                  }}
-                >
-                  {'No purchase necessary.'}
-                </Typography>
               </Box>
             </Stack>
           </Paper>

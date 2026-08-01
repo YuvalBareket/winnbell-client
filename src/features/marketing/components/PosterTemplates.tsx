@@ -16,7 +16,8 @@ const SANS = '"Plus Jakarta Sans", system-ui, sans-serif';
 const QR_NAVY = '#0F2747';
 
 // Square QR modules on crisp edges - matches the design's QR rendering.
-const SquareQR = ({ value, size }: { value: string; size: number }) => {
+// Also used by the sticker templates.
+export const SquareQR = ({ value, size }: { value: string; size: number }) => {
   const qr = qrcode(0, 'H');
   qr.addData(value);
   qr.make();
