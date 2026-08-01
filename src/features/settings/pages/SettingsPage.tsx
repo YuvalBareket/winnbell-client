@@ -22,7 +22,7 @@ import ProfileEditDialog from '../components/ProfileEditDialog';
 import {
   BORDER_LIGHT, BORDER_MUTED, BG_SUBTLE, BG_ROW_SUBTLE, BG_SURFACE, PRIMARY_TINT, PRIMARY_MAIN,
   SHADOW_CARD, SHADOW_CARD_HOVER, MOBILE_CONTENT_HEIGHT, SUCCESS_GREEN,
-  TEXT_SECONDARY, TEXT_HEADING, TEXT_TERTIARY, GRADIENT_PRIMARY,
+  TEXT_SECONDARY, TEXT_HEADING, TEXT_TERTIARY, TEXT_TERTIARY_AA, GRADIENT_PRIMARY,
   ERROR_MAIN, ERROR_HOVER_BG, ERROR_BG_TINT, ERROR_BORDER_TINT,
 } from '../../../shared/colors';
 
@@ -136,7 +136,7 @@ const SettingsContent = ({
                   >
                     {/* Card header */}
                     <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${BORDER_LIGHT}`, bgcolor: BG_ROW_SUBTLE }}>
-                      <Typography sx={{ fontSize: '11px', fontWeight: 800, letterSpacing: 0.08, textTransform: 'uppercase', color: TEXT_TERTIARY }}>
+                      <Typography sx={{ fontSize: '11px', fontWeight: 800, letterSpacing: 0.08, textTransform: 'uppercase', color: TEXT_TERTIARY_AA }}>
                         Profile
                       </Typography>
                     </Box>
@@ -160,7 +160,7 @@ const SettingsContent = ({
                         </Typography>
                       </Stack>
                       <Stack direction='row' alignItems='center' spacing={0.75}>
-                        <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY }}>
+                        <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY_AA }}>
                           {user?.fullName}
                         </Typography>
                         <ChevronRight sx={{ fontSize: 16, color: BORDER_MUTED }} />
@@ -190,7 +190,7 @@ const SettingsContent = ({
                         </Box>
                       </Stack>
                       <Stack direction='row' alignItems='center' spacing={0.75}>
-                        <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY }}>
+                        <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY_AA }}>
                           {dobDisplay}
                         </Typography>
                         <ChevronRight sx={{ fontSize: 16, color: BORDER_MUTED }} />
@@ -218,7 +218,7 @@ const SettingsContent = ({
                         </Box>
                       </Stack>
                       <Stack direction='row' alignItems='center' spacing={0.75}>
-                        <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY }}>
+                        <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY_AA }}>
                           {genderDisplay}
                         </Typography>
                         <ChevronRight sx={{ fontSize: 16, color: BORDER_MUTED }} />
@@ -242,7 +242,7 @@ const SettingsContent = ({
                 >
                   {/* Card header */}
                   <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${BORDER_LIGHT}`, bgcolor: BG_ROW_SUBTLE }}>
-                    <Typography sx={{ fontSize: '11px', fontWeight: 800, letterSpacing: 0.08, textTransform: 'uppercase', color: TEXT_TERTIARY }}>
+                    <Typography sx={{ fontSize: '11px', fontWeight: 800, letterSpacing: 0.08, textTransform: 'uppercase', color: TEXT_TERTIARY_AA }}>
                       Security
                     </Typography>
                   </Box>

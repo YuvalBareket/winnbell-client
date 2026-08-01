@@ -20,7 +20,7 @@ import { selectIsAuthenticated, selectIsAdmin, selectIsBusiness, selectIsLocatio
 import {
   BG_PAGE, BORDER_LIGHT, GRADIENT_HERO, GRADIENT_HERO_WARM,
   ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, ALPHA_WHITE_70,
-  TEXT_TERTIARY, TEXT_HEADING,
+  TEXT_TERTIARY, TEXT_TERTIARY_AA, TEXT_HEADING,
 } from '../../../shared/colors';
 import { authLabelSx, authInputSx, authCtaSx, authGoogleBtnSx } from '../components/authStyles';
 import {
@@ -172,12 +172,12 @@ const LoginPage = () => {
           <motion.div variants={riseIn}>
             <Box sx={{ mb: { lg: '30px', xl: '36px' }, textAlign: 'left' }}>
               <Stack direction='row' alignItems='center' gap={2} mb='6px'>
-                <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
+                <IconButton aria-label='Go back' onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
                   <ArrowBackIosNew fontSize='small' />
                 </IconButton>
                 <Typography sx={{ fontSize: { lg: '28px', xl: '32px' }, fontWeight: 800, letterSpacing: '-0.02em', color: TEXT_HEADING }}>{addMode ? 'Add Account' : 'Welcome Back'}</Typography>
               </Stack>
-              <Typography sx={{ fontSize: { lg: '14.5px', xl: '15px' }, fontWeight: 500, color: TEXT_TERTIARY }}>{addMode ? 'Sign in to the account you want to add' : 'Sign in to check your entries'}</Typography>
+              <Typography sx={{ fontSize: { lg: '14.5px', xl: '15px' }, fontWeight: 500, color: TEXT_TERTIARY_AA }}>{addMode ? 'Sign in to the account you want to add' : 'Sign in to check your entries'}</Typography>
             </Box>
           </motion.div>
         )}
@@ -258,7 +258,7 @@ const LoginPage = () => {
                   startAdornment: (<InputAdornment position='start'><Lock sx={{ color: TEXT_TERTIARY, fontSize: 20 }} /></InputAdornment>),
                   endAdornment: (
                     <InputAdornment position='end'>
-                      <IconButton onClick={() => setShowPassword(!showPassword)} edge='end'>
+                      <IconButton aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(!showPassword)} edge='end'>
                         {showPassword ? <VisibilityOff sx={{ fontSize: 20, color: TEXT_TERTIARY }} /> : <Visibility sx={{ fontSize: 20, color: TEXT_TERTIARY }} />}
                       </IconButton>
                     </InputAdornment>
@@ -296,7 +296,7 @@ const LoginPage = () => {
           <motion.div variants={popIn}>
             <Box>
               <Divider sx={{ mb: 2 }}>
-                <Typography sx={{ fontSize: '11px', fontWeight: 700, color: TEXT_TERTIARY, px: 1 }}>OR</Typography>
+                <Typography sx={{ fontSize: '11px', fontWeight: 700, color: TEXT_TERTIARY_AA, px: 1 }}>OR</Typography>
               </Divider>
               <Button
                 fullWidth
@@ -311,7 +311,7 @@ const LoginPage = () => {
         </Stack>
 
         <Box sx={{ mt: 'auto', pt: 2.5, textAlign: 'center' }}>
-          <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY }}>
+          <Typography sx={{ fontSize: '13.5px', fontWeight: 600, color: TEXT_TERTIARY_AA }}>
             Don't have an account?{' '}
             <Typography component='span' onClick={() => {
               let dest = '/register';
@@ -401,6 +401,7 @@ const LoginPage = () => {
         {/* Brand row: back arrow + app name (+ business chip) */}
         <Stack direction='row' alignItems='center' spacing={1.25} sx={{ position: 'relative' }}>
           <IconButton
+            aria-label='Go back'
             onClick={() => navigate(-1)}
             sx={{
               width: 40, height: 40, color: 'white', bgcolor: ALPHA_WHITE_15,

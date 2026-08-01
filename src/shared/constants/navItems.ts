@@ -9,6 +9,7 @@ import {
   MailOutline,
   PrivacyTipOutlined,
   ArticleOutlined,
+  AccessibilityNewOutlined,
   EmojiEventsOutlined,
   AdminPanelSettingsOutlined,
   SettingsOutlined,
@@ -68,6 +69,7 @@ export const legalNavItems: NavItem[] = [
   { label: 'Contact us', Icon: MailOutline, path: '/contact' },
   { label: 'Terms of Service', Icon: GavelOutlined, path: '/terms' },
   { label: 'Privacy Policy', Icon: PrivacyTipOutlined, path: '/privacy' },
+  { label: 'Accessibility', Icon: AccessibilityNewOutlined, path: '/accessibility' },
 ];
 
 export const businessLegalNavItems: NavItem[] = [

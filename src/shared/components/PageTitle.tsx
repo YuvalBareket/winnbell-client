@@ -20,6 +20,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/business-agreement': 'Business Agreement - Winnbell',
   '/business-guidelines': 'Business Guidelines - Winnbell',
   '/founding-terms': 'Founding Partner Terms - Winnbell',
+  '/accessibility': 'Accessibility - Winnbell',
 };
 
 const PageTitle = () => {

@@ -31,6 +31,7 @@ export const TEXT_EMPHASIS      = '#334155';   // between primary and secondary 
 export const TEXT_HEADING       = '#0f2747';   // page headings (Register, etc.) (dark with slight teal cast)
 export const TEXT_ICON_MUTED    = '#7e8c8c';   // AppHeader icon (muted teal-grey)
 export const TEXT_TERTIARY      = '#94a3b8';   // de-emphasized labels (warmer tertiary)
+export const TEXT_TERTIARY_AA   = '#697285';   // WCAG AA-safe tertiary (4.77:1 on white, 4.57:1 on BG_ROW_SUBTLE)
 
 // ── Manager / Dark role accent ───────────────
 export const ROLE_MANAGER_BG    = '#0F172A';   // location manager button / icon bg

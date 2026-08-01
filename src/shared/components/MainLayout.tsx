@@ -112,12 +112,14 @@ const LayoutShell = () => {
               },
             }}
           >
-            <BottomNavigationAction {...tapNearby} value={firstTabPath} showLabel={false} icon={<Storefront />} />
+            {/* Icon-only nav actions need aria-labels: WCAG button-name (screen readers) */}
+            <BottomNavigationAction {...tapNearby} value={firstTabPath} showLabel={false} aria-label='Nearby businesses' icon={<Storefront />} />
 
             <BottomNavigationAction
               {...tapMain}
               value={mobileMainPath}
               showLabel={false}
+              aria-label='Submit a receipt'
               icon={
                 <Box
                   sx={{
@@ -137,7 +139,7 @@ const LayoutShell = () => {
               }
             />
 
-            <BottomNavigationAction {...tapThird} value={thirdNavPath} showLabel={false} icon={isBusinessOrManager ? <EqualizerIcon /> : <ConfirmationNumber />} />
+            <BottomNavigationAction {...tapThird} value={thirdNavPath} showLabel={false} aria-label={isBusinessOrManager ? 'Analytics' : 'My tickets'} icon={isBusinessOrManager ? <EqualizerIcon /> : <ConfirmationNumber />} />
           </BottomNavigation>
         </Paper>
       )}

@@ -57,6 +57,7 @@ const BusinessAgreementPage = lazy(() => import('../features/legal/pages/Busines
 const BusinessGuidelinesPage = lazy(() => import('../features/legal/pages/BusinessGuidelinesPage'));
 const FoundingPartnerTermsPage = lazy(() => import('../features/legal/pages/FoundingPartnerTermsPage'));
 const CancellationRefundPage = lazy(() => import('../features/legal/pages/CancellationRefundPage'));
+const AccessibilityStatementPage = lazy(() => import('../features/legal/pages/AccessibilityStatementPage'));
 const ContactPage = lazy(() => import('../features/contact/pages/ContactPage'));
 const BusinessDashboard = lazy(() => import('../features/admin/pages/BusinessDashboard'));
 const AdminBusinessViewPage = lazy(() => import('../features/admin/pages/AdminBusinessViewPage'));
@@ -162,6 +163,7 @@ const AppRoutes = () => {
       <Route path='/business-guidelines' element={<BusinessGuidelinesPage />} />
       <Route path='/founding-terms' element={<FoundingPartnerTermsPage />} />
       <Route path='/cancellation' element={<CancellationRefundPage />} />
+      <Route path='/accessibility' element={<AccessibilityStatementPage />} />
 
       {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>

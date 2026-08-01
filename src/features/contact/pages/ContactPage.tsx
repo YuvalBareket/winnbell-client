@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
-  Box, Button, CircularProgress, IconButton, MenuItem, Stack, TextField, Typography,
+  Box, Button, CircularProgress, FormControl, IconButton, InputLabel, MenuItem,
+  OutlinedInput, Select, Stack, TextField, Typography,
   useMediaQuery, useTheme,
 } from '@mui/material';
 import {
@@ -17,7 +18,7 @@ import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { staggerContainer, riseIn, popIn } from '../../../shared/motion';
 import {
   BG_PAGE, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, ALPHA_WHITE_70,
-  TEXT_HEADING, TEXT_TERTIARY, BORDER_LIGHT, SUCCESS_GREEN, ALPHA_GREEN_10,
+  TEXT_HEADING, TEXT_TERTIARY, TEXT_TERTIARY_AA, BORDER_LIGHT, SUCCESS_GREEN, ALPHA_GREEN_10,
 } from '../../../shared/colors';
 
 // Must match CONTACT_TOPICS on the server exactly.
@@ -173,18 +174,19 @@ const ContactPage = () => {
 
         <motion.div variants={riseIn}>
           <Typography sx={authLabelSx}>Topic</Typography>
-          <TextField
-            fullWidth
-            select
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            disabled={sending}
-            sx={authInputSx}
-          >
-            {TOPICS.map((t) => (
-              <MenuItem key={t} value={t}>{t}</MenuItem>
-            ))}
-          </TextField>
+          <FormControl fullWidth disabled={sending} sx={authInputSx}>
+            <InputLabel id='topic-select-label' sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }}>Topic</InputLabel>
+            <Select
+              labelId='topic-select-label'
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              input={<OutlinedInput label='' notched={false} />}
+            >
+              {TOPICS.map((t) => (
+                <MenuItem key={t} value={t}>{t}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </motion.div>
 
         <motion.div variants={riseIn}>
@@ -236,14 +238,14 @@ const ContactPage = () => {
               <>
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                   <Stack direction='row' alignItems='center' gap={2} sx={{ mb: 0.5 }}>
-                    <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
+                    <IconButton aria-label='Go back' onClick={() => navigate(-1)} sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}>
                       <ArrowBackIosNew fontSize='small' />
                     </IconButton>
                     <Typography sx={{ fontWeight: 900, fontSize: '2rem', letterSpacing: '-0.03em', color: TEXT_HEADING }}>
                       Send us a message
                     </Typography>
                   </Stack>
-                  <Typography sx={{ color: TEXT_TERTIARY, fontSize: '14.5px', mb: 3.5 }}>
+                  <Typography sx={{ color: TEXT_TERTIARY_AA, fontSize: '14.5px', mb: 3.5 }}>
                     Fill in the form and send it our way.
                   </Typography>
                 </motion.div>
@@ -278,6 +280,7 @@ const ContactPage = () => {
         {/* Brand row: back arrow + app name, same row (app rule) */}
         <Stack direction='row' alignItems='center' spacing={1.25} sx={{ position: 'relative' }}>
           <IconButton
+            aria-label='Go back'
             onClick={() => navigate(-1)}
             sx={{
               width: 40, height: 40, color: 'white', bgcolor: ALPHA_WHITE_15,
