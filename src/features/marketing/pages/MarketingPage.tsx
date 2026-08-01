@@ -205,13 +205,9 @@ const MarketingPage = () => {
         {/* Tab content */}
         {activeTab === 0 && (
           <PostersTab
-            // Poster chip shows "Business · Location" like the approved design; falls back
-            // to the bare business name until a location is selected (or for managers,
-            // whose location list is not loaded here).
-            businessName={(() => {
-              const loc = locations.find((l) => l.id === effectiveLocationId);
-              return loc ? `${businessName} · ${loc.name}` : businessName;
-            })()}
+            // Poster chip shows the business name only (user decision 2026-08-01 - no
+            // location name; the QR itself is location-specific).
+            businessName={businessName}
             scanUrl={scanUrl}
             effectiveLocationId={effectiveLocationId}
             onToast={setSnackbar}

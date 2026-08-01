@@ -34,8 +34,8 @@ const SVG_RASTER_SCALE = PRINT_SCALE * 2;
 const TEMPLATES = [
   { id: 'blue',  label: 'Blue',  Component: PosterBlue,  Canvas: PosterBlueCanvas },
   { id: 'navy',  label: 'Navy',  Component: PosterNavy,  Canvas: PosterNavyCanvas },
-  { id: 'cream', label: 'Cream', Component: PosterCream, Canvas: PosterCreamCanvas },
   { id: 'light', label: 'Light', Component: PosterLight, Canvas: PosterLightCanvas },
+  { id: 'cream', label: 'Cream', Component: PosterCream, Canvas: PosterCreamCanvas },
 ];
 
 // Convert an <img src="...svg"> element to a PNG data URL at 2x rendered size.

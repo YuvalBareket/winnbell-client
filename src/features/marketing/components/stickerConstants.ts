@@ -20,11 +20,12 @@ export interface StickerColorway {
 
 // The big sticker drop shadows and dashed cut-line circles in the design export are
 // gallery presentation, not printable artwork - deliberately not reproduced.
-export const STICKER_COLORWAYS: StickerColorway[] = [
-  {
+export const STICKER_COLORWAYS: StickerColorway[] = [  {
     id: 'midnight-blue',
     label: 'Midnight Blue',
-    bg: 'linear-gradient(168deg, #0F3A6B 0%, #1565C0 52%, #0A2747 100%)',
+    // No center highlight (user 2026-08-01): dark navy at the top flowing into the
+    // bright brand blue at the bottom.
+    bg: 'linear-gradient(168deg, #0F3A6B 0%, #1565C0 100%)',
     logoVariant: 'white',
     textColor: 'rgba(255,255,255,0.8)',
     cardShadow: null,
@@ -37,6 +38,7 @@ export const STICKER_COLORWAYS: StickerColorway[] = [
     textColor: 'rgba(255,255,255,0.8)',
     cardShadow: null,
   },
+
   {
     id: 'light-ivory',
     label: 'Light Ivory',
