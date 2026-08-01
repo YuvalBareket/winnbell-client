@@ -152,6 +152,13 @@ const RegisterPage = () => {
     setError('');
     try {
       const { data: emailCheck } = await api.post('/auth/check-email', { email: formData.email });
+      // Signup-email policy (production): disposable domains and plus-aliases are
+      // rejected server-side with a human message - show it before Supabase signup.
+      if (emailCheck.blocked) {
+        setError(emailCheck.message || 'This email address cannot be used for registration.');
+        setLoading(false);
+        return;
+      }
       if (emailCheck.exists) {
         setError('An account with this email already exists. Please sign in instead.');
         setLoading(false);
