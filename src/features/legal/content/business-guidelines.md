@@ -60,7 +60,7 @@ Businesses may use their own marketing materials, provided such materials comply
 
 Any custom campaign-related materials must include the following disclosure statement exactly as written, without modification:
 
-"This business participates in campaigns operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Alternative method of entry available on the platform. 18+. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com."
+"This business participates in campaigns operated by Winnbell. Alternative method of entry available. No purchase necessary to enter or win. Each entry has equal odds of winning, regardless of method of entry. 18+. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com"
 
 The disclosure statement must be displayed in a clear and reasonably readable manner.
 

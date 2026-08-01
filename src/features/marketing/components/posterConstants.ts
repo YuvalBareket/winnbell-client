@@ -24,9 +24,10 @@ export const THUMB_SCALE_MOBILE = 0.19;
 export const THUMB_W_MOBILE = Math.round(POSTER_W * THUMB_SCALE_MOBILE); // ~61px
 export const THUMB_H_MOBILE = Math.round(POSTER_H * THUMB_SCALE_MOBILE); // ~86px
 
-// Verbatim from the approved poster design - includes the equal-chance sentence and
+// Approved disclosure text (updated 2026-08-01) - includes the equal-odds sentence and
 // the Official Rules pointer. Do not shorten: this is the AMOE compliance disclaimer.
+// MUST stay identical to the required-disclosure quote in business-guidelines.md.
 export const LEGAL_TEXT =
-  'This business participates in campaigns operated by Winnbell. Alternative method of entry available. No purchase necessary to enter or win. Each entry has an equal chance of winning, regardless of method of entry. Open to legal residents 18 and older. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com';
+  'This business participates in campaigns operated by Winnbell. Alternative method of entry available. No purchase necessary to enter or win. Each entry has equal odds of winning, regardless of method of entry. 18+. Void where prohibited. Participation opportunities may vary by business and campaign availability. Official Rules at Winnbell.com';
 
 export interface PosterProps { businessName: string; scanUrl: string; minAmountLabel?: string | null }
