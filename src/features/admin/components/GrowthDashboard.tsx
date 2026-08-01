@@ -279,7 +279,7 @@ const GrowthDashboard: React.FC = () => {
             {/* 2. Paying Businesses (with month-over-month growth folded in as the trend) */}
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
               <HeroKpi
-                label={<InfoLabel label='Paying Businesses' tooltip='Businesses on an active paid subscription right now. The trend shows growth versus last month.' />}
+                label={<InfoLabel label='Paying Businesses' tooltip='Businesses on an active paid subscription right now. The trend compares new paying businesses in the last 30 days against the 30 days before.' />}
                 value={fmt(data.northStar.paying_businesses)}
                 subtext={`+${data.northStar.new_paying_this_month} new this month`}
                 trend={<TrendChip value={data.northStar.paying_business_growth_pct} goodDirection='up' />}
@@ -289,7 +289,7 @@ const GrowthDashboard: React.FC = () => {
             {/* 3. Active Players (MAU) (with user growth folded in as the trend) */}
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
               <HeroKpi
-                label={<InfoLabel label='Active Players' tooltip='Monthly Active Users. Players who entered at least one draw in the last 30 days. The trend shows growth versus last month.' />}
+                label={<InfoLabel label='Active Players' tooltip='Monthly Active Users. Players who entered at least one draw in the last 30 days. The trend compares new signups in the last 30 days against the 30 days before.' />}
                 value={fmt(data.northStar.mau)}
                 subtext={`of ${fmt(data.northStar.total_users)} total`}
                 trend={<TrendChip value={data.northStar.user_growth_pct} goodDirection='up' />}
@@ -326,7 +326,114 @@ const GrowthDashboard: React.FC = () => {
           </Grid>
         </Section>
 
-        {/* B. Revenue Strip + Chart */}
+        {/* B. Investor Snapshot */}
+        <Section
+          title='Investor Snapshot'
+          description='Four metrics that answer the questions investors ask first.'
+        >
+          <Grid container spacing={2}>
+            {/* 1. Revenue Growth (MoM) */}
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <HeroKpi
+                label={
+                  <InfoLabel
+                    label='Revenue Growth (MoM)'
+                    tooltip='Investors look for consistent month-over-month revenue growth. 15-20% MoM is considered strong at seed stage. Compared against the last closed campaign collected revenue.'
+                  />
+                }
+                value={
+                  data.investor.revenueMoM.growth_pct !== null
+                    ? `${data.investor.revenueMoM.growth_pct >= 0 ? '+' : ''}${data.investor.revenueMoM.growth_pct.toFixed(1)}%`
+                    : 'Not enough history'
+                }
+                valueColor={
+                  data.investor.revenueMoM.growth_pct === null
+                    ? METRIC_NEUTRAL
+                    : data.investor.revenueMoM.growth_pct >= 0
+                    ? METRIC_GOOD
+                    : METRIC_BAD
+                }
+                subtext='vs last campaign collected revenue'
+                trend={
+                  data.investor.revenueMoM.growth_pct !== null ? (
+                    <TrendChip value={data.investor.revenueMoM.growth_pct} goodDirection='up' />
+                  ) : undefined
+                }
+              />
+            </Grid>
+
+            {/* 2. Player Activation (7 days) */}
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <HeroKpi
+                label={
+                  <InfoLabel
+                    label='Player Activation (7 days)'
+                    tooltip='Activation is the strongest early predictor of retention. A player who enters a draw within their first week is far more likely to stick around.'
+                  />
+                }
+                value={
+                  data.investor.activation.eligible_count > 0
+                    ? `${data.investor.activation.activated_7d_pct.toFixed(1)}%`
+                    : 'No data yet'
+                }
+                subtext='of new signups submit an entry within a week'
+                trend={
+                  data.investor.activation.median_days_to_first_entry !== null ? (
+                    <Typography variant='caption' color='text.secondary'>
+                      median {data.investor.activation.median_days_to_first_entry.toFixed(1)} days to first entry
+                    </Typography>
+                  ) : undefined
+                }
+              />
+            </Grid>
+
+            {/* 3. Referral Engine (K-factor) */}
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <HeroKpi
+                label={
+                  <InfoLabel
+                    label='Referral Engine (K-factor)'
+                    tooltip='K-factor measures virality: referred signups divided by total players. A K-factor above 1.0 means the product grows itself. Even 0.3-0.5 is meaningful at seed stage.'
+                  />
+                }
+                value={data.investor.viral.k_factor.toFixed(3)}
+                subtext='referred signups per existing player'
+                trend={
+                  <Typography variant='caption' color='text.secondary'>
+                    {data.investor.viral.referred_activated_pct.toFixed(1)}% of invited players become active
+                  </Typography>
+                }
+              />
+            </Grid>
+
+            {/* 4. Business Conversion */}
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <HeroKpi
+                label={
+                  <InfoLabel
+                    label='Business Conversion'
+                    tooltip='Of all businesses that signed up, the share that became paying subscribers. Higher conversion means your sales motion and product value are aligned.'
+                  />
+                }
+                value={
+                  data.investor.businessFunnel.total_businesses > 0
+                    ? `${data.investor.businessFunnel.signup_to_paying_pct.toFixed(1)}%`
+                    : 'No data yet'
+                }
+                subtext='of registered businesses become paying'
+                trend={
+                  data.investor.businessFunnel.median_days_to_paying !== null ? (
+                    <Typography variant='caption' color='text.secondary'>
+                      median {data.investor.businessFunnel.median_days_to_paying.toFixed(1)} days to first payment
+                    </Typography>
+                  ) : undefined
+                }
+              />
+            </Grid>
+          </Grid>
+        </Section>
+
+        {/* C. Revenue Strip + Chart */}
         <Section
           title='Revenue'
           description='How much businesses pay you and how it is trending.'
@@ -443,7 +550,7 @@ const GrowthDashboard: React.FC = () => {
                           data.businessGrowth.business_growth_pct !== null
                             ? `${data.businessGrowth.business_growth_pct.toFixed(1)}%`
                             : 'n/a',
-                        tooltip: 'How much the total business count grew versus last month.',
+                        tooltip: 'New businesses in the last 30 days versus the 30 days before.',
                       },
                     ].map((item) => (
                       <Grid key={item.label} size={{ xs: 6, md: 4, lg: 2 }}>
@@ -560,7 +667,7 @@ const GrowthDashboard: React.FC = () => {
                   </Typography>
                   <Stack spacing={1}>
                     {[
-                      { label: 'MAU / Total', value: data.userGrowth.mau_over_total_pct.toFixed(1), tooltip: 'What share of all your players were active this month. Higher means a livelier base.' },
+                      { label: 'MAU / Total', value: data.userGrowth.mau_over_total_pct.toFixed(1), tooltip: 'What share of all your players were active in the last 30 days. Higher means a livelier base.' },
                       { label: 'WAU / MAU', value: data.userGrowth.wau_over_mau_pct.toFixed(1), tooltip: 'Stickiness. Of your monthly players, how many come back weekly.' },
                       { label: 'DAU / MAU', value: data.userGrowth.dau_over_mau_pct.toFixed(1), tooltip: 'Stickiness. Of your monthly players, how many show up daily.' },
                     ].map((item) => (

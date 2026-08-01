@@ -268,4 +268,28 @@ export interface GrowthAnalytics {
     by_state: { state: string; count: number }[];
     by_city: { city: string; count: number }[];
   };
+  investor: {
+    revenueMoM: {
+      mrr: number;
+      prev_campaign_revenue: number;
+      growth_pct: number | null;
+    };
+    activation: {
+      eligible_count: number;
+      activated_7d_count: number;
+      activated_7d_pct: number;
+      median_days_to_first_entry: number | null;
+    };
+    viral: {
+      referred_signups: number;
+      k_factor: number;
+      referred_activated_pct: number;
+    };
+    businessFunnel: {
+      total_businesses: number;
+      paying_businesses: number;
+      signup_to_paying_pct: number;
+      median_days_to_paying: number | null;
+    };
+  };
 }
