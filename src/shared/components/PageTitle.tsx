@@ -27,7 +27,7 @@ const PageTitle = () => {
 
   useEffect(() => {
     // Exact match first, then prefix match for parameterized routes (/login/:role,
-    // /register/:role, /rules/:drawId).
+    // /register/:role).
     const prefix = '/' + pathname.split('/')[1];
     document.title = PAGE_TITLES[pathname] ?? PAGE_TITLES[prefix] ?? DEFAULT_TITLE;
   }, [pathname]);

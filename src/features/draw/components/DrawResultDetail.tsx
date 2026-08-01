@@ -119,16 +119,21 @@ export const DrawResultDetail = ({ draw, onLocationClick }: { draw: IDrawResult;
       </motion.div>
 
       {/* Official rules - not shown for an upcoming campaign (its rules are published
-          when it opens; showing them early alongside a hidden prize reads wrong). */}
+          when it opens; showing them early alongside a hidden prize reads wrong).
+          The Rules LINK only appears for the currently OPEN campaign: past campaigns'
+          rules are archived as PDFs at close (legal record) and are not served in-app,
+          so /rules always shows the current campaign only. */}
       {!isUpcoming && (
         <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.12 }}>
           <Box sx={{ bgcolor: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, borderRadius: '16px', p: '14px 18px', boxShadow: SHADOW_CARD, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
             <Typography sx={{ color: TEXT_TERTIARY, fontSize: '0.72rem', lineHeight: 1.6, flex: 1, minWidth: 200 }}>
               Campaign operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Alternative method of entry available on the platform. 18+. Void where prohibited.
             </Typography>
-            <Link href={`/rules/${draw.id}`} underline='none' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: '0.78rem', fontWeight: 700, color: PRIMARY_MAIN, flexShrink: 0, transition: 'gap 0.2s ease-in-out', '&:hover': { gap: 0.75 } }}>
-              <ArticleOutlined sx={{ fontSize: 16 }} /> Official Rules
-            </Link>
+            {!isClosed && (
+              <Link href='/rules' underline='none' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: '0.78rem', fontWeight: 700, color: PRIMARY_MAIN, flexShrink: 0, transition: 'gap 0.2s ease-in-out', '&:hover': { gap: 0.75 } }}>
+                <ArticleOutlined sx={{ fontSize: 16 }} /> Official Rules
+              </Link>
+            )}
           </Box>
         </motion.div>
       )}

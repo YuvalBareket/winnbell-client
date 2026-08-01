@@ -155,8 +155,9 @@ const AppRoutes = () => {
       <Route path='/terms' element={<TermsOfServicePage />} />
       <Route path='/privacy' element={<PrivacyPolicyPage />} />
       <Route path='/contact' element={<ContactPage />} />
+      {/* Always the CURRENT campaign's rules. No per-draw route: past campaigns' rules
+          are archived as PDFs at close and are deliberately not browsable by draw id. */}
       <Route path='/rules' element={<OfficialRulesPage />} />
-      <Route path='/rules/:drawId' element={<OfficialRulesPage />} />
       <Route path='/business-agreement' element={<BusinessAgreementPage />} />
       <Route path='/business-guidelines' element={<BusinessGuidelinesPage />} />
       <Route path='/founding-terms' element={<FoundingPartnerTermsPage />} />

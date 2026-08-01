@@ -57,16 +57,12 @@ interface DrawInfo {
  * Supports both drawId-specific rules and active-draw rules (default).
  * Returns { content, loading } tuple for easy integration.
  */
-export const useOfficialRulesContent = (drawId?: string) => {
+// Always the ACTIVE campaign - per-draw rules browsing was removed (archived PDFs
+// at close are the historical record).
+export const useOfficialRulesContent = () => {
   const { data: draw = null, isPending: drawPending } = useQuery<DrawInfo | null>({
-    queryKey: drawId
-      ? [...queryKeys.draws.all, 'rules', drawId]
-      : [...queryKeys.draws.all, 'rules', 'active'],
+    queryKey: [...queryKeys.draws.all, 'rules', 'active'],
     queryFn: async () => {
-      if (drawId) {
-        const { data } = await api.get<DrawInfo>(`/draws/${drawId}`);
-        return data;
-      }
       const { data } = await api.get<DrawInfo[]>('/draws/active');
       return data[0] ?? null;
     },

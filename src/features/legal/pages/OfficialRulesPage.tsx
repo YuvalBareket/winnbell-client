@@ -1,11 +1,11 @@
-import { useParams } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { useOfficialRulesContent } from '../hooks/useOfficialRulesContent';
 import LegalDocumentPage from './LegalDocumentPage';
 
+// Always renders the CURRENT campaign's rules. Past campaigns' rules are archived
+// as PDFs at draw close; they are deliberately not browsable in-app.
 const OfficialRulesPage = () => {
-  const { drawId } = useParams<{ drawId: string }>();
-  const { content, loading } = useOfficialRulesContent(drawId);
+  const { content, loading } = useOfficialRulesContent();
 
   if (loading) {
     return (
