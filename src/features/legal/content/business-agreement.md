@@ -1,6 +1,6 @@
 **WINNBELL PARTICIPATING BUSINESS AGREEMENT**
 
-**Last updated 30/06/2026**
+**Last updated 01/08/2026**
 
 This Participating Business Agreement (the "**Agreement**") governs access to and use of the Winnbell Platform by businesses that enroll to participate in Winnbell promotional campaigns.
 
@@ -399,10 +399,7 @@ The Incorporated Documents are posted on the website located at Winnbell.com and
 
 **22\. AMENDMENTS AND POLICY UPDATES**
 
-**22.1 Agreement Amendments.** Except as otherwise provided in this Agreement, any amendment to this Agreement must be in writing and either:
-
-- (a) electronically accepted by the Participating Business through the Platform; or
-- (b) executed by authorized representatives of both Parties.
+**22.1 Updates to Agreement and Incorporated Documents.** The Provider may amend this Agreement or any Incorporated Document from time to time to reflect changes to the Platform, Services, Campaigns, operational requirements, business practices, security measures, applicable law, or regulatory guidance. The current versions will be made available through the Platform or the Provider's website. The Participating Business is responsible for reviewing them periodically. The Provider may provide notice of updates by email, through the Platform, by account notification, or by another reasonable electronic method. Material changes will be notified where required by applicable law or where they materially affect the Participating Business's existing rights or obligations. Unless otherwise stated, an update becomes effective when posted. Continued access to or use of the Platform or Services, continued subscription, or participation in a Campaign after the effective date constitutes acceptance of the update. Updates will not retroactively increase fees or materially alter the terms of a prepaid Subscription Term or confirmed Campaign, except where reasonably necessary to comply with applicable law, address fraud or security concerns, or protect the integrity or lawful operation of the Platform or a Campaign.
 
 **22.2 Operational Policy Updates.** The Provider may update the Business Guidelines and other operational or compliance instructions from time to time on prior written notice or platform notice, provided such updates apply prospectively and are reasonably related to operational needs, legal compliance, platform evolution, campaign integrity, or risk management.
 

@@ -1,6 +1,6 @@
 **WINNBELL OFFICIAL RULES**
 
-Last updated 25/07/2026
+Official Rules Version Date: 01 Aug 2026
 
 NO PURCHASE NECESSARY TO ENTER OR WIN. A PURCHASE WILL NOT INCREASE YOUR CHANCES OF WINNING. VOID WHERE PROHIBITED OR RESTRICTED BY LAW.
 
@@ -22,7 +22,7 @@ Participating businesses ("**Participating Businesses**") are independent third 
 
 **2\. Campaign-Specific Terms**
 
-The following terms apply specifically to this Campaign:
+The following terms apply specifically to this Campaign and may change between Campaigns without affecting the remainder of these Official Rules:
 
 - Campaign Name: [Campaign Name]
 - Campaign Period: [Start Date & Time] to [End Date & Time]
@@ -325,7 +325,17 @@ Prize fulfillment may be carried out directly by Winnbell or through third-party
 
 By accepting a prize, the winner agrees, except where prohibited by applicable law, Winnbell and its designees may use the winner's name, likeness, voice, photograph, biographical information, city and state of residence, and statements regarding the Campaign or prize for advertising, publicity, trade, and promotional purposes in any media now known or later developed, worldwide, without further notice, review, approval, or additional compensation.
 
-**21\. Campaign Modification, Suspension, or Termination**
+**21\. Updates to Official Rules**
+
+Each Campaign is governed by the Official Rules published for that Campaign. Although the general structure of the Official Rules is expected to remain substantially consistent, Winnbell may update these Official Rules from time to time, including to make technical, administrative, operational, clarifying, or compliance-related changes.
+
+The current version of the Official Rules will be made available through the Platform and will identify its effective date. Participants are responsible for reviewing the Official Rules periodically and remaining familiar with the version then in effect.
+
+Winnbell may provide notice of updates by email, through the Platform, by account notification, or by another reasonable electronic method. Winnbell will provide reasonable notice of any material change that significantly affects participant eligibility, entry methods, the prize, the Campaign Period, or other material rights or obligations.
+
+Unless otherwise stated, an updated version becomes effective when posted. Continued participation in the Campaign or submission of an Entry after the effective date constitutes acceptance of the updated Official Rules.
+
+**22\. Campaign Modification, Suspension, or Termination**
 
 Winnbell reserves the right, in its sole discretion acting reasonably and in good faith, to modify, suspend, or terminate the Campaign, in whole or in part, at any time if circumstances arise that may affect the fairness, integrity, or proper operation of the Campaign, or where necessary to comply with applicable laws, regulations, regulatory guidance, or governmental authority.
 
@@ -341,7 +351,7 @@ To the fullest extent permitted by applicable law, Winnbell shall not be liable 
 
 This Section is in addition to, and subject to, Winnbell's rights under its Terms of Service.
 
-**22\. Errors; Technical Failures; Limitation of Liability**
+**23\. Errors; Technical Failures; Limitation of Liability**
 
 Winnbell is not responsible for Entries that are not successfully submitted, recorded, or processed due to technical or system-related issues, including but not limited to platform interruptions, network failures, hardware or software malfunctions, or data transmission errors.
 
@@ -360,14 +370,14 @@ Nothing in these Official Rules excludes or limits any liability that cannot be 
 
 Nothing in this Section limits any rights or obligations set out in Winnbell's Terms of Service, which may include additional limitations, disclaimers, or conditions applicable to the use of the Platform.
 
-**23\. Privacy**
+**24\. Privacy**
 
 Participation in the Campaign is subject to Winnbell's Privacy Policy, available at: [Privacy Policy](/privacy). Personal information collected in connection with the Campaign may be used by Winnbell to administer the Campaign, validate Entries, verify eligibility, contact participants and potential winners, fulfill prizes, and otherwise in accordance with Winnbell's Privacy Policy.
 
-**24\. Disputes; Governing Law**
+**25\. Disputes; Governing Law**
 
 This Campaign and these Official Rules are governed by the laws of Delaware. Any dispute, claim, or controversy arising out of or relating to the Campaign or these Official Rules will be resolved in accordance with the dispute resolution procedures set out in Winnbell's Terms of Service and any Campaign-specific dispute resolution terms specified here: binding individual arbitration administered by the American Arbitration Association under its applicable Consumer Arbitration Rules, with the seat of arbitration in Wilmington, Delaware; provided that either party may bring an individual claim in small claims court if eligible, and Winnbell may seek injunctive or equitable relief in any court of competent jurisdiction for fraud, unauthorized access, misuse of the Platform, or infringement of its intellectual property or other proprietary rights. To the extent permitted by applicable law, participants agree to pursue claims only on an individual basis and not as a plaintiff or class member in any purported class or representative proceeding, unless otherwise required by law.
 
-**25\. Winner List; Rules Request; Contact**
+**26\. Winner List; Rules Request; Contact**
 
 To request a winner list for a Campaign or a copy of these Official Rules, contact support@winnbell.com or use the link [Support](/contact) and include the applicable Campaign name in your request. General inquiries regarding the Campaign may also be directed to the same contact.

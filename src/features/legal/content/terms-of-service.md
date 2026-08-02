@@ -1,4 +1,4 @@
-**Winnbell terms of service (ToS)**  Date of Last Update: \[05/07/2026\]
+**Winnbell terms of service (ToS)**  Date of Last Update: 01/08/2026
 
 ---
 
@@ -878,7 +878,11 @@ To the extent any dispute is permitted to proceed in court under Section 18, the
 
 Winnbell reserves the right to modify or update these Terms at any time, in its sole discretion, acting reasonably and in good faith, to reflect changes in the Platform, applicable law, or operational requirements.
 
-Where required by applicable law, Winnbell will provide notice of material changes through the Platform or by other reasonable means. Continued use of the Platform following the effective date of any updated Terms constitutes acceptance of the revised Terms.
+The current version will be made available through the Platform, and users are responsible for reviewing these Terms periodically.
+
+Winnbell may provide notice of changes by email, through the Platform, by account notification, or by other reasonable means. Where required by applicable law, Winnbell will provide notice of material changes.
+
+Continued use of the Platform following the effective date of any updated Terms constitutes acceptance of the revised Terms.
 
 ---
 

@@ -18,7 +18,7 @@ const OfficialRulesPage = () => {
   return (
     <LegalDocumentPage
       title="Official Rules"
-      lastUpdated="Last updated: July 25, 2026"
+      lastUpdated="Last updated: August 1, 2026"
       content={content}
     />
   );

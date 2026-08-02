@@ -8,7 +8,7 @@ import LegalDocumentPage from './LegalDocumentPage';
 const BusinessAgreementPage = () => (
   <LegalDocumentPage
     title="Participating Business Agreement"
-    lastUpdated="Last updated: June 30, 2026"
+    lastUpdated="Last updated: August 1, 2026"
     content={baContent}
   />
 );

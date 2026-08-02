@@ -11,7 +11,7 @@ const content = privacyContent
 const PrivacyPolicyPage = () => (
   <LegalDocumentPage
     title="Privacy Policy"
-    lastUpdated="Last updated: April 16, 2026"
+    lastUpdated="Last updated: August 1, 2026"
     content={content}
   />
 );

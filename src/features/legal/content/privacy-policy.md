@@ -1,6 +1,6 @@
 **Winnbell Privacy Policy**
 
-**Last Updated:** 16.4.2026
+**Last Updated:** 1.8.2026
 
 ---
 
@@ -449,6 +449,7 @@ Continued use of the Platform after changes become effective constitutes accepta
 
 **16\. Contact Information**
 
-For questions or requests:
+For any questions regarding this Privacy Policy or Winnbell's privacy practices, please contact us at:
 
-- privacy@winnbell.com
+- Email: privacy@winnbell.com
+- Mail: Winnbell, Inc., 1931 Cordova Road # 1151, Fort Lauderdale, FL 33316, United States
