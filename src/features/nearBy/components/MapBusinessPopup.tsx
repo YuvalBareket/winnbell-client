@@ -11,6 +11,9 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useAppSelector } from '../../../store/hook';
+import { selectIsUnder21 } from '../../../store/selectors/authSelectors';
+import { AGE_RESTRICTED_SECTOR } from '../../../shared/constants/entries';
 import type { NearbyLocation, NearbyLocationDetail } from '../types/nearBy.types';
 import { getLocationProfileById } from '../api/nearBy.api';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
@@ -63,6 +66,13 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
   // participating (e.g. a past winner's profile). undefined (hub preview / basicInfo-only) keeps
   // the previous behavior so the map and preview are unaffected.
   const canSubmitReceipt = detail?.is_participating !== false;
+
+  // Tobacco & liquor businesses: entries are 21+ only. The note shows for everyone;
+  // the submit action is blocked only when the profile DOB confirms the user is under 21
+  // (the server enforces the same rule at submission regardless).
+  const isAgeRestricted = location?.sector === AGE_RESTRICTED_SECTOR;
+  const isUnder21 = useAppSelector(selectIsUnder21);
+  const blockedByAge = isAgeRestricted && isUnder21;
 
   // Profile-view analytics are recorded server-side when the location detail is fetched
   // (only for regular Users), so there is no client-side view logging here.
@@ -499,6 +509,11 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                     <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
                       {(() => { const amt = Number(detail?.min_transaction_amount); if (!Number.isFinite(amt) || amt <= 0) return null; return (<>Every <strong style={{ color: '#111' }}>${Number.isInteger(amt) ? amt : amt.toFixed(2)}</strong> spent = <strong style={{ color: '#111' }}>1 entry</strong>, up to <strong style={{ color: '#111' }}>{MAX_ENTRIES_PER_RECEIPT} entries</strong> per receipt.</>); })()}
                     </Typography>
+                    {isAgeRestricted && (
+                      <Typography variant='body2' fontWeight={700} color='text.primary' lineHeight={1.6}>
+                        Entries at this business can be earned only by participants aged 21 or older.
+                      </Typography>
+                    )}
                     {detail?.terms_text && (
                       <Typography variant='caption' color='text.disabled' lineHeight={1.5}>
                         {detail.terms_text}
@@ -525,38 +540,46 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
               gap: 1.25,
             }}
           >
-            {canSubmitReceipt && (
+            {canSubmitReceipt && (() => {
+              const submitBlocked = !!detail?.cap_reached || blockedByAge;
+              return (
               <>
                 {detail?.cap_reached && (
                   <Typography variant='caption' color='text.disabled' textAlign='center' sx={{ mb: 0.25 }}>
                     This location has reached its entry limit for the current campaign.
                   </Typography>
                 )}
+                {blockedByAge && !detail?.cap_reached && (
+                  <Typography variant='caption' color='text.disabled' textAlign='center' sx={{ mb: 0.25 }}>
+                    Entries at this business are for participants aged 21 and older.
+                  </Typography>
+                )}
                 <motion.div
                   {...pressable}
-                  {...(detail?.cap_reached || preview ? {} : breathe)}
+                  {...(submitBlocked || preview ? {} : breathe)}
                 >
                   <Button
                     fullWidth
                     variant='contained'
                     size='large'
                     startIcon={<ReceiptLong />}
-                    onClick={detail?.cap_reached || preview ? undefined : handleSubmitReceipt}
+                    onClick={submitBlocked || preview ? undefined : handleSubmitReceipt}
                     sx={{
                       py: 1.6,
                       fontWeight: 800,
                       fontSize: '0.95rem',
-                      bgcolor: detail?.cap_reached ? '#e5e7eb' : PRIMARY_MAIN,
-                      boxShadow: detail?.cap_reached ? 'none' : `0 6px 20px ${PRIMARY_MAIN}40`,
-                      cursor: detail?.cap_reached ? 'not-allowed' : 'pointer',
-                      '&:hover': detail?.cap_reached ? { bgcolor: '#e5e7eb' } : { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.92)' },
+                      bgcolor: submitBlocked ? '#e5e7eb' : PRIMARY_MAIN,
+                      boxShadow: submitBlocked ? 'none' : `0 6px 20px ${PRIMARY_MAIN}40`,
+                      cursor: submitBlocked ? 'not-allowed' : 'pointer',
+                      '&:hover': submitBlocked ? { bgcolor: '#e5e7eb' } : { bgcolor: PRIMARY_MAIN, filter: 'brightness(0.92)' },
                     }}
                   >
                     Submit a Receipt
                   </Button>
                 </motion.div>
               </>
-            )}
+              );
+            })()}
             <motion.div {...pressable}>
               <Button
                 fullWidth

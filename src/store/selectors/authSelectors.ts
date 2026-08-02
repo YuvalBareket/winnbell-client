@@ -36,6 +36,22 @@ export const selectIsRegularUser = createSelector(
   (user) => user?.role === 'User',
 );
 
+// True only when the profile DOB CONFIRMS the user is under 21 (age-restricted sectors:
+// tobacco & liquor). Missing DOB = false here; the server entry gate fails closed instead.
+// Compares calendar components (a date-only string parses as UTC midnight, which is off by
+// hours vs local time at the birthday boundary).
+export const selectIsUnder21 = createSelector(
+  [selectCurrentUser],
+  (user) => {
+    const isoMatch = user?.dateOfBirth ? /^(\d{4})-(\d{2})-(\d{2})/.exec(user.dateOfBirth) : null;
+    if (!isoMatch) return false;
+    const y = Number(isoMatch[1]); const m = Number(isoMatch[2]); const d = Number(isoMatch[3]);
+    const now = new Date();
+    const beforeBirthdayThisYear = (now.getMonth() + 1) < m || ((now.getMonth() + 1) === m && now.getDate() < d);
+    return now.getFullYear() - y - (beforeBirthdayThisYear ? 1 : 0) < 21;
+  },
+);
+
 // Case 2: Location Manager (Operator)
 export const selectIsLocationManager = createSelector(
   [selectCurrentUser],

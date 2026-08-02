@@ -44,7 +44,9 @@ import BusinessSelector from './BusinessSelector';
 import SelectedLocationPill from './SelectedLocationPill';
 import { getNearbyBusinesses } from '../../nearBy/api/nearBy.api';
 import { queryKeys } from '../../../shared/constants/queryKeys';
-import { MAX_ENTRIES_PER_RECEIPT } from '../../../shared/constants/entries';
+import { MAX_ENTRIES_PER_RECEIPT, AGE_RESTRICTED_SECTOR } from '../../../shared/constants/entries';
+import { useAppSelector } from '../../../store/hook';
+import { selectIsUnder21 } from '../../../store/selectors/authSelectors';
 import { useSearchParticipatingLocations } from '../hooks/useAllParticipatingLocations';
 import { useSubmitReceiptEntry } from '../hooks/useSubmitReceiptEntry';
 import { fetchParticipatingLocationById } from '../api/ticketsApi';
@@ -284,6 +286,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const navigate = useNavigate();
   const riskLevel = useMyRiskLevel();
   const reduceMotion = useReducedMotion();
+  const isUnder21 = useAppSelector(selectIsUnder21);
   const { data: searchResults = [], isFetching: isSearching } = useSearchParticipatingLocations(debouncedTerm);
   const receiptImageUpload = useUploadReceiptImage();
 
@@ -390,6 +393,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // Derived state
   // ──────────────────────────────────────────────────
   const showImageUpload = requiresImage || riskLevel.requiresImage;
+  // Tobacco & liquor businesses are 21+ only (mirrors the server-side entry gate).
+  const selectedAgeBlocked = isUnder21 && selectedLocation?.sector === AGE_RESTRICTED_SECTOR;
 
   // ──────────────────────────────────────────────────
   // Validation
@@ -771,8 +776,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                   setSearchTerm={setSearchTerm}
                   debouncedTerm={debouncedTerm}
                   isSearching={isSearching}
-                  searchResults={searchResults}
-                  nearbyLocations={nearbyLocations}
+                  searchResults={isUnder21 ? searchResults.filter((l) => l.sector !== AGE_RESTRICTED_SECTOR) : searchResults}
+                  nearbyLocations={isUnder21 ? nearbyLocations.filter((l) => l.sector !== AGE_RESTRICTED_SECTOR) : nearbyLocations}
                   onLocationSelect={handleLocationSelect}
                 />
               )}
@@ -784,6 +789,28 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             </Box>
           </Box>
         </Box>
+      )}
+
+      {/* ── Age-restricted notice — replaces the entire form. Under-21 users cannot reach
+          such a location via the pick lists (filtered) or map popup (blocked button); this
+          covers deep links and stale router state. The server enforces the same rule. ── */}
+      {selectedLocation && selectedAgeBlocked && !selectedLocationCapReached && !successDialogOpen && (
+        <>
+          <SelectedLocationPill primaryColor={primaryColor} location={selectedLocation} onChangeLocation={handleChangeLocation} />
+          <Box sx={{
+            p: 3, borderRadius: 2.5, textAlign: 'center',
+            bgcolor: ALPHA_AMBER_06, border: `1px solid ${ALPHA_AMBER_25}`,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+          }}>
+            <EventBusy sx={{ fontSize: 32, color: ALPHA_AMBER_80 }} />
+            <Typography variant='subtitle2' fontWeight={800} color='text.primary'>
+              21+ only
+            </Typography>
+            <Typography variant='body2' color='text.secondary' lineHeight={1.6}>
+              Entries at this business are limited to participants aged 21 and older. Please pick another participating location.
+            </Typography>
+          </Box>
+        </>
       )}
 
       {/* ── Cap reached notice — replaces the entire form ── */}
@@ -878,7 +905,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       </Dialog>
 
       {/* ── Step 2: Receipt details ─────────────────── */}
-      <Collapse in={Boolean(selectedLocation) && !successDialogOpen && !selectedLocationCapReached}>
+      <Collapse in={Boolean(selectedLocation) && !successDialogOpen && !selectedLocationCapReached && !selectedAgeBlocked}>
         {selectedLocation && (
         <Box
           component={motion.div}
