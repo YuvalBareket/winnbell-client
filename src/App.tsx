@@ -7,6 +7,7 @@ import { store, persistor } from './store/store'; // Import persistor
 import { theme } from './shared/theme';
 import AppRoutes from './routes/AppRoutes';
 import ErrorBoundary from './shared/components/ErrorBoundary';
+import ScrollToTop from './shared/components/ScrollToTop';
 
 // Top-level error boundary that resets on navigation, so a transient render error
 // recovers when the user moves to another route instead of forcing a page refresh.
@@ -22,6 +23,7 @@ function App() {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <BrowserRouter>
+            <ScrollToTop />
             <RootBoundary>
               <AppRoutes />
             </RootBoundary>
