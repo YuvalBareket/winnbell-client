@@ -30,6 +30,7 @@ export const queryKeys = {
     // per-entity factories
     drawCandidate:   (drawId: number | null)    => ['admin', 'draw-candidate',   drawId]             as const,
     drawRejected:    (drawId: number | null)    => ['admin', 'draw-rejected',    drawId]             as const,
+    drawWinnerOrder: (drawId: number | null)    => ['admin', 'draw-winner-order', drawId]            as const,
     drawAudit:       (drawId: number | null)    => ['admin', 'draw-audit',       drawId]             as const,
     drawBusinesses:  (drawId: number | null, search: string, sector: string) =>
       ['admin', 'draw-businesses', drawId, search, sector] as const,

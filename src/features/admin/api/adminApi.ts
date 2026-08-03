@@ -24,10 +24,14 @@ export const closeDraw = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/close`);
 export const pickWinner = (drawId: number, applyPenalty = false, reason?: string) =>
   api.post(`/admin/draws/${drawId}/pick-winner`, { applyPenalty, reason });
+export const extendDrawOrder = (drawId: number) =>
+  api.post(`/admin/draws/${drawId}/extend-order`);
 export const fetchDrawCandidate = (drawId: number) =>
   api.get(`/admin/draws/${drawId}/candidate`);
 export const fetchDrawRejectedWinners = (drawId: number) =>
   api.get(`/admin/draws/${drawId}/rejected-winners`);
+export const fetchDrawWinnerOrder = (drawId: number) =>
+  api.get(`/admin/draws/${drawId}/winner-order`);
 export const fetchDrawAuditLog = (drawId: number) =>
   api.get(`/admin/draws/${drawId}/audit-log`);
 export const confirmWinner = (drawId: number) =>

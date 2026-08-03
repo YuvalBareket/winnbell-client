@@ -53,6 +53,7 @@ import {
   useOpenDraw,
   useCloseDraw,
   usePickWinner,
+  useExtendDrawOrder,
   useConfirmWinner,
   useReopenDraw,
   useSetDrawPrizeRevealed,
@@ -65,13 +66,14 @@ import {
   useAdminBusinesses,
   useDrawCandidate,
   useDrawRejectedWinners,
+  useDrawWinnerOrder,
 } from '../../hooks/useAdmin';
 import { downloadDrawRulesPdf } from '../../api/adminApi';
 import {
   BG_PAGE, PRIMARY_MAIN,
   STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT, STATUS_PENDING_BG, STATUS_PENDING_TEXT,
   TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY, ERROR_BG_TINT, ERROR_BORDER_TINT,
-  ERROR_MAIN, BG_ROW_SUBTLE, BORDER_SUBTLE,
+  ERROR_MAIN, BG_ROW_SUBTLE, BORDER_SUBTLE, ALPHA_BLACK_06,
   ACCENT_GOLD_LIGHT, ACCENT_GOLD_CREAM, ACCENT_GOLD_DARK, ACCENT_GOLD, GOLD_INK,
   GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_80, GOLD_TROPHY,
   BG_SURFACE, BORDER_LIGHT, GRADIENT_SUCCESS_GREEN, ERROR_BORDER_LIGHT, ERROR_HOVER_BG,
@@ -410,10 +412,13 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
   const [confirmDecision, setConfirmDecision] = useState<null | 'confirm' | 'reject'>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [expandedDrawId, setExpandedDrawId] = useState<number | null>(null);
+  // Draw order card: tracks which row is expanded (position value), and defaults current to open
+  const [expandedOrderPosition, setExpandedOrderPosition] = useState<number | null>(null);
 
   const openDraw = useOpenDraw();
   const closeDraw = useCloseDraw();
   const pickWinner = usePickWinner();
+  const extendOrder = useExtendDrawOrder();
   const confirmWinnerMutation = useConfirmWinner();
   const reopenDraw = useReopenDraw();
   const deleteDraw = useDeleteDraw();
@@ -423,6 +428,19 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
 
   const { data: candidate, isLoading: candidateLoading } = useDrawCandidate(effectiveReviewDrawId);
   const { data: rejectedWinners } = useDrawRejectedWinners(effectiveReviewDrawId);
+  const { data: drawOrder } = useDrawWinnerOrder(effectiveReviewDrawId);
+  // A drawn list exists but no candidate: every stored entry was rejected or became
+  // ineligible. The decision card offers the explicit Draw More Entries action.
+  const orderExhausted = !candidateLoading && !candidate && (drawOrder?.total ?? 0) > 0 && !drawOrder?.winnerConfirmed;
+
+  // Auto-expand the active entry in the draw order (the candidate under review, or the
+  // confirmed winner in the Campaign Record view). Keyed on the POSITION (not the entries
+  // array ref) so a background refetch never re-opens a row the admin collapsed; it only
+  // fires when validation actually advances to a new candidate.
+  const currentOrderPosition = drawOrder?.entries.find((e) => e.status === 'current' || e.status === 'confirmed')?.position ?? null;
+  useEffect(() => {
+    if (currentOrderPosition !== null) setExpandedOrderPosition(currentOrderPosition);
+  }, [effectiveReviewDrawId, currentOrderPosition]);
 
   const handleOpenDraw = async () => {
     if (!confirmOpen) return;
@@ -479,14 +497,31 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
     const reason = rejectReason.trim();
     if (!reason) { onSnackError('Please enter a reason for disqualifying this winner.'); return; }
     try {
-      await pickWinner.mutateAsync({ drawId: effectiveReviewDrawId, applyPenalty: penaltyChecked, reason });
+      const res = await pickWinner.mutateAsync({ drawId: effectiveReviewDrawId, applyPenalty: penaltyChecked, reason });
       setPenaltyChecked(false);
       setRejectReason('');
+      // The rejection was recorded but the drawn list has no eligible entry left. Keep the
+      // dialog open: the decision card switches to the Draw More Entries panel, and drawing
+      // the next batch stays an explicit admin action.
+      if (res.data?.exhausted) {
+        onSnackSuccess('Rejection recorded. The drawn list is now exhausted.');
+      }
     } catch (e: unknown) {
       setReviewDrawId(null);
       setReviewDismissed(true);
       setRejectReason('');
+      setExpandedOrderPosition(null);
       onSnackError(apiErrorMessage(e, 'Failed to pick another winner'));
+    }
+  };
+
+  const handleDrawMoreEntries = async () => {
+    if (!effectiveReviewDrawId) return;
+    try {
+      await extendOrder.mutateAsync(effectiveReviewDrawId);
+      onSnackSuccess('New entries drawn and added to the list.');
+    } catch (e: unknown) {
+      onSnackError(apiErrorMessage(e, 'Failed to draw more entries'));
     }
   };
 
@@ -498,6 +533,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       // Prevent the derived pendingReviewDraw from re-opening the dialog before the draws cache
       // reflects winner_confirmed = true (otherwise it briefly reopens with no candidate).
       setReviewDismissed(true);
+      setExpandedOrderPosition(null);
       onSnackSuccess('Winner confirmed successfully');
     } catch (e: unknown) {
       onSnackError(apiErrorMessage(e, 'Failed to confirm winner'));
@@ -852,7 +888,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
         <DialogContent>
           <Stack spacing={2}>
             <DialogContentText>
-              This will randomly select one winner from all activated entries. This action cannot be undone.
+              This locks in a random order of all eligible entries and selects the first as the candidate winner. If a candidate is rejected, the next entry in that order becomes the candidate. The order is drawn once and cannot be redrawn.
             </DialogContentText>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
               <ConfirmationNumberOutlinedIcon color='primary' />
@@ -902,22 +938,27 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
       {/* Candidate review */}
       <Dialog
         open={!!effectiveReviewDrawId}
-        onClose={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); setRejectReason(''); }}
+        onClose={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); setRejectReason(''); setExpandedOrderPosition(null); }}
         maxWidth='md'
         fullWidth
         slotProps={{ paper: { sx: { borderRadius: '20px', overflow: 'hidden' } } }}
       >
-        {/* Gradient header band - matches the app hero language (glow orb, white text). */}
-        <Box sx={{ position: 'relative', overflow: 'hidden', background: GRADIENT_HERO, color: 'white', px: 3, py: 2.5 }}>
+        {/* Gradient header band - matches the app hero language (glow orb, white text).
+            flexShrink 0: the Dialog paper is a flex column, and when the (tall) order list
+            pushes it to max height the header would otherwise be vertically squeezed and
+            its text clipped - only the scrollable DialogContent may shrink. */}
+        <Box sx={{ position: 'relative', overflow: 'hidden', flexShrink: 0, background: GRADIENT_HERO, color: 'white', px: 3, py: 2.5 }}>
           <Box sx={{ position: 'absolute', top: -90, right: -70, width: 240, height: 240, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`, pointerEvents: 'none' }} />
           <Stack direction='row' alignItems='center' spacing={1.75} sx={{ position: 'relative' }}>
             <IconTile icon={<EmojiEventsIcon />} tint={ALPHA_WHITE_15} color={GOLD_TROPHY} size={46} />
-            <Box sx={{ minWidth: 0 }}>
-              <Typography variant='h6' fontWeight={800} sx={{ letterSpacing: '-0.02em', lineHeight: 1.2 }} noWrap>
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Typography variant='h6' fontWeight={800} sx={{ letterSpacing: '-0.02em', lineHeight: 1.2 }}>
                 {candidate?.winnerConfirmed ? 'Campaign Record' : 'Review Candidate Winner'}
               </Typography>
-              <Typography variant='body2' sx={{ color: ALPHA_WHITE_80 }} noWrap>
-                {candidate?.winnerConfirmed ? 'This winner has been confirmed.' : 'Verify the candidate, then confirm or pick again.'}
+              <Typography variant='body2' sx={{ color: ALPHA_WHITE_80 }}>
+                {candidate?.winnerConfirmed ? 'This winner has been confirmed.'
+                  : orderExhausted ? 'The drawn list is exhausted. Draw more entries to continue.'
+                  : 'Verify the candidate, then confirm or move to the next entry in the draw order.'}
               </Typography>
             </Box>
           </Stack>
@@ -926,188 +967,517 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
         <DialogContent dividers sx={{ px: 3, py: 2.5, bgcolor: BG_ROW_SUBTLE }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems='flex-start'>
 
-            {/* LEFT - the winning entry, who won, and the evidence */}
+            {/* LEFT - draw order entry list (when available) or legacy candidate details */}
             <Box sx={{ flex: { md: 1.5 }, width: '100%', minWidth: 0 }}>
-              <AnimatePresence mode='wait'>
-                {candidateLoading ? (
-                  <motion.div
-                    key='skeleton'
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Stack spacing={2}>
-                      <Skeleton variant='rectangular' height={104} sx={{ borderRadius: '16px' }} />
-                      <Skeleton variant='rectangular' height={120} sx={{ borderRadius: '15px' }} />
-                      <Skeleton variant='rectangular' height={90} sx={{ borderRadius: '15px' }} />
-                    </Stack>
-                  </motion.div>
-                ) : candidate ? (
-                  <motion.div
-                    key='content'
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Stack spacing={2}>
-                      {/* Winning entry code - the hero, shown large so the admin can read
-                          it aloud / cross-check against the physical entry. */}
-                      {candidate.ticketCode && (
-                        <Box
-                          sx={{
-                            borderRadius: '16px',
-                            border: `1px solid ${ACCENT_GOLD}`,
-                            background: `linear-gradient(135deg, ${ACCENT_GOLD_LIGHT} 0%, ${ACCENT_GOLD_CREAM} 100%)`,
-                            px: 2.5,
-                            py: 2.25,
-                            textAlign: 'center',
-                          }}
+              {drawOrder && drawOrder.total > 0 ? (
+                /* NEW: Entry list in draw order */
+                <AdminCard sx={{ p: 2 }}>
+                  <CardLabel>Draw Order</CardLabel>
+                  <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', mt: 0.5, mb: 1.5 }}>
+                    {drawOrder.total} entries in the drawn order
+                  </Typography>
+                  <Stack spacing={0.75}>
+                    {drawOrder.entries.map((entry, index) => {
+                      const isExpanded = expandedOrderPosition === entry.position;
+                      const isCurrent = entry.status === 'current';
+                      const isConfirmed = entry.status === 'confirmed';
+                      const isRejected = entry.status === 'rejected';
+                      const isSkipped = entry.status === 'skipped';
+                      const isLocked = entry.status === 'locked';
+                      // Current/confirmed rows expand to the full candidate details; rejected
+                      // rows expand to their own record (who they were and why they fell).
+                      // Skipped and locked rows stay closed.
+                      const isClickable = isCurrent || isConfirmed || isRejected;
+
+                      let statusBg = BG_ROW_SUBTLE;
+                      let statusText = TEXT_SECONDARY;
+                      let statusLabel = 'Locked';
+
+                      if (isCurrent) {
+                        statusBg = ACCENT_GOLD_CREAM;
+                        statusText = ACCENT_GOLD_DARK;
+                        statusLabel = 'Reviewing now';
+                      } else if (isConfirmed) {
+                        statusBg = STATUS_ACTIVATED_BG;
+                        statusText = STATUS_ACTIVATED_TEXT;
+                        statusLabel = 'Confirmed winner';
+                      } else if (isRejected) {
+                        statusBg = ERROR_BG_TINT;
+                        statusText = ERROR_MAIN;
+                        statusLabel = 'Rejected';
+                      } else if (isSkipped) {
+                        statusBg = BG_ROW_SUBTLE;
+                        statusText = TEXT_SECONDARY;
+                        statusLabel = 'No longer eligible';
+                      }
+
+                      return (
+                        <motion.div
+                          key={entry.position}
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: Math.min(index * 0.03, 0.3) }}
                         >
-                          <Typography
-                            variant='caption'
-                            sx={{ color: ACCENT_GOLD_DARK, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}
-                          >
-                            Winning Entry Code
-                          </Typography>
-                          <Typography
+                          <Box sx={{ opacity: isLocked ? 0.55 : 1 }}>
+                            <Box
+                              onClick={() => isClickable && setExpandedOrderPosition(isExpanded ? null : entry.position)}
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.25,
+                                p: 1.25,
+                                borderRadius: '12px',
+                                border: `1px solid ${isCurrent ? ACCENT_GOLD : BORDER_SUBTLE}`,
+                                bgcolor: statusBg,
+                                cursor: isClickable ? 'pointer' : 'default',
+                                transition: isClickable ? 'all 0.2s ease' : 'none',
+                                '&:hover': isClickable ? { opacity: 0.9, borderColor: isCurrent ? ACCENT_GOLD_DARK : BORDER_SUBTLE } : {},
+                              }}
+                            >
+                              {/* Circular position badge */}
+                              <Box
+                                sx={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: '50%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  bgcolor: isCurrent ? ACCENT_GOLD : ALPHA_BLACK_06,
+                                  color: isCurrent ? GOLD_INK : TEXT_SECONDARY,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {isLocked ? (
+                                  <LockIcon sx={{ fontSize: 13, color: TEXT_TERTIARY }} />
+                                ) : (
+                                  <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, lineHeight: 1 }}>
+                                    {entry.position}
+                                  </Typography>
+                                )}
+                              </Box>
+
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Stack direction='row' alignItems='center' justifyContent='space-between' spacing={1}>
+                                  {/* Ticket code as primary text */}
+                                  <Typography
+                                    sx={{
+                                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                                      fontWeight: 700,
+                                      fontSize: '0.8rem',
+                                      color: isLocked ? TEXT_TERTIARY : statusText,
+                                      wordBreak: 'break-all',
+                                      minWidth: 0,
+                                    }}
+                                  >
+                                    {entry.ticketCode ?? (isLocked ? 'Hidden until reached' : 'Unknown')}
+                                  </Typography>
+                                  <Chip
+                                    label={statusLabel}
+                                    size='small'
+                                    sx={{
+                                      height: 18,
+                                      fontSize: '0.65rem',
+                                      fontWeight: 700,
+                                      bgcolor: isCurrent ? ACCENT_GOLD : isConfirmed ? STATUS_ACTIVATED_BG : isRejected ? ERROR_BG_TINT : 'transparent',
+                                      color: isCurrent ? ACCENT_GOLD_DARK : isConfirmed ? STATUS_ACTIVATED_TEXT : isRejected ? ERROR_MAIN : TEXT_SECONDARY,
+                                      border: isCurrent || isConfirmed || isRejected ? 'none' : `1px solid ${BORDER_SUBTLE}`,
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                </Stack>
+                              </Box>
+                            </Box>
+
+                            {/* Expansion - rejected rows show their own record; current/confirmed
+                                rows show the full candidate detail blocks */}
+                            <Collapse in={isExpanded && isClickable}>
+                              <Box sx={{ mt: 1 }}>
+                                {isRejected ? (
+                                  <AdminCard sx={{ p: 2 }}>
+                                    <CardLabel>Rejected Entry</CardLabel>
+                                    <Stack spacing={1} sx={{ mt: 1 }}>
+                                      {entry.userName && (
+                                        <InfoRow label='Name' value={entry.userName} />
+                                      )}
+                                      {entry.userEmail && (
+                                        <InfoRow label='Email' value={entry.userEmail} />
+                                      )}
+                                      {entry.entrySource && (
+                                        <InfoRow label='Source' value={entry.entrySource === 'free' ? 'weekly' : entry.entrySource} />
+                                      )}
+                                      {entry.riskScore != null && (
+                                        <InfoRow
+                                          label='Risk score'
+                                          value={
+                                            <Chip
+                                              label={entry.riskScore}
+                                              size='small'
+                                              variant='outlined'
+                                              color={
+                                                entry.riskScore >= 20 ? 'error'
+                                                : entry.riskScore >= 10 ? 'warning'
+                                                : 'success'
+                                              }
+                                            />
+                                          }
+                                        />
+                                      )}
+                                      {entry.rejectedReason && (
+                                        <Box sx={{ pt: 1, borderTop: `1px solid ${BORDER_SUBTLE}` }}>
+                                          <Typography variant='caption' sx={{ color: TEXT_TERTIARY, fontWeight: 600 }}>
+                                            Rejection Reason
+                                          </Typography>
+                                          <Typography variant='caption' sx={{ color: TEXT_SECONDARY, display: 'block', mt: 0.5, fontStyle: 'italic' }}>
+                                            {entry.rejectedReason}
+                                          </Typography>
+                                        </Box>
+                                      )}
+                                      {entry.rejectedAt && (
+                                        <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                                          Rejected {new Date(entry.rejectedAt).toLocaleString('en-US')}
+                                        </Typography>
+                                      )}
+                                    </Stack>
+                                  </AdminCard>
+                                ) : candidateLoading ? (
+                                  <Stack spacing={1.5}>
+                                    <Skeleton variant='rectangular' height={104} sx={{ borderRadius: '16px' }} />
+                                    <Skeleton variant='rectangular' height={120} sx={{ borderRadius: '15px' }} />
+                                    <Skeleton variant='rectangular' height={90} sx={{ borderRadius: '15px' }} />
+                                  </Stack>
+                                ) : candidate ? (
+                                  <Stack spacing={1.5}>
+                                    {/* Gold hero code box */}
+                                    {candidate.ticketCode && (
+                                      <Box
+                                        sx={{
+                                          borderRadius: '16px',
+                                          border: `1px solid ${ACCENT_GOLD}`,
+                                          background: `linear-gradient(135deg, ${ACCENT_GOLD_LIGHT} 0%, ${ACCENT_GOLD_CREAM} 100%)`,
+                                          px: 2.5,
+                                          py: 2.25,
+                                          textAlign: 'center',
+                                        }}
+                                      >
+                                        <Typography
+                                          variant='caption'
+                                          sx={{ color: ACCENT_GOLD_DARK, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}
+                                        >
+                                          Winning Entry Code
+                                        </Typography>
+                                        <Typography
+                                          sx={{
+                                            mt: 0.5,
+                                            color: GOLD_INK,
+                                            fontWeight: 800,
+                                            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                                            fontSize: { xs: 32, sm: 40 },
+                                            lineHeight: 1.05,
+                                            letterSpacing: '0.06em',
+                                            wordBreak: 'break-all',
+                                          }}
+                                        >
+                                          {candidate.ticketCode}
+                                        </Typography>
+                                      </Box>
+                                    )}
+
+                                    {/* Winner identity card */}
+                                    <AdminCard sx={{ p: 2 }}>
+                                      <CardLabel>Winner</CardLabel>
+                                      <Typography variant='h6' fontWeight={800} sx={{ color: TEXT_HEADING, mt: 0.5, lineHeight: 1.2 }}>{candidate.winnerName}</Typography>
+                                      <Typography variant='body2' sx={{ color: TEXT_SECONDARY, wordBreak: 'break-word' }}>{candidate.winnerEmail}</Typography>
+                                      <Stack direction='row' spacing={1} flexWrap='wrap' useFlexGap sx={{ mt: 1.5 }}>
+                                        <Chip
+                                          label={candidate.entrySource === 'free' ? 'weekly' : (candidate.entrySource ?? 'unknown')}
+                                          size='small'
+                                          color={
+                                            candidate.entrySource === 'receipt' ? 'primary'
+                                            : candidate.entrySource === 'free' ? 'default'
+                                            : candidate.entrySource === 'promo' ? 'secondary'
+                                            : 'info'
+                                          }
+                                        />
+                                        {candidate.imageValidationStatus && candidate.imageValidationStatus !== 'not_required' && (
+                                          <Chip
+                                            label={
+                                              candidate.imageValidationStatus === 'passed' ? 'Image verified'
+                                              : candidate.imageValidationStatus === 'pending' ? 'Image pending'
+                                              : 'Image failed'
+                                            }
+                                            size='small'
+                                            color={
+                                              candidate.imageValidationStatus === 'passed' ? 'success'
+                                              : candidate.imageValidationStatus === 'pending' ? 'warning'
+                                              : 'error'
+                                            }
+                                          />
+                                        )}
+                                        <Chip
+                                          label={`Risk: ${candidate.riskScore ?? 0}`}
+                                          size='small'
+                                          color={
+                                            (candidate.riskScore ?? 0) >= 20 ? 'error'
+                                            : (candidate.riskScore ?? 0) >= 10 ? 'warning'
+                                            : 'success'
+                                          }
+                                          variant='outlined'
+                                        />
+                                      </Stack>
+                                    </AdminCard>
+
+                                    {/* Campaign card */}
+                                    {(candidate.businessName || candidate.prizePool != null) && (
+                                      <AdminCard sx={{ p: 2 }}>
+                                        <CardLabel>Campaign</CardLabel>
+                                        <Stack spacing={1} sx={{ mt: 1 }}>
+                                          {candidate.businessName && (
+                                            <InfoRow label='Business' value={`${candidate.businessName}${candidate.locationName ? ` - ${candidate.locationName}` : ''}`} />
+                                          )}
+                                          {candidate.prizePool != null && (
+                                            <InfoRow label='Prize pool' value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.prizePool)} />
+                                          )}
+                                        </Stack>
+                                      </AdminCard>
+                                    )}
+
+                                    {/* Receipt card */}
+                                    {candidate.entrySource === 'receipt' && (
+                                      <AdminCard sx={{ p: 2 }}>
+                                        <CardLabel>Receipt</CardLabel>
+                                        <Stack spacing={1} sx={{ mt: 1 }}>
+                                          {candidate.receiptIdentifier && (
+                                            <InfoRow label='Receipt ID' value={candidate.receiptIdentifier} />
+                                          )}
+                                          {candidate.transactionAmount != null && (
+                                            <InfoRow label='Amount' value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.transactionAmount)} />
+                                          )}
+                                          {candidate.transactionDate && (
+                                            <InfoRow label='Date' value={new Date(candidate.transactionDate).toLocaleDateString('en-US')} />
+                                          )}
+                                          {candidate.receiptImageUrl && (
+                                            <Box sx={{ pt: 0.5 }}>
+                                              <Box
+                                                component='a'
+                                                href={candidate.receiptImageUrl}
+                                                target='_blank'
+                                                rel='noopener noreferrer'
+                                                sx={{ display: 'inline-block', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${BORDER_LIGHT}`, cursor: 'pointer' }}
+                                              >
+                                                <Box
+                                                  component='img'
+                                                  src={candidate.receiptImageUrl}
+                                                  alt='Receipt'
+                                                  sx={{ display: 'block', width: 96, height: 96, objectFit: 'cover' }}
+                                                />
+                                              </Box>
+                                            </Box>
+                                          )}
+                                        </Stack>
+                                      </AdminCard>
+                                    )}
+                                  </Stack>
+                                ) : (
+                                  <Typography variant='body2' sx={{ color: TEXT_SECONDARY }}>
+                                    A candidate winner has been selected. Verify to confirm or reject to pick another.
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Collapse>
+                          </Box>
+                        </motion.div>
+                      );
+                    })}
+                  </Stack>
+
+                  {/* Footer caption */}
+                  {drawOrder.lockedRemaining > 0 && (
+                    <Box sx={{ mt: 1.5, pt: 1, borderTop: `1px solid ${BORDER_SUBTLE}` }}>
+                      <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block' }}>
+                        +{drawOrder.lockedRemaining} more entries
+                      </Typography>
+                    </Box>
+                  )}
+                </AdminCard>
+              ) : (
+                /* FALLBACK: legacy candidate details when no draw order */
+                <AnimatePresence mode='wait'>
+                  {candidateLoading ? (
+                    <motion.div
+                      key='skeleton'
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Stack spacing={2}>
+                        <Skeleton variant='rectangular' height={104} sx={{ borderRadius: '16px' }} />
+                        <Skeleton variant='rectangular' height={120} sx={{ borderRadius: '15px' }} />
+                        <Skeleton variant='rectangular' height={90} sx={{ borderRadius: '15px' }} />
+                      </Stack>
+                    </motion.div>
+                  ) : candidate ? (
+                    <motion.div
+                      key='content'
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Stack spacing={2}>
+                        {candidate.ticketCode && (
+                          <Box
                             sx={{
-                              mt: 0.5,
-                              color: GOLD_INK,
-                              fontWeight: 800,
-                              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                              fontSize: { xs: 32, sm: 40 },
-                              lineHeight: 1.05,
-                              letterSpacing: '0.06em',
-                              wordBreak: 'break-all',
+                              borderRadius: '16px',
+                              border: `1px solid ${ACCENT_GOLD}`,
+                              background: `linear-gradient(135deg, ${ACCENT_GOLD_LIGHT} 0%, ${ACCENT_GOLD_CREAM} 100%)`,
+                              px: 2.5,
+                              py: 2.25,
+                              textAlign: 'center',
                             }}
                           >
-                            {candidate.ticketCode}
-                          </Typography>
-                        </Box>
-                      )}
+                            <Typography
+                              variant='caption'
+                              sx={{ color: ACCENT_GOLD_DARK, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}
+                            >
+                              Winning Entry Code
+                            </Typography>
+                            <Typography
+                              sx={{
+                                mt: 0.5,
+                                color: GOLD_INK,
+                                fontWeight: 800,
+                                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                                fontSize: { xs: 32, sm: 40 },
+                                lineHeight: 1.05,
+                                letterSpacing: '0.06em',
+                                wordBreak: 'break-all',
+                              }}
+                            >
+                              {candidate.ticketCode}
+                            </Typography>
+                          </Box>
+                        )}
 
-                      {/* Winner identity + status chips */}
-                      <AdminCard sx={{ p: 2 }}>
-                        <CardLabel>Winner</CardLabel>
-                        <Typography variant='h6' fontWeight={800} sx={{ color: TEXT_HEADING, mt: 0.5, lineHeight: 1.2 }}>{candidate.winnerName}</Typography>
-                        <Typography variant='body2' sx={{ color: TEXT_SECONDARY, wordBreak: 'break-word' }}>{candidate.winnerEmail}</Typography>
-
-                        <Stack direction='row' spacing={1} flexWrap='wrap' useFlexGap sx={{ mt: 1.5 }}>
-                          <Chip
-                            label={candidate.entrySource === 'free' ? 'weekly' : (candidate.entrySource ?? 'unknown')}
-                            size='small'
-                            color={
-                              candidate.entrySource === 'receipt' ? 'primary'
-                              : candidate.entrySource === 'free' ? 'default'
-                              : candidate.entrySource === 'promo' ? 'secondary'
-                              : 'info'
-                            }
-                          />
-                          {/* Image status chip - only meaningful when the entry actually needed a
-                              receipt image. 'not_required' entries (weekly / promo) have nothing to
-                              validate, so we hide the chip rather than surface a confusing raw value. */}
-                          {candidate.imageValidationStatus && candidate.imageValidationStatus !== 'not_required' && (
+                        <AdminCard sx={{ p: 2 }}>
+                          <CardLabel>Winner</CardLabel>
+                          <Typography variant='h6' fontWeight={800} sx={{ color: TEXT_HEADING, mt: 0.5, lineHeight: 1.2 }}>{candidate.winnerName}</Typography>
+                          <Typography variant='body2' sx={{ color: TEXT_SECONDARY, wordBreak: 'break-word' }}>{candidate.winnerEmail}</Typography>
+                          <Stack direction='row' spacing={1} flexWrap='wrap' useFlexGap sx={{ mt: 1.5 }}>
                             <Chip
-                              label={
-                                candidate.imageValidationStatus === 'passed' ? 'Image verified'
-                                : candidate.imageValidationStatus === 'pending' ? 'Image pending'
-                                : 'Image failed'
-                              }
+                              label={candidate.entrySource === 'free' ? 'weekly' : (candidate.entrySource ?? 'unknown')}
                               size='small'
                               color={
-                                candidate.imageValidationStatus === 'passed' ? 'success'
-                                : candidate.imageValidationStatus === 'pending' ? 'warning'
-                                : 'error'
+                                candidate.entrySource === 'receipt' ? 'primary'
+                                : candidate.entrySource === 'free' ? 'default'
+                                : candidate.entrySource === 'promo' ? 'secondary'
+                                : 'info'
                               }
                             />
-                          )}
-                          {/* Risk score badge - server payload field is riskScore (userRiskScore is the rejected-winners key) */}
-                          <Chip
-                            label={`Risk: ${candidate.riskScore ?? 0}`}
-                            size='small'
-                            color={
-                              (candidate.riskScore ?? 0) >= 20 ? 'error'
-                              : (candidate.riskScore ?? 0) >= 10 ? 'warning'
-                              : 'success'
-                            }
-                            variant='outlined'
-                          />
-                        </Stack>
-                      </AdminCard>
-
-                      {/* Campaign / business / prize */}
-                      {(candidate.businessName || candidate.prizePool != null) && (
-                        <AdminCard sx={{ p: 2 }}>
-                          <CardLabel>Campaign</CardLabel>
-                          <Stack spacing={1} sx={{ mt: 1 }}>
-                            {candidate.businessName && (
-                              <InfoRow label='Business' value={`${candidate.businessName}${candidate.locationName ? ` - ${candidate.locationName}` : ''}`} />
+                            {candidate.imageValidationStatus && candidate.imageValidationStatus !== 'not_required' && (
+                              <Chip
+                                label={
+                                  candidate.imageValidationStatus === 'passed' ? 'Image verified'
+                                  : candidate.imageValidationStatus === 'pending' ? 'Image pending'
+                                  : 'Image failed'
+                                }
+                                size='small'
+                                color={
+                                  candidate.imageValidationStatus === 'passed' ? 'success'
+                                  : candidate.imageValidationStatus === 'pending' ? 'warning'
+                                  : 'error'
+                                }
+                              />
                             )}
-                            {candidate.prizePool != null && (
-                              <InfoRow label='Prize pool' value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.prizePool)} />
+                            <Chip
+                              label={`Risk: ${candidate.riskScore ?? 0}`}
+                              size='small'
+                              color={
+                                (candidate.riskScore ?? 0) >= 20 ? 'error'
+                                : (candidate.riskScore ?? 0) >= 10 ? 'warning'
+                                : 'success'
+                              }
+                              variant='outlined'
+                            />
+                            {candidate.queuePosition != null && candidate.queueTotal != null && (
+                              <Chip
+                                label={`Draw order: ${candidate.queuePosition} of ${candidate.queueTotal}`}
+                                size='small'
+                                variant='outlined'
+                              />
                             )}
                           </Stack>
                         </AdminCard>
-                      )}
 
-                      {/* Receipt details */}
-                      {candidate.entrySource === 'receipt' && (
-                        <AdminCard sx={{ p: 2 }}>
-                          <CardLabel>Receipt</CardLabel>
-                          <Stack spacing={1} sx={{ mt: 1 }}>
-                            {candidate.receiptIdentifier && (
-                              <InfoRow label='Receipt ID' value={candidate.receiptIdentifier} />
-                            )}
-                            {candidate.transactionAmount != null && (
-                              <InfoRow label='Amount' value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.transactionAmount)} />
-                            )}
-                            {candidate.transactionDate && (
-                              <InfoRow label='Date' value={new Date(candidate.transactionDate).toLocaleDateString('en-US')} />
-                            )}
-                            {candidate.receiptImageUrl && (
-                              <Box sx={{ pt: 0.5 }}>
-                                <Box
-                                  component='a'
-                                  href={candidate.receiptImageUrl}
-                                  target='_blank'
-                                  rel='noopener noreferrer'
-                                  sx={{ display: 'inline-block', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${BORDER_LIGHT}`, cursor: 'pointer' }}
-                                >
+                        {(candidate.businessName || candidate.prizePool != null) && (
+                          <AdminCard sx={{ p: 2 }}>
+                            <CardLabel>Campaign</CardLabel>
+                            <Stack spacing={1} sx={{ mt: 1 }}>
+                              {candidate.businessName && (
+                                <InfoRow label='Business' value={`${candidate.businessName}${candidate.locationName ? ` - ${candidate.locationName}` : ''}`} />
+                              )}
+                              {candidate.prizePool != null && (
+                                <InfoRow label='Prize pool' value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.prizePool)} />
+                              )}
+                            </Stack>
+                          </AdminCard>
+                        )}
+
+                        {candidate.entrySource === 'receipt' && (
+                          <AdminCard sx={{ p: 2 }}>
+                            <CardLabel>Receipt</CardLabel>
+                            <Stack spacing={1} sx={{ mt: 1 }}>
+                              {candidate.receiptIdentifier && (
+                                <InfoRow label='Receipt ID' value={candidate.receiptIdentifier} />
+                              )}
+                              {candidate.transactionAmount != null && (
+                                <InfoRow label='Amount' value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(candidate.transactionAmount)} />
+                              )}
+                              {candidate.transactionDate && (
+                                <InfoRow label='Date' value={new Date(candidate.transactionDate).toLocaleDateString('en-US')} />
+                              )}
+                              {candidate.receiptImageUrl && (
+                                <Box sx={{ pt: 0.5 }}>
                                   <Box
-                                    component='img'
-                                    src={candidate.receiptImageUrl}
-                                    alt='Receipt'
-                                    sx={{ display: 'block', width: 96, height: 96, objectFit: 'cover' }}
-                                  />
+                                    component='a'
+                                    href={candidate.receiptImageUrl}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                    sx={{ display: 'inline-block', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${BORDER_LIGHT}`, cursor: 'pointer' }}
+                                  >
+                                    <Box
+                                      component='img'
+                                      src={candidate.receiptImageUrl}
+                                      alt='Receipt'
+                                      sx={{ display: 'block', width: 96, height: 96, objectFit: 'cover' }}
+                                    />
+                                  </Box>
                                 </Box>
-                              </Box>
-                            )}
-                          </Stack>
-                        </AdminCard>
-                      )}
-
-                    </Stack>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key='empty'
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Typography variant='body2' sx={{ color: TEXT_SECONDARY }}>
-                      A candidate winner has been selected. Verify to confirm or reject to pick another.
-                    </Typography>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                              )}
+                            </Stack>
+                          </AdminCard>
+                        )}
+                      </Stack>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key='empty'
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Typography variant='body2' sx={{ color: TEXT_SECONDARY }}>
+                        A candidate winner has been selected. Verify to confirm or reject to pick another.
+                      </Typography>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
             </Box>
 
-            {/* RIGHT - the decision and the rejected-winners history. Sits beside the
-                winner info on desktop, stacks below it on mobile. */}
+            {/* RIGHT - decision and previously rejected. Draw Order card removed (now in left column). */}
             <Box sx={{ flex: { md: 1 }, width: '100%', minWidth: 0 }}>
               <Stack spacing={2}>
               <AdminCard sx={{ p: 2 }}>
@@ -1126,7 +1496,31 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                       )}
                     </Box>
                   )}
-                  {!candidate?.winnerConfirmed && (<>
+                  {/* Exhausted list: every drawn entry was resolved and no candidate remains.
+                      Drawing the next batch is an explicit admin action, never automatic. */}
+                  {orderExhausted && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+                      <Box sx={{ borderRadius: '12px', bgcolor: BG_ROW_SUBTLE, border: `1px solid ${BORDER_SUBTLE}`, p: 1.5, mb: 1.5 }}>
+                        <Typography variant='body2' sx={{ fontWeight: 800, color: TEXT_HEADING }}>
+                          Drawn list exhausted
+                        </Typography>
+                        <Typography variant='caption' sx={{ color: TEXT_SECONDARY, display: 'block', mt: 0.5 }}>
+                          Every entry in the drawn list has been rejected or is no longer eligible. You can draw the next random batch. New entries are added to the bottom of the list; the existing list is never redrawn.
+                        </Typography>
+                      </Box>
+                      <Button
+                        fullWidth
+                        variant='contained'
+                        color='secondary'
+                        onClick={handleDrawMoreEntries}
+                        disabled={extendOrder.isPending}
+                        sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, py: 1.1 }}
+                      >
+                        {extendOrder.isPending ? 'Drawing...' : 'Draw More Entries'}
+                      </Button>
+                    </motion.div>
+                  )}
+                  {!candidate?.winnerConfirmed && !orderExhausted && (<>
                     <Button
                       fullWidth
                       variant='contained'
@@ -1185,7 +1579,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                   </>)}
                   <Button
                     fullWidth
-                    onClick={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); setRejectReason(''); }}
+                    onClick={() => { setReviewDrawId(null); setReviewDismissed(true); setPenaltyChecked(false); setRejectedExpanded(false); setRejectReason(''); setExpandedOrderPosition(null); }}
                     disabled={confirmWinnerMutation.isPending}
                     sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, color: TEXT_SECONDARY }}
                   >
@@ -1194,7 +1588,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                 </Stack>
               </AdminCard>
 
-              {/* Previously rejected - lives in the right column on desktop, below the decision */}
+              {/* Previously rejected */}
               {rejectedWinners && rejectedWinners.length > 0 && (
                 <AdminCard sx={{ p: 2 }}>
                   <Button
@@ -1226,7 +1620,7 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
                               </Typography>
                             </Stack>
                             <Typography variant='caption' sx={{ color: TEXT_SECONDARY }}>
-                              {rw.ticketCode}{rw.entrySource ? ` - ${rw.entrySource}` : ''}
+                              {rw.ticketCode}{rw.entrySource ? ` - ${rw.entrySource === 'free' ? 'weekly' : rw.entrySource}` : ''}
                             </Typography>
                             {rw.receiptIdentifier && (
                               <Typography variant='caption' sx={{ color: TEXT_SECONDARY }}>

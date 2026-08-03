@@ -8,7 +8,9 @@ import {
   openDraw,
   closeDraw,
   pickWinner,
+  extendDrawOrder,
   confirmWinner,
+  fetchDrawWinnerOrder,
   reopenDraw,
   setDrawPrizeRevealed,
   fetchDrawCandidate,
@@ -146,6 +148,23 @@ export const usePickWinner = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawCandidate(drawId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawRejected(drawId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawWinnerOrder(drawId) });
+    },
+  });
+};
+
+// Admin-approved continuation of the drawing once every entry in the stored list has been
+// resolved: appends the next randomly drawn batch (never replaces the list) and promotes
+// its top entry to candidate. The server refuses it while an eligible entry remains.
+export const useExtendDrawOrder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (drawId: number) => extendDrawOrder(drawId),
+    onSuccess: (_, drawId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawCandidate(drawId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawWinnerOrder(drawId) });
     },
   });
 };
@@ -158,6 +177,7 @@ export const useConfirmWinner = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawCandidate(drawId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawWinnerOrder(drawId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.result(drawId) });
     },
   });
@@ -167,10 +187,12 @@ export const useReopenDraw = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (drawId: number) => reopenDraw(drawId),
-    onSuccess: () => {
+    onSuccess: (_, drawId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.draws });
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
+      // Reopening wipes the frozen selection order server-side.
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawWinnerOrder(drawId) });
     },
   });
 };
@@ -617,6 +639,39 @@ export const useDrawCandidate = (drawId: number | null) => {
     queryFn: async () => {
       const { data } = await fetchDrawCandidate(drawId!);
       return data;
+    },
+    enabled: drawId !== null,
+    staleTime: 10_000,
+  });
+};
+
+// One row per stored position in the frozen selection order. Locked rows (not yet reached
+// by validation) carry ticketCode + entrySource but never identity. The stored order is a
+// bounded prefix of the full shuffle: at least 70 positions, then up to the first auto-valid
+// entry (weekly/promo/invitation), capped at 200; the response window is capped server-side.
+export type DrawWinnerOrderEntry = {
+  position: number;
+  status: 'rejected' | 'current' | 'confirmed' | 'skipped' | 'locked';
+  ticketCode?: string;
+  userName?: string;
+  userEmail?: string;
+  entrySource?: string | null;
+  riskScore?: number;
+  rejectedReason?: string | null;
+  rejectedAt?: string | null;
+};
+
+export const useDrawWinnerOrder = (drawId: number | null) => {
+  return useQuery({
+    queryKey: queryKeys.admin.drawWinnerOrder(drawId),
+    queryFn: async () => {
+      const { data } = await fetchDrawWinnerOrder(drawId!);
+      return data as {
+        total: number;
+        winnerConfirmed: boolean;
+        entries: DrawWinnerOrderEntry[];
+        lockedRemaining: number;
+      };
     },
     enabled: drawId !== null,
     staleTime: 10_000,
