@@ -74,7 +74,7 @@ const ProfileSetupPage = lazy(() => import('../features/auth/pages/ProfileSetupP
 // branded LoadingScreen (which is reserved for boot + auth/entry pages below).
 const RouteFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
-    <CircularProgress size={34} thickness={4} />
+    <CircularProgress size={34} thickness={4} aria-label='Loading' />
   </Box>
 );
 

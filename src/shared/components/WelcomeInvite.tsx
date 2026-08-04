@@ -11,7 +11,7 @@ import { formatDrawDate } from '../utils/date';
 import { getActiveDraws } from '../../features/draw/api/draw.api';
 import { queryKeys } from '../constants/queryKeys';
 import {
-  GRADIENT_HERO, PRIMARY_MAIN, BG_PAGE, BG_SUBTLE, BG_SURFACE, TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY,
+  GRADIENT_HERO, PRIMARY_MAIN, BG_PAGE, BG_SUBTLE, BG_SURFACE, TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY_AA,
   BORDER_LIGHT, SHADOW_CARD, PRIMARY_TINT,
   ACCENT_GOLD, ACCENT_GOLD_LIGHT, ACCENT_GOLD_CREAM, ACCENT_GOLD_DARK, GOLD_INK,
 } from '../colors';
@@ -334,7 +334,7 @@ const WelcomeInvite = ({
                 <Typography sx={{ fontSize: '13.5px', fontWeight: 800, letterSpacing: '-0.01em', color: TEXT_HEADING, lineHeight: 1.2 }}>
                   {highlight.title}
                 </Typography>
-                <Typography sx={{ fontSize: '11.5px', fontWeight: 600, color: TEXT_TERTIARY, mt: 0.25 }}>
+                <Typography sx={{ fontSize: '11.5px', fontWeight: 600, color: TEXT_TERTIARY_AA, mt: 0.25 }}>
                   {highlight.subtitle}
                 </Typography>
               </Box>
@@ -356,7 +356,7 @@ const WelcomeInvite = ({
               gap: 1.875,
             }}
           >
-            <Typography sx={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT_TERTIARY }}>
+            <Typography sx={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT_TERTIARY_AA }}>
               How it works
             </Typography>
             <Stack spacing={1.875}>
@@ -415,7 +415,7 @@ const WelcomeInvite = ({
             >
               Create your free account
             </Button>
-            <Typography sx={{ textAlign: 'center', fontSize: '10.5px', fontWeight: 600, color: TEXT_TERTIARY }}>
+            <Typography sx={{ textAlign: 'center', fontSize: '10.5px', fontWeight: 600, color: TEXT_TERTIARY_AA }}>
               No purchase necessary. Alternative method of entry available. 18+.
             </Typography>
           </Stack>
