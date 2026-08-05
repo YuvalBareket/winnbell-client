@@ -136,7 +136,7 @@ const GuidelinesAgreementDialog = ({ open, onClose, onAgree }: GuidelinesAgreeme
                 '&:hover': { boxShadow: '0 12px 26px rgba(21,101,192,0.38)' },
               }}
             >
-              I agree and download
+              I agree, download
             </Button>
           </Stack>
         </Box>

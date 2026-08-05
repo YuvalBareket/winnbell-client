@@ -37,7 +37,7 @@ const FinalCTA = ({ onNavigate }: FinalCTAProps) => {
           transition={{ duration: 0.45, delay: 0.1 }}
         >
           <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '0.95rem', md: '1.05rem' }, lineHeight: 1.6, mb: { xs: 3.5, md: 5 }, maxWidth: 380, mx: 'auto' }}>
-            Sign up free, claim your weekly entry, and compete for real monthly cash prizes. No purchase necessary - ever.
+            Sign up for free, claim your weekly entry, and compete for real monthly cash prizes. No purchase necessary - ever.
           </Typography>
         </motion.div>
         <motion.div
