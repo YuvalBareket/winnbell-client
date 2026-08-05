@@ -73,6 +73,7 @@ export interface UserAnalyticsSummary {
   total: number;
   users: number;
   businesses: number;
+  managers: number;
   high_risk: number;
   medium_risk: number;
   suspended: number;

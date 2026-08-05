@@ -42,6 +42,7 @@ import {
   sendNotification,
   fetchNotificationHistory,
   fetchGrowthAnalytics,
+  fetchAdminMapLocations,
 } from '../api/adminApi';
 import type { AdminAnalytics, AdminUsersPage, BusinessStatsPage, LocationBreakdownPage, UpdateDrawInput, GrowthAnalytics, BusinessHealthSummary, UserAnalyticsSummary, DrawBusiness } from '../types/admin.types';
 import { queryKeys } from '../../../shared/constants/queryKeys';
@@ -194,6 +195,42 @@ export const useReopenDraw = () => {
       // Reopening wipes the frozen selection order server-side.
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawWinnerOrder(drawId) });
     },
+  });
+};
+
+// One row per location in the admin map viewport, with oversight state the public map hides.
+export type AdminMapLocation = {
+  location_id: number;
+  location_name: string | null;
+  address: string | null;
+  latitude: number;
+  longitude: number;
+  location_active: boolean;
+  business_id: number;
+  business_name: string;
+  sector: string;
+  logo_url: string | null;
+  subscription_status: string | null;
+  is_participating: boolean;
+  is_paused: boolean;
+  entries_current: number;
+};
+
+// Bounds are rounded into the query key (2 decimals ~ 1km) so tiny pans reuse the cache
+// instead of refetching; the fetch itself uses the exact bounds.
+export const useAdminMapLocations = (bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number } | null) => {
+  const boundsKey = bounds
+    ? [bounds.minLat, bounds.maxLat, bounds.minLng, bounds.maxLng].map((v) => v.toFixed(2)).join(',')
+    : '';
+  return useQuery({
+    queryKey: queryKeys.admin.mapLocations(boundsKey),
+    queryFn: async () => {
+      const { data } = await fetchAdminMapLocations(bounds!);
+      return data as AdminMapLocation[];
+    },
+    enabled: bounds !== null,
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
   });
 };
 

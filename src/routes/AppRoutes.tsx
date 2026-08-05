@@ -181,6 +181,7 @@ const AppRoutes = () => {
               <Route path='/admin/businesses' element={<BusinessDashboard />} />
               <Route path='/admin/businesses/:businessId/view' element={<AdminBusinessViewPage />} />
               <Route path='/admin/analytics' element={<BusinessDashboard />} />
+              <Route path='/admin/map' element={<BusinessDashboard />} />
               <Route path='/admin/settings' element={<BusinessDashboard />} />
               <Route path='/admin/notifications' element={<BusinessDashboard />} />
               <Route path='*' element={<Navigate to='/admin' replace />} />

@@ -31,6 +31,7 @@ export const queryKeys = {
     drawCandidate:   (drawId: number | null)    => ['admin', 'draw-candidate',   drawId]             as const,
     drawRejected:    (drawId: number | null)    => ['admin', 'draw-rejected',    drawId]             as const,
     drawWinnerOrder: (drawId: number | null)    => ['admin', 'draw-winner-order', drawId]            as const,
+    mapLocations:    (boundsKey: string)        => ['admin', 'map-locations',    boundsKey]          as const,
     drawAudit:       (drawId: number | null)    => ['admin', 'draw-audit',       drawId]             as const,
     drawBusinesses:  (drawId: number | null, search: string, sector: string) =>
       ['admin', 'draw-businesses', drawId, search, sector] as const,

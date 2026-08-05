@@ -18,6 +18,7 @@ import UsersTab from './components/UsersTab';
 import BusinessesTab from './components/BusinessesTab';
 import DrawsTab from './components/DrawsTab';
 import AnalyticsTab from './components/AnalyticsTab';
+import AdminMapTab from './components/AdminMapTab';
 import SettingsTab from './components/SettingsTab';
 import NotificationsTab from './components/NotificationsTab';
 
@@ -34,7 +35,7 @@ const BusinessDashboard: React.FC = () => {
 
   // This shell serves every /admin/* tab; only fetch what the ACTIVE tab consumes.
   // Overview (the default '/admin' branch) needs both; Campaigns needs the draws list.
-  const isOverviewTab = !['/admin/campaigns', '/admin/users', '/admin/businesses', '/admin/analytics', '/admin/settings', '/admin/notifications'].includes(path);
+  const isOverviewTab = !['/admin/campaigns', '/admin/users', '/admin/businesses', '/admin/map', '/admin/analytics', '/admin/settings', '/admin/notifications'].includes(path);
   const { data: overview } = useAdminOverview(isOverviewTab);
   const { data: draws } = useAllDraws(isOverviewTab || path === '/admin/campaigns');
 
@@ -64,6 +65,9 @@ const BusinessDashboard: React.FC = () => {
     if (path === '/admin/businesses') {
       return <BusinessesTab isMobile={isMobile} />;
     }
+    if (path === '/admin/map') {
+      return <AdminMapTab />;
+    }
     if (path === '/admin/analytics') {
       return <AnalyticsTab isMobile={isMobile} />;
     }
@@ -87,6 +91,7 @@ const BusinessDashboard: React.FC = () => {
     '/admin/campaigns': 'Campaigns',
     '/admin/users': 'Users',
     '/admin/businesses': 'Businesses',
+    '/admin/map': 'Map',
     '/admin/analytics': 'Analytics',
     '/admin/settings': 'Settings',
     '/admin/notifications': 'Notifications',

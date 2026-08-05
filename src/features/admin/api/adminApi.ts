@@ -158,6 +158,10 @@ export const fetchNotificationHistory = () =>
 export const fetchGrowthAnalytics = () =>
   api.get<GrowthAnalytics>('/admin/analytics/growth');
 
+// Admin map: viewport-bounded, server-capped at 30 rows (project map budget).
+export const fetchAdminMapLocations = (bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number }) =>
+  api.get('/admin/locations-map', { params: bounds });
+
 // Admin business view (read-only dashboard): active locations for the filter dropdowns.
 // Derived from the business detail endpoint - the server has no dedicated /locations route.
 export const fetchAdminBusinessLocations = (businessId: number) =>

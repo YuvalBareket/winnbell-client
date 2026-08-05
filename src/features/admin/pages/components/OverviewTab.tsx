@@ -96,7 +96,7 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
               color={PRIMARY_MAIN}
               label='Total Users'
               value={overview?.users?.total_users ?? 0}
-              caption={`${overview?.users?.business_users ?? 0} businesses, ${overview?.users?.regular_users ?? 0} regular`}
+              caption={`+ ${overview?.users?.business_users ?? 0} businesses, ${overview?.users?.manager_users ?? 0} managers`}
             />
           </Grid>
 

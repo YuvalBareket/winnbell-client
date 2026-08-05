@@ -57,10 +57,23 @@ import {
   METRIC_GOOD,
   METRIC_WARN_TINT,
   METRIC_WARN,
+  PRIMARY_TINT,
+  PRIMARY_MAIN,
+  TEXT_SECONDARY,
 } from '../../../../shared/colors';
 import { riseIn, staggerContainer, popIn } from '../../../../shared/motion';
 import { AdminCard } from './adminUi';
 import UserDetailDrawer from './UserDetailDrawer';
+
+// Account-type tag per row. Owner vs manager splits on business OWNERSHIP: managers are
+// Business-role accounts with no owned business (the DB's 'Manager' enum value is unused
+// by the app) - mirrors the server-side counts and role filter.
+const roleTagOf = (user: AdminUser): { label: string; bg: string; text: string; outlined: boolean } =>
+  user.role === 'Business'
+    ? user.business_id
+      ? { label: 'Business', bg: PRIMARY_TINT, text: PRIMARY_MAIN, outlined: false }
+      : { label: 'Manager', bg: METRIC_WARN_TINT, text: METRIC_WARN, outlined: false }
+    : { label: 'User', bg: 'transparent', text: TEXT_SECONDARY, outlined: true };
 
 function formatLastActive(value: string | null): string {
   if (!value) return 'Never';
@@ -266,7 +279,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
               </Typography>
               {summary && (
                 <Typography variant='caption' sx={{ color: TEXT_TERTIARY, fontSize: '0.75rem' }}>
-                  Total: {summary.total} (Users {summary.users} / Businesses {summary.businesses})
+                  Total: {summary.total} (Users {summary.users} / Businesses {summary.businesses} / Managers {summary.managers})
                 </Typography>
               )}
             </Box>
@@ -369,6 +382,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
               <MenuItem value=''>All Roles</MenuItem>
               <MenuItem value='user'>User</MenuItem>
               <MenuItem value='business'>Business</MenuItem>
+              <MenuItem value='manager'>Manager</MenuItem>
             </Select>
           </FormControl>
 
@@ -408,6 +422,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                     const riskBgColor = user.risk_score >= 20 ? METRIC_BAD_TINT : user.risk_score >= 10 ? METRIC_WARN_TINT : METRIC_GOOD_TINT;
                     const riskTextColor = user.risk_score >= 20 ? METRIC_BAD : user.risk_score >= 10 ? METRIC_WARN : METRIC_GOOD;
                     const riskLabel = user.risk_score >= 20 ? 'HIGH' : user.risk_score >= 10 ? 'MEDIUM' : 'LOW';
+                    const roleTag = roleTagOf(user);
                     const RiskIcon = user.risk_score >= 20 ? GppBadIcon : user.risk_score >= 10 ? WarningIcon : VerifiedUserIcon;
                     return (
                       <motion.div key={user.id} variants={riseIn}>
@@ -430,6 +445,17 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                             </Box>
 
                             <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                              <Chip
+                                label={roleTag.label}
+                                size='small'
+                                sx={{
+                                  bgcolor: roleTag.bg,
+                                  color: roleTag.text,
+                                  border: roleTag.outlined ? `1px solid ${BORDER_SUBTLE}` : 'none',
+                                  fontWeight: 700,
+                                  borderRadius: '8px',
+                                }}
+                              />
                               <Chip
                                 label={user.is_active ? 'Active' : 'Inactive'}
                                 size='small'
@@ -533,6 +559,7 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                           const riskBgColor = user.risk_score >= 20 ? METRIC_BAD_TINT : user.risk_score >= 10 ? METRIC_WARN_TINT : METRIC_GOOD_TINT;
                           const riskTextColor = user.risk_score >= 20 ? METRIC_BAD : user.risk_score >= 10 ? METRIC_WARN : METRIC_GOOD;
                           const riskLabel = user.risk_score >= 20 ? 'HIGH' : user.risk_score >= 10 ? 'MEDIUM' : 'LOW';
+                          const roleTag = roleTagOf(user);
                           const RiskIcon = user.risk_score >= 20 ? GppBadIcon : user.risk_score >= 10 ? WarningIcon : VerifiedUserIcon;
                           return (
                             <TableRow
@@ -546,7 +573,22 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
                               onClick={() => setSelectedUserId(user.id)}
                             >
                               <TableCell sx={{ fontWeight: 600 }}>
-                                {user.full_name}
+                                <Stack direction='row' spacing={1} alignItems='center'>
+                                  <span>{user.full_name}</span>
+                                  <Chip
+                                    label={roleTag.label}
+                                    size='small'
+                                    sx={{
+                                      height: 20,
+                                      fontSize: '0.68rem',
+                                      bgcolor: roleTag.bg,
+                                      color: roleTag.text,
+                                      border: roleTag.outlined ? `1px solid ${BORDER_SUBTLE}` : 'none',
+                                      fontWeight: 700,
+                                      borderRadius: '8px',
+                                    }}
+                                  />
+                                </Stack>
                               </TableCell>
                               <TableCell>{user.email}</TableCell>
                               <TableCell>
