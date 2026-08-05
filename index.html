@@ -62,7 +62,9 @@
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/png" sizes="48x48" href="/winnbell_favicon_48.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/winnbell_favicon_192.png" />
-    <link rel="apple-touch-icon" href="/winnbell_favicon_192.png" />
+    <!-- apple-touch stays SQUARE: iOS rounds home-screen icons itself and renders
+         transparent corners as black, so it must not use the pre-rounded favicon. -->
+    <link rel="apple-touch-icon" href="/winnbell_touch_192.png" />
     <meta name="theme-color" content="#ffffff" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
