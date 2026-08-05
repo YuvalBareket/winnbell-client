@@ -56,8 +56,13 @@
     </script>
 
     <!-- ── PWA / Icons ── -->
-    <link rel="icon" type="image/png" href="/winnbell_app_icon.png" />
-    <link rel="apple-touch-icon" href="/winnbell_app_icon.png" />
+    <!-- Real favicon-sized assets: Google search needs a small square icon - pointing this
+         at the 1200px logo made results fall back to the generic globe. favicon.ico exists
+         in public/ so the bare /favicon.ico probe gets an icon, not the SPA's index.html. -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/winnbell_favicon_48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/winnbell_favicon_192.png" />
+    <link rel="apple-touch-icon" href="/winnbell_favicon_192.png" />
     <meta name="theme-color" content="#ffffff" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
