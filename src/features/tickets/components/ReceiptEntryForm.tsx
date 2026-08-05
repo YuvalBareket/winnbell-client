@@ -44,7 +44,7 @@ import BusinessSelector from './BusinessSelector';
 import SelectedLocationPill from './SelectedLocationPill';
 import { getNearbyBusinesses } from '../../nearBy/api/nearBy.api';
 import { queryKeys } from '../../../shared/constants/queryKeys';
-import { MAX_ENTRIES_PER_RECEIPT, AGE_RESTRICTED_SECTOR } from '../../../shared/constants/entries';
+import { MAX_ENTRIES_PER_RECEIPT, isAgeRestrictedSector } from '../../../shared/constants/entries';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsUnder21 } from '../../../store/selectors/authSelectors';
 import { useSearchParticipatingLocations } from '../hooks/useAllParticipatingLocations';
@@ -393,8 +393,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // Derived state
   // ──────────────────────────────────────────────────
   const showImageUpload = requiresImage || riskLevel.requiresImage;
-  // Tobacco & liquor businesses are 21+ only (mirrors the server-side entry gate).
-  const selectedAgeBlocked = isUnder21 && selectedLocation?.sector === AGE_RESTRICTED_SECTOR;
+  // Alcohol/tobacco venues (liquor, pub) are 21+ only (mirrors the server-side entry gate).
+  const selectedAgeBlocked = isUnder21 && isAgeRestrictedSector(selectedLocation?.sector);
 
   // ──────────────────────────────────────────────────
   // Validation
@@ -776,8 +776,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                   setSearchTerm={setSearchTerm}
                   debouncedTerm={debouncedTerm}
                   isSearching={isSearching}
-                  searchResults={isUnder21 ? searchResults.filter((l) => l.sector !== AGE_RESTRICTED_SECTOR) : searchResults}
-                  nearbyLocations={isUnder21 ? nearbyLocations.filter((l) => l.sector !== AGE_RESTRICTED_SECTOR) : nearbyLocations}
+                  searchResults={isUnder21 ? searchResults.filter((l) => !isAgeRestrictedSector(l.sector)) : searchResults}
+                  nearbyLocations={isUnder21 ? nearbyLocations.filter((l) => !isAgeRestrictedSector(l.sector)) : nearbyLocations}
                   onLocationSelect={handleLocationSelect}
                 />
               )}

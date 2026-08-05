@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsUnder21 } from '../../../store/selectors/authSelectors';
-import { AGE_RESTRICTED_SECTOR } from '../../../shared/constants/entries';
+import { isAgeRestrictedSector } from '../../../shared/constants/entries';
 import type { NearbyLocation, NearbyLocationDetail } from '../types/nearBy.types';
 import { getLocationProfileById } from '../api/nearBy.api';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
@@ -70,7 +70,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
   // Tobacco & liquor businesses: entries are 21+ only. The note shows for everyone;
   // the submit action is blocked only when the profile DOB confirms the user is under 21
   // (the server enforces the same rule at submission regardless).
-  const isAgeRestricted = location?.sector === AGE_RESTRICTED_SECTOR;
+  const isAgeRestricted = isAgeRestrictedSector(location?.sector);
   const isUnder21 = useAppSelector(selectIsUnder21);
   const blockedByAge = isAgeRestricted && isUnder21;
 

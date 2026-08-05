@@ -10,6 +10,11 @@ export const MAX_ENTRIES_PER_DRAW = 30;
 // Must stay in sync with MIN_RECEIPT_THRESHOLD in server/src/features/business/business.controller.ts
 export const MIN_RECEIPT_THRESHOLD = 10;
 
-// Sector whose entries are restricted to participants aged 21+ (tobacco & liquor businesses).
-// Must stay in sync with AGE_RESTRICTED_SECTOR in server/src/shared/ageRestriction.ts
-export const AGE_RESTRICTED_SECTOR = 'Liquor';
+// Sectors whose entries are restricted to participants aged 21+ (alcohol/tobacco venues:
+// liquor/tobacco shops and pubs).
+// Must stay in sync with AGE_RESTRICTED_SECTORS in server/src/shared/ageRestriction.ts
+export const AGE_RESTRICTED_SECTORS = ['Liquor', 'Pub'] as const;
+
+/** True when a business sector requires the 21+ gate. */
+export const isAgeRestrictedSector = (sector: string | null | undefined): boolean =>
+  !!sector && (AGE_RESTRICTED_SECTORS as readonly string[]).includes(sector);
