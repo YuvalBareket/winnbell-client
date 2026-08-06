@@ -68,6 +68,40 @@ function check() {
   }
 }
 
+// ── Stuck visual viewport sync (permanent; field-diagnosed 2026-08-06) ───────
+// iOS Chrome can leave visualViewport.height FROZEN at a native-sheet-era value after
+// Share -> Add to Home Screen -> Cancel (owner reproduced 4/4 on staging): layout metrics
+// all report the full height (inner/client/dvh 746) while visualViewport stays stuck
+// (533) - and the browser PAINTS position:fixed elements against the stuck visual
+// viewport, so the bottom nav floats mid-screen over a white void. The dvh-vs-vv
+// comparison in check() detects exactly this state, but check() only runs on pageshow /
+// visibilitychange and the sheet dismissal fires neither. This hook runs the same
+// comparison on vv-resize itself, with the flight recorder's field-proven guards:
+// skip keyboard (typing), pinch-zoom, overscroll rubber-banding (pull-to-refresh false
+// positive seen 2026-07-15), backgrounding (vvH < 200), and sub-second animation
+// transients (900ms confirmation - the real bug persists for minutes). On confirm it
+// hands off to check(), which pins --dvh100 to the painted height and un-pins via its
+// existing recheck the moment the viewport heals (heal events DO fire - captured).
+const VV_CONFIRM_MS = 900;
+const VV_MIN_H = 200;
+let vvConfirmTimer = 0;
+
+function vvMismatchNow(): boolean {
+  const vv = window.visualViewport;
+  if (!vv || vv.scale !== 1 || isTyping()) return false;
+  if (vv.height < VV_MIN_H) return false; // app-switch/backgrounding reports ~0 momentarily
+  if (window.scrollY < -1 || vv.offsetTop < -1) return false; // overscroll rubber-band
+  return Math.abs(dvhPx() - vv.height) > MISMATCH_PX;
+}
+
+function vvResizeCheck() {
+  window.clearTimeout(vvConfirmTimer);
+  if (!vvMismatchNow()) return;
+  vvConfirmTimer = window.setTimeout(() => {
+    if (vvMismatchNow()) check();
+  }, VV_CONFIRM_MS);
+}
+
 // ── Viewport flight recorder (staging/dev only) ─────────────────────────────
 // Trap for the iOS Chrome variant seen 2026-07-15: the browser misplaces
 // position:fixed elements mid-session (bottom nav floats mid-screen, then the
@@ -259,5 +293,8 @@ export function initViewportUnstick() {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') check();
   });
+  // The stuck-visual-viewport variant announces itself ONLY via a vv resize (no pageshow /
+  // visibility event fires when a native sheet is dismissed) - listen there too.
+  window.visualViewport?.addEventListener('resize', vvResizeCheck);
   initRecorder();
 }
