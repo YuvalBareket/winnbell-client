@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
+import { purgeSwAndCaches } from '../staleDeployRecovery';
 
 interface Props {
   children: React.ReactNode;
@@ -11,15 +12,16 @@ interface Props {
 
 interface State {
   hasError: boolean;
+  refreshing: boolean;
 }
 
 class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, refreshing: false };
   }
 
-  static getDerivedStateFromError(): State {
+  static getDerivedStateFromError(): Partial<State> {
     return { hasError: true };
   }
 
@@ -69,8 +71,20 @@ class ErrorBoundary extends React.Component<Props, State> {
           <Typography variant="body2" color="text.secondary" gutterBottom>
             Please try refreshing the page.
           </Typography>
-          <Button variant="contained" sx={{ mt: 2 }} onClick={() => window.location.reload()}>
-            Refresh
+          <Button
+            variant="contained"
+            sx={{ mt: 2 }}
+            disabled={this.state.refreshing}
+            // A plain reload can re-serve the same stale PWA copy that crashed (old
+            // service worker precache after a deploy). Purge it first so Refresh
+            // always pulls a fresh version (the purge no-ops while offline).
+            onClick={async () => {
+              this.setState({ refreshing: true });
+              await purgeSwAndCaches();
+              window.location.reload();
+            }}
+          >
+            {this.state.refreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
         </Box>
       );
