@@ -104,7 +104,10 @@ const DrawHistoryPage = () => {
                       focus at full contrast). aria-disabled marks them as inactive UI so
                       the WCAG contrast exemption for inactive components applies. */}
                   {({ isActive }) => (
-                    <Box aria-disabled={!isActive || undefined} sx={{ height: '100%' }}>
+                    // borderRadius must match CampaignSwiperCard's 20px: the deck's shadow
+                    // rules target the slide's direct child, which is now this wrapper -
+                    // without the radius the shadow renders square corners behind the card.
+                    <Box aria-disabled={!isActive || undefined} sx={{ height: '100%', borderRadius: '20px' }}>
                       <CampaignSwiperCard draw={draw} />
                     </Box>
                   )}
