@@ -1,7 +1,9 @@
-import { Box, Container, Typography, Stack, Paper, useMediaQuery, useTheme } from '@mui/material';
-import { PublicOutlined } from '@mui/icons-material';
+import { Box, Container, Typography, Stack, Paper, Link, useMediaQuery, useTheme } from '@mui/material';
+import { PublicOutlined, Instagram } from '@mui/icons-material';
 import AuthBrandPanel from '../components/AuthBrandPanel';
-import { BG_PAGE } from '../../../shared/colors';
+import { BG_PAGE, TEXT_TERTIARY_AA } from '../../../shared/colors';
+
+const INSTAGRAM_URL = 'https://www.instagram.com/winnbell_official/';
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
@@ -29,8 +31,25 @@ const RegionBlockedPage = () => {
         Winnbell isn't available in your region yet. We're expanding soon - we'll be with you before you know it.
       </Typography>
 
+      {/* Instagram follow prompt */}
+      <Link
+        href={INSTAGRAM_URL}
+        target='_blank'
+        rel='noopener noreferrer'
+        underline='none'
+        sx={{
+          display: 'inline-flex', alignItems: 'center', gap: 0.75,
+          color: 'primary.main', fontWeight: 700, fontSize: '0.95rem',
+          '&:hover': { textDecoration: 'underline' },
+          '&:focus-visible': { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 4, borderRadius: '4px' },
+        }}
+      >
+        <Instagram sx={{ fontSize: 20 }} />
+        Stay tuned on our Instagram for updates
+      </Link>
+
       {/* Version caption */}
-      <Typography variant='caption' color='text.disabled' sx={{ mt: 6 }}>
+      <Typography variant='caption' sx={{ mt: 6, color: TEXT_TERTIARY_AA }}>
         Winnbell v1.0 · {currentYear}
       </Typography>
     </Stack>

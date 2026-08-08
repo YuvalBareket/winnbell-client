@@ -230,7 +230,7 @@ const CHAPTERS: Chapter[] = [
       { type: 'p', text: "We recommend posting during the campaign more than once. A post at the beginning of the month creates awareness, while reminder posts during the campaign help keep Winnbell fresh in your customers' minds and may encourage repeat visits." },
       { type: 'h2', text: 'Use Your Referral Link' },
       { type: 'p', text: 'From the **Social Assets** page, you can also generate your unique Winnbell referral link. When customers click your link, they will be taken to the Winnbell registration page. New customers who register through your link will receive a bonus entry for the current campaign.' },
-      { type: 'p', text: "And don't forget to tag us **@winnbell.official** 😉" },
+      { type: 'p', text: "And don't forget to tag us **@winnbell_official** 😉" },
       { type: 'h2', text: 'How to Add Your Link to an Instagram Story' },
       { type: 'ol', items: [
         'Download your Winnbell Story image from the **Social Assets** page.',
@@ -242,7 +242,7 @@ const CHAPTERS: Chapter[] = [
         'Paste your referral link.',
         'Add a short label, such as **"join Winnbell, the first entry is on us"**.',
         'Place the sticker at the correct place.',
-        'Tag us on the story **@winnbell.official**',
+        'Tag us on the story **@winnbell_official**',
         'Publish the Story.',
       ] },
       { type: 'p', text: 'Using your Winnbell Story together with your referral link makes it easy for followers to learn about the campaign, register, and start participating through your business.' },
