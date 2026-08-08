@@ -239,6 +239,7 @@ const DrawPreparationView = ({
               <LinearProgress
                 variant='determinate'
                 value={progress}
+                aria-label='Onboarding checklist progress'
                 sx={{ mb: 3, height: 6, borderRadius: 2, bgcolor: 'action.hover', '& .MuiLinearProgress-bar': { borderRadius: 2 } }}
               />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

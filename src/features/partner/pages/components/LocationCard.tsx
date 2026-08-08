@@ -3,6 +3,7 @@ import {
 } from '@mui/material';
 import { LocationOn, Edit, DeleteOutline, Share, PersonRemove, Person, Schedule } from '@mui/icons-material';
 import type { BusinessLocation } from '../../types/business.types';
+import { TEXT_TERTIARY_AA } from '../../../../shared/colors';
 
 interface LocationCardProps {
   loc: BusinessLocation;
@@ -107,7 +108,7 @@ const LocationCard = ({
               <Typography variant='caption' fontWeight={700} color='text.secondary' sx={{ textTransform: 'uppercase', letterSpacing: 0.5, lineHeight: 1, display: 'block' }}>
                 Branch Manager
               </Typography>
-              <Typography variant='body2' fontWeight={700} color={loc.manager_id ? 'text.primary' : 'text.disabled'} sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <Typography variant='body2' fontWeight={700} color={loc.manager_id ? 'text.primary' : TEXT_TERTIARY_AA} sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {loc.manager_name || (loc.manager_id ? 'Manager Assigned' : 'No manager assigned')}
               </Typography>
             </Box>

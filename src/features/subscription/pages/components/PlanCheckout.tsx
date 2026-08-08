@@ -621,7 +621,7 @@ const PlanCheckout = ({
           {error && <Typography variant='body2' color='error' textAlign='center' mb={2}>{error}</Typography>}
 
           <Button fullWidth variant='text' size='small' onClick={onSkip}
-            sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'none' }}>
+            sx={{ color: TEXT_TERTIARY, fontWeight: 600, textTransform: 'none' }}>
             I'll do it later
           </Button>
         </>

@@ -14,7 +14,8 @@ import {
 import { useNavigate, Link } from 'react-router-dom';
 import {
   PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
-  AMBER_HOURGLASS, GOLD_TROPHY, ACCENT_GOLD_DARK, GRADIENT_GOLD_VIVID, GOLD_INK,
+  AMBER_HOURGLASS, GOLD_TROPHY, ACCENT_GOLD_DARK, GRADIENT_GOLD_VIVID, GOLD_INK, AMBER_TEXT_AA,
+  TEXT_TERTIARY_AA,
 } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { safeHttpUrl, isStripeCheckoutUrl } from '../../../shared/utils/url';
@@ -28,8 +29,8 @@ import PlanCards from './components/PlanCards';
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
   Active:     { bg: 'rgba(46,125,50,0.1)',   color: '#2e7d32' },
   Trialing:   { bg: 'rgba(25,118,210,0.1)',  color: '#1976d2' },
-  Past_Due:   { bg: 'rgba(237,108,2,0.1)',   color: '#ed6c02' },
-  Incomplete: { bg: 'rgba(237,108,2,0.1)',   color: '#ed6c02' },
+  Past_Due:   { bg: 'rgba(237,108,2,0.1)',   color: AMBER_TEXT_AA },
+  Incomplete: { bg: 'rgba(237,108,2,0.1)',   color: AMBER_TEXT_AA },
   Cancelled:  { bg: 'rgba(211,47,47,0.1)',   color: '#d32f2f' },
 };
 
@@ -389,7 +390,7 @@ export default function SubscriptionManagementPage() {
                     sx={{
                       fontWeight: 700,
                       bgcolor: sub.cancel_at_period_end ? 'rgba(237,108,2,0.1)' : statusColors.bg,
-                      color: sub.cancel_at_period_end ? '#ed6c02' : statusColors.color,
+                      color: sub.cancel_at_period_end ? AMBER_TEXT_AA : statusColors.color,
                       }}
                     />
                   </Box>
@@ -919,7 +920,7 @@ export default function SubscriptionManagementPage() {
                       transition={{ duration: 0.2 }}
                     >
                       <Box sx={{ py: 4, textAlign: 'center' }}>
-                        <Typography variant='body2' color='text.disabled'>No payments yet</Typography>
+                        <Typography variant='body2' sx={{ color: TEXT_TERTIARY_AA }}>No payments yet</Typography>
                       </Box>
                     </motion.div>
                   ) : (

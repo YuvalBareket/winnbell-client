@@ -20,9 +20,9 @@ import { usePhoneVerifySheet } from '../hooks/usePhoneVerifySheet';
 import PhoneVerifySheet from '../components/PhoneVerifySheet';
 import ReferralBonusSuccessDialog from '../components/ReferralBonusSuccessDialog';
 import {
-  PRIMARY_MAIN, PRIMARY_DEEP, SUCCESS_GREEN, BG_SURFACE,
+  PRIMARY_MAIN, PRIMARY_DEEP, BG_SURFACE,
   ALPHA_WHITE_15, ALPHA_WHITE_80,
-  TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT, MOBILE_CONTENT_HEIGHT, SHADOW_PRIMARY_MEDIUM,
+  TEXT_HEADING, TEXT_SECONDARY, SUCCESS_GREEN_TEXT_AA, BORDER_LIGHT, MOBILE_CONTENT_HEIGHT, SHADOW_PRIMARY_MEDIUM,
 } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
 import FreeEntrySuccessDialog from '../components/FreeEntrySuccessDialog';
@@ -201,7 +201,7 @@ const FreeTicketPage: React.FC = () => {
                   <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: TEXT_SECONDARY }}>
                     {canActivate ? 'Availability' : 'Next weekly entry'}
                   </Typography>
-                  <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: canActivate ? SUCCESS_GREEN : TEXT_HEADING }}>
+                  <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: canActivate ? SUCCESS_GREEN_TEXT_AA : TEXT_HEADING }}>
                     {canActivate ? 'Available now' : noCampaign ? 'Check back soon' : resetDate}
                   </Typography>
                   {canActivate && (
@@ -254,7 +254,7 @@ const FreeTicketPage: React.FC = () => {
             <Typography sx={{ fontSize: '0.66rem', fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: TEXT_SECONDARY }}>
               {canActivate ? 'Availability' : 'Next weekly entry'}
             </Typography>
-            <Typography sx={{ fontWeight: 800, color: canActivate ? SUCCESS_GREEN : TEXT_HEADING }}>
+            <Typography sx={{ fontWeight: 800, color: canActivate ? SUCCESS_GREEN_TEXT_AA : TEXT_HEADING }}>
               {canActivate ? 'Available now' : noCampaign ? 'Check back soon' : resetDate}
             </Typography>
           </Box>

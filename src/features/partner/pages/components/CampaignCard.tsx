@@ -11,7 +11,7 @@ import CanvasAnnotationEditor from '../../../../shared/components/CanvasAnnotati
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BusinessData } from '../../types/business.types';
-import { PRIMARY_MAIN, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10 } from '../../../../shared/colors';
+import { PRIMARY_MAIN, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10, STATUS_ACTIVE_TEXT_AA, TEXT_TERTIARY_AA } from '../../../../shared/colors';
 import { formatCurrency } from '../../../../shared/utils/date';
 import { MIN_RECEIPT_THRESHOLD } from '../../../../shared/constants/entries';
 import { getUploadUrl } from '../../api/business.api';
@@ -186,14 +186,14 @@ const CampaignCard = ({
                 ? 'rgba(237,108,2,0.1)'
                 : 'action.hover',
               color: business.subscription_status === 'Active'
-                ? 'success.main'
+                ? STATUS_ACTIVE_TEXT_AA
                 : business.subscription_status === 'Past_Due'
-                ? 'warning.main'
+                ? 'warning.dark'
                 : 'text.secondary',
             }}
           />
           {business.subscription_status && (
-            <IconButton size='small' onClick={() => navigate('/subscription/manage')}>
+            <IconButton size='small' onClick={() => navigate('/subscription/manage')} aria-label='Manage subscription'>
               <ChevronRight fontSize='small' />
             </IconButton>
           )}
@@ -275,7 +275,7 @@ const CampaignCard = ({
                 </Box>
               </Stack>
               {!editingThreshold && (
-                <IconButton size='small' onClick={openThresholdEdit} sx={{ transition: 'transform 160ms ease-out', '&:active': { transform: 'scale(0.97)' } }}>
+                <IconButton size='small' onClick={openThresholdEdit} aria-label='Edit spending threshold' sx={{ transition: 'transform 160ms ease-out', '&:active': { transform: 'scale(0.97)' } }}>
                   <Edit fontSize='small' />
                 </IconButton>
               )}
@@ -412,7 +412,7 @@ const CampaignCard = ({
                     Receipt example
                   </Typography>
                   {!editingReceipt && (
-                    <Typography variant='body2' sx={{ color: business.receipt_example_image_url ? 'success.main' : 'text.disabled', fontWeight: 600, mt: 0.25 }}>
+                    <Typography variant='body2' sx={{ color: business.receipt_example_image_url ? STATUS_ACTIVE_TEXT_AA : TEXT_TERTIARY_AA, fontWeight: 600, mt: 0.25 }}>
                       {business.receipt_example_image_url ? 'Uploaded' : 'Not uploaded'}
                     </Typography>
                   )}
@@ -421,11 +421,11 @@ const CampaignCard = ({
               {!editingReceipt && (
                 <Stack direction='row' gap={0.5} flexShrink={0}>
                   {business.receipt_example_image_url && (
-                    <IconButton size='small' onClick={() => setPreviewOpen(true)} sx={{ transition: 'transform 160ms ease-out', '&:active': { transform: 'scale(0.97)' } }}>
+                    <IconButton size='small' onClick={() => setPreviewOpen(true)} aria-label='Preview receipt example' sx={{ transition: 'transform 160ms ease-out', '&:active': { transform: 'scale(0.97)' } }}>
                       <VisibilityOutlined fontSize='small' />
                     </IconButton>
                   )}
-                  <IconButton size='small' onClick={openReceiptEdit} sx={{ transition: 'transform 160ms ease-out', '&:active': { transform: 'scale(0.97)' } }}>
+                  <IconButton size='small' onClick={openReceiptEdit} aria-label='Edit receipt example' sx={{ transition: 'transform 160ms ease-out', '&:active': { transform: 'scale(0.97)' } }}>
                     <Edit fontSize='small' />
                   </IconButton>
                 </Stack>
@@ -482,6 +482,7 @@ const CampaignCard = ({
         <DialogContent sx={{ p: 0, position: 'relative' }}>
           <IconButton
             onClick={() => setPreviewOpen(false)}
+            aria-label='Close preview'
             sx={{ position: 'absolute', top: 8, right: 8, zIndex: 10, bgcolor: 'rgba(0,0,0,0.4)', color: 'white', '&:hover': { bgcolor: 'rgba(0,0,0,0.6)' } }}
           >
             <Close />

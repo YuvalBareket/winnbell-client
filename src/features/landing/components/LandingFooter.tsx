@@ -1,5 +1,5 @@
-import { Box, Typography, Stack } from '@mui/material';
-import { PRIMARY_MAIN, TEXT_SECONDARY } from '../../../shared/colors';
+import { Box, Typography, Stack, Link } from '@mui/material';
+import { PRIMARY_MAIN, TEXT_SECONDARY, ALPHA_PRIMARY_20 } from '../../../shared/colors';
 
 interface LandingFooterProps {
   onNavigate: (path: string) => void;
@@ -25,9 +25,34 @@ const LandingFooter = ({ onNavigate }: LandingFooterProps) => {
       <Stack direction='row' spacing={{ xs: 2, md: 2.5 }} alignItems='center' justifyContent='center' flexWrap='wrap' useFlexGap>
         {/* Real hrefs: keyboard-focusable and announced as links; SPA navigation via preventDefault */}
         {[{ label: 'Terms', path: '/terms' }, { label: 'Privacy', path: '/privacy' }, { label: 'Contact', path: '/contact' }, { label: 'Accessibility', path: '/accessibility' }].map(({ label, path }) => (
-          <Typography key={label} component='a' href={path} onClick={(e) => { e.preventDefault(); onNavigate(path); }} variant='caption' sx={{ color: TEXT_SECONDARY, cursor: 'pointer', textDecoration: 'none', fontWeight: 500, fontSize: { xs: '0.75rem', md: '0.875rem' }, '&:hover': { color: PRIMARY_MAIN } }}>
+          <Link
+            key={label}
+            href={path}
+            onClick={(e) => { e.preventDefault(); onNavigate(path); }}
+            sx={{
+              fontSize: { xs: '0.75rem', md: '0.875rem' },
+              fontWeight: 500,
+              color: PRIMARY_MAIN,
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              textDecorationColor: ALPHA_PRIMARY_20,
+              textDecorationThickness: '1px',
+              textUnderlineOffset: '3px',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                color: PRIMARY_MAIN,
+                textDecorationColor: PRIMARY_MAIN,
+                textDecorationThickness: '2px',
+              },
+              '&:focus-visible': {
+                outline: `2px solid ${PRIMARY_MAIN}`,
+                outlineOffset: '4px',
+                borderRadius: '2px',
+              },
+            }}
+          >
             {label}
-          </Typography>
+          </Link>
         ))}
       </Stack>
       <Typography variant='caption' color={TEXT_SECONDARY} sx={{ fontSize: { xs: '0.65rem', md: '0.75rem' } }}>

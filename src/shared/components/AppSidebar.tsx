@@ -85,7 +85,7 @@ const AppSidebar = () => {
           <Typography variant='caption' fontWeight={700} sx={{ color: ALPHA_WHITE_70, textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.5, fontSize: '0.62rem' }}>
             Navigation
           </Typography>
-          <List dense disablePadding>
+          <List component='nav' dense disablePadding>
             {mainNavItems.map(({ label, Icon, path }) => {
               const active = path === '/admin'
                 ? location.pathname === '/admin'
@@ -122,7 +122,7 @@ const AppSidebar = () => {
           <Typography variant='caption' fontWeight={700} sx={{ color: ALPHA_WHITE_70, textTransform: 'uppercase', letterSpacing: 1, px: 1.5, display: 'block', mb: 0.5, fontSize: '0.62rem' }}>
             Support
           </Typography>
-          <List dense disablePadding>
+          <List component='nav' dense disablePadding>
             {(isBusiness || isManager ? businessLegalNavItems : legalNavItems).map(({ label, Icon, path }) => (
               <ListItemButton
                 key={path}

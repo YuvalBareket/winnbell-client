@@ -13,7 +13,8 @@ import { goldShineSx } from './goldShine';
 import {
   PRIMARY_MAIN, PRIMARY_DEEP, GOLD_TROPHY, ACCENT_GOLD, ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
   ALPHA_WHITE_10, ALPHA_WHITE_20, ALPHA_WHITE_70, ALPHA_WHITE_80,
-  BG_SURFACE, BORDER_SUBTLE, TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY, CHART_GRID,
+  BG_SURFACE, BORDER_SUBTLE, TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY_AA, CHART_GRID,
+  ACCENT_GOLD_TEXT_AA,
   SHADOW_CARD,
   ALPHA_AMBER_08, ALPHA_AMBER_04, ALPHA_AMBER_12, ALPHA_AMBER_25,
 } from '../../../shared/colors';
@@ -24,7 +25,7 @@ const StatCard = ({ icon, tint, iconColor, label, value, valueColor, hideOnMobil
   <Box sx={{ flex: 1, minWidth: 0, display: hideOnMobile ? { xs: 'none', md: 'flex' } : 'flex', alignItems: 'center', gap: { xs: 1.25, md: 1.75 }, bgcolor: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, borderRadius: '16px', p: { xs: '12px 14px', md: '16px 18px' }, boxShadow: SHADOW_CARD }}>
     <Box sx={{ width: { xs: 38, md: 44 }, height: { xs: 38, md: 44 }, borderRadius: '12px', bgcolor: tint, color: iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, '& svg': { fontSize: { xs: 18, md: 22 } } }}>{icon}</Box>
     <Box sx={{ minWidth: 0 }}>
-      <Typography sx={{ color: TEXT_TERTIARY, fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</Typography>
+      <Typography sx={{ color: TEXT_TERTIARY_AA, fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</Typography>
       <Typography noWrap sx={{ color: valueColor ?? TEXT_HEADING, fontSize: { xs: '1.05rem', md: '1.35rem' }, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.15 }}>{value}</Typography>
     </Box>
   </Box>
@@ -113,8 +114,8 @@ export const DrawResultDetail = ({ draw, onLocationClick }: { draw: IDrawResult;
       {/* Stat cards */}
       <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.08 }}>
         <Stack direction='row' spacing={1.5}>
-          <StatCard icon={<EmojiEventsOutlined sx={{ fontSize: 22 }} />} tint={ACCENT_GOLD_LIGHT} iconColor={ACCENT_GOLD_DARK} label={isClosed ? 'Prize Awarded' : 'Prize'} value={prize} valueColor={ACCENT_GOLD_DARK} />
-          <StatCard icon={<CalendarTodayOutlined sx={{ fontSize: 20 }} />} tint={CHART_GRID} iconColor={TEXT_TERTIARY} label='Draw Date' value={drawDate} />
+          <StatCard icon={<EmojiEventsOutlined sx={{ fontSize: 22 }} />} tint={ACCENT_GOLD_LIGHT} iconColor={ACCENT_GOLD_TEXT_AA} label={isClosed ? 'Prize Awarded' : 'Prize'} value={prize} valueColor={ACCENT_GOLD_TEXT_AA} />
+          <StatCard icon={<CalendarTodayOutlined sx={{ fontSize: 20 }} />} tint={CHART_GRID} iconColor={TEXT_TERTIARY_AA} label='Draw Date' value={drawDate} />
         </Stack>
       </motion.div>
 
@@ -126,7 +127,7 @@ export const DrawResultDetail = ({ draw, onLocationClick }: { draw: IDrawResult;
       {!isUpcoming && (
         <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.12 }}>
           <Box sx={{ bgcolor: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, borderRadius: '16px', p: '14px 18px', boxShadow: SHADOW_CARD, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
-            <Typography sx={{ color: TEXT_TERTIARY, fontSize: '0.72rem', lineHeight: 1.6, flex: 1, minWidth: 200 }}>
+            <Typography sx={{ color: TEXT_TERTIARY_AA, fontSize: '0.72rem', lineHeight: 1.6, flex: 1, minWidth: 200 }}>
               Campaign operated by Winnbell. No purchase necessary. A purchase will not increase chances of winning. Alternative method of entry available on the platform. 18+. Void where prohibited.
             </Typography>
             {!isClosed && (

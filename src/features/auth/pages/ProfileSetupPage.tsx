@@ -20,7 +20,7 @@ import AuthBrandPanel from '../components/AuthBrandPanel';
 import { api } from '../../../shared/api/client';
 import {
   BG_PAGE, BORDER_LIGHT, PRIMARY_MAIN, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10,
-  TEXT_SECONDARY, TEXT_TERTIARY, TEXT_HEADING,
+  TEXT_SECONDARY, TEXT_TERTIARY, TEXT_TERTIARY_AA, TEXT_HEADING, AMBER_TEXT_AA,
   GRADIENT_HERO, GRADIENT_HERO_WARM, GRADIENT_CTA,
   ALPHA_WHITE_15, SHADOW_PRIMARY_MEDIUM,
 } from '../../../shared/colors';
@@ -153,6 +153,12 @@ const ProfileSetupPage = () => {
                 '&:hover .MuiPickersOutlinedInput-notchedOutline': { borderColor: BORDER_LIGHT },
                 '&.Mui-focused .MuiPickersOutlinedInput-notchedOutline': { borderColor: PRIMARY_MAIN, borderWidth: '1.5px' },
                 '&.Mui-focused': { boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}` },
+                // Empty MM/DD/YYYY placeholder: MUI dims the whole sectionsContainer to 0.42
+                // opacity, compositing the text below WCAG AA. Keep the container at full
+                // opacity and de-emphasize via an AA-safe color on the empty sections instead.
+                // Filled sections keep TEXT_HEADING above.
+                '& .MuiPickersInputBase-sectionsContainer': { opacity: 1 },
+                '& [role="spinbutton"][aria-valuetext="Empty"]': { color: TEXT_TERTIARY_AA },
               },
             },
           },
@@ -168,6 +174,7 @@ const ProfileSetupPage = () => {
       onChange={(e) => setSelectedState(e.target.value)}
       displayEmpty
       fullWidth
+      inputProps={{ 'aria-label': 'State of residence' }}
       renderValue={(code) => {
         if (!code) return <Box component='span' sx={{ color: TEXT_TERTIARY }}>Select your state</Box>;
         return US_STATES.find((s) => s.code === code)?.name ?? code;
@@ -352,8 +359,8 @@ const ProfileSetupPage = () => {
                         {statePicker}
                       </Box>
                     </Box>
-                    <Typography variant="caption" sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block', mt: 1 }}>
-                      <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5 }} />
+                    <Typography variant="caption" sx={{ lineHeight: 1.5, color: AMBER_TEXT_AA, display: 'block', mt: 1 }}>
+                      <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5, color: AMBER_TEXT_AA }} />
                       <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
                     </Typography>
                     {dobError && (
@@ -517,7 +524,7 @@ const ProfileSetupPage = () => {
                   State of residence
                 </Typography>
                 {statePicker}
-                <Typography variant="caption" sx={{ lineHeight: 1.5, color: 'warning.main', display: 'block', mt: 1 }}>
+                <Typography variant="caption" sx={{ lineHeight: 1.5, color: AMBER_TEXT_AA, display: 'block', mt: 1 }}>
                   <Warning sx={{ fontSize: 13, verticalAlign: 'text-bottom', mr: 0.5 }} />
                   <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
                 </Typography>

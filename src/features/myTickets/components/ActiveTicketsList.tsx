@@ -7,7 +7,8 @@ import {
   STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
   STATUS_PENDING_BG, STATUS_PENDING_TEXT, PRIMARY_MAIN,
   GRADIENT_PRIMARY, GRADIENT_SUCCESS_GREEN, ALPHA_PRIMARY_06,
-  TEXT_HEADING, TEXT_SECONDARY, CHART_GRID, BORDER_SUBTLE, SHADOW_CARD,
+  TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY_AA, CHART_GRID, BORDER_SUBTLE, SHADOW_CARD,
+  AMBER_TEXT_AA,
 } from '../../../shared/colors';
 import { formatTicketDate } from '../../../shared/utils/date';
 import { BUSINESS_SECTORS } from '../../admin/data';
@@ -296,7 +297,7 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
           <Box>
             <Typography
               variant='caption'
-              sx={{ color: 'text.disabled', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.65rem' }}
+              sx={{ color: TEXT_TERTIARY_AA, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.65rem' }}
             >
               {isBusiness
                 ? locationId ? 'Entries at this location' : isLocation ? 'Your location' : 'All locations'
@@ -344,7 +345,7 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
 
             {/* Cap breakdown - shown below the number */}
             {isBusiness && !isLoading && cap !== null && perLocationCap !== null && (
-              <Typography variant='caption' color='text.disabled' sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
+              <Typography variant='caption' sx={{ color: TEXT_TERTIARY_AA, display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
                 {locationId || isLocation
                   ? `${perLocationCap.toLocaleString()} entries / location`
                   : `${perLocationCap.toLocaleString()} / location × ${activeLocationCount} locations`}
@@ -372,6 +373,7 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
                 aria-valuenow={Math.round(progress)}
                 aria-valuemin={0}
                 aria-valuemax={100}
+                aria-label={`Entries used: ${totalCount} of ${CAP}`}
                 sx={{ height: 8, borderRadius: 4, bgcolor: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}
               >
                 {/* Underdamped spring: the fill overshoots past its target (~120% of the
@@ -388,7 +390,7 @@ export const ActiveTicketsList = ({ draw_id, locationId, desktop = false }: { dr
               </Box>
             )}
             {!isLoading && (isClosedDraw ? totalCount > 0 : true) && (
-              <Typography variant='caption' color='text.disabled' sx={{ mt: 0.75, display: 'block', fontWeight: 500 }}>
+              <Typography variant='caption' sx={{ color: TEXT_TERTIARY_AA, mt: 0.75, display: 'block', fontWeight: 500 }}>
                 {isClosedDraw
                   ? totalCount === 1
                     ? 'Your final entry in this campaign. Thanks for playing!'
@@ -518,7 +520,7 @@ const TicketStatusSection = ({
           ? 'rgba(46,125,50,0.2)'
           : 'rgba(230,81,0,0.2)',
         '& .MuiChip-icon': {
-          color: isUnderReview ? '#f59e0b' : status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
+          color: isUnderReview ? AMBER_TEXT_AA : status === 'Activated' ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
         },
       }}
     />

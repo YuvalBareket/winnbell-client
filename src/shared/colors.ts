@@ -30,8 +30,14 @@ export const TEXT_SECONDARY     = '#475569';   // slightly warmer slate
 export const TEXT_EMPHASIS      = '#334155';   // between primary and secondary (checklist body)
 export const TEXT_HEADING       = '#0f2747';   // page headings (Register, etc.) (dark with slight teal cast)
 export const TEXT_ICON_MUTED    = '#7e8c8c';   // AppHeader icon (muted teal-grey)
-export const TEXT_TERTIARY      = '#94a3b8';   // de-emphasized labels (warmer tertiary)
-export const TEXT_TERTIARY_AA   = '#697285';   // WCAG AA-safe tertiary (4.77:1 on white, 4.57:1 on BG_ROW_SUBTLE)
+// AA-safe values below are the LIGHTEST shades that still clear WCAG 4.5:1 on their
+// backgrounds - do not lighten further, the scanners plaintiff firms run will fail them.
+export const TEXT_TERTIARY      = '#616f88';   // de-emphasized labels (5.1:1 on white, 4.6:1 on BG_SUBTLE)
+export const TEXT_TERTIARY_AA   = '#616f88';   // same value, kept for older call sites
+export const ACCENT_GOLD_TEXT_AA = '#8a6d24'; // AA gold for small text (4.9:1 on white, 4.7:1 on cream)
+export const SUCCESS_GREEN_TEXT_AA = '#048362'; // AA green for small text (4.7:1 on white)
+export const AMBER_TEXT_AA = '#bc5709';      // AA amber for small text (4.7:1 on white)
+export const STATUS_ACTIVE_TEXT_AA = '#2c7830'; // AA green for the Active chip (4.8:1 on its tint bg)
 
 // ── Manager / Dark role accent ───────────────
 export const ROLE_MANAGER_BG    = '#0F172A';   // location manager button / icon bg

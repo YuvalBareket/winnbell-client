@@ -81,6 +81,7 @@ import {
   AMBER_HOURGLASS,
   STATUS_PENDING_TEXT,
   TEXT_SECONDARY,
+  TEXT_TERTIARY_AA,
   SHADOW_CARD,
 } from '../../../shared/colors';
 
@@ -262,7 +263,7 @@ const StatTile = ({ icon, label, value, tint, iconColor, caption, badge, sx }: S
         {value}
       </Typography>
       {caption && (
-        <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.62rem', display: 'block', mt: 0.25, lineHeight: 1.4 }}>
+        <Typography variant="caption" sx={{ color: TEXT_TERTIARY_AA, fontSize: '0.62rem', display: 'block', mt: 0.25, lineHeight: 1.4 }}>
           {caption}
         </Typography>
       )}
@@ -337,7 +338,7 @@ const EmptyChart = ({ height = 260, message }: { height?: number; message: strin
       alignItems: 'center',
       justifyContent: 'center',
       gap: 1,
-      color: 'text.disabled',
+      color: TEXT_TERTIARY_AA,
     }}
   >
     <ShowChartOutlined sx={{ fontSize: 40 }} />
@@ -739,8 +740,7 @@ const BusinessAnalyticsPage: React.FC<BusinessAnalyticsPageProps> = ({ adminBusi
                                       <Typography
                                         variant="caption"
                                         fontWeight={600}
-                                        color="text.disabled"
-                                        sx={{ minWidth: '60px', textAlign: 'right' }}
+                                        sx={{ minWidth: '60px', textAlign: 'right', color: TEXT_TERTIARY_AA }}
                                       >
                                         {formatNum(draw.used)} {draw.cap !== null ? `/ ${formatNum(draw.cap)}` : ''}
                                       </Typography>
@@ -750,6 +750,7 @@ const BusinessAnalyticsPage: React.FC<BusinessAnalyticsPageProps> = ({ adminBusi
                                     <LinearProgress
                                       variant="determinate"
                                       value={Math.min(Math.max(draw.pct, 0), 100)}
+                                      aria-label={`Campaign ${draw.label} entries used: ${draw.used}${draw.cap ? ` of ${draw.cap}` : ''}`}
                                       sx={{
                                         height: 10,
                                         borderRadius: 5,
@@ -813,6 +814,7 @@ const BusinessAnalyticsPage: React.FC<BusinessAnalyticsPageProps> = ({ adminBusi
                       <LinearProgress
                         variant="determinate"
                         value={capPct}
+                        aria-label={`Total campaign entries used: ${cap?.used} of ${cap?.cap}`}
                         sx={{
                           height: 14,
                           borderRadius: 7,

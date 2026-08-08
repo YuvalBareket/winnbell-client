@@ -100,7 +100,14 @@ const DrawHistoryPage = () => {
             >
               {allCampaigns.map((draw) => (
                 <SwiperSlide key={draw.id}>
-                  <CampaignSwiperCard draw={draw} />
+                  {/* Dimmed side cards are inactive previews (swipe/click brings them to
+                      focus at full contrast). aria-disabled marks them as inactive UI so
+                      the WCAG contrast exemption for inactive components applies. */}
+                  {({ isActive }) => (
+                    <Box aria-disabled={!isActive || undefined} sx={{ height: '100%' }}>
+                      <CampaignSwiperCard draw={draw} />
+                    </Box>
+                  )}
                 </SwiperSlide>
               ))}
             </Swiper>

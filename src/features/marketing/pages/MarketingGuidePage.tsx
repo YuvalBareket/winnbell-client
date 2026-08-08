@@ -14,7 +14,7 @@ import {
   GOLD_TROPHY, AMBER_HOURGLASS, ACCENT_GOLD_LIGHT,
   TEXT_HEADING, TEXT_SECONDARY,
   GRADIENT_GOLD_VIVID,
-  METRIC_GOOD, ALPHA_WHITE_20, ALPHA_WHITE_80,
+  METRIC_GOOD, AMBER_TEXT_AA, ALPHA_WHITE_20, ALPHA_WHITE_80,
   MOBILE_CONTENT_HEIGHT,
 } from '../../../shared/colors';
 import { riseIn } from '../../../shared/motion';
@@ -517,7 +517,7 @@ const MarketingGuidePage = () => {
                     '&:hover': { bgcolor: `${PRIMARY_MAIN}08` },
                   }}
                 >
-                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: AMBER_HOURGLASS, width: 22, flexShrink: 0 }}>
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: AMBER_TEXT_AA, width: 22, flexShrink: 0 }}>
                     {String(idx + 1).padStart(2, '0')}
                   </Typography>
                   <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: TEXT_HEADING, flex: 1, minWidth: 0 }}>
@@ -554,7 +554,7 @@ const MarketingGuidePage = () => {
                     {String(idx + 1).padStart(2, '0')}
                   </Box>
                   <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: AMBER_HOURGLASS }}>
+                    <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: AMBER_TEXT_AA }}>
                       {ch.kicker}
                     </Typography>
                     <Typography sx={{ fontSize: { xs: '1.25rem', md: '1.45rem' }, fontWeight: 800, color: TEXT_HEADING, lineHeight: 1.2 }}>

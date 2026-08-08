@@ -12,6 +12,8 @@ import {
   TEXT_SECONDARY,
   ACCENT_GOLD,
   ACCENT_GOLD_DARK,
+  ACCENT_GOLD_TEXT_AA,
+  SUCCESS_GREEN_TEXT_AA,
   SHADOW_CARD,
   SHADOW_CARD_HOVER,
 } from '../../../shared/colors';
@@ -110,7 +112,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
                   fontWeight: 700,
                   fontSize: '0.7rem',
                   bgcolor: isClosed && hasWinner ? 'rgba(16,185,129,0.12)' : isClosed && !hasWinner ? 'rgba(245, 158, 11, 0.12)' : undefined,
-                  color: isClosed && hasWinner ? '#10b981' : isClosed && !hasWinner ? ACCENT_GOLD_DARK : undefined,
+                  color: isClosed && hasWinner ? SUCCESS_GREEN_TEXT_AA : isClosed && !hasWinner ? ACCENT_GOLD_TEXT_AA : undefined,
                   display: isClosed ? 'inline-flex' : 'none',
                 }}
               />
@@ -180,7 +182,7 @@ const DrawHistoryCard = ({ draw }: { draw: IDrawResult }) => {
                 <EmojiEventsOutlined
                   sx={{
                     fontSize: 28,
-                    color: '#10b981',
+                    color: SUCCESS_GREEN_TEXT_AA,
                     flexShrink: 0,
                   }}
                 />

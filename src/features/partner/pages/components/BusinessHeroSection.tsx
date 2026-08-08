@@ -122,6 +122,7 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
           {onEditClick && (
             <IconButton
               onClick={onEditClick}
+              aria-label='Edit business details'
               sx={{ color: 'white', border: `1px solid ${ALPHA_WHITE_30}`, borderRadius: 2 }}
             >
               <Edit />
