@@ -25,6 +25,10 @@ class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error(error, info);
+    // TEMPORARY crash reporter (2026-08-08) - see main.tsx alertCrashOnce. REMOVE with it.
+    import('../../main').then(({ alertCrashOnce }) => {
+      alertCrashOnce('ErrorBoundary', `${error.message}\n${String(error.stack ?? '').split('\n').slice(0, 4).join('\n')}\ncomponent: ${String(info.componentStack ?? '').split('\n').filter(Boolean)[0] ?? ''}`);
+    }).catch(() => {});
   }
 
   componentDidUpdate(prevProps: Props) {
