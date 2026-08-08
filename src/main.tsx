@@ -6,23 +6,6 @@ import { initViewportUnstick } from './shared/viewportUnstick';
 // Heal stale-dvh tab restores (scroll-below-footer bug) - see shared/viewportUnstick.ts
 initViewportUnstick();
 
-// TEMPORARY crash reporter (2026-08-08): hunting a white-screen-after-logout report from
-// the field. Alerts the first uncaught error / rejection so the device owner can read it.
-// One alert max per page load so a crash loop cannot spam. REMOVE once the cause is found.
-let crashAlerted = false;
-export const alertCrashOnce = (source: string, detail: string) => {
-  if (crashAlerted) return;
-  crashAlerted = true;
-  try { window.alert(`[winnbell debug] ${source}\n${detail.slice(0, 600)}`); } catch { /* alert blocked */ }
-};
-window.addEventListener('error', (e) => {
-  alertCrashOnce('window.error', `${e.message}\n${e.filename ?? ''}:${e.lineno ?? ''}\n${String(e.error?.stack ?? '').split('\n').slice(0, 4).join('\n')}`);
-});
-window.addEventListener('unhandledrejection', (e) => {
-  const r = e.reason;
-  alertCrashOnce('unhandledrejection', `${String(r?.message ?? r)}\n${String(r?.stack ?? '').split('\n').slice(0, 4).join('\n')}`);
-});
-
 // Stale-deploy self-heal: every build renames the hashed JS chunks, so a tab (or PWA cache)
 // from the PREVIOUS deploy fails when it lazily imports a route ("Failed to fetch dynamically
 // imported module"). Vite emits 'vite:preloadError' for exactly this; reload once so the
