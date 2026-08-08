@@ -11,9 +11,9 @@ export const MAX_ENTRIES_PER_DRAW = 30;
 export const MIN_RECEIPT_THRESHOLD = 10;
 
 // Sectors whose entries are restricted to participants aged 21+ (alcohol/tobacco venues:
-// liquor/tobacco shops and pubs).
+// liquor/tobacco shops, pubs, and smoke/vape shops).
 // Must stay in sync with AGE_RESTRICTED_SECTORS in server/src/shared/ageRestriction.ts
-export const AGE_RESTRICTED_SECTORS = ['Liquor', 'Pub'] as const;
+export const AGE_RESTRICTED_SECTORS = ['Liquor', 'Pub', 'Vape'] as const;
 
 /** True when a business sector requires the 21+ gate. */
 export const isAgeRestrictedSector = (sector: string | null | undefined): boolean =>
