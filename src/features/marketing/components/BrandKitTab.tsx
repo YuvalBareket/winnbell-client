@@ -181,28 +181,32 @@ const BrandKitTab = ({
                   <Stack spacing={2}>
                     <Box>
                       <Typography variant='subtitle2' fontWeight={800} gutterBottom>Your QR Code</Typography>
-                      <Typography variant='caption' color='text.secondary'>High-res QR for your location</Typography>
+                      <Typography variant='caption' color='text.secondary'>
+                        {effectiveLocationId ? 'High-res QR for your location' : 'Winnbell QR - pick a location on download to get yours'}
+                      </Typography>
                     </Box>
 
-                    {effectiveLocationId && (
-                      <Box
-                        ref={qrRef}
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: '#fff',
-                          border: '1px solid',
-                          borderColor: 'divider',
-                          borderRadius: 2,
-                          p: 2,
-                        }}
-                      >
-                        {/* Transparent QR background: the white preview card provides contrast
-                            on screen, and the downloaded PNG stays transparent. */}
-                        <QRCodePlain value={scanUrl} size={150} level='H' fgColor={TEXT_HEADING} bgColor='transparent' />
-                      </Box>
-                    )}
+                    {/* Always shown: before a location is picked, scanUrl falls back to the
+                        winnbell.com origin, so this previews the general Winnbell QR instead
+                        of an empty card. Download stays location-gated (handleDownloadQr
+                        bails without a location; the picker re-renders the QR before capture). */}
+                    <Box
+                      ref={qrRef}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor: '#fff',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 2,
+                        p: 2,
+                      }}
+                    >
+                      {/* Transparent QR background: the white preview card provides contrast
+                          on screen, and the downloaded PNG stays transparent. */}
+                      <QRCodePlain value={scanUrl} size={150} level='H' fgColor={TEXT_HEADING} bgColor='transparent' />
+                    </Box>
 
                     <Button
                       fullWidth
