@@ -28,12 +28,15 @@ function getSectorConfig(sector: string | null | undefined) {
   );
 }
 
+// Teardrop pin: sector-colored fill, white ring, white glyph. Holds on real tiles
+// where a white-bodied pin washes out.
+const PIN_BODY = 'M19 1C9.61 1 2 8.61 2 18c0 13.25 17 27 17 27S36 31.25 36 18C36 8.61 28.39 1 19 1z';
+
 function makePinSvg(sector: string | null | undefined): string {
   const { color, iconPath } = getSectorConfig(sector);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="46" viewBox="0 0 38 46">
-    <path d="M19 1C9.61 1 2 8.61 2 18c0 13.25 17 27 17 27S36 31.25 36 18C36 8.61 28.39 1 19 1z" fill="${color}" stroke="white" stroke-width="1.5"/>
-    <circle cx="19" cy="18" r="11" fill="white" opacity="0.93"/>
-    <g transform="translate(11,10) scale(0.667)" fill="${color}">
+    <path d="${PIN_BODY}" fill="${color}" stroke="white" stroke-width="2.5"/>
+    <g transform="translate(9,8) scale(0.833)" fill="white">
       <path d="${iconPath}"/>
     </g>
   </svg>`;
@@ -42,8 +45,32 @@ function makePinSvg(sector: string | null | undefined): string {
 function makePinIcon(sector: string | null | undefined): google.maps.Icon {
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(makePinSvg(sector))}`,
-    scaledSize: new google.maps.Size(26, 32),
-    anchor: new google.maps.Point(13, 32),
+    scaledSize: new google.maps.Size(30, 36),
+    anchor: new google.maps.Point(15, 36),
+  };
+}
+
+// Selected pin: grows and gains a sector-tinted halo behind the head. The halo is
+// baked into the SVG (Marker icons cannot layer), so the canvas is a 120px square
+// with the pin tip at (60,110) and the head centered at (60,72).
+function makeSelectedPinSvg(sector: string | null | undefined): string {
+  const { color, iconPath } = getSectorConfig(sector);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+    <circle cx="60" cy="72" r="46" fill="${color}" opacity="0.16"/>
+    <g transform="translate(33.4,47) scale(1.4)">
+      <path d="${PIN_BODY}" fill="${color}" stroke="white" stroke-width="2.5"/>
+      <g transform="translate(9,8) scale(0.833)" fill="white">
+        <path d="${iconPath}"/>
+      </g>
+    </g>
+  </svg>`;
+}
+
+function makeSelectedPinIcon(sector: string | null | undefined): google.maps.Icon {
+  return {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(makeSelectedPinSvg(sector))}`,
+    scaledSize: new google.maps.Size(96, 96),
+    anchor: new google.maps.Point(48, 88),
   };
 }
 
@@ -57,6 +84,8 @@ type Props = {
   /** When set (and changed), fly the map to this point. Used by search: tapping a result flies
    *  the map there, which shifts the viewport and lets the normal nearby fetch drop its marker. */
   focusLocation?: { lat: number; lng: number } | null;
+  /** Currently selected location: its pin grows with a tinted halo, the rest dim. */
+  selectedLocationId?: number | null;
 };
 
 function getViewportBounds(map: google.maps.Map): ViewportBounds | null {
@@ -67,7 +96,7 @@ function getViewportBounds(map: google.maps.Map): ViewportBounds | null {
   return { minLat: sw.lat(), maxLat: ne.lat(), minLng: sw.lng(), maxLng: ne.lng() };
 }
 
-export default function BusinessMap({ locations, onBusinessClick, userLocation, onViewportChange, focusLocation }: Props) {
+export default function BusinessMap({ locations, onBusinessClick, userLocation, onViewportChange, focusLocation, selectedLocationId }: Props) {
   const mapRef = useRef<google.maps.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const markersByLocRef = useRef<Map<number, google.maps.Marker>>(new Map());
@@ -79,6 +108,8 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
   const [mapReady, setMapReady] = useState(false);
   // Suppresses duplicate idle events during programmatic moves (panTo/setZoom)
   const idleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Last applied selection - lets the selection effect skip no-op passes
+  const prevSelectedRef = useRef<number | null>(null);
 
   // Initialize map
   useEffect(() => {
@@ -154,6 +185,34 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
       }
     });
   }, [locations, mapReady]);
+
+  // Selection treatment: the selected pin grows with a halo and rises above the rest,
+  // which drop to 55% opacity. Runs after the marker-sync effect so newly created
+  // markers (e.g. after a viewport refetch) pick up the current selection state too.
+  useEffect(() => {
+    if (!mapReady) return;
+    // Markers are created in their normal state, so with no selection now and none
+    // before there is nothing to restore - skip re-iconing 30 pins on every refetch.
+    if (selectedLocationId == null && prevSelectedRef.current == null) return;
+    prevSelectedRef.current = selectedLocationId ?? null;
+    const sectorById = new Map(locations.map((loc) => [loc.location_id, loc.sector]));
+    markersByLocRef.current.forEach((marker, id) => {
+      const sector = sectorById.get(id);
+      if (selectedLocationId == null) {
+        marker.setIcon(makePinIcon(sector));
+        marker.setOpacity(1);
+        marker.setZIndex(undefined as unknown as number);
+      } else if (id === selectedLocationId) {
+        marker.setIcon(makeSelectedPinIcon(sector));
+        marker.setOpacity(1);
+        marker.setZIndex(1000);
+      } else {
+        marker.setIcon(makePinIcon(sector));
+        marker.setOpacity(0.55);
+        marker.setZIndex(undefined as unknown as number);
+      }
+    });
+  }, [selectedLocationId, locations, mapReady]);
 
   // User location marker
   useEffect(() => {

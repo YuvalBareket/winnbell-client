@@ -14,7 +14,7 @@ import {
 import {
   Search,
   MyLocation,
-  Directions,
+  ConfirmationNumberOutlined,
   SearchOff,
   Storefront as StorefrontIcon,
 } from '@mui/icons-material';
@@ -33,7 +33,17 @@ import { useAppSelector } from '../../../store/hook';
 import { selectCurrentUser, selectUserLocation } from '../../../store/selectors/authSelectors';
 import { getUserInitials } from '../../../shared/utils/string';
 import { formatDistanceMiles, haversineKm } from '../../../shared/utils/distance';
-import { GRADIENT_PRIMARY } from '../../../shared/colors';
+import {
+  GRADIENT_PRIMARY,
+  PRIMARY_MAIN,
+  PRIMARY_TINT,
+  TEXT_HEADING,
+  TEXT_TERTIARY,
+  BORDER_SUBTLE,
+  BG_ROW_SUBTLE,
+  BG_SUBTLE,
+  ALPHA_PRIMARY_40,
+} from '../../../shared/colors';
 import TapButton from '../../../shared/components/TapButton';
 import { staggerContainer, pressable, pressableCard, pressableIcon, SPRING_POP } from '../../../shared/motion';
 
@@ -158,6 +168,7 @@ const NearbyPage = () => {
           onBusinessClick={(id, loc) => { setSelectedLocationId(id); setClickedLocation(loc); }}
           onViewportChange={onViewportChange}
           focusLocation={focusTarget}
+          selectedLocationId={selectedLocationId}
         />
 
         {/* Floating Search Bar */}
@@ -171,7 +182,7 @@ const NearbyPage = () => {
             </Box>
             <InputBase
               sx={{ ml: 1, flex: 1, fontWeight: 600 }}
-              placeholder='Search businesses...'
+              placeholder='Search partners near you'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -258,8 +269,10 @@ const NearbyPage = () => {
           <Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: 'divider' }} />
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, pt: { xs: 0, md: 2 }, pb: 1 }}>
-          <Typography variant='h6' sx={{ fontWeight: 700 }}>Business List</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2.25, pt: { xs: 0, md: 2 }, pb: 1 }}>
+          {!isSearching && (
+            <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: TEXT_TERTIARY }}>Closest first</Typography>
+          )}
           {isFetching && !isLoading && <CircularProgress size={14} thickness={5} />}
         </Box>
 
@@ -273,7 +286,7 @@ const NearbyPage = () => {
             // while tapping a chip isn't treated as a scroll (which cancels the click).
             touchAction: 'pan-x',
           }}>
-            {[{ key: null, label: 'All', icon: null }, ...Object.entries(BUSINESS_SECTORS).filter(([k]) => k !== 'Free').map(([k, v]) => ({ key: k, label: v.label, icon: v.icon }))].map(({ key, label, icon }) => {
+            {[{ key: null, label: 'All', dotColor: null }, ...Object.entries(BUSINESS_SECTORS).filter(([k]) => k !== 'Free').map(([k, v]) => ({ key: k, label: v.label, dotColor: v.color }))].map(({ key, label, dotColor }) => {
               const active = key === null ? !selectedSector : selectedSector === key;
               return (
                 <motion.div
@@ -284,18 +297,20 @@ const NearbyPage = () => {
                   <TapButton
                     size='small'
                     onTap={() => setSelectedSector(key as string | null)}
-                    startIcon={icon ? <Box sx={{ display: 'flex', '& svg': { fontSize: '13px !important' } }}>{icon as React.ReactElement}</Box> : undefined}
+                    startIcon={dotColor ? <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: dotColor }} /> : undefined}
                     sx={{
-                      height: 26,
-                      fontSize: '0.72rem',
+                      height: 32,
+                      fontSize: '0.78rem',
                       fontWeight: 700,
-                      px: 1.25,
+                      px: 1.5,
                       minWidth: 'unset',
-                      bgcolor: active ? 'primary.main' : 'transparent',
-                      color: active ? 'white' : 'text.secondary',
+                      borderRadius: '999px',
+                      bgcolor: active ? PRIMARY_MAIN : BG_SUBTLE,
+                      color: active ? 'white' : 'text.primary',
                       border: '1px solid',
-                      borderColor: active ? 'primary.main' : 'divider',
-                      '& .MuiButton-startIcon': { mr: icon ? '4px' : 0, ml: 0 },
+                      borderColor: active ? PRIMARY_MAIN : BORDER_SUBTLE,
+                      '&:hover': { bgcolor: active ? PRIMARY_MAIN : BG_SUBTLE },
+                      '& .MuiButton-startIcon': { mr: dotColor ? '7px' : 0, ml: 0 },
                     }}
                   >
                     {label}
@@ -373,6 +388,7 @@ const NearbyPage = () => {
 
           {filteredLocations.map((partner, index) => {
               const sectorInfo = BUSINESS_SECTORS[partner.sector] || UNKNOWN_SECTOR;
+              const isSelected = selectedLocationId === partner.location_id;
 
               return (
                 <motion.div
@@ -394,67 +410,83 @@ const NearbyPage = () => {
                       }
                     }}
                     sx={{
-                      p: 1.25,
-                      // Rounded on mobile (as before); tighter 16px on desktop.
-                      borderRadius: { xs: 6, md: '16px' },
+                      p: '13px',
+                      borderRadius: '20px',
                       border: '1px solid',
-                      borderColor: 'divider',
+                      borderColor: isSelected ? PRIMARY_MAIN : BORDER_SUBTLE,
+                      boxShadow: isSelected ? `0 8px 22px -14px ${ALPHA_PRIMARY_40}` : 'none',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
+                      gap: 1.5,
                       cursor: 'pointer',
-                      opacity: 1,
-                      transition: 'background-color 150ms ease-out, box-shadow 150ms ease-out',
-                      '&:hover': { bgcolor: 'rgba(0,0,0,0.01)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
+                      transition: 'border-color 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out',
+                      '&:hover': { bgcolor: BG_ROW_SUBTLE },
                     }}
                   >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
+                    {/* Sector-tinted icon tile; shows the business logo when one is set */}
                     <Avatar
                       alt=''
+                      variant='rounded'
                       src={partner.logo_url ? `${import.meta.env.VITE_R2_PUBLIC_URL}/business-logos/${partner.logo_url}` : undefined}
                       sx={{
-                        width: 42,
-                        height: 42,
+                        width: 52,
+                        height: 52,
+                        borderRadius: '16px',
                         bgcolor: sectorInfo.bgColor,
                         color: sectorInfo.color,
-                        borderRadius: '50%',
+                        border: '1px solid',
+                        borderColor: `${sectorInfo.color}38`,
                         fontWeight: 700,
-                        '& svg': { fontSize: 20 },
+                        flexShrink: 0,
+                        '& svg': { fontSize: 26 },
                       }}
                     >
                       {!partner.logo_url && sectorInfo.icon}
                     </Avatar>
 
-                    <Box>
+                    <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                       {/* Real button for keyboard/AT; no handler - its click bubbles to the card's onClick */}
-                      <Typography component='button' type='button' variant='body2' sx={{ fontWeight: 700, lineHeight: 1.2, display: 'block', background: 'none', border: 0, p: 0, textAlign: 'left', color: 'inherit', cursor: 'pointer' }}>
+                      <Typography
+                        component='button'
+                        type='button'
+                        sx={{
+                          fontSize: '15.5px',
+                          fontWeight: 800,
+                          letterSpacing: '-0.01em',
+                          lineHeight: 1.2,
+                          display: 'block',
+                          background: 'none',
+                          border: 0,
+                          p: 0,
+                          textAlign: 'left',
+                          color: 'text.primary',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
                         {partner.name}
                       </Typography>
 
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                        <Typography variant='caption' sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                          {userLocation
-                            ? `${formatDistanceMiles(haversineKm(userLocation.latitude, userLocation.longitude, partner.latitude, partner.longitude))} away`
-                            : sectorInfo.label}
-                        </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Box component='span' sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, px: '9px', py: '3px', borderRadius: '7px', bgcolor: sectorInfo.bgColor }}>
+                          <Box component='span' sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: sectorInfo.color, flexShrink: 0 }} />
+                          <Typography component='span' sx={{ fontSize: 11, fontWeight: 800, color: TEXT_HEADING, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                            {sectorInfo.label}
+                          </Typography>
+                        </Box>
+                        {userLocation && (
+                          <Typography component='span' sx={{ px: '9px', py: '3px', borderRadius: '7px', bgcolor: PRIMARY_TINT, fontSize: 11, fontWeight: 800, color: PRIMARY_MAIN, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                            {formatDistanceMiles(haversineKm(userLocation.latitude, userLocation.longitude, partner.latitude, partner.longitude))}
+                          </Typography>
+                        )}
                       </Box>
                     </Box>
-                  </Box>
 
-                  <Button
-                    variant='text'
-                    sx={{ minWidth: 'auto', display: 'flex', flexDirection: 'column', gap: 0.5, p: 1 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (partner.latitude && partner.longitude) {
-                        const url = `https://www.google.com/maps/dir/?api=1&destination=${partner.latitude},${partner.longitude}`;
-                        window.open(url, '_blank');
-                      }
-                    }}
-                  >
-                    <Directions color='primary' />
-                    <Typography variant='caption' sx={{ fontWeight: 700, color: 'primary.main', lineHeight: 1 }}>Go</Typography>
-                  </Button>
+                    <Box sx={{ width: 44, height: 44, borderRadius: '14px', bgcolor: isSelected ? PRIMARY_TINT : BG_ROW_SUBTLE, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                      <ConfirmationNumberOutlined sx={{ fontSize: 20, color: isSelected ? PRIMARY_MAIN : TEXT_TERTIARY }} />
+                    </Box>
                   </Paper>
                 </motion.div>
               );
