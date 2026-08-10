@@ -1,4 +1,4 @@
-**Winnbell terms of service (ToS)**  Date of Last Update: 01/08/2026
+**Winnbell terms of service (ToS)**  Date of Last Update: 09 Aug 2026
 
 ---
 
@@ -32,9 +32,11 @@ You must be at least eighteen (18) years of age, and possess the legal capacity 
 
 **2.2 Residency and Geographic Eligibility**
 
-Participation in campaigns is limited to individuals who are legal residents of jurisdictions in which Winnbell is authorized to operate and offer such campaigns. Eligible jurisdictions may vary by campaign and are defined in the applicable Official Rules.
+Participation in campaigns is limited to legal residents of the fifty (50) United States and the District of Columbia, unless otherwise specified in the applicable Official Rules.
 
-Winnbell may restrict, limit, or deny access to the Platform or to specific campaigns based on your location or residency, including where required for compliance with applicable laws or regulatory requirements.
+Participation in a campaign, including the request or submission of any entry, is permitted only while the user is physically present within an Eligible Jurisdiction identified in the applicable Official Rules for that campaign. Eligible Jurisdictions may vary by campaign.
+
+Winnbell may restrict, limit, or deny access to the Platform or specific campaign functionality based on a user's physical location, residency, or other applicable eligibility requirements, including where necessary to comply with applicable laws or regulatory requirements.
 
 **2.3 Employee and Related Party Ineligibility**
 
@@ -42,7 +44,7 @@ Notwithstanding anything to the contrary in these Terms or any applicable Offici
 
 **2.4 Accuracy of Eligibility Information**
 
-You agree to provide accurate, complete, and current information regarding your identity, age, and residency when creating an account and when participating in campaigns. You may not misrepresent or conceal your eligibility status for the purpose of accessing the Platform or participating in any campaign.
+You agree to provide accurate, complete, and current information regarding your identity, age, residency, and physical location where relevant to participation when creating an account and when participating in campaigns. You may not misrepresent or conceal your eligibility status, residency, or physical location for the purpose of accessing the Platform or participating in any campaign.
 
 Winnbell may rely on the information you provide, as well as on technical and contextual indicators (including, for example, IP-based location data or activity patterns), to assess eligibility and enforce geographic or regulatory restrictions.
 
@@ -64,7 +66,7 @@ Where Winnbell identifies inconsistencies, anomalies, or other indicators sugges
 
 **2.7 Void Where Prohibited**
 
-Access to the Platform and participation in campaigns is void where prohibited or restricted by applicable law. Unless otherwise stated in the applicable Official Rules, participation is limited to legal residents physically located in the United States, excluding any states, territories, or jurisdictions identified by Winnbell or in the applicable Official Rules as excluded or unavailable territories (the "Excluded Territories"). Users are solely responsible for ensuring that their use of the Platform and participation in campaigns complies with all laws and regulations applicable to them.
+Access to the Platform and participation in Campaigns are void where prohibited or restricted by applicable law. Unless otherwise stated in the applicable Official Rules, participation in a Campaign, including the request or submission of any Entry, is limited to legal residents of the fifty (50) United States and the District of Columbia who are physically present within an Eligible Jurisdiction identified in the applicable Official Rules at the time the applicable Entry is requested or submitted. Users are solely responsible for ensuring that their use of the Platform and participation in Campaigns complies with all laws and regulations applicable to them.
 
 **2.8 Sanctions Compliance**
 
@@ -544,7 +546,7 @@ Such cooperation includes providing accurate, complete, and timely responses to 
 
 Winnbell reserves the right, at any time and in its sole discretion, acting reasonably and in good faith, to request information or documentation from you for verification purposes. Such requests may be made at any stage of Platform use or campaign participation, including prior to submission, after submission, during participation, during verification processes, or following the selection of a potential winner.
 
-Verification may relate to, without limitation, identity, age, residency, account ownership, transaction validity, or the consistency of information associated with participation.
+Verification may relate to, without limitation, identity, age, residency, physical location, account ownership, transaction validity, or the consistency of information associated with participation.
 
 This may include requests for supporting documentation or evidence relating to a transaction or qualifying activity associated with an entry, including receipts, invoices, transaction records, or other proof reasonably required to validate eligibility.
 

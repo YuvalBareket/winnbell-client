@@ -9,7 +9,7 @@ const content = tosContent
 const TermsOfServicePage = () => (
   <LegalDocumentPage
     title="Terms of Service"
-    lastUpdated="Last updated: August 1, 2026"
+    lastUpdated="Last updated: August 9, 2026"
     content={content}
   />
 );

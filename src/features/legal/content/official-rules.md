@@ -1,6 +1,6 @@
 **WINNBELL OFFICIAL RULES**
 
-Official Rules Version Date: 01 Aug 2026
+Official Rules Version Date: 09 Aug 2026
 
 NO PURCHASE NECESSARY TO ENTER OR WIN. A PURCHASE WILL NOT INCREASE YOUR CHANCES OF WINNING. VOID WHERE PROHIBITED OR RESTRICTED BY LAW.
 
@@ -34,7 +34,7 @@ The following terms apply specifically to this Campaign and may change between C
 - Alternative Method of Entry (AMOE): Available via request on the platform
 - AMOE Limit: One (1) Entry per participant per week
 - AMOE Weekly Window: Sunday 00:00 to Saturday 24:00 (Campaign Time Zone)
-- Eligible Jurisdictions: [List of Eligible Jurisdictions]
+- Eligible Jurisdiction(s): [List of Eligible Jurisdictions]
 - Entry Methods:
 
   Entries may be obtained through participation via the Platform, including:
@@ -52,7 +52,13 @@ All times and deadlines are governed by the Time Zone specified above.
 
 **3\. No Purchase Necessary; Equal Chance Statement**
 
-No purchase or payment is necessary to enter or win. A purchase does not increase or improve the chances of winning. Entries obtained through the Alternative Method of Entry (AMOE) have the same odds of winning as Entries obtained through Participating Businesses. Bonus Entries, if made available, are provided for promotional purposes and do not require any purchase, payment, or other consideration to participate in the Campaign.
+No purchase or payment is necessary to enter or win.
+
+A purchase does not increase or improve the chances of winning.
+
+Entries obtained through the Alternative Method of Entry (AMOE) have the same odds of winning as Entries obtained through Participating Businesses.
+
+Bonus Entries, if made available, are provided for promotional purposes and do not require any purchase, payment, or other consideration to participate in the Campaign.
 
 **4\. Eligibility**
 
@@ -61,14 +67,19 @@ No purchase or payment is necessary to enter or win. A purchase does not increas
 Participation in the Campaign is open only to individuals who:
 
 - are at least eighteen (18) years of age at the time of participation;
-- are legal residents of the eligible jurisdictions listed in Section 2;
+- are legal residents of the 50 United States or District of Columbia;
+- are physically present within an Eligible Jurisdiction identified in Section 2 at the time they participate in the Campaign or request or submit an Entry;
 - create and maintain a valid account on the Winnbell platform (the "**Platform**");
 - are not employees, officers, directors, members, managers, agents, and/or representatives of Winnbell, any prize provider, any Campaign administrator, and any advertising, promotion, or fulfillment agency involved in the development or administration of the Campaign; or
 - are not immediate family member (defined as spouse, parent, child, sibling, and each of their respective spouses, regardless of where they reside) or household member (whether or not related) of any such person.
 
-Each participant may maintain only one account on the Platform. Creating or using multiple accounts to participate in the Campaign is not permitted. Participants are responsible for reviewing and complying with the eligibility conditions applicable to each Participating Business prior to submitting an Entry. Participants must provide accurate, complete, and truthful information at all times.
+Each participant may maintain only one account on the Platform. Creating or using multiple accounts to participate in the Campaign is not permitted.
 
-Winnbell reserves the right to verify eligibility, including identity, age, residency, and compliance with these Official Rules. Failure to provide requested information may result in disqualification.
+Participants are responsible for reviewing and complying with the eligibility conditions applicable to each Participating Business prior to submitting an Entry.
+
+Participants must provide accurate, complete, and truthful information at all times.
+
+Winnbell reserves the right to verify eligibility, including identity, age, residency, physical location, and compliance with these Official Rules. Failure to provide requested information may result in disqualification.
 
 Participation is void where prohibited or restricted by applicable law.
 
@@ -112,6 +123,8 @@ Entries may be obtained through:
 
 All Entries must be submitted and recorded through the Platform to be eligible.
 
+All participation and Entry requests or submissions must occur while the participant is physically present within an Eligible Jurisdiction specified in Section 2.
+
 Winnbell may, from time to time and at its sole discretion, make available additional participation mechanisms through the Platform, including Bonus Entries, as described in the applicable Campaign details. All such participation remains subject to these Official Rules and is recognized only upon validation and recording by the Platform.
 
 **7\. Entry Through Participating Businesses**
@@ -119,6 +132,8 @@ Winnbell may, from time to time and at its sole discretion, make available addit
 Participating Businesses may enable customers to access participation opportunities in the Campaign based on predefined eligibility conditions. These conditions are determined by each Participating Business prior to the Campaign and are presented on the Platform.
 
 Participating Businesses may define eligibility conditions based on qualifying interactions, including transactions or other customer activity, as specified on the Platform. Any transaction-based participation method is offered solely as one possible means of entry. A purchase is not required to enter or win, and a purchase will not increase a participant's chances of winning. To the extent a Participating Business offers entry opportunities based on qualifying transactions or other customer activity, the Alternative Method of Entry described in Section 8 is intended to provide a method of entry without requiring purchase or payment.
+
+For purposes of determining whether a transaction satisfies a minimum purchase threshold or other transaction-value eligibility condition, only the transaction amount before any voluntary gratuity or tip will be considered. Tips and gratuities, whether added before or after payment, do not count toward satisfying the applicable eligibility threshold.
 
 To participate through a Participating Business, you must:
 
@@ -158,11 +173,27 @@ AMOE Entries count toward the maximum number of Entries permitted per participan
 
 **9\. Bonus Entries**
 
-Winnbell may, at its sole discretion, make available Bonus Entries ("**Bonus Entries**") in connection with marketing, promotional, or user acquisition activities. Bonus Entries may be made available through various channels determined by Winnbell, including distribution facilitated by Participating Businesses at Winnbell's direction, as well as through promotional distribution mechanisms made available by Winnbell in which users may participate. Bonus Entries are granted solely by Winnbell and are not issued, controlled, or guaranteed by any Participating Business or user. The availability, timing, and quantity of Bonus Entries are determined by Winnbell in its sole discretion. The receipt of Bonus Entries does not require any purchase, payment, or other consideration, and participation in any promotional activity is not required in order to enter or participate in the Campaign. All Bonus Entries are subject to validation, acceptance, and recording by the Platform. An Entry is created only when recognized by the Platform in accordance with these Official Rules. Bonus Entries have the same odds of winning as all other valid Entries and are subject to the entry limits set forth in Section 10 for the applicable Campaign.
+Winnbell may, at its sole discretion, make available Bonus Entries ("**Bonus Entries**") in connection with marketing, promotional, or user acquisition activities.
+
+Bonus Entries may be made available through various channels determined by Winnbell, including distribution facilitated by Participating Businesses at Winnbell's direction, as well as through promotional distribution mechanisms made available by Winnbell in which users may participate.
+
+Bonus Entries are granted solely by Winnbell and are not issued, controlled, or guaranteed by any Participating Business or user. The availability, timing, and quantity of Bonus Entries are determined by Winnbell in its sole discretion.
+
+The receipt of Bonus Entries does not require any purchase, payment, or other consideration, and participation in any promotional activity is not required in order to enter or participate in the Campaign.
+
+All Bonus Entries are subject to validation, acceptance, and recording by the Platform. An Entry is created only when recognized by the Platform in accordance with these Official Rules.
+
+Bonus Entries have the same odds of winning as all other valid Entries and are subject to the entry limits set forth in Section 10 for the applicable Campaign.
 
 **10\. Entry Limits**
 
-Each participant may obtain up to the maximum number of Entries specified in Section 2. This limit applies to the total number of Entries per participant, across all entry methods, including participation through Participating Businesses, AMOE, and any Bonus Entries. Once the maximum is reached, no additional Entries will be accepted. Entry limits apply per Campaign and reset at the start of each new campaign.
+Each participant may obtain up to the maximum number of Entries specified in Section 2.
+
+This limit applies to the total number of Entries per participant, across all entry methods, including participation through Participating Businesses, AMOE, and any Bonus Entries.
+
+Once the maximum is reached, no additional Entries will be accepted.
+
+Entry limits apply per Campaign and reset at the start of each new campaign.
 
 **11\. Entry Requirements; Receipt and Validity**
 
@@ -182,12 +213,20 @@ If submitted information is incomplete or incorrect:
 - the Entry may be rejected
 - the participant may correct the information and submit a new Entry, subject to applicable limits
 
-Submission of an Entry does not guarantee that the Entry will be accepted or deemed valid. An Entry is considered received only when:
+Submission of an Entry does not guarantee that the Entry will be accepted or deemed valid.
+
+An Entry is considered received only when:
 
 - the Platform confirms successful submission, and
 - the Entry is visible in the participant's account
 
-Entries that do not meet these requirements, or that cannot be reasonably verified, may be deemed invalid under Section 16. Entries obtained or submitted in violation of the affiliation restrictions described in Section 4, or otherwise in circumstances that create a conflict of interest or undermine the fairness or integrity of the Campaign, may be rejected, deemed invalid, or subject to further review. Entries have no monetary value, are non-transferable, and may not be sold, exchanged, or redeemed for cash or other consideration. The participant is solely responsible for ensuring that all submitted information is accurate and verifiable. Winnbell's determination of whether an Entry is valid shall be final.
+Entries that do not meet these requirements, or that cannot be reasonably verified, may be deemed invalid under Section 16.
+
+Entries obtained or submitted in violation of the affiliation restrictions described in Section 4, or otherwise in circumstances that create a conflict of interest or undermine the fairness or integrity of the Campaign, may be rejected, deemed invalid, or subject to further review.
+
+Entries have no monetary value, are non-transferable, and may not be sold, exchanged, or redeemed for cash or other consideration.
+
+The participant is solely responsible for ensuring that all submitted information is accurate and verifiable. Winnbell's determination of whether an Entry is valid shall be final.
 
 Participants are encouraged to retain copies of any receipts, transaction records, or other supporting documentation associated with their Entries for the duration of the Campaign and any applicable verification period.
 
@@ -201,14 +240,17 @@ The odds of winning depend on the total number of valid and eligible Entries rec
 
 **13\. Winner Selection**
 
-Winnbell will select one (1) potential winner in a random draw from all valid and eligible Entries received during the Campaign Period.
+Winnbell will conduct a random drawing from all valid and eligible Entries received during the Campaign Period. The drawing may generate a randomly ordered list of potential winners and alternate potential winners.
 
-- If that potential winner is disqualified, found ineligible, does not respond within the required timeframe, or otherwise cannot be confirmed, Winnbell may select an alternate potential winner from the remaining valid and eligible Entries.
-- Winnbell may continue this process as necessary until a winner is confirmed in accordance with these Official Rules and the prize is awarded.
+The first person selected will be considered the initial potential winner. If that person is disqualified, found ineligible, does not respond within the required timeframe, fails to complete verification, or otherwise cannot be confirmed as the winner, the next person in the randomly determined order will become the potential winner.
+
+Winnbell may continue through the randomly determined order as necessary until an eligible potential winner is verified and the prize is awarded.
+
+Selection as a potential winner or alternate potential winner does not guarantee receipt of the prize. Each person remains subject to all eligibility, notification, verification, and compliance requirements contained in these Official Rules.
 
 **14\. Winner Notification**
 
-The potential winner will be notified using the contact information associated with their account, including by email and/or notifications within the Platform. Winnbell is not responsible for unsuccessful notification attempts resulting from inaccurate, outdated, incomplete, blocked, filtered, or otherwise unavailable contact information or account settings. If a potential winner does not respond within two (2) weeks after notification is sent, if any notification is returned as undeliverable, or if the potential winner otherwise cannot be contacted or confirmed, Winnbell may disqualify that person and select an alternate potential winner in accordance with Section 13.
+The potential winner will be notified using the contact information associated with their account, including by email and/or notifications within the Platform. Winnbell is not responsible for unsuccessful notification attempts resulting from inaccurate, outdated, incomplete, blocked, filtered, or otherwise unavailable contact information or account settings. If a potential winner does not respond within two (2) weeks after notification is sent, if any notification is returned as undeliverable, or if the potential winner otherwise cannot be contacted or confirmed, Winnbell may disqualify that person and proceed to the next potential winner in the randomly determined order established under Section 13.
 
 **15\. Winner Verification**
 
@@ -227,7 +269,7 @@ Winnbell may request supporting documentation at any stage, including at the tim
 - proof of residency
 - transaction records or receipts
 
-Winnbell may also require a potential winner to complete, sign, and return an affidavit or declaration of eligibility, a liability release, a publicity release (except where prohibited by law), an IRS Form W-9, and any other tax, prize claim, or compliance documentation reasonably requested by Winnbell. If a potential winner fails to timely complete and return any required document, that potential winner may be disqualified and an alternate potential winner may be selected.
+Winnbell may also require a potential winner to complete, sign, and return an affidavit or declaration of eligibility, a liability release, a publicity release (except where prohibited by law), an IRS Form W-9, and any other tax, prize claim, or compliance documentation reasonably requested by Winnbell. If a potential winner fails to timely complete and return any required document, that potential winner may be disqualified, and Winnbell may proceed to the next potential winner in the randomly determined order established under Section 13.
 
 Winnbell may rely, in whole or in part, on information provided by participating businesses in connection with the verification of any entry, including transaction-related information. While Winnbell applies internal validation procedures, it does not independently verify all information provided by third parties and cannot guarantee its accuracy or completeness. All determinations regarding eligibility and entry validity will be made by Winnbell based on the information reasonably available at the time of review. If the prize has a value that requires tax reporting under applicable law, Winnbell may issue the winner an applicable tax form, including IRS Form 1099, for the value of the prize awarded. The winner is solely responsible for all federal, state, and local taxes associated with the prize.
 
@@ -237,7 +279,7 @@ Failure to:
 - provide requested documentation
 - or meet eligibility requirements
 
-may result in disqualification, forfeiture of the prize claim, and selection of an alternate potential winner in accordance with Section 13.
+may result in disqualification, forfeiture of the prize claim, and consideration of the next potential winner in the randomly determined order established under Section 13.
 
 **16\. Disqualification; Invalid or Suspect Entries**
 
@@ -281,11 +323,15 @@ Winnbell may disqualify a participant or take other appropriate action where it 
 
 **16.6 Determinations and Non-Disclosure**
 
-Winnbell is not required to disclose the specific methods or criteria used in making such determinations. Winnbell may, in its sole discretion acting reasonably and in good faith, determine the existence, scope, and relevance of any affiliation for purposes of enforcing these Official Rules.
+Winnbell is not required to disclose the specific methods or criteria used in making such determinations.
+
+Winnbell may, in its sole discretion acting reasonably and in good faith, determine the existence, scope, and relevance of any affiliation for purposes of enforcing these Official Rules.
 
 **16.7 Effect of Disqualification**
 
-If a potential winner is disqualified, their position will be forfeited and the next ranked potential winner will be considered in accordance with Section 13. All determinations under this Section are made in good faith in accordance with these Official Rules.
+If a potential winner is disqualified, their position will be forfeited and the next ranked potential winner will be considered in accordance with Section 13.
+
+All determinations under this Section are made in good faith in accordance with these Official Rules.
 
 **17\. Tampering; Interference with the Campaign**
 
@@ -376,8 +422,12 @@ Participation in the Campaign is subject to Winnbell's Privacy Policy, available
 
 **25\. Disputes; Governing Law**
 
-This Campaign and these Official Rules are governed by the laws of Delaware. Any dispute, claim, or controversy arising out of or relating to the Campaign or these Official Rules will be resolved in accordance with the dispute resolution procedures set out in Winnbell's Terms of Service and any Campaign-specific dispute resolution terms specified here: binding individual arbitration administered by the American Arbitration Association under its applicable Consumer Arbitration Rules, with the seat of arbitration in Wilmington, Delaware; provided that either party may bring an individual claim in small claims court if eligible, and Winnbell may seek injunctive or equitable relief in any court of competent jurisdiction for fraud, unauthorized access, misuse of the Platform, or infringement of its intellectual property or other proprietary rights. To the extent permitted by applicable law, participants agree to pursue claims only on an individual basis and not as a plaintiff or class member in any purported class or representative proceeding, unless otherwise required by law.
+This Campaign and these Official Rules are governed by the laws of Delaware.
+
+Any dispute, claim, or controversy arising out of or relating to the Campaign or these Official Rules will be resolved in accordance with the dispute resolution procedures set out in Winnbell's Terms of Service and any Campaign-specific dispute resolution terms specified here: binding individual arbitration administered by the American Arbitration Association under its applicable Consumer Arbitration Rules, with the seat of arbitration in Wilmington, Delaware; provided that either party may bring an individual claim in small claims court if eligible, and Winnbell may seek injunctive or equitable relief in any court of competent jurisdiction for fraud, unauthorized access, misuse of the Platform, or infringement of its intellectual property or other proprietary rights. To the extent permitted by applicable law, participants agree to pursue claims only on an individual basis and not as a plaintiff or class member in any purported class or representative proceeding, unless otherwise required by law.
 
 **26\. Winner List; Rules Request; Contact**
 
-To request a winner list for a Campaign or a copy of these Official Rules, contact support@winnbell.com or use the link [Support](/contact) and include the applicable Campaign name in your request. General inquiries regarding the Campaign may also be directed to the same contact.
+To request a winner list for a Campaign or a copy of these Official Rules, contact support@winnbell.com or use the link [Support](/contact) and include the applicable Campaign name in your request.
+
+General inquiries regarding the Campaign may also be directed to the same contact.

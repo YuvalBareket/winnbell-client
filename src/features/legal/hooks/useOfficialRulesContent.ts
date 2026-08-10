@@ -10,7 +10,7 @@ const COMPANY_ADDRESS = 'Wilmington, Delaware';
 const MAX_ENTRIES_PER_USER = '30';
 const TIME_ZONE = 'Eastern Time (ET)';
 
-// Eligible Jurisdictions (Section 2, and through it the residency rule in 4.1) mirror the
+// Eligible Jurisdictions (Section 2, and through it the physical-presence rule in 4.1) mirror the
 // admin's allowed-states platform setting - the same source the signup region gate and the
 // profile state pickers use, so the legal text can never drift from what the gate enforces.
 // Semantics match the gate exactly: an EMPTY list means no restriction (all USA). Only when
