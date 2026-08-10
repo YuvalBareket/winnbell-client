@@ -210,7 +210,9 @@ const AppRoutes = () => {
               {isUser && <Route path='/invite' element={<InviteFriendsPage />} />}
               <Route path='/marketing' element={isBusinessAdmin || isManager ? <MarketingPage /> : <Navigate to={homePath} replace />} />
               <Route path='/marketing/guide' element={isBusinessAdmin || isManager ? <MarketingGuidePage /> : <Navigate to={homePath} replace />} />
-              {isUser && <Route path='/freeTicket' element={<FreeTicketPage />} />}
+              {/* Entry page like /scan: same gate, so a blocked visitor gets the friendly
+                  in-place message instead of a raw 403 from POST /activate-free. */}
+              {isUser && <Route path='/freeTicket' element={<RegionGate defer inline heroTitle='Weekly entry'><FreeTicketPage /></RegionGate>} />}
             </>
           )}
         </Route>
