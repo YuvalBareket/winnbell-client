@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../../shared/api/client';
+import { fetchRegionCheck, REGION_CHECK_STALE_TIME } from '../../shared/api/regionCheck';
 import { queryKeys } from '../../shared/constants/queryKeys';
 import LandingHero from './components/LandingHero';
 import HowItWorks from './components/HowItWorks';
@@ -18,8 +18,8 @@ const LandingPage = () => {
   // — RegionGate finds it already cached instead of showing a loader while it fetches.
   useQuery({
     queryKey: queryKeys.region.check,
-    queryFn: () => api.get<{ blocked: boolean }>('/auth/region-check').then(r => r.data),
-    staleTime: 5 * 60_000,
+    queryFn: fetchRegionCheck,
+    staleTime: REGION_CHECK_STALE_TIME,
     retry: false,
   });
 

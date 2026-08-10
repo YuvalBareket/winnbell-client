@@ -194,7 +194,11 @@ const AppRoutes = () => {
               {/* Managers have no Business Hub - their nav points at /marketing; stale
                   /nearby links follow along instead of landing on the consumer map. */}
               <Route path='/nearby' element={isBusinessAdmin ? <BusinessHubPage /> : isManager ? <Navigate to='/marketing' replace /> : <NearbyPage />} />
-              <Route path='/scan' element={isUser ? <RedeemPage /> : <Navigate to={homePath} replace />} />
+              {/* Region-gated like /register (approved states only) so blocked visitors get
+                  the friendly message instead of a 403 at submit. defer = no blocking loader
+                  on the app's main landing page; inline = the message replaces the scan
+                  content in place, keeping the app shell instead of redirecting out. */}
+              <Route path='/scan' element={isUser ? <RegionGate defer inline heroTitle='Entry submission'><RedeemPage /></RegionGate> : <Navigate to={homePath} replace />} />
               <Route path='/campaign' element={isBusinessAdmin || isManager ? <CampaignDashboardPage /> : <Navigate to='/tickets' replace />} />
               <Route path='/tickets' element={<MyTicketsPage />} />
               <Route path='/draws/history' element={<DrawHistoryPage />} />

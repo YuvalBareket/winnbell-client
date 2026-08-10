@@ -1,8 +1,10 @@
 import { useEffect, useCallback } from 'react';
+import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import type { TCoords } from '../../auth/types/auth.types';
 import { setUserLocation } from '../../../store/slices/authSlice';
 import { useAppDispatch } from '../../../store/hook';
-import { api } from '../../../shared/api/client';
+import { fetchRegionCheck, REGION_CHECK_STALE_TIME } from '../../../shared/api/regionCheck';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 
 const getPosition = (options: PositionOptions): Promise<TCoords> =>
   new Promise((resolve, reject) => {
@@ -20,10 +22,17 @@ const isPermissionDenied = (err: unknown): boolean =>
 
 // City-level fallback from the server's IP geo lookup (same source as the region check).
 // Used when the browser can't or won't give a position, so the map still opens near the
-// user instead of the hardcoded Fort Lauderdale default.
-const getApproxLocationFromIp = async (): Promise<TCoords | null> => {
+// user instead of the hardcoded Fort Lauderdale default. Reads through the SHARED TanStack
+// cache entry (queryKeys.region.check) - the landing page / RegionGate usually populated it
+// already, so opening the map costs zero extra requests within the stale window.
+const getApproxLocationFromIp = async (queryClient: QueryClient): Promise<TCoords | null> => {
   try {
-    const { data } = await api.get<{ approx_location: TCoords | null }>('/auth/region-check');
+    const data = await queryClient.fetchQuery({
+      queryKey: queryKeys.region.check,
+      queryFn: fetchRegionCheck,
+      staleTime: REGION_CHECK_STALE_TIME,
+      retry: false,
+    });
     const loc = data.approx_location;
     if (loc && Number.isFinite(loc.latitude) && Number.isFinite(loc.longitude)) return loc;
     return null;
@@ -34,6 +43,7 @@ const getApproxLocationFromIp = async (): Promise<TCoords | null> => {
 
 export function useCurrentLocation() {
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
 
   const refreshLocation = useCallback(async (): Promise<TCoords | null> => {
     if ('geolocation' in navigator) {
@@ -58,13 +68,13 @@ export function useCurrentLocation() {
       }
     }
 
-    const approx = await getApproxLocationFromIp();
+    const approx = await getApproxLocationFromIp(queryClient);
     if (approx) {
       dispatch(setUserLocation(approx));
       return approx;
     }
     return null;
-  }, [dispatch]);
+  }, [dispatch, queryClient]);
 
   useEffect(() => {
     refreshLocation();
