@@ -1,7 +1,7 @@
 // Shared admin UI primitives - the single card/tile recipe for every admin tab,
 // matching the app-wide design language (colors.ts tokens + motion.ts entrances).
 import React from 'react';
-import { Box, Paper, Stack, Typography } from '@mui/material';
+import { Box, Paper, Skeleton, Stack, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import { motion } from 'framer-motion';
 import { popIn } from '../../../../shared/motion';
@@ -80,6 +80,24 @@ export const StatCard = ({ icon, tint, color, label, value, caption }: {
       </Stack>
     </AdminCard>
   </motion.div>
+);
+
+/** Skeleton twin of StatCard - same card, tile, label and value geometry, so the
+ *  loaded card lands exactly where its placeholder was. */
+export const StatCardSkeleton = () => (
+  <AdminCard sx={{ height: '100%', p: 2.25 }}>
+    <Stack spacing={1} alignItems='flex-start'>
+      <Skeleton variant='rounded' width={40} height={40} sx={{ borderRadius: '12px' }} />
+      <Skeleton variant='text' width='55%' />
+      <Skeleton variant='text' width='40%' sx={{ fontSize: '1.5rem' }} />
+      <Skeleton variant='text' width='70%' sx={{ fontSize: '0.75rem' }} />
+    </Stack>
+  </AdminCard>
+);
+
+/** Rounded block skeleton matching the AdminCard radius - for hero cards, tables, forms. */
+export const AdminCardSkeleton = ({ height, sx }: { height: number; sx?: SxProps<Theme> }) => (
+  <Skeleton variant='rounded' height={height} sx={{ borderRadius: '15px', ...sx }} />
 );
 
 /** Section heading row: small icon tile + bold title + optional right-side action. */

@@ -22,11 +22,11 @@ import {
   GRADIENT_CTA, SHADOW_PRIMARY_SOFT,
 } from '../../../../shared/colors';
 import { riseIn, staggerContainer } from '../../../../shared/motion';
-import { AdminCard, SectionHeader } from './adminUi';
+import { AdminCard, AdminCardSkeleton, SectionHeader } from './adminUi';
 import { useFoundingAvailability } from '../../../subscription/hooks/useFoundingAvailability';
 
 const SettingsTab: React.FC = () => {
-  const { data: platformSettings } = usePlatformSettings();
+  const { data: platformSettings, isLoading: settingsLoading } = usePlatformSettings();
   const { data: foundingAvailability } = useFoundingAvailability();
   const saveMutation = useSavePlatformSettings();
 
@@ -70,6 +70,17 @@ const SettingsTab: React.FC = () => {
       { onSuccess: () => setSettingsSaved(true) },
     );
   };
+
+  // Skeleton the two settings cards while the payload loads - otherwise the form
+  // renders empty defaults and the real values jump in mid-view.
+  if (settingsLoading) {
+    return (
+      <Stack spacing={3}>
+        <AdminCardSkeleton height={240} />
+        <AdminCardSkeleton height={280} />
+      </Stack>
+    );
+  }
 
   return (
     <motion.div variants={staggerContainer} initial='hidden' animate='visible'>

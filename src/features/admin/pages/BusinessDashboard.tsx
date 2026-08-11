@@ -36,8 +36,8 @@ const BusinessDashboard: React.FC = () => {
   // This shell serves every /admin/* tab; only fetch what the ACTIVE tab consumes.
   // Overview (the default '/admin' branch) needs both; Campaigns needs the draws list.
   const isOverviewTab = !['/admin/campaigns', '/admin/users', '/admin/businesses', '/admin/map', '/admin/analytics', '/admin/settings', '/admin/notifications'].includes(path);
-  const { data: overview } = useAdminOverview(isOverviewTab);
-  const { data: draws } = useAllDraws(isOverviewTab || path === '/admin/campaigns');
+  const { data: overview, isLoading: overviewLoading } = useAdminOverview(isOverviewTab);
+  const { data: draws, isLoading: drawsLoading } = useAllDraws(isOverviewTab || path === '/admin/campaigns');
 
   const currentOpenDraw = draws?.find((d) => d.status?.toUpperCase() === 'OPEN');
 
@@ -46,6 +46,7 @@ const BusinessDashboard: React.FC = () => {
       return (
         <DrawsTab
           draws={draws}
+          drawsLoading={drawsLoading}
           isMobile={isMobile}
           onSnackError={setSnackError}
           onSnackSuccess={setSnackSuccess}
@@ -82,6 +83,8 @@ const BusinessDashboard: React.FC = () => {
       <OverviewTab
         overview={overview}
         currentOpenDraw={currentOpenDraw}
+        overviewLoading={overviewLoading}
+        drawsLoading={drawsLoading}
       />
     );
   };

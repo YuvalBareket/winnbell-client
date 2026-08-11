@@ -358,6 +358,7 @@ const DrawBusinessesPanel: React.FC<{ drawId: number; drawStatus: string }> = ({
 
 interface Props {
   draws: any[] | undefined;
+  drawsLoading?: boolean;
   isMobile: boolean;
   onSnackError: (msg: string) => void;
   onSnackSuccess: (msg: string) => void;
@@ -389,7 +390,7 @@ const CardLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </Typography>
 );
 
-const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuccess, onCreateDraw }) => {
+const DrawsTab: React.FC<Props> = ({ draws, drawsLoading, isMobile, onSnackError, onSnackSuccess, onCreateDraw }) => {
   const [editDraw, setEditDraw] = useState<any | null>(null);
   const [confirmOpen, setConfirmOpen] = useState<number | null>(null);
   const [confirmClose, setConfirmClose] = useState<number | null>(null);
@@ -821,7 +822,18 @@ const DrawsTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSucce
             </>
           )}
 
-          {!draws?.length && (
+          {/* Campaign-card skeletons while the list loads - the empty state below must
+              never flash "No campaigns yet" over a list that is still on the wire */}
+          {drawsLoading && !draws?.length && (
+            <Stack spacing={1.5}>
+              <Skeleton variant='text' width={140} sx={{ fontSize: '0.9rem' }} />
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} variant='rounded' height={isMobile ? 150 : 64} sx={{ borderRadius: '15px' }} />
+              ))}
+            </Stack>
+          )}
+
+          {!drawsLoading && !draws?.length && (
             <Box sx={{ textAlign: 'center', py: 6, color: TEXT_SECONDARY }}>
               <Typography>No campaigns yet. Create one to get started.</Typography>
             </Box>

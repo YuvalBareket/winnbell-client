@@ -16,7 +16,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { AdminCard, StatCard, IconTile } from '../components/adminUi';
+import { AdminCard, StatCard, IconTile, StatCardSkeleton, AdminCardSkeleton } from './adminUi';
 import {
   PRIMARY_MAIN, PRIMARY_TINT,
   ALPHA_GREEN_10, METRIC_GOOD,
@@ -35,11 +35,31 @@ import { staggerContainer, riseIn } from '../../../../shared/motion';
 interface Props {
   overview: any;
   currentOpenDraw: any;
+  overviewLoading?: boolean;
+  drawsLoading?: boolean;
 }
 
-const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
+const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw, overviewLoading, drawsLoading }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Skeleton mirror of the loaded layout - KPI grid, campaign hero, revenue card.
+  // Without it the tab rendered fake zeros and a false "No active campaign" while loading.
+  if (overviewLoading) {
+    return (
+      <Stack spacing={3}>
+        <Grid container spacing={isMobile ? 1.5 : 2}>
+          {[0, 1, 2, 3].map((i) => (
+            <Grid key={i} size={{ xs: 6, sm: 6, md: 3 }}>
+              <StatCardSkeleton />
+            </Grid>
+          ))}
+        </Grid>
+        <AdminCardSkeleton height={280} />
+        <AdminCardSkeleton height={96} />
+      </Stack>
+    );
+  }
 
   const flaggedUsers = overview?.attention?.flagged_users ?? 0;
   const hasAttention = flaggedUsers > 0;
@@ -258,8 +278,12 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw }) => {
         </motion.div>
       )}
 
-      {/* No active campaign state - animated in */}
-      {!currentOpenDraw && (
+      {/* Campaign hero placeholder while the draws list is still loading */}
+      {!currentOpenDraw && drawsLoading && <AdminCardSkeleton height={280} />}
+
+      {/* No active campaign state - animated in. Gated on the draws fetch so it can
+          never flash "No active campaign" while the list is still on the wire. */}
+      {!currentOpenDraw && !drawsLoading && (
         <motion.div variants={riseIn} initial='hidden' animate='visible'>
           <AdminCard sx={{ bgcolor: STATUS_PENDING_BG, borderColor: 'transparent' }}>
             <Stack spacing={1.5} sx={{ py: 2 }}>

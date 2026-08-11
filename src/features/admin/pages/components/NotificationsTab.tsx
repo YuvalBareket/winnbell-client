@@ -8,6 +8,7 @@ import {
   TextField,
   CircularProgress,
   Alert,
+  Skeleton,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { SendOutlined, HistoryOutlined } from '@mui/icons-material';
@@ -42,7 +43,7 @@ const AUDIENCE_COLORS: Record<Audience, 'default' | 'primary' | 'secondary'> = {
 
 const NotificationsTab: React.FC = () => {
   const sendMutation = useSendNotification();
-  const { data: history } = useNotificationHistory();
+  const { data: history, isLoading: historyLoading } = useNotificationHistory();
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -263,7 +264,17 @@ const NotificationsTab: React.FC = () => {
 
               <Box sx={{ borderTop: `1px solid ${BORDER_SUBTLE}` }} />
 
-              {!history || history.length === 0 ? (
+              {historyLoading ? (
+                /* Row skeletons while the history loads - never flash the empty state */
+                <Stack spacing={0}>
+                  {[0, 1, 2].map((i) => (
+                    <Box key={i} sx={{ p: 2, borderBottom: i < 2 ? `1px solid ${BORDER_SUBTLE}` : 'none' }}>
+                      <Skeleton variant='text' width='45%' />
+                      <Skeleton variant='text' width='75%' sx={{ fontSize: '0.8rem' }} />
+                    </Box>
+                  ))}
+                </Stack>
+              ) : !history || history.length === 0 ? (
                 <Box sx={{ p: 2.25, textAlign: 'center' }}>
                   <motion.div variants={riseIn}>
                     <IconTile
