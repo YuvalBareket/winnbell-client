@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState, type ReactElement } from 'react';
-import { Box, ButtonBase } from '@mui/material';
-import { motion, AnimatePresence, useInView, useReducedMotion } from 'framer-motion';
+import { Box } from '@mui/material';
+import { motion } from 'framer-motion';
 import {
   Search,
   LocationOn,
@@ -42,74 +41,23 @@ import {
   ALPHA_WHITE_30,
   ALPHA_WHITE_70,
   ALPHA_WHITE_80,
-  ROLE_MANAGER_BG,
 } from '../../../shared/colors';
 import { SECTOR_CONFIG } from '../../../shared/sectorConfig';
 import { SPRING_POP, SPRING_BOUNCY, SPRING_JUMP } from '../../../shared/motion';
+import PhoneShowcase, {
+  type ScreenProps,
+  type ShowcaseBeat,
+  SCREEN_H,
+  SectorGlyph,
+  MapPin,
+} from './PhoneShowcase';
+import { shortDate, TODAY, DAYS_AGO_3, RECEIPT_DATE, CAMPAIGN_ENDS } from './showcaseDates';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HeroShowcase - the landing hero's phone mockup running a five-beat story loop:
+// HeroShowcase - the consumer landing's five-beat story loop:
 // find a shop → submit a receipt → entry success → all entries → weekly entry.
-// Beats are JS-driven (not one giant CSS timeline) so each screen re-runs its own
-// framer-motion choreography on entry, the step dots are clickable, the loop
-// pauses off-screen, and reduced-motion collapses everything to crossfades.
+// Frame/loop machinery lives in PhoneShowcase; this file is just the screens.
 // ─────────────────────────────────────────────────────────────────────────────
-
-const PHONE_W = 280;
-const PHONE_H = 470;
-const SCREEN_W = PHONE_W - 18;
-const SCREEN_H = PHONE_H - 18;
-
-// The mockup's dates track the real calendar so the demo never looks stale.
-const shortDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-const TODAY = new Date();
-const DAYS_AGO_3 = new Date(TODAY.getTime() - 3 * 24 * 60 * 60 * 1000);
-const RECEIPT_DATE = TODAY.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-const DAYS_LEFT = new Date(TODAY.getFullYear(), TODAY.getMonth() + 1, 0).getDate() - TODAY.getDate();
-const CAMPAIGN_ENDS =
-  DAYS_LEFT === 0 ? 'Campaign ends today' : `Campaign ends in ${DAYS_LEFT} ${DAYS_LEFT === 1 ? 'day' : 'days'}`;
-
-interface ScreenProps {
-  reduced: boolean;
-}
-
-const BEATS: { key: string; caption: string; duration: number; Screen: (p: ScreenProps) => ReactElement }[] = [
-  { key: 'map', caption: 'Find a shop near you', duration: 4400, Screen: MapScreen },
-  { key: 'receipt', caption: 'Add your receipt', duration: 4800, Screen: ReceiptScreen },
-  { key: 'success', caption: "You're in, with your code", duration: 4400, Screen: SuccessScreen },
-  { key: 'entries', caption: 'All your entries in one place', duration: 4400, Screen: EntriesScreen },
-  { key: 'weekly', caption: 'Or claim your weekly entry', duration: 4200, Screen: WeeklyScreen },
-];
-
-/** Sector glyph straight from the shared sector config, so the mockup always matches the real map pins. */
-const SectorGlyph = ({ sector, size, color }: { sector: string; size: number; color: string }) => (
-  <svg width={size} height={size} viewBox='0 0 24 24' fill={color} aria-hidden>
-    <path d={SECTOR_CONFIG[sector].iconPath} />
-  </svg>
-);
-
-/** Teardrop map pin (matches BusinessMap's pin shape). */
-const MapPin = ({ sector, size, iconSize }: { sector: string; size: number; iconSize?: number }) => (
-  <Box
-    sx={{
-      width: size,
-      height: size,
-      borderRadius: '50% 50% 50% 3px',
-      bgcolor: SECTOR_CONFIG[sector].color,
-      border: '2px solid white',
-      boxShadow: SHADOW_FLOAT,
-      transform: 'rotate(-45deg)',
-      display: 'grid',
-      placeItems: 'center',
-    }}
-  >
-    {iconSize ? (
-      <Box sx={{ transform: 'rotate(45deg)', display: 'flex' }}>
-        <SectorGlyph sector={sector} size={iconSize} color='white' />
-      </Box>
-    ) : null}
-  </Box>
-);
 
 // ── Beat 1 · Nearby map ───────────────────────────────────────────────────────
 
@@ -721,156 +669,21 @@ function WeeklyScreen({ reduced }: ScreenProps) {
   );
 }
 
-// ── The showcase itself ───────────────────────────────────────────────────────
+// ── The consumer showcase ─────────────────────────────────────────────────────
 
-const HeroShowcase = () => {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(rootRef, { amount: 0.25 });
-  const reduced = !!useReducedMotion();
-  const [beat, setBeat] = useState(0);
+const BEATS: ShowcaseBeat[] = [
+  { key: 'map', caption: 'Find a shop near you', duration: 4400, Screen: MapScreen },
+  { key: 'receipt', caption: 'Add your receipt', duration: 4800, Screen: ReceiptScreen },
+  { key: 'success', caption: "You're in, with your code", duration: 4400, Screen: SuccessScreen },
+  { key: 'entries', caption: 'All your entries in one place', duration: 4400, Screen: EntriesScreen },
+  { key: 'weekly', caption: 'Or claim your weekly entry', duration: 4200, Screen: WeeklyScreen },
+];
 
-  // The loop only runs while on screen. Scrolling back restarts the current beat with a
-  // fresh full duration; the dot's progress fill is keyed on inView too, so they stay in sync.
-  useEffect(() => {
-    if (!inView) return;
-    const t = window.setTimeout(() => setBeat((b) => (b + 1) % BEATS.length), BEATS[beat].duration);
-    return () => window.clearTimeout(t);
-  }, [beat, inView]);
-
-  const goTo = (i: number) => {
-    if (i !== beat) setBeat(i);
-  };
-
-  const { Screen } = BEATS[beat];
-
-  return (
-    <Box
-      ref={rootRef}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        // Short desktop viewports (compact laptops): shrink the phone so the caption and
-        // step dots below it still fit on screen. The screens are laid out for a fixed
-        // 262x452 canvas, so this scales the rendered phone rather than reflowing it.
-        '--wb-phone-scale': '1',
-        '@media (min-width:900px) and (max-height:940px)': { '--wb-phone-scale': '0.94' },
-        '@media (min-width:900px) and (max-height:820px)': { '--wb-phone-scale': '0.88' },
-      }}
-    >
-      <Box sx={{ width: `calc(${PHONE_W}px * var(--wb-phone-scale))`, height: `calc(${PHONE_H}px * var(--wb-phone-scale))` }}>
-        <motion.div
-          animate={reduced ? undefined : { y: [0, -8, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <Box
-            aria-hidden
-            sx={{
-              position: 'relative',
-              textAlign: 'left',
-              width: PHONE_W,
-              height: PHONE_H,
-              borderRadius: '38px',
-              bgcolor: ROLE_MANAGER_BG,
-              p: '9px',
-              boxShadow: SHADOW_CARD_DEEP,
-              flex: 'none',
-              transform: 'scale(var(--wb-phone-scale))',
-              transformOrigin: 'top center',
-              ml: `calc((${PHONE_W}px * var(--wb-phone-scale) - ${PHONE_W}px) / 2)`,
-            }}
-          >
-          <Box sx={{ position: 'relative', width: SCREEN_W, height: SCREEN_H, borderRadius: '30px', overflow: 'hidden', bgcolor: BG_SUBTLE }}>
-            <AnimatePresence>
-              <motion.div
-                key={BEATS[beat].key}
-                initial={{ x: reduced ? 0 : 44, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: reduced ? 0 : -44, opacity: 0 }}
-                transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
-                style={{ position: 'absolute', inset: 0 }}
-              >
-                <Screen reduced={reduced} />
-              </motion.div>
-            </AnimatePresence>
-            </Box>
-          </Box>
-        </motion.div>
-      </Box>
-
-      {/* Rotating step caption */}
-      <Box aria-hidden sx={{ position: 'relative', mt: 3, height: 30, width: '100%' }}>
-        <AnimatePresence>
-          <motion.div
-            key={BEATS[beat].key}
-            initial={{ opacity: 0, y: reduced ? 0 : 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: reduced ? 0 : -8 }}
-            transition={{ duration: 0.35 }}
-            style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
-          >
-            <Box
-              sx={{
-                width: 22,
-                height: 22,
-                borderRadius: '50%',
-                bgcolor: ALPHA_WHITE_15,
-                border: `1px solid ${ALPHA_WHITE_20}`,
-                color: 'white',
-                fontSize: 12,
-                fontWeight: 800,
-                display: 'grid',
-                placeItems: 'center',
-                flex: 'none',
-              }}
-            >
-              {beat + 1}
-            </Box>
-            <Box component='span' sx={{ fontSize: { xs: 15, md: 16 }, fontWeight: 700, letterSpacing: '-0.015em', color: 'white', whiteSpace: 'nowrap' }}>
-              {BEATS[beat].caption}
-            </Box>
-          </motion.div>
-        </AnimatePresence>
-      </Box>
-
-      {/* Static description for screen readers; the animated phone and caption are decorative */}
-      <Box
-        component='p'
-        sx={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clipPath: 'inset(50%)', whiteSpace: 'nowrap', m: 0 }}
-      >
-        A quick look inside the app: find a participating shop near you, add your receipt, get your entry
-        code, see all your entries in one place, or claim your weekly entry.
-      </Box>
-
-      {/* Step dots double as the beat timeline: the active pill fills over the beat's duration */}
-      <Box sx={{ mt: 1.25, display: 'flex', gap: 0.25 }}>
-        {BEATS.map((b, i) => (
-          <ButtonBase
-            key={b.key}
-            aria-label={`Show step ${i + 1} of 5: ${b.caption}`}
-            aria-current={i === beat ? 'true' : undefined}
-            onClick={() => goTo(i)}
-            sx={{ px: 0.5, py: 1.25, borderRadius: 2 }}
-          >
-            <Box sx={{ position: 'relative', width: 26, height: 5, borderRadius: 3, overflow: 'hidden', bgcolor: ALPHA_WHITE_30 }}>
-              {i === beat &&
-                (reduced ? (
-                  <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'white' }} />
-                ) : (
-                  <motion.div
-                    key={`${beat}-${inView}`}
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: BEATS[beat].duration / 1000, ease: 'linear' }}
-                    style={{ position: 'absolute', inset: 0, background: 'white', transformOrigin: 'left' }}
-                  />
-                ))}
-            </Box>
-          </ButtonBase>
-        ))}
-      </Box>
-    </Box>
-  );
-};
+const HeroShowcase = () => (
+  <PhoneShowcase
+    beats={BEATS}
+    srDescription='A quick look inside the app: find a participating shop near you, add your receipt, get your entry code, see all your entries in one place, or claim your weekly entry.'
+  />
+);
 
 export default HeroShowcase;

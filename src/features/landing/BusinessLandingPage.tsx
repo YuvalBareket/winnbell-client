@@ -19,6 +19,7 @@ const BUSINESS_STEPS = [
 import { motion } from 'framer-motion';
 import LandingNavbar from './components/LandingNavbar';
 import LandingFooter from './components/LandingFooter';
+import BusinessHeroShowcase from './components/BusinessHeroShowcase';
 import {
   GRADIENT_HERO_WARM,
   PRIMARY_MAIN,
@@ -52,90 +53,127 @@ const BusinessLandingPage = () => {
 
         <LandingNavbar onNavigate={navigate} variant='business' />
 
-        <Container maxWidth='md' sx={{ position: 'relative', zIndex: 1, textAlign: 'center', pt: { xs: 5, md: 5 } }}>
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+        <Container maxWidth='lg' sx={{ position: 'relative', zIndex: 1, pt: { xs: 5, md: 5 } }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 360px' },
+              gap: { xs: 0, md: 8 },
+              alignItems: 'center',
+              maxWidth: { xs: 600, md: 'none' },
+              mx: 'auto',
+            }}
           >
-            <Typography
-              variant='h1'
+            <Box
               sx={{
-                fontWeight: 900,
-                fontSize: { xs: '2rem', sm: '3.2rem', md: '4rem' },
-                lineHeight: 1.1,
-                letterSpacing: '-0.03em',
-                color: 'white',
-                mb: { xs: 2, md: 3 },
+                textAlign: { xs: 'center', md: 'left' },
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: { xs: 'center', md: 'flex-start' },
               }}
             >
-              Drive your business growth through customer excitement.
-            </Typography>
-          </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <Typography
+                  variant='h1'
+                  sx={{
+                    fontWeight: 900,
+                    fontSize: { xs: '2rem', sm: '3.2rem', md: '4rem' },
+                    lineHeight: 1.1,
+                    letterSpacing: '-0.03em',
+                    color: 'white',
+                    mb: { xs: 2, md: 3 },
+                  }}
+                >
+                  Drive your business growth through customer excitement.
+                </Typography>
+              </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Typography
-              sx={{
-                color: 'rgba(255,255,255,0.75)',
-                fontSize: { xs: '0.9rem', md: '1.15rem' },
-                lineHeight: 1.6,
-                mb: { xs: 3, md: 5 },
-                maxWidth: 560,
-                mx: 'auto',
-                fontWeight: 400,
-              }}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <Typography
+                  sx={{
+                    color: 'rgba(255,255,255,0.75)',
+                    fontSize: { xs: '0.9rem', md: '1.15rem' },
+                    lineHeight: 1.6,
+                    mb: { xs: 3, md: 5 },
+                    maxWidth: 560,
+                    mx: { xs: 'auto', md: 0 },
+                    fontWeight: 400,
+                  }}
+                >
+                  Every month, Winnbell runs a cash prize campaign your customers can join through you. We handle the prize, the rules, and the winner. You take the credit.
+                </Typography>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                style={{ width: '100%' }}
+              >
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={{ xs: 1.5, md: 2 }}
+                  justifyContent={{ xs: 'center', md: 'flex-start' }}
+                  alignItems='center'
+                  sx={{ mb: { xs: 4, md: 0 } }}
+                >
+                  <AttractButton onLightBackground
+                    variant='contained'
+                    size='large'
+                    endIcon={<ArrowForward />}
+                    onClick={() => navigate('/register/Business')}
+                    sx={{
+                      bgcolor: 'white',
+                      color: PRIMARY_MAIN,
+                      fontWeight: 700,
+                      fontSize: { xs: '0.95rem', md: '1rem' },
+                      px: { xs: 2.5, sm: 4 },
+                      py: { xs: 1.4, md: 1.6 },
+                      width: { xs: '100%', sm: 'auto' },
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' },
+                    }}
+                  >
+                    Become a partner
+                  </AttractButton>
+                  <Button
+                    variant='text'
+                    endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
+                    onClick={() => navigate('/')}
+                    sx={{
+                      color: 'rgba(255,255,255,0.8)',
+                      fontWeight: 500,
+                      fontSize: { xs: '0.85rem', md: '0.9rem' },
+                      opacity: 0.9,
+                      width: { xs: '100%', sm: 'auto' },
+                      '&:hover': { bgcolor: 'transparent', opacity: 1, color: 'white' },
+                      textTransform: 'none',
+                    }}
+                  >
+                    I'm a shopper, not a business owner
+                  </Button>
+                </Stack>
+              </motion.div>
+            </Box>
+
+            {/* The five-beat owner story loop */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              style={{ justifySelf: 'center' }}
             >
-              Every month, Winnbell runs a cash prize campaign your customers can join through you. We handle the prize, the rules, and the winner. You take the credit.
-            </Typography>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center'>
-              <AttractButton onLightBackground
-                variant='contained'
-                size='large'
-                endIcon={<ArrowForward />}
-                onClick={() => navigate('/register/Business')}
-                sx={{
-                  bgcolor: 'white',
-                  color: PRIMARY_MAIN,
-                  fontWeight: 700,
-                  fontSize: { xs: '0.95rem', md: '1rem' },
-                  px: { xs: 2.5, sm: 4 },
-                  py: { xs: 1.4, md: 1.6 },
-                  width: { xs: '100%', sm: 'auto' },
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' },
-                }}
-              >
-                Become a partner
-              </AttractButton>
-              <Button
-                variant='text'
-                endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
-                onClick={() => navigate('/')}
-                sx={{
-                  color: 'rgba(255,255,255,0.8)',
-                  fontWeight: 500,
-                  fontSize: { xs: '0.85rem', md: '0.9rem' },
-                  opacity: 0.9,
-                  width: { xs: '100%', sm: 'auto' },
-                  '&:hover': { bgcolor: 'transparent', opacity: 1, color: 'white' },
-                  textTransform: 'none',
-                }}
-              >
-                I'm a shopper, not a business owner
-              </Button>
-            </Stack>
-          </motion.div>
+              <BusinessHeroShowcase />
+            </motion.div>
+          </Box>
         </Container>
       </Box>
 

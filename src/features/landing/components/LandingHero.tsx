@@ -10,8 +10,6 @@ interface LandingHeroProps {
   onNavigate: (path: string) => void;
 }
 
-/* Rendered twice (in-column on desktop, below the showcase on mobile) so the phone
-   can sit between the CTAs and this link on small screens without reordering hacks. */
 const BusinessOwnerLink = ({ onNavigate }: LandingHeroProps) => (
   <Button
     variant='text'
@@ -160,32 +158,8 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
                 >
                   Start collecting entries
                 </AttractButton>
-                <Button
-                  variant='text'
-                  endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
-                  onClick={() => onNavigate('/login')}
-                  sx={{
-                    color: 'white',
-                    fontWeight: 600,
-                    fontSize: { xs: '0.9rem', md: '0.95rem' },
-                    opacity: 0.85,
-                    width: { xs: '100%', sm: 'auto' },
-                    '&:hover': { bgcolor: 'transparent', opacity: 1 },
-                  }}
-                >
-                  Sign in
-                </Button>
-              </Stack>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.55 }}
-            >
-              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <BusinessOwnerLink onNavigate={onNavigate} />
-              </Box>
+              </Stack>
             </motion.div>
           </Box>
 
@@ -199,17 +173,6 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
             <HeroShowcase />
           </motion.div>
         </Box>
-
-        {/* On mobile the business-owner link reads best after the showcase */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.55 }}
-        >
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', mt: 3 }}>
-            <BusinessOwnerLink onNavigate={onNavigate} />
-          </Box>
-        </motion.div>
       </Container>
     </Box>
   );
