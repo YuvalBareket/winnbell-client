@@ -476,7 +476,7 @@ function EntriesScreen({ reduced }: ScreenProps) {
         <Box sx={{ position: 'relative', mt: 0.3, fontSize: 10, fontWeight: 500, color: ALPHA_WHITE_80 }}>All your entries in one place</Box>
       </Box>
 
-      <Box sx={{ p: '12px 14px 0' }}>
+      <Box sx={{ p: '10px 14px 0' }}>
         <motion.div
           initial={reduced ? { opacity: 0 } : { opacity: 0, y: 26, scale: 0.94 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -485,7 +485,7 @@ function EntriesScreen({ reduced }: ScreenProps) {
             position: 'relative',
             overflow: 'hidden',
             borderRadius: 16,
-            padding: '14px 14px 15px',
+            padding: '12px 14px 12px',
             background: GRADIENT_HERO,
             boxShadow: SHADOW_CARD_DEEP,
           }}
@@ -529,7 +529,7 @@ function EntriesScreen({ reduced }: ScreenProps) {
         </motion.div>
       </Box>
 
-      <Box sx={{ p: '13px 16px 9px' }}>
+      <Box sx={{ p: '10px 16px 7px' }}>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, delay: 0.65 }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', mb: 0.9 }}>
             <Box>
@@ -552,7 +552,7 @@ function EntriesScreen({ reduced }: ScreenProps) {
         </Box>
       </Box>
 
-      <Box sx={{ px: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ px: 1.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
         {(
           [
             { sector: 'Coffee', name: "Bella's Coffee", meta: `120 Main St · ${shortDate(TODAY)} · 9:41 AM`, code: '8KD2QP' },
@@ -570,7 +570,7 @@ function EntriesScreen({ reduced }: ScreenProps) {
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: 8,
-              padding: '9px 12px',
+              padding: '8px 12px',
               borderRadius: 34,
               background: BG_SURFACE,
               border: `1px solid ${BORDER_SUBTLE}`,
