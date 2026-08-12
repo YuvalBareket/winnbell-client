@@ -4,10 +4,51 @@ import { ArrowForward } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { PRIMARY_MAIN, GRADIENT_HERO } from '../../../shared/colors';
 import LandingNavbar from './LandingNavbar';
+import HeroShowcase from './HeroShowcase';
 
 interface LandingHeroProps {
   onNavigate: (path: string) => void;
 }
+
+/* Rendered twice (in-column on desktop, below the showcase on mobile) so the phone
+   can sit between the CTAs and this link on small screens without reordering hacks. */
+const BusinessOwnerLink = ({ onNavigate }: LandingHeroProps) => (
+  <Button
+    variant='text'
+    endIcon={<ArrowForward sx={{ fontSize: '0.9rem !important', color: 'white', opacity: 0.75 }} />}
+    onClick={() => onNavigate('/for-business')}
+    sx={{
+      textTransform: 'none',
+      fontWeight: 700,
+      fontSize: { xs: '0.88rem', md: '0.95rem' },
+      color: 'white',
+      width: { xs: '100%', sm: 'auto' },
+      '&:hover': { bgcolor: 'transparent' },
+    }}
+  >
+    {/* Shimmer is scoped to this inline span (not the button root): a background-clip:text
+        element with an oversized animated background reports phantom scroll overflow, which
+        is what caused the hero to scroll. Keeping it inline-block contains it to the text. */}
+    <Box
+      component='span'
+      sx={{
+        display: 'inline-block',
+        background: 'linear-gradient(90deg, rgba(255,255,255,0.45) 20%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.45) 80%)',
+        backgroundSize: '250% auto',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        animation: 'shimmer 2.8s linear infinite',
+        '@keyframes shimmer': {
+          '0%': { backgroundPosition: '200% center' },
+          '100%': { backgroundPosition: '-100% center' },
+        },
+      }}
+    >
+      Are you a business owner?
+    </Box>
+  </Button>
+);
 
 const LandingHero = ({ onNavigate }: LandingHeroProps) => {
   return (
@@ -15,7 +56,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
       sx={{
         background: GRADIENT_HERO,
         pt: 0,
-        pb: { xs: 10, md: 16 },
+        pb: { xs: 8, md: 14 },
         px: { xs: 2.5, md: 0 },
         color: 'white',
         position: 'relative',
@@ -28,131 +69,146 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
 
       <LandingNavbar onNavigate={onNavigate} />
 
-      <Container maxWidth='md' sx={{ position: 'relative', zIndex: 1, textAlign: 'center', pt: { xs: 5, md: 5 } }}>
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+      <Container maxWidth='lg' sx={{ position: 'relative', zIndex: 1, pt: { xs: 5, md: 5 } }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 360px' },
+            gap: { xs: 0, md: 8 },
+            alignItems: 'center',
+            maxWidth: { xs: 600, md: 'none' },
+            mx: 'auto',
+          }}
         >
-          <Typography
-            variant='h1'
+          <Box
             sx={{
-              fontWeight: 900,
-              fontSize: { xs: '2.1rem', sm: '3.5rem', md: '4.5rem' },
-              lineHeight: 1.1,
-              letterSpacing: '-0.03em',
-              color: 'white',
-              mb: { xs: 2, md: 3 },
+              textAlign: { xs: 'center', md: 'left' },
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: { xs: 'center', md: 'flex-start' },
             }}
           >
-            Shop local. Win monthly cash prizes.
-          </Typography>
-        </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Typography
+                variant='h1'
+                sx={{
+                  fontWeight: 900,
+                  fontSize: { xs: '2.1rem', sm: '3.5rem', md: '4.5rem' },
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.03em',
+                  color: 'white',
+                  mb: { xs: 2, md: 3 },
+                }}
+              >
+                Shop local. Win monthly cash prizes.
+              </Typography>
+            </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Typography
-            sx={{
-              color: 'rgba(255,255,255,0.75)',
-              fontSize: { xs: '0.9rem', md: '1.15rem' },
-              lineHeight: 1.6,
-              mb: { xs: 3, md: 5 },
-              maxWidth: 480,
-              mx: 'auto',
-              fontWeight: 400,
-            }}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Typography
+                sx={{
+                  color: 'rgba(255,255,255,0.75)',
+                  fontSize: { xs: '0.9rem', md: '1.15rem' },
+                  lineHeight: 1.6,
+                  mb: { xs: 3, md: 5 },
+                  maxWidth: 480,
+                  mx: { xs: 'auto', md: 0 },
+                  fontWeight: 400,
+                }}
+              >
+                Turn everyday shopping into chances to win real monthly cash prizes. Earn entries
+                through participating businesses or claim your weekly entry today. No purchase necessary.
+              </Typography>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              style={{ width: '100%' }}
+            >
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={{ xs: 1.5, md: 2 }}
+                justifyContent={{ xs: 'center', md: 'flex-start' }}
+                alignItems='center'
+                sx={{ mb: { xs: 4, md: 4 } }}
+              >
+                <AttractButton onLightBackground
+                  variant='contained'
+                  size='large'
+                  onClick={() => onNavigate('/register')}
+                  sx={{
+                    bgcolor: 'white',
+                    color: PRIMARY_MAIN,
+                    fontWeight: 700,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    px: { xs: 2.5, sm: 4 },
+                    py: { xs: 1.4, md: 1.6 },
+                    width: { xs: '100%', sm: 'auto' },
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' },
+                  }}
+                >
+                  Start collecting entries
+                </AttractButton>
+                <Button
+                  variant='text'
+                  endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
+                  onClick={() => onNavigate('/login')}
+                  sx={{
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: { xs: '0.9rem', md: '0.95rem' },
+                    opacity: 0.85,
+                    width: { xs: '100%', sm: 'auto' },
+                    '&:hover': { bgcolor: 'transparent', opacity: 1 },
+                  }}
+                >
+                  Sign in
+                </Button>
+              </Stack>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.55 }}
+            >
+              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <BusinessOwnerLink onNavigate={onNavigate} />
+              </Box>
+            </motion.div>
+          </Box>
+
+          {/* The five-beat app story loop */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            style={{ justifySelf: 'center' }}
           >
-            Turn everyday shopping into chances to win real monthly cash prizes. Earn entries
-            through participating businesses or claim your weekly entry today. No purchase necessary.
-          </Typography>
-        </motion.div>
+            <HeroShowcase />
+          </motion.div>
+        </Box>
 
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, md: 2 }} justifyContent='center' alignItems='center' sx={{ mb: { xs: 2.5, md: 4 } }}>
-            <AttractButton onLightBackground
-              variant='contained'
-              size='large'
-              onClick={() => onNavigate('/register')}
-              sx={{
-                bgcolor: 'white',
-                color: PRIMARY_MAIN,
-                fontWeight: 700,
-                fontSize: { xs: '0.95rem', md: '1rem' },
-                px: { xs: 2.5, sm: 4 },
-                py: { xs: 1.4, md: 1.6 },
-                width: { xs: '100%', sm: 'auto' },
-                boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' },
-              }}
-            >
-              Start collecting entries
-            </AttractButton>
-            <Button
-              variant='text'
-              endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
-              onClick={() => onNavigate('/login')}
-              sx={{
-                color: 'white',
-                fontWeight: 600,
-                fontSize: { xs: '0.9rem', md: '0.95rem' },
-                opacity: 0.85,
-                width: { xs: '100%', sm: 'auto' },
-                '&:hover': { bgcolor: 'transparent', opacity: 1 },
-              }}
-            >
-              Sign in
-            </Button>
-          </Stack>
-        </motion.div>
-
+        {/* On mobile the business-owner link reads best after the showcase */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.55 }}
         >
-          <Button
-            variant='text'
-            endIcon={<ArrowForward sx={{ fontSize: '0.9rem !important', color: 'white', opacity: 0.75 }} />}
-            onClick={() => onNavigate('/for-business')}
-            sx={{
-              textTransform: 'none',
-              fontWeight: 700,
-              fontSize: { xs: '0.88rem', md: '0.95rem' },
-              color: 'white',
-              width: { xs: '100%', sm: 'auto' },
-              mt: { xs: 1, sm: 0 },
-              '&:hover': { bgcolor: 'transparent' },
-            }}
-          >
-            {/* Shimmer is scoped to this inline span (not the button root): a background-clip:text
-                element with an oversized animated background reports phantom scroll overflow, which
-                is what caused the hero to scroll. Keeping it inline-block contains it to the text. */}
-            <Box
-              component='span'
-              sx={{
-                display: 'inline-block',
-                background: 'linear-gradient(90deg, rgba(255,255,255,0.45) 20%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.45) 80%)',
-                backgroundSize: '250% auto',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                animation: 'shimmer 2.8s linear infinite',
-                '@keyframes shimmer': {
-                  '0%': { backgroundPosition: '200% center' },
-                  '100%': { backgroundPosition: '-100% center' },
-                },
-              }}
-            >
-              Are you a business owner?
-            </Box>
-          </Button>
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', mt: 3 }}>
+            <BusinessOwnerLink onNavigate={onNavigate} />
+          </Box>
         </motion.div>
       </Container>
     </Box>
