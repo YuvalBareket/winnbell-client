@@ -8,6 +8,7 @@ import {
   ConfirmationNumber,
   AccessTime,
   Star,
+  CardGiftcard,
 } from '@mui/icons-material';
 import {
   PRIMARY_MAIN,
@@ -21,6 +22,7 @@ import {
   BORDER_LIGHT,
   BORDER_SUBTLE,
   STATUS_ACTIVATED_BG,
+  STATUS_ACTIVATED_TEXT,
   SUCCESS_GREEN_TEXT_AA,
   ACCENT_GOLD,
   ACCENT_GOLD_LIGHT,
@@ -533,11 +535,11 @@ function EntriesScreen({ reduced }: ScreenProps) {
             <Box>
               <Box sx={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT_TERTIARY }}>Your Entries</Box>
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.6 }}>
-                <Box component='span' sx={{ fontSize: 30, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.03em', color: PRIMARY_MAIN }}>2</Box>
+                <Box component='span' sx={{ fontSize: 30, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.03em', color: PRIMARY_MAIN }}>14</Box>
                 <Box component='span' sx={{ fontSize: 12, fontWeight: 700, color: TEXT_SECONDARY }}>/ 30</Box>
               </Box>
             </Box>
-            <Box component='span' sx={{ fontSize: 9.5, fontWeight: 700, color: PRIMARY_MAIN, pb: 0.4 }}>28 slots left</Box>
+            <Box component='span' sx={{ fontSize: 9.5, fontWeight: 700, color: PRIMARY_MAIN, pb: 0.4 }}>16 slots left</Box>
           </Box>
         </motion.div>
         <Box sx={{ height: 7, borderRadius: 4, bgcolor: ALPHA_BLACK_06, overflow: 'hidden' }}>
@@ -545,7 +547,7 @@ function EntriesScreen({ reduced }: ScreenProps) {
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={reduced ? { duration: 0.3, delay: 0.8 } : { ...SPRING_JUMP, delay: 0.85 }}
-            style={{ height: '100%', width: '6.7%', transformOrigin: 'left', background: GRADIENT_PROGRESS_BAR }}
+            style={{ height: '100%', width: '46.7%', transformOrigin: 'left', background: GRADIENT_PROGRESS_BAR }}
           />
         </Box>
       </Box>
@@ -555,6 +557,7 @@ function EntriesScreen({ reduced }: ScreenProps) {
           [
             { sector: 'Coffee', name: "Bella's Coffee", meta: `120 Main St · ${shortDate(TODAY)} · 9:41 AM`, code: '8KD2QP' },
             { sector: 'Grocery', name: 'Green Grocer', meta: `Market Square · ${shortDate(DAYS_AGO_3)} · 5:12 PM`, code: '4RM7XN' },
+            { sector: null, name: 'Weekly entry', meta: `Winnbell · ${shortDate(DAYS_AGO_3)} · 11:05 AM`, code: 'W9XK4T' },
           ] as const
         ).map((row, i) => (
           <motion.div
@@ -575,8 +578,22 @@ function EntriesScreen({ reduced }: ScreenProps) {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.1, minWidth: 0 }}>
-              <Box sx={{ width: 34, height: 34, borderRadius: '50%', bgcolor: SECTOR_CONFIG[row.sector].bgColor, display: 'grid', placeItems: 'center', flex: 'none' }}>
-                <SectorGlyph sector={row.sector} size={19} color={SECTOR_CONFIG[row.sector].color} />
+              <Box
+                sx={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '50%',
+                  bgcolor: row.sector ? SECTOR_CONFIG[row.sector].bgColor : STATUS_ACTIVATED_BG,
+                  display: 'grid',
+                  placeItems: 'center',
+                  flex: 'none',
+                }}
+              >
+                {row.sector ? (
+                  <SectorGlyph sector={row.sector} size={19} color={SECTOR_CONFIG[row.sector].color} />
+                ) : (
+                  <CardGiftcard sx={{ fontSize: 17, color: STATUS_ACTIVATED_TEXT }} />
+                )}
               </Box>
               <Box sx={{ minWidth: 0 }}>
                 <Box sx={{ fontSize: 11.5, fontWeight: 700, lineHeight: 1.25, color: TEXT_HEADING, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.name}</Box>
