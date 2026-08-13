@@ -294,7 +294,7 @@ const BusinessLandingPage = () => {
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: { xs: 3, md: 4 } }}>
             {[
               { Icon: TravelExploreRounded, title: 'They find you', desc: 'New faces discover you on the Winnbell map. Regulars get a reason to round up their purchase.' },
-              { Icon: QrCodeScannerRounded, title: 'They scan', desc: 'One QR at checkout. Receipt in. less then 30 seconds.' },
+              { Icon: QrCodeScannerRounded, title: 'They scan', desc: 'One QR at checkout. Receipt in, less than 30 seconds.' },
               { Icon: ConfirmationNumberRounded, title: "They're in the draw", desc: "Every qualified receipt earns entries into this month's cash prize draw." },
               { Icon: AutoAwesomeRounded, title: 'They come back', desc: 'They link the excitement of the draw with your business, and keep coming back.' },
             ].map((card, i) => (

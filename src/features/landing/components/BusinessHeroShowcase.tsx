@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Box } from '@mui/material';
-import { motion } from 'framer-motion';
+import { motion, animate } from 'framer-motion';
 import {
   Search,
   LocationOn,
@@ -8,12 +9,11 @@ import {
   TrendingUp,
   PeopleAlt,
   Schedule,
-  Groups,
   ConfirmationNumber,
-  Autorenew,
   Download,
   QrCode2,
   CheckCircle,
+  EmojiEvents,
 } from '@mui/icons-material';
 import {
   PRIMARY_MAIN,
@@ -52,6 +52,7 @@ import {
   ALPHA_ORANGE_12,
   ALPHA_WHITE_15,
   ALPHA_WHITE_20,
+  ALPHA_WHITE_30,
   ALPHA_WHITE_80,
   ALPHA_BLACK_06,
 } from '../../../shared/colors';
@@ -68,15 +69,46 @@ import { PosterBlueCanvas } from '../../marketing/components/PosterTemplates';
 import { DESIGN_W, DESIGN_H } from '../../marketing/components/posterConstants';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BusinessHeroShowcase - the business landing's five-beat story loop, told with
-// miniatures of the REAL owner pages: the Nearby map customers see you on, the
-// Campaign Dashboard (KPIs + Recent entries feed), the campaign card, the
-// Analytics page, and Marketing Materials. Layouts and copy mirror those pages.
+// BusinessHeroShowcase - the business landing's five-beat story loop, ordered
+// as the owner's questions arrive: what is this (a purchase becomes a cash-draw
+// entry), what does it get me (found on the map, sales climbing), what does it
+// cost me (Winnbell pays and runs everything), and the payoff (you take the
+// credit). Beats 2-5 are miniatures of the REAL owner pages; beat 1 is the one
+// explainer collage, told from the customer's side.
 // Frame/loop machinery lives in PhoneShowcase; this file is just the screens.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Shared story numbers, kept consistent across beats (MTD view):
 // 342 entries from 127 customers, 342/1000 of the entry capacity used.
+
+/** The campaign card's shimmering gold prize figure. */
+const GOLD_SHIMMER_SX = {
+  fontWeight: 900,
+  lineHeight: 1,
+  letterSpacing: '-0.02em',
+  background: `linear-gradient(90deg, ${ACCENT_GOLD} 0%, ${GOLD_TROPHY} 25%, ${ACCENT_GOLD_LIGHT} 50%, ${GOLD_TROPHY} 75%, ${ACCENT_GOLD} 100%)`,
+  backgroundSize: '200% auto',
+  WebkitBackgroundClip: 'text',
+  backgroundClip: 'text',
+  color: 'transparent',
+  animation: 'wbGoldShimmer 3s linear infinite',
+  '@keyframes wbGoldShimmer': {
+    '0%': { backgroundPosition: '0% center' },
+    '100%': { backgroundPosition: '200% center' },
+  },
+  '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+} as const;
+
+/** Number that counts up to its value once the beat starts; sits at the value under reduced motion. */
+function CountUp({ to, delay, reduced, render }: { to: number; delay: number; reduced: boolean; render: (v: number) => string }) {
+  const [value, setValue] = useState(reduced ? to : 0);
+  useEffect(() => {
+    if (reduced) return;
+    const controls = animate(0, to, { delay, duration: 1.1, ease: [0.16, 1, 0.3, 1], onUpdate: setValue });
+    return () => controls.stop();
+  }, [to, delay, reduced]);
+  return <>{render(value)}</>;
+}
 
 /** Small in-app page header used by the dashboard-style screens. */
 const ScreenHeader = ({ title, subtitle }: { title: string; subtitle: string }) => (
@@ -112,7 +144,208 @@ const TabPills = ({ tabs }: { tabs: string[] }) => (
   </Box>
 );
 
-// ── Beat 1 · Customers find you on the Nearby map ─────────────────────────────
+// ── Beat 1 · The concept: a purchase at your shop becomes a cash-draw entry ───
+
+// Gold flecks raining once the draw card lands (positions spread over the 262px screen).
+const CONCEPT_FLECKS = [
+  { left: 18, dx: -14, spin: 380, w: 5, h: 5, color: GOLD_TROPHY, delay: 0 },
+  { left: 64, dx: 8, spin: 520, w: 7, h: 12, color: ACCENT_GOLD, delay: 0.3 },
+  { left: 116, dx: -6, spin: 640, w: 5.5, h: 9, color: ACCENT_GOLD_LIGHT, delay: 0.55 },
+  { left: 158, dx: 12, spin: 450, w: 8, h: 8, color: 'white', delay: 0.15 },
+  { left: 206, dx: -10, spin: 700, w: 6, h: 10, color: GOLD_TROPHY, delay: 0.45 },
+  { left: 242, dx: -4, spin: 560, w: 7, h: 12, color: ACCENT_GOLD, delay: 0.7 },
+];
+
+// The flip happens at FLIP seconds: the receipt has left the stage by then and
+// the golden ticket takes its place, so only one object ever holds the screen.
+// Paced for a first-time viewer who has never heard of Winnbell: the receipt
+// and its line of text hold for ~3s before anything transforms.
+const FLIP = 3.2;
+
+function ConceptScreen({ reduced }: ScreenProps) {
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        background: GRADIENT_HERO,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: '0 20px',
+        textAlign: 'center',
+      }}
+    >
+      {!reduced &&
+        CONCEPT_FLECKS.map((f, i) => (
+          <motion.div
+            key={i}
+            initial={{ y: -18, x: 0, rotate: 0, opacity: 0 }}
+            animate={{ y: 480, x: f.dx, rotate: f.spin, opacity: [0, 1, 1, 0.9] }}
+            transition={{ delay: FLIP + 0.5 + f.delay, duration: 2.2, ease: 'easeIn' }}
+            style={{ position: 'absolute', top: 0, left: f.left, width: f.w, height: f.h, borderRadius: f.w === f.h ? '50%' : 1.5, background: f.color }}
+          />
+        ))}
+
+      {/* Soft radial glows, like the app's hero bands */}
+      <Box sx={{ position: 'absolute', top: -70, right: -50, width: 210, height: 210, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 66%)` }} />
+      <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 190, height: 190, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 66%)` }} />
+
+      {/* One line of story text, swapping with the flip */}
+      <Box sx={{ position: 'relative', height: 26, width: '100%', zIndex: 1 }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 1, 1, 0] }}
+          transition={{ delay: 0.3, duration: FLIP - 0.2, times: [0, 0.18, 0.85, 1] }}
+          style={{ position: 'absolute', inset: 0 }}
+        >
+          <Box sx={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.015em', color: 'white' }}>A purchase at your shop...</Box>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: FLIP + 0.15, duration: 0.4 }}
+          style={{ position: 'absolute', inset: 0 }}
+        >
+          <Box sx={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.015em', color: 'white' }}>
+            ...becomes a <Box component='span' sx={{ color: ACCENT_GOLD_LIGHT }}>chance to win</Box>
+          </Box>
+        </motion.div>
+      </Box>
+
+      {/* The stage: receipt flips into the draw entry card */}
+      <Box sx={{ position: 'relative', mt: 2, width: 200, height: 200, zIndex: 1 }} style={{ perspective: 900 }}>
+        {/* Gold halo warming up behind the entry card */}
+        {!reduced && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: FLIP + 0.1, duration: 0.9 }}
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              width: 250,
+              height: 250,
+              margin: '-125px 0 0 -125px',
+              borderRadius: '50%',
+              background: `radial-gradient(circle, ${GOLD_TROPHY}40 0%, transparent 62%)`,
+            }}
+          />
+        )}
+
+        {/* Paper receipt from your shop */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={
+            reduced
+              ? { opacity: [0, 1, 1, 0] }
+              : { opacity: [0, 1, 1, 0], y: [26, 0, 0, 0], scale: [0.92, 1, 1, 1], rotateY: [0, 0, 0, 90] }
+          }
+          transition={{ delay: 0.35, duration: FLIP - 0.35 + 0.2, times: [0, 0.16, 0.86, 1], ease: 'easeInOut' }}
+          style={{ position: 'absolute', inset: 0 }}
+        >
+          <Box sx={{ mx: 'auto', width: 172 }}>
+            <Box sx={{ borderRadius: '14px 14px 0 0', bgcolor: BG_SURFACE, boxShadow: SHADOW_FLOAT, p: '13px 15px 11px', textAlign: 'left' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.9, mb: 1.3 }}>
+                <Box sx={{ width: 28, height: 28, borderRadius: '10px', bgcolor: SECTOR_CONFIG.Coffee.bgColor, display: 'grid', placeItems: 'center', flex: 'none' }}>
+                  <SectorGlyph sector='Coffee' size={16} color={SECTOR_CONFIG.Coffee.color} />
+                </Box>
+                <Box>
+                  <Box sx={{ fontSize: 11.5, fontWeight: 800, lineHeight: 1.2, color: TEXT_PRIMARY }}>Bella's Coffee</Box>
+                  <Box sx={{ fontSize: 8.5, fontWeight: 600, color: TEXT_TERTIARY }}>120 Main St · 9:41 AM</Box>
+                </Box>
+              </Box>
+              {(
+                [
+                  { w: 62, p: 20 },
+                  { w: 44, p: 16 },
+                  { w: 52, p: 18 },
+                ] as const
+              ).map((row, i) => (
+                <Box key={i} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.9 }}>
+                  <Box sx={{ height: 6, width: `${row.w}%`, borderRadius: 3, bgcolor: ALPHA_BLACK_06 }} />
+                  <Box sx={{ height: 6, width: row.p, borderRadius: 3, bgcolor: ALPHA_BLACK_06 }} />
+                </Box>
+              ))}
+              <Box sx={{ my: 1.1, borderTop: `2px dashed ${ALPHA_BLACK_06}` }} />
+              <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                <Box component='span' sx={{ fontSize: 10, fontWeight: 700, color: TEXT_TERTIARY }}>Total</Box>
+                <Box component='span' sx={{ fontSize: 15, fontWeight: 900, color: TEXT_HEADING }}>$30.00</Box>
+              </Box>
+            </Box>
+            {/* Torn receipt edge */}
+            <Box
+              sx={{
+                height: 7,
+                backgroundImage: `linear-gradient(135deg, ${BG_SURFACE} 50%, transparent 50%), linear-gradient(225deg, ${BG_SURFACE} 50%, transparent 50%)`,
+                backgroundSize: '11px 7px',
+                backgroundRepeat: 'repeat-x',
+              }}
+            />
+          </Box>
+        </motion.div>
+
+        {/* The draw entry card it turns into - the app's own campaign card */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={reduced ? { opacity: 1 } : { opacity: [0, 1], rotateY: [-90, 0], scale: [0.96, 1] }}
+          transition={{ delay: FLIP + 0.05, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}
+        >
+          <Box
+            sx={{
+              position: 'relative',
+              overflow: 'hidden',
+              mx: 'auto',
+              width: 200,
+              borderRadius: '18px',
+              p: '14px 15px 13px',
+              background: GRADIENT_HERO,
+              border: `1px solid ${ALPHA_WHITE_20}`,
+              boxShadow: SHADOW_CARD_DEEP,
+              textAlign: 'left',
+            }}
+          >
+            <ConfirmationNumber sx={{ position: 'absolute', right: 6, bottom: 4, fontSize: 56, color: 'white', opacity: 0.14, transform: 'rotate(12deg)' }} />
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                <Box sx={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: ALPHA_WHITE_80 }}>Monthly Cash Draw</Box>
+                <Box sx={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 0.6, px: 1, py: 0.35, borderRadius: 50, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}` }}>
+                  <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: GOLD_TROPHY }} />
+                  <Box component='span' sx={{ fontSize: 7.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACCENT_GOLD_LIGHT }}>Live now</Box>
+                </Box>
+              </Box>
+              <Box sx={{ ...GOLD_SHIMMER_SX, mt: 0.5, fontSize: 40 }}>$$$</Box>
+              <Box sx={{ my: 1.2, borderTop: `2px dashed ${ALPHA_WHITE_30}` }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box component='span' sx={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: ALPHA_WHITE_80 }}>Entry</Box>
+                <Box component='span' sx={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 900, letterSpacing: '0.2em', color: ACCENT_GOLD_LIGHT }}>8KD2QP</Box>
+              </Box>
+            </Box>
+          </Box>
+        </motion.div>
+      </Box>
+
+      {/* The customer's payoff moment, straight out of the entry success screen */}
+      <motion.div
+        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.92 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ ...SPRING_BOUNCY, delay: FLIP + 0.7 }}
+        style={{ marginTop: 18 }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.9, px: 2, py: 1, borderRadius: 999, bgcolor: 'white', boxShadow: SHADOW_FLOAT }}>
+          <EmojiEvents sx={{ fontSize: 17, color: GOLD_TROPHY }} />
+          <Box component='span' sx={{ fontSize: 12, fontWeight: 800, color: TEXT_HEADING }}>You're in! Good luck</Box>
+        </Box>
+      </motion.div>
+    </Box>
+  );
+}
+
+// ── Beat 2 · Customers find you on the Nearby map ─────────────────────────────
 
 function PresenceScreen({ reduced }: ScreenProps) {
   return (
@@ -259,102 +492,128 @@ function PresenceScreen({ reduced }: ScreenProps) {
   );
 }
 
-// ── Beat 2 · Campaign Dashboard: KPIs + Recent entries feed ───────────────────
+// ── Beat 3 · Growth: dashboard KPIs counting up, live feed, rising sales ──────
 
 const FEED_ROWS = [
   { title: 'RCP-48213', when: '2m ago', amount: '$45.00' },
   { title: 'RCP-48166', when: '1h ago', amount: '$32.50' },
-  { title: 'RCP-48102', when: '3h ago', amount: '$27.00' },
 ];
 
-function DashboardScreen({ reduced }: ScreenProps) {
+// Month-over-month growth story for the "Draw Sales Over Time" chart.
+const BARS = [18, 24, 31, 39, 47, 56];
+
+function GrowthScreen({ reduced }: ScreenProps) {
   return (
     <Box sx={{ position: 'absolute', inset: 0, bgcolor: BG_SUBTLE, overflow: 'hidden' }}>
       <ScreenHeader title='Campaign Dashboard' subtitle='Monitor your active campaign and entries' />
 
-      <Box sx={{ p: '10px 12px 0' }}>
-        {/* Date range segments, MTD selected */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, delay: 0.3 }}>
-          <Box sx={{ display: 'flex', gap: 0.5, mb: 1.1 }}>
-            {(['Today', 'WTD', 'MTD'] as const).map((seg, i) => (
-              <Box
-                key={seg}
-                sx={{
-                  px: 1.1,
-                  py: 0.35,
-                  borderRadius: 999,
-                  bgcolor: i === 2 ? TEXT_HEADING : BG_SURFACE,
-                  border: i === 2 ? 'none' : `1px solid ${BORDER_SUBTLE}`,
-                }}
-              >
-                <Box component='span' sx={{ fontSize: 9, fontWeight: 700, color: i === 2 ? 'white' : TEXT_TERTIARY }}>{seg}</Box>
-              </Box>
-            ))}
-          </Box>
-        </motion.div>
-
-        {/* KPI cards: Entries / Revenue / Custmrs, like the real dashboard */}
+      <Box sx={{ p: '8px 12px 0' }}>
+        {/* KPI cards: Entries / Revenue / Custmrs, like the real dashboard, counting up */}
         <Box sx={{ display: 'flex', gap: 0.8 }}>
           {(
             [
-              { Icon: CheckCircleOutline, label: 'Entries', value: '342', bg: ALPHA_PRIMARY_10, fg: PRIMARY_MAIN },
-              { Icon: TrendingUp, label: 'Revenue', value: '$4.2k', bg: ALPHA_GREEN_10, fg: STATUS_ACTIVATED_TEXT },
-              { Icon: PeopleAlt, label: 'Custmrs', value: '127', bg: ALPHA_ORANGE_12, fg: STATUS_PENDING_TEXT },
+              { Icon: CheckCircleOutline, label: 'Entries', to: 342, render: (v: number) => `${Math.round(v)}`, bg: ALPHA_PRIMARY_10, fg: PRIMARY_MAIN },
+              { Icon: TrendingUp, label: 'Revenue', to: 4.2, render: (v: number) => `$${v.toFixed(1)}k`, bg: ALPHA_GREEN_10, fg: STATUS_ACTIVATED_TEXT },
+              { Icon: PeopleAlt, label: 'Custmrs', to: 127, render: (v: number) => `${Math.round(v)}`, bg: ALPHA_ORANGE_12, fg: STATUS_PENDING_TEXT },
             ] as const
           ).map((kpi, i) => (
             <motion.div
               key={kpi.label}
               initial={reduced ? { opacity: 0 } : { opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_POP, delay: 0.4 + i * 0.12 }}
+              transition={{ ...SPRING_POP, delay: 0.35 + i * 0.12 }}
               style={{ flex: 1, padding: '9px 8px', borderRadius: 14, background: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, boxShadow: SHADOW_CARD }}
             >
               <Box sx={{ width: 24, height: 24, borderRadius: '8px', bgcolor: kpi.bg, display: 'grid', placeItems: 'center', mb: 0.6 }}>
                 <kpi.Icon sx={{ fontSize: 14, color: kpi.fg }} />
               </Box>
               <Box sx={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: TEXT_TERTIARY }}>{kpi.label}</Box>
-              <Box sx={{ mt: 0.2, fontSize: 16, fontWeight: 900, lineHeight: 1.1, color: TEXT_HEADING }}>{kpi.value}</Box>
+              <Box sx={{ mt: 0.2, fontSize: 16, fontWeight: 900, lineHeight: 1.1, color: TEXT_HEADING }}>
+                <CountUp to={kpi.to} delay={0.5 + i * 0.12} reduced={reduced} render={kpi.render} />
+              </Box>
             </motion.div>
           ))}
         </Box>
 
-        {/* Recent entries feed */}
-        <Box sx={{ mt: 1.4, mb: 0.8, fontSize: 11.5, fontWeight: 800, color: TEXT_HEADING }}>Recent entries</Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.9 }}>
+        {/* Recent entries feed, arriving live */}
+        <Box sx={{ mt: 1.2, mb: 0.7, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box component='span' sx={{ fontSize: 11.5, fontWeight: 800, color: TEXT_HEADING }}>Recent entries</Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+            <motion.div
+              animate={reduced ? undefined : { opacity: [1, 0.35, 1], scale: [1, 0.75, 1] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ width: 6, height: 6, borderRadius: '50%', background: METRIC_GOOD }}
+            />
+            <Box component='span' sx={{ fontSize: 9, fontWeight: 700, color: TEXT_TERTIARY }}>Live</Box>
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.8 }}>
           {FEED_ROWS.map((row, i) => (
             <motion.div
               key={row.title}
               initial={reduced ? { opacity: 0 } : { opacity: 0, y: -14, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ ...SPRING_POP, delay: 1.0 + i * 0.4 }}
+              transition={{ ...SPRING_POP, delay: 1.05 + i * 0.4 }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 9,
-                padding: '9px 11px',
+                padding: '8px 11px',
                 borderRadius: 16,
                 background: BG_SURFACE,
                 border: `1px solid ${BORDER_SUBTLE}`,
                 boxShadow: SHADOW_CARD,
               }}
             >
-              <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: AVATAR_BLUE_BG, display: 'grid', placeItems: 'center', flex: 'none' }}>
-                <Receipt sx={{ fontSize: 15, color: PRIMARY_MAIN }} />
+              <Box sx={{ width: 30, height: 30, borderRadius: '50%', bgcolor: AVATAR_BLUE_BG, display: 'grid', placeItems: 'center', flex: 'none' }}>
+                <Receipt sx={{ fontSize: 14, color: PRIMARY_MAIN }} />
               </Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Box component='span' sx={{ fontSize: 10.5, fontWeight: 800, color: TEXT_PRIMARY, whiteSpace: 'nowrap' }}>{row.title}</Box>
-                <Box sx={{ mt: 0.2, fontSize: 8.5, fontWeight: 500, color: TEXT_TERTIARY }}>{row.when}</Box>
+                <Box sx={{ mt: 0.1, fontSize: 8.5, fontWeight: 500, color: TEXT_TERTIARY }}>{row.when}</Box>
               </Box>
               <Box component='span' sx={{ fontSize: 10.5, fontWeight: 800, color: TEXT_HEADING, flex: 'none' }}>{row.amount}</Box>
             </motion.div>
           ))}
         </Box>
+
+        {/* "Draw Sales Over Time" chart, folded in from the Analytics page */}
+        <motion.div
+          initial={reduced ? { opacity: 0 } : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING_POP, delay: 1.7 }}
+        >
+          <Box sx={{ mt: 1.2, p: '10px 13px 8px', borderRadius: '16px', bgcolor: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, boxShadow: SHADOW_CARD }}>
+            <Box sx={{ fontSize: 11.5, fontWeight: 800, color: TEXT_HEADING }}>Draw Sales Over Time</Box>
+            <Box sx={{ mt: 0.2, mb: 0.8, fontSize: 8.5, fontWeight: 500, color: TEXT_TERTIARY }}>Revenue from qualifying purchases</Box>
+            <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: 66, px: 0.5 }}>
+              {BARS.map((h, i) => (
+                <Box key={i} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                  <motion.div
+                    initial={{ scaleY: reduced ? 1 : 0, opacity: reduced ? 0 : 1 }}
+                    animate={{ scaleY: 1, opacity: 1 }}
+                    transition={reduced ? { duration: 0.3, delay: 1.9 } : { ...SPRING_POP, delay: 1.9 + i * 0.11 }}
+                    style={{
+                      width: 22,
+                      height: h,
+                      borderRadius: 6,
+                      transformOrigin: 'bottom',
+                      background: i === BARS.length - 1 ? PRIMARY_MAIN : PRIMARY_TINT,
+                      border: i === BARS.length - 1 ? 'none' : `1px solid ${BORDER_RECEIPT}`,
+                    }}
+                  />
+                  <Box component='span' sx={{ fontSize: 7.5, fontWeight: 700, color: TEXT_TERTIARY }}>{LAST_6_MONTHS[i]}</Box>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </motion.div>
       </Box>
     </Box>
   );
 }
 
-// ── Beat 3 · The campaign card: prize, countdown, entry capacity ──────────────
+// ── Beat 4 · The campaign card: prize, countdown, entry capacity ──────────────
 
 function CampaignScreen({ reduced }: ScreenProps) {
   return (
@@ -384,28 +643,7 @@ function CampaignScreen({ reduced }: ScreenProps) {
                 <Box component='span' sx={{ fontSize: 7.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: ACCENT_GOLD_LIGHT }}>{DAYS_LEFT_LABEL}</Box>
               </Box>
             </Box>
-            <Box
-              sx={{
-                mt: 0.3,
-                fontSize: 34,
-                fontWeight: 900,
-                lineHeight: 1,
-                letterSpacing: '-0.02em',
-                background: `linear-gradient(90deg, ${ACCENT_GOLD} 0%, ${GOLD_TROPHY} 25%, ${ACCENT_GOLD_LIGHT} 50%, ${GOLD_TROPHY} 75%, ${ACCENT_GOLD} 100%)`,
-                backgroundSize: '200% auto',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                color: 'transparent',
-                animation: 'wbGoldShimmer 3s linear infinite',
-                '@keyframes wbGoldShimmer': {
-                  '0%': { backgroundPosition: '0% center' },
-                  '100%': { backgroundPosition: '200% center' },
-                },
-                '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-              }}
-            >
-              $$$
-            </Box>
+            <Box sx={{ ...GOLD_SHIMMER_SX, mt: 0.3, fontSize: 34 }}>$$$</Box>
             <Box sx={{ mt: 1, fontSize: 9.5, fontWeight: 600, color: ALPHA_WHITE_80 }}>Sponsored and run by Winnbell</Box>
           </Box>
         </motion.div>
@@ -442,80 +680,6 @@ function CampaignScreen({ reduced }: ScreenProps) {
             <CheckCircle sx={{ fontSize: 18, color: METRIC_GOOD, flex: 'none', mt: 0.1 }} />
             <Box sx={{ fontSize: 9.5, lineHeight: 1.6, color: TEXT_SECONDARY }}>
               Prize, official rules, entry validation, and winner selection are all handled by Winnbell. You take the credit.
-            </Box>
-          </Box>
-        </motion.div>
-      </Box>
-    </Box>
-  );
-}
-
-// ── Beat 4 · Analytics (Overview tab) ─────────────────────────────────────────
-
-// Month-over-month growth story for the "Draw Sales Over Time" chart.
-const BARS = [22, 30, 38, 48, 58, 70];
-
-function AnalyticsScreen({ reduced }: ScreenProps) {
-  return (
-    <Box sx={{ position: 'absolute', inset: 0, bgcolor: BG_SUBTLE, overflow: 'hidden' }}>
-      <ScreenHeader title='Analytics' subtitle='Understand your customers and growth' />
-
-      <Box sx={{ p: '10px 12px 0' }}>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, delay: 0.3 }}>
-          <TabPills tabs={['Overview', 'New Customers', 'Engagement']} />
-        </motion.div>
-
-        {/* Overview KPI tiles, real labels + captions */}
-        <Box sx={{ mt: 1.2, display: 'flex', gap: 0.8 }}>
-          {(
-            [
-              { Icon: Groups, label: 'Customers', value: '127', caption: 'Different people who made a purchase' },
-              { Icon: ConfirmationNumber, label: 'Total Entries', value: '342', caption: 'Entries in the selected period' },
-              { Icon: Autorenew, label: 'Entries per Customer', value: '2.7', caption: 'Average entries per person' },
-            ] as const
-          ).map((kpi, i) => (
-            <motion.div
-              key={kpi.label}
-              initial={reduced ? { opacity: 0 } : { opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_POP, delay: 0.45 + i * 0.12 }}
-              style={{ flex: 1, padding: '9px 8px', borderRadius: 14, background: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, boxShadow: SHADOW_CARD }}
-            >
-              <kpi.Icon sx={{ fontSize: 14, color: PRIMARY_MAIN, mb: 0.5 }} />
-              <Box sx={{ fontSize: 7.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: TEXT_TERTIARY, lineHeight: 1.3 }}>{kpi.label}</Box>
-              <Box sx={{ mt: 0.2, fontSize: 15, fontWeight: 900, lineHeight: 1.1, color: TEXT_HEADING }}>{kpi.value}</Box>
-            </motion.div>
-          ))}
-        </Box>
-
-        {/* "Customers & Entries" chart card */}
-        <motion.div
-          initial={reduced ? { opacity: 0 } : { opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING_POP, delay: 0.75 }}
-        >
-          <Box sx={{ mt: 1.2, p: '12px 13px 10px', borderRadius: '16px', bgcolor: BG_SURFACE, border: `1px solid ${BORDER_SUBTLE}`, boxShadow: SHADOW_CARD }}>
-            <Box sx={{ fontSize: 11.5, fontWeight: 800, color: TEXT_HEADING }}>Draw Sales Over Time</Box>
-            <Box sx={{ mt: 0.2, mb: 1, fontSize: 8.5, fontWeight: 500, color: TEXT_TERTIARY }}>Revenue from purchases that qualified for entries</Box>
-            <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: 80, px: 0.5 }}>
-              {BARS.map((h, i) => (
-                <Box key={i} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.6 }}>
-                  <motion.div
-                    initial={{ scaleY: reduced ? 1 : 0, opacity: reduced ? 0 : 1 }}
-                    animate={{ scaleY: 1, opacity: 1 }}
-                    transition={reduced ? { duration: 0.3, delay: 1.0 } : { ...SPRING_POP, delay: 1.0 + i * 0.11 }}
-                    style={{
-                      width: 22,
-                      height: h,
-                      borderRadius: 6,
-                      transformOrigin: 'bottom',
-                      background: i === BARS.length - 1 ? PRIMARY_MAIN : PRIMARY_TINT,
-                      border: i === BARS.length - 1 ? 'none' : `1px solid ${BORDER_RECEIPT}`,
-                    }}
-                  />
-                  <Box component='span' sx={{ fontSize: 7.5, fontWeight: 700, color: TEXT_TERTIARY }}>{LAST_6_MONTHS[i]}</Box>
-                </Box>
-              ))}
             </Box>
           </Box>
         </motion.div>
@@ -640,19 +804,22 @@ function MarketingScreen({ reduced }: ScreenProps) {
 
 // ── The business showcase ─────────────────────────────────────────────────────
 
+// Pacing note: durations assume a cold viewer who has never heard of Winnbell -
+// every beat gets extra dwell time after its choreography settles.
 const BEATS: ShowcaseBeat[] = [
-  { key: 'presence', caption: 'Customers find you on the map', duration: 4400, Screen: PresenceScreen },
-  { key: 'dashboard', caption: 'Entries land in your dashboard', duration: 4800, Screen: DashboardScreen },
+  // Comprehension first: the concept beat decodes everything that follows.
+  { key: 'concept', caption: 'Your customers enter to win real cash', duration: 8200, Screen: ConceptScreen },
+  { key: 'presence', caption: 'So new customers pick you', duration: 5400, Screen: PresenceScreen },
+  { key: 'growth', caption: 'Watch sales and customers climb', duration: 6600, Screen: GrowthScreen },
   // Longer beat: the "handled by Winnbell" note lands late and deserves reading time.
-  { key: 'campaign', caption: 'Winnbell runs the monthly draw', duration: 6400, Screen: CampaignScreen },
-  { key: 'analytics', caption: 'Track your customers and growth', duration: 4600, Screen: AnalyticsScreen },
-  { key: 'marketing', caption: 'Marketing materials included', duration: 4400, Screen: MarketingScreen },
+  { key: 'campaign', caption: 'Winnbell pays the prize and runs it all', duration: 7000, Screen: CampaignScreen },
+  { key: 'marketing', caption: 'You just take the credit', duration: 5000, Screen: MarketingScreen },
 ];
 
 const BusinessHeroShowcase = () => (
   <PhoneShowcase
     beats={BEATS}
-    srDescription='A quick look inside the business dashboard: your shop live on the Winnbell map, customer entries arriving on your campaign dashboard, the monthly cash draw Winnbell runs for you, your analytics, and ready-made marketing materials with QR posters.'
+    srDescription='A quick look at Winnbell for business owners: a qualifying purchase at your shop enters your customer in the monthly cash draw, new customers find your shop on the Winnbell map, entries and sales climb on your campaign dashboard, Winnbell sponsors the prize and runs the whole campaign, and ready-made marketing materials put your name on professional posters.'
   />
 );
 
