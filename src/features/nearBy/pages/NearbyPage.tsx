@@ -43,6 +43,8 @@ import {
   BG_ROW_SUBTLE,
   BG_SUBTLE,
   ALPHA_PRIMARY_40,
+  GLASS_BACKDROP,
+  GLASS_BG,
 } from '../../../shared/colors';
 import TapButton from '../../../shared/components/TapButton';
 import { staggerContainer, pressable, pressableCard, pressableIcon, SPRING_POP } from '../../../shared/motion';
@@ -175,7 +177,18 @@ const NearbyPage = () => {
         <Box sx={{ position: 'absolute', top: 7, left: 20, right: 20, zIndex: 10, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Paper
             elevation={3}
-            sx={{ flex: 1, p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 4, height: 48 }}
+            sx={{
+              flex: 1, p: '2px 4px', display: 'flex', alignItems: 'center', borderRadius: 4, height: 48,
+              // Glass over the map: the map pans underneath the blur.
+              '@supports (backdrop-filter: blur(1px))': {
+                bgcolor: GLASS_BG,
+                backdropFilter: GLASS_BACKDROP,
+              },
+              '@media (prefers-reduced-transparency: reduce)': {
+                bgcolor: 'background.paper',
+                backdropFilter: 'none',
+              },
+            }}
           >
             <Box sx={{ p: '10px', display: 'flex', alignItems: 'center' }}>
               <Search sx={{ color: 'text.secondary' }} />

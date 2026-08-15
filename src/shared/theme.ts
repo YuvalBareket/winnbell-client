@@ -57,6 +57,16 @@ export const theme = createTheme({
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
         },
+        // CSS-driven motion honors the OS reduced-motion setting (framer-motion is
+        // covered separately by MotionConfig in App.tsx). Opacity/color feedback
+        // still lands - only movement is removed.
+        '@media (prefers-reduced-motion: reduce)': {
+          '*, *::before, *::after': {
+            animationDuration: '0.01ms !important',
+            animationIterationCount: '1 !important',
+            transitionDuration: '0.01ms !important',
+          },
+        },
       },
     },
     MuiButtonBase: {
@@ -73,7 +83,12 @@ export const theme = createTheme({
           borderRadius: 32,
           boxShadow: 'none',
           padding: '10px 22px',
-          transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
+          transition: 'background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease-out',
+          // Feedback lives on the press, and it's instant: buttons visibly give
+          // under the finger on pointer-down, not on release.
+          '&:active': {
+            transform: 'scale(0.97)',
+          },
         },
         sizeLarge: {
           padding: '12px 28px',
@@ -132,7 +147,8 @@ export const theme = createTheme({
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          transition: 'all 0.15s ease',
+          // Only compositor/paint-cheap properties - 'all' also animated layout.
+          transition: 'background-color 0.15s ease, color 0.15s ease',
         },
       },
     },

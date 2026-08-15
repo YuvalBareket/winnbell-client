@@ -488,7 +488,9 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
             </Typography>
           </Stack>
           <Box sx={{ height: { xs: 9, md: 10 }, borderRadius: '6px', bgcolor: CHART_GRID, overflow: 'hidden' }}>
-            <Box sx={{ width: `${capPct}%`, height: '100%', borderRadius: '6px', background: GRADIENT_PROGRESS_BAR, transition: 'width 0.5s ease' }} />
+            {/* Full-width fill revealed via translateX: animates on the compositor
+                (width relayouts every frame) and keeps the gradient's full span. */}
+            <Box sx={{ width: '100%', height: '100%', borderRadius: '6px', background: GRADIENT_PROGRESS_BAR, transform: `translateX(${capPct - 100}%)`, transition: 'transform 0.5s ease' }} />
           </Box>
         </Box>
       )}

@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
+import { MotionConfig } from 'framer-motion';
 import { BrowserRouter, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react'; // Import Gate
@@ -22,12 +23,16 @@ function App() {
       <PersistGate loading={null} persistor={persistor}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <BrowserRouter>
-            <ScrollToTop />
-            <RootBoundary>
-              <AppRoutes />
-            </RootBoundary>
-          </BrowserRouter>
+          {/* Every framer-motion animation app-wide honors the OS reduced-motion setting:
+              transforms are skipped, opacity/color changes are kept. */}
+          <MotionConfig reducedMotion='user'>
+            <BrowserRouter>
+              <ScrollToTop />
+              <RootBoundary>
+                <AppRoutes />
+              </RootBoundary>
+            </BrowserRouter>
+          </MotionConfig>
         </ThemeProvider>
       </PersistGate>
     </Provider>

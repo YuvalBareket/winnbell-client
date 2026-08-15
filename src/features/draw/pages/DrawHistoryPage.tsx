@@ -132,7 +132,7 @@ const DrawHistoryPage = () => {
                   aria-label={`Go to campaign ${i + 1}`}
                   onClick={() => swiperInst?.slideTo(i)}
                   onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); swiperInst?.slideTo(i); } }}
-                  sx={{ height: 6, borderRadius: '3px', cursor: 'pointer', transition: 'all 0.3s', width: i === effectiveIndex ? 20 : 6, bgcolor: i === effectiveIndex ? PRIMARY_MAIN : BORDER_LIGHT }}
+                  sx={{ height: 6, borderRadius: '3px', cursor: 'pointer', transition: 'width 0.3s ease, background-color 0.3s ease', width: i === effectiveIndex ? 20 : 6, bgcolor: i === effectiveIndex ? PRIMARY_MAIN : BORDER_LIGHT }}
                 />
               ))}
             </Box>

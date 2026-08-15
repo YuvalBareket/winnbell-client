@@ -13,6 +13,8 @@ import { useAppSelector } from '../../store/hook';
 import { selectIsBusiness, selectIsAdmin, selectIsLocationManager } from '../../store/selectors/authSelectors';
 import {
   BG_SUBTLE,
+  GLASS_BACKDROP,
+  GLASS_BG,
   GRADIENT_PRIMARY,
   NEUTRAL_INACTIVE_BG,
   NEUTRAL_INACTIVE_ICON,
@@ -75,7 +77,6 @@ const LayoutShell = () => {
           pb: { xs: isNearby ? 0 : '76px', md: isNearby ? 0 : 4 },
           ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` },
           width: { xs: '100%', md: `calc(100% - ${SIDEBAR_WIDTH}px)` },
-          transition: 'margin 0.3s ease',
         }}
       >
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -92,7 +93,17 @@ const LayoutShell = () => {
             zIndex: 1000,
             display: { xs: 'block', md: 'none' },
             overflow: 'visible',
+            // Floating chrome is a translucent material: page content scrolls
+            // underneath the blur instead of dying at an opaque strip.
             bgcolor: 'background.paper',
+            '@supports (backdrop-filter: blur(1px))': {
+              bgcolor: GLASS_BG,
+              backdropFilter: GLASS_BACKDROP,
+            },
+            '@media (prefers-reduced-transparency: reduce)': {
+              bgcolor: 'background.paper',
+              backdropFilter: 'none',
+            },
             borderTop: '1px solid',
             borderColor: 'divider',
             boxShadow: SHADOW_BOTTOM_NAV,
