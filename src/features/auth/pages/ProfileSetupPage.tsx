@@ -2,10 +2,10 @@ import { useState } from 'react';
 import {
   Box, Typography, Stack, Alert,
   useMediaQuery, useTheme, Grid,
-  Select, MenuItem,
+  Select, MenuItem, IconButton,
 } from '@mui/material';
 import AttractButton from '../../../shared/components/AttractButton';
-import { Warning, Female, Male, Transgender, MoreHoriz, CheckCircle } from '@mui/icons-material';
+import { Warning, Female, Male, Transgender, MoreHoriz, CheckCircle, ArrowBackIosNew } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -18,11 +18,12 @@ import { selectIsBusiness, selectIsLocationManager } from '../../../store/select
 import { completeProfileSetup } from '../../../store/slices/authSlice';
 import AuthBrandPanel from '../components/AuthBrandPanel';
 import { api } from '../../../shared/api/client';
+import { useLogout } from '../../../shared/hooks/useLogout';
 import {
   BG_PAGE, BORDER_LIGHT, PRIMARY_MAIN, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10,
   TEXT_SECONDARY, TEXT_TERTIARY, TEXT_TERTIARY_AA, TEXT_HEADING, AMBER_TEXT_AA,
   GRADIENT_HERO, GRADIENT_HERO_WARM, GRADIENT_CTA,
-  ALPHA_WHITE_15, SHADOW_PRIMARY_MEDIUM,
+  ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, SHADOW_PRIMARY_MEDIUM,
 } from '../../../shared/colors';
 import { staggerContainer, popIn, riseIn } from '../../../shared/motion';
 import { US_STATES } from '../../../shared/constants/usStates';
@@ -51,6 +52,9 @@ const ProfileSetupPage = () => {
 
   const isBusiness = useAppSelector(selectIsBusiness);
   const isLocationManager = useAppSelector(selectIsLocationManager);
+  // Setup is a gate with no in-app destination behind it: "back" here means leaving
+  // this account, so the back affordance signs out (per-account logout semantics).
+  const handleLogout = useLogout();
 
   const [dob, setDob] = useState<Dayjs | null>(null);
   const [selectedGender, setSelectedGender] = useState<Gender | ''>('');
@@ -290,19 +294,28 @@ const ProfileSetupPage = () => {
         >
           <motion.div variants={staggerContainer} initial="hidden" animate="visible">
             <Box sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
-              {/* Heading */}
+              {/* Heading - back chip like the login/register pages. Setup has no page
+                  behind it, so back signs the user out. */}
               <motion.div variants={riseIn}>
-                <Typography
-                  sx={{
-                    fontSize: '28px',
-                    fontWeight: 700,
-                    letterSpacing: '-0.02em',
-                    color: TEXT_HEADING,
-                    marginBottom: '6px',
-                  }}
-                >
-                  Set up your profile
-                </Typography>
+                <Stack direction="row" alignItems="center" gap={2} sx={{ marginBottom: '6px' }}>
+                  <IconButton
+                    aria-label="Sign out"
+                    onClick={handleLogout}
+                    sx={{ bgcolor: 'white', border: `1px solid ${BORDER_LIGHT}`, flexShrink: 0 }}
+                  >
+                    <ArrowBackIosNew fontSize="small" />
+                  </IconButton>
+                  <Typography
+                    sx={{
+                      fontSize: '28px',
+                      fontWeight: 700,
+                      letterSpacing: '-0.02em',
+                      color: TEXT_HEADING,
+                    }}
+                  >
+                    Set up your profile
+                  </Typography>
+                </Stack>
               </motion.div>
 
               {/* Subtitle */}
@@ -459,8 +472,20 @@ const ProfileSetupPage = () => {
         {/* Glow orb */}
         <Box sx={{ position: 'absolute', top: -110, right: -90, width: 320, height: 320, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`, pointerEvents: 'none' }} />
 
-        {/* Brand row: app name only - this step is a gate, there is no going back */}
-        <Stack direction="row" alignItems="center" sx={{ position: 'relative' }}>
+        {/* Brand row: back chip + app name, styled like the login/register gradient bands.
+            Setup is a gate with nothing behind it, so back signs the user out. */}
+        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ position: 'relative' }}>
+          <IconButton
+            aria-label="Sign out"
+            onClick={handleLogout}
+            sx={{
+              width: 40, height: 40, color: 'white', bgcolor: ALPHA_WHITE_15,
+              border: `1px solid ${ALPHA_WHITE_20}`, borderRadius: '10px', flexShrink: 0,
+              '&:hover': { bgcolor: ALPHA_WHITE_30 },
+            }}
+          >
+            <ArrowBackIosNew sx={{ fontSize: 18 }} />
+          </IconButton>
           <Box component="img" src="/winnbell_app_name_white.svg" alt="Winnbell" sx={{ height: 36, width: 'auto', objectFit: 'contain' }} />
         </Stack>
 

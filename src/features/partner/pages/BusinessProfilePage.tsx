@@ -14,11 +14,11 @@ import {
   Snackbar,
   Dialog,
   Drawer,
-
 } from '@mui/material';
 import {
   ArrowForward,
   ArrowBack,
+  ArrowBackIosNew,
   Storefront,
   LocationOn,
   CheckCircle,
@@ -42,12 +42,14 @@ import { useAppSelector } from '../../../store/hook';
 import { selectIsRequiresBusinessSetup } from '../../../store/selectors/authSelectors';
 import AddressAutoComplete from '../../../shared/components/AddressAutoComplete';
 import { useBusinessSetup } from '../hooks/useBusinessSetup';
+import { useLogout } from '../../../shared/hooks/useLogout';
 import {
   GRADIENT_SIDEBAR,
   GRADIENT_DRAW_CARD,
   ALPHA_WHITE_10,
   ALPHA_WHITE_15,
   ALPHA_WHITE_20,
+  ALPHA_WHITE_30,
   ALPHA_WHITE_70,
   ALPHA_PRIMARY_06,
   ALPHA_PRIMARY_10,
@@ -116,6 +118,9 @@ const BusinessProfilePage = () => {
   const [expandedIndex, setExpandedIndex] = useState(0);
 
   const { mutate: setupBusiness, isPending } = useBusinessSetup();
+  // Setup is a gate with no in-app destination behind it: "back" on step one means
+  // leaving this account, so the brand-row arrow signs out (per-account logout).
+  const handleLogout = useLogout();
   const [setupError, setSetupError] = useState('');
   // Set synchronously on submit, BEFORE any mutation/redux state changes. React Query's
   // isSuccess is notified in a microtask, so the redux-triggered re-render (flag cleared in
@@ -229,9 +234,24 @@ const BusinessProfilePage = () => {
             blurred children break its rounded clipping on Android. */}
         <Box sx={{ display: { xs: 'block', md: 'none' }, position: 'absolute', top: -100, right: -80, width: 290, height: 290, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 68%)`, pointerEvents: 'none' }} />
 
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
+        <Stack direction='row' alignItems='center' spacing={1.5} sx={{ position: 'relative', zIndex: 1 }}>
+          {/* Step one only: step two has its own in-wizard back button. Back chip styled like
+              the login/register bands; setup is a gate, so back signs the user out. */}
+          {step === 0 && (
+            <IconButton
+              aria-label='Sign out'
+              onClick={handleLogout}
+              sx={{
+                width: 40, height: 40, color: 'white', bgcolor: ALPHA_WHITE_15,
+                border: `1px solid ${ALPHA_WHITE_20}`, borderRadius: '10px', flexShrink: 0,
+                '&:hover': { bgcolor: ALPHA_WHITE_30 },
+              }}
+            >
+              <ArrowBackIosNew sx={{ fontSize: 18 }} />
+            </IconButton>
+          )}
           <Box component='img' src='/winnbell_app_name_white.svg' alt='Winnbell' sx={{ height: { xs: 36, md: 26 }, width: 'auto', objectFit: 'contain' }} />
-        </Box>
+        </Stack>
 
         <Box sx={{ position: 'relative', zIndex: 1, mt: { xs: 2, md: 'auto' } }}>
           <AnimatePresence mode='wait'>
