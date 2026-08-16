@@ -4,6 +4,7 @@ import {
   ConfirmationNumberOutlined,
   BusinessOutlined,
   BarChartOutlined,
+  FilterAltOutlined,
   ReceiptLongOutlined,
   GavelOutlined,
   MailOutline,
@@ -62,6 +63,7 @@ export const adminNavItems: NavItem[] = [
   { label: 'Businesses', Icon: BusinessOutlined, path: '/admin/businesses' },
   { label: 'Map', Icon: MapOutlined, path: '/admin/map' },
   { label: 'Analytics', Icon: BarChartOutlined, path: '/admin/analytics' },
+  { label: 'Funnel', Icon: FilterAltOutlined, path: '/admin/funnel' },
   { label: 'Notifications', Icon: NotificationsOutlined, path: '/admin/notifications' },
   { label: 'Settings', Icon: SettingsOutlined, path: '/admin/settings' },
 ];

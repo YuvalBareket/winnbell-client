@@ -20,6 +20,7 @@ import {
   RocketLaunchOutlined,
   BusinessOutlined,
   BarChartOutlined,
+  FilterAltOutlined,
   ReceiptLongOutlined,
   PrivacyTipOutlined,
   GavelOutlined,
@@ -102,6 +103,7 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
         { label: 'Users', icon: <PeopleOutlined />, path: '/admin/users' },
         { label: 'Businesses', icon: <BusinessOutlined />, path: '/admin/businesses' },
         { label: 'Analytics', icon: <BarChartOutlined />, path: '/admin/analytics' },
+        { label: 'Funnel', icon: <FilterAltOutlined />, path: '/admin/funnel' },
         { label: 'Notifications', icon: <NotificationsOutlined />, path: '/admin/notifications' },
         { label: 'Settings', icon: <SettingsOutlined />, path: '/admin/settings' },
       ]
