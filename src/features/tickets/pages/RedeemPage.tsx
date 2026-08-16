@@ -13,6 +13,7 @@ import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
 import { selectIsAuthenticated } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
 import { useActivatePromotional } from '../hooks/useActivatePromotional';
+import { trackFunnel } from '../../../shared/analytics/funnel';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import { usePhoneVerifySheet } from '../hooks/usePhoneVerifySheet';
 import AppPageHero from '../../../shared/components/AppPageHero';
@@ -40,6 +41,7 @@ const RedeemPage = () => {
   });
   useEffect(() => {
     localStorage.removeItem('pendingLocationId');
+    trackFunnel('submit_page_viewed');
   }, []);
   const qrLocationId = searchParams.get('l') ? Number(searchParams.get('l')) : storedLocationId;
   const theme = useTheme();

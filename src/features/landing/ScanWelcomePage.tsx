@@ -7,6 +7,7 @@ import { useAppSelector } from '../../store/hook';
 import { selectIsAuthenticated } from '../../store/selectors/authSelectors';
 import WelcomeInvite from '../../shared/components/WelcomeInvite';
 import { formatCurrency } from '../../shared/utils/date';
+import { trackFunnel } from '../../shared/analytics/funnel';
 import {
   PRIMARY_MAIN, ALPHA_PRIMARY_10, ALPHA_GREEN_10, STATUS_ACTIVATED_TEXT,
   ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
@@ -30,7 +31,10 @@ const ScanWelcomePage = () => {
 
   // Remember the location so that after sign-up the user lands back on /scan?l=<id>.
   useEffect(() => {
-    if (lid) localStorage.setItem('pendingLocationId', lid);
+    if (lid) {
+      localStorage.setItem('pendingLocationId', lid);
+      trackFunnel('scan_landing_viewed', { locationId: Number(lid) || undefined });
+    }
   }, [lid]);
 
   const { data: loc } = useQuery({

@@ -26,6 +26,7 @@ import AppDatePicker from '../../../shared/components/AppDatePicker';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { AccessTime, Close, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded, ConfirmationNumberOutlined, CelebrationRounded, PhotoCameraOutlined } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
+import { trackFunnel } from '../../../shared/analytics/funnel';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import {
   PRIMARY_MAIN, PRIMARY_LIGHT, PRIMARY_DEEP, GRADIENT_PRIMARY, GRADIENT_FREE_CARD,
@@ -280,6 +281,11 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // this guard so it can UPGRADE an already-set partial object once the real data lands.
   const hasAutoSelected = useRef(false);
 
+  // Funnel: once-per-mount flags so field events fire on the FIRST meaningful input only.
+  const trackedAmount = useRef(false);
+  const trackedReceiptId = useRef(false);
+  const trackedImage = useRef(false);
+
   // ──────────────────────────────────────────────────
   // Hooks
   // ──────────────────────────────────────────────────
@@ -373,6 +379,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       setSelectedLocation(preselectedLocationData);
       setSelectedLocationCapReached(!!preselectedLocationData.cap_reached);
       onLocationSelect?.(true);
+      if (!hasAutoSelected.current) trackFunnel('submit_business_selected', { meta: { preselected: true } });
       hasAutoSelected.current = true;
       return;
     }
@@ -382,6 +389,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       setSelectedLocation(toParticipating(preselectedLocation));
       setSelectedLocationCapReached(!!('cap_reached' in preselectedLocation && preselectedLocation.cap_reached));
       onLocationSelect?.(true);
+      trackFunnel('submit_business_selected', { meta: { preselected: true } });
       hasAutoSelected.current = true;
     }
     // No business-id-only fallback: a business id alone can't identify WHICH branch of a
@@ -423,6 +431,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     setSearchTerm('');
     setErrorMessage('');
     onLocationSelect?.(true);
+    trackFunnel('submit_business_selected', { meta: { preselected: false } });
   };
 
   const handleChangeLocation = () => {
@@ -442,8 +451,26 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     const value = e.target.value;
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
       setTransactionAmount(value);
+      if (!trackedAmount.current && parseFloat(value) > 0) {
+        trackedAmount.current = true;
+        trackFunnel('submit_amount_entered');
+      }
     }
   };
+
+  // Funnel: receipt id + image milestones, first time each becomes meaningful.
+  useEffect(() => {
+    if (!trackedReceiptId.current && receiptIdentifier.trim().length >= 5) {
+      trackedReceiptId.current = true;
+      trackFunnel('submit_receipt_id_entered');
+    }
+  }, [receiptIdentifier]);
+  useEffect(() => {
+    if (!trackedImage.current && receiptImageUrl !== null) {
+      trackedImage.current = true;
+      trackFunnel('submit_image_attached');
+    }
+  }, [receiptImageUrl]);
 
   const handleSubmitClick = () => {
     if (!isFormValid || !selectedLocation) return;
@@ -476,6 +503,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     }
     const receiptInputMethod = receiptWasPasted ? 'pasted' : 'typed';
 
+    trackFunnel('submit_attempted', { flushNow: true });
     submitReceiptEntry.mutate({
       locationId: selectedLocation.location_id,
       receiptIdentifier: receiptIdentifier.trim(),
@@ -489,6 +517,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         setSubmittedCode(data.code ?? null);
         setSubmittedEntryCount(data.entryCount ?? 1);
         setSuccessDialogOpen(true);
+        trackFunnel('submission_confirmed_shown');
         setReceiptIdentifier('');
         setTransactionAmount('');
         setErrorMessage('');

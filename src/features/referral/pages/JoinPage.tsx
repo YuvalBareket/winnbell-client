@@ -10,6 +10,8 @@ import {
   ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
 } from '../../../shared/colors';
 
+import { trackFunnel } from '../../../shared/analytics/funnel';
+
 // Friendly landing-style welcome shown when a logged-out visitor opens a referral link
 // (/join?ref=<code>). Shares its layout with ScanWelcomePage via WelcomeInvite; only the copy and
 // steps differ. Captures the referral code before signup.
@@ -20,7 +22,10 @@ const JoinPage = () => {
 
   // Capture the referral code so it survives the Supabase signup redirect.
   useEffect(() => {
-    if (ref) localStorage.setItem('pendingReferralCode', ref);
+    if (ref) {
+      localStorage.setItem('pendingReferralCode', ref);
+      trackFunnel('join_landing_viewed');
+    }
   }, [ref]);
 
   // Resolve the referral code to get the referrer's name for social proof.

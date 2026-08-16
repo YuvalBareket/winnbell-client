@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box, Button, Typography, TextField, IconButton, InputAdornment, Container,
   Stack, Alert, CircularProgress, Divider, Checkbox, FormControlLabel,
@@ -34,6 +34,7 @@ const BusinessAgreementAcceptDialog = React.lazy(() =>
   }))
 );
 import { api } from '../../../shared/api/client';
+import { trackFunnel } from '../../../shared/analytics/funnel';
 import { useSyncStatus } from '../../../shared/context/SyncStatusContext';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsAuthenticated, selectIsAdmin, selectIsBusiness, selectIsLocationManager as selectIsLocMgr } from '../../../store/selectors/authSelectors';
@@ -107,10 +108,21 @@ const RegisterPage = () => {
     if (searchParams.get('region_blocked') === '1') {
       setRegionBlocked(true);
     }
+    trackFunnel('registration_page_viewed');
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL param once on mount
   }, []);
 
+  // Funnel: registration_started fires once, on the first keystroke in any field.
+  const startedRef = useRef(false);
+  const markStarted = () => {
+    if (!startedRef.current) {
+      startedRef.current = true;
+      trackFunnel('registration_started');
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    markStarted();
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -156,6 +168,7 @@ const RegisterPage = () => {
     if (!termsAccepted) { setError(isBusinessOwner ? 'Please read and accept the Business Agreement to continue.' : 'Please accept the Terms of Service to continue.'); return; }
     setLoading(true);
     setError('');
+    trackFunnel('registration_submitted', { flushNow: true });
     try {
       const { data: emailCheck } = await api.post('/auth/check-email', { email: formData.email });
       // Signup-email policy (production): disposable domains and plus-aliases are
@@ -168,6 +181,7 @@ const RegisterPage = () => {
       if (emailCheck.exists) {
         setError('An account with this email already exists. Please sign in instead.');
         setLoading(false);
+        trackFunnel('registration_failed', { reason: 'email_taken' });
         return;
       }
 
@@ -196,10 +210,14 @@ const RegisterPage = () => {
         localStorage.removeItem('pendingInviteToken');
         localStorage.removeItem('pendingAddAccount');
         setError(signUpError.message || 'Registration failed');
+        trackFunnel('registration_failed', {
+          reason: /password/i.test(signUpError.message ?? '') ? 'weak_password' : 'provider_error',
+        });
         return;
       }
       // Store email so VerifyEmailPage can display it
       localStorage.setItem('pendingEmail', formData.email);
+      trackFunnel('email_verification_pending');
 
       // Navigate to email verification — user must confirm before syncing
       const params = new URLSearchParams({ role: roleFormatted });
@@ -208,6 +226,7 @@ const RegisterPage = () => {
       navigate(`/verify-email?${params.toString()}`);
     } catch {
       setError('Registration failed');
+      trackFunnel('registration_failed', { reason: 'provider_error' });
     } finally {
       setLoading(false);
     }
@@ -315,7 +334,10 @@ const RegisterPage = () => {
             <Box>
               <Typography sx={authLabelSx}>Email</Typography>
               <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
-                onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                onBlur={() => {
+                  setTouched((t) => ({ ...t, email: true }));
+                  if (formData.email.trim() !== '') trackFunnel('registration_email_entered');
+                }}
                 error={!!emailError} helperText={emailError}
                 sx={authInputSx}
                 InputProps={{
@@ -359,6 +381,7 @@ const RegisterPage = () => {
                     return;
                   }
                   setTermsAccepted(e.target.checked);
+                  if (e.target.checked) trackFunnel('terms_accepted');
                 }} size='small' />}
                 label={
                   isBusinessOwner ? (

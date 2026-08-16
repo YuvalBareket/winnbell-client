@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box, Typography, Stack, Alert,
   useMediaQuery, useTheme, Grid,
@@ -19,6 +19,7 @@ import { completeProfileSetup } from '../../../store/slices/authSlice';
 import AuthBrandPanel from '../components/AuthBrandPanel';
 import { api } from '../../../shared/api/client';
 import { useLogout } from '../../../shared/hooks/useLogout';
+import { trackFunnel } from '../../../shared/analytics/funnel';
 import {
   BG_PAGE, BORDER_LIGHT, PRIMARY_MAIN, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10,
   TEXT_SECONDARY, TEXT_TERTIARY, TEXT_TERTIARY_AA, TEXT_HEADING, AMBER_TEXT_AA,
@@ -55,6 +56,8 @@ const ProfileSetupPage = () => {
   // Setup is a gate with no in-app destination behind it: "back" here means leaving
   // this account, so the back affordance signs out (per-account logout semantics).
   const handleLogout = useLogout();
+
+  useEffect(() => { trackFunnel('profile_setup_viewed'); }, []);
 
   const [dob, setDob] = useState<Dayjs | null>(null);
   const [selectedGender, setSelectedGender] = useState<Gender | ''>('');
