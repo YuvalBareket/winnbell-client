@@ -180,6 +180,32 @@ const FunnelTab = () => {
           )}
       </Grid>
 
+      {/* The headline: per-USER activation journey (people, not events). */}
+      <motion.div variants={riseIn}>
+        {isLoading ? <AdminCardSkeleton height={230} sx={{ mb: 3 }} /> : data && (
+          <AdminCard sx={{ p: 2.5, mb: 3 }}>
+            <SectionHeader
+              icon={<PersonAddAlt1Outlined />} tint={CHART_PURPLE_TINT} color={CHART_PURPLE}
+              title='New user journey'
+              action={
+                <Typography sx={{ fontSize: '13px', fontWeight: 800, color: data.journey.accounts - data.journey.got_entry > 0 ? METRIC_BAD : TEXT_TERTIARY }}>
+                  {data.journey.accounts - data.journey.got_entry} of {data.journey.accounts} new users never got an entry
+                </Typography>
+              }
+            />
+            <FunnelSteps
+              steps={[['accounts', 'Created an account'], ['phone_verified', 'Verified phone'], ['tried_entry', 'Tried to enter'], ['got_entry', 'Got an entry']]}
+              totals={data.journey as unknown as Record<string, number>}
+              color={CHART_PURPLE} tint={CHART_PURPLE_TINT}
+            />
+            <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', mt: 1.5 }}>
+              Counts people, not events - each user appears once per step they reached.
+              Cohort: accounts created in the selected range.
+            </Typography>
+          </AdminCard>
+        )}
+      </motion.div>
+
       {/* The two funnels */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, md: 6 }}>

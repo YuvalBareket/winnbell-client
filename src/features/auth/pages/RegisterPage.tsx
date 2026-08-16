@@ -108,7 +108,9 @@ const RegisterPage = () => {
     if (searchParams.get('region_blocked') === '1') {
       setRegionBlocked(true);
     }
-    trackFunnel('registration_page_viewed');
+    // Only anonymous visitors count as sign-up views: an authed user bouncing through
+    // (the post-signup redirect mounts this page for a frame) is not funnel signal.
+    if (!isAuth) trackFunnel('registration_page_viewed');
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL param once on mount
   }, []);
 
@@ -129,6 +131,12 @@ const RegisterPage = () => {
   const handleSocialSignUp = async (provider: 'google' | 'apple') => {
     setGoogleLoading(true);
     setError('');
+    // Funnel: an OAuth signup never types in the form, so without this the journey would
+    // record an account_created with no registration_started - inflating the completion
+    // rate past 100%. Clicking the provider button IS starting registration. flushNow:
+    // the OAuth redirect leaves the page immediately, so the batch must not wait.
+    markStarted();
+    trackFunnel('registration_submitted', { flushNow: true });
     const roleFormatted = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User';
     localStorage.setItem('pendingRole', roleFormatted);
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
