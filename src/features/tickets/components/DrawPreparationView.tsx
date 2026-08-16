@@ -104,7 +104,10 @@ const DrawPreparationView = ({
           : { label: 'Go live on the map when campaign opens', done: false, info: true },
       ]
     : [
-        { label: planLabel, done: false, path: planPath },
+        // A business already enrolled in a campaign (e.g. added directly by an admin, with no
+        // self-serve subscription) must not be told to subscribe - it is already participating.
+        // The reactivate prompt is kept: a cancelled business with an existing plan still resubscribes.
+        ...(inActiveCampaign && !hasExistingPlan ? [] : [{ label: planLabel, done: false, path: planPath }]),
         { label: 'Add a receipt example for your customers', done: hasReceiptExample, path: '/nearby' },
         minSpendItem,
         { label: 'Add your business description', done: hasDescription, path: '/nearby' },
