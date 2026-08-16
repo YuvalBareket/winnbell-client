@@ -28,6 +28,7 @@ export const queryKeys = {
     userDetailAll:     ['admin', 'user-detail']    as const,
     businessDetailAll: ['admin', 'business-detail'] as const,
     // per-entity factories
+    funnel:          (days: number)             => ['admin', 'funnel', days]                          as const,
     drawCandidate:   (drawId: number | null)    => ['admin', 'draw-candidate',   drawId]             as const,
     drawRejected:    (drawId: number | null)    => ['admin', 'draw-rejected',    drawId]             as const,
     drawWinnerOrder: (drawId: number | null)    => ['admin', 'draw-winner-order', drawId]            as const,

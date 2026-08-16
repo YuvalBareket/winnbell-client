@@ -17,6 +17,7 @@ import {
   fetchDrawRejectedWinners,
   fetchDrawAuditLog,
   fetchAdminOverview,
+  fetchFunnelAnalytics,
   fetchAllUsers,
   fetchUserAnalyticsSummary,
   updateUserRole,
@@ -257,6 +258,17 @@ export const useAdminOverview = (enabled: boolean = true) => {
     },
     staleTime: 2 * 60_000,
     enabled,
+  });
+};
+
+export const useFunnelAnalytics = (days: number) => {
+  return useQuery({
+    queryKey: queryKeys.admin.funnel(days),
+    queryFn: async () => {
+      const { data } = await fetchFunnelAnalytics(days);
+      return data;
+    },
+    staleTime: 60_000,
   });
 };
 

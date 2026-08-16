@@ -70,6 +70,19 @@ export const fetchAdminAnalytics = (businessId?: number | null, drawId?: number 
     },
   });
 
+// ── Funnel analytics (admin dashboard) ───────────────────────────────────────
+export interface FunnelAnalytics {
+  days: number;
+  /** Raw event counts by type over the range (live, includes today). */
+  totals: Record<string, number>;
+  rejectionReasons: { reason: string; n: number }[];
+  daily: { day: string; accounts: number; submissions: number }[];
+  /** From the nightly rollup - excludes today; timings are n-weighted averages. */
+  transitions: { from_step: string; to_step: string; n: number; avg_s: number | null; p50_s: number | null; p90_s: number | null }[];
+}
+export const fetchFunnelAnalytics = (days: number) =>
+  api.get<FunnelAnalytics>('/admin/funnel', { params: { days } });
+
 export const fetchLocationBreakdown = (params: {
   businessId?: number | null;
   search?: string;
