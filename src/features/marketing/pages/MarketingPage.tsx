@@ -11,6 +11,7 @@ import { LocationOnOutlined, MenuBookRounded, FactCheckRounded, ArrowForwardRoun
 import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager, selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
+import { useBusinessDetail } from '../../admin/hooks/useAdmin';
 import {
    PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
    ACCENT_GOLD_DARK, ACCENT_GOLD_LIGHT,
@@ -26,12 +27,21 @@ import {
 } from '../../../shared/motion';
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-const MarketingPage = () => {
+interface MarketingPageProps {
+  /** Admin read-only embed (AdminBusinessViewPage): render THIS business's marketing
+   *  materials from admin endpoints instead of the authed business context. */
+  adminBusinessId?: number;
+}
+
+const MarketingPage = ({ adminBusinessId }: MarketingPageProps = {}) => {
   const navigate = useNavigate();
+  const isAdminView = !!adminBusinessId;
   const isBusiness = useAppSelector(selectIsBusiness);
   const isManager = useAppSelector(selectIsLocationManager);
   const currentUser = useAppSelector(selectCurrentUser);
-  const { data: businessData } = useBusinessData(isBusiness);
+  const { data: businessData } = useBusinessData(isBusiness && !isAdminView);
+  // Admin embed: same cached query AdminBusinessViewPage already made - no extra request.
+  const { data: adminDetail } = useBusinessDetail(isAdminView ? adminBusinessId : null);
 
   // State
   const [snackbar, setSnackbar] = useState('');
@@ -59,17 +69,24 @@ const MarketingPage = () => {
     });
   }, [activeTab]);
 
-  const businessName = businessData?.name ?? 'Your Business';
-  const locations = (isBusiness ? businessData?.locations?.filter((l) => l.is_active) : []) ?? [];
+  const adminLocations = ((adminDetail as { locations?: Array<{ id: number; name: string; address?: string | null; is_active: boolean }> } | undefined)
+    ?.locations ?? []).filter((l) => l.is_active);
+  const adminBusiness = (adminDetail as { business?: { name?: string; min_transaction_amount?: number | string | null } } | undefined)?.business;
 
-  const effectiveLocationId = isManager
+  const businessName = isAdminView ? (adminBusiness?.name ?? 'Business') : (businessData?.name ?? 'Your Business');
+  const locations = isAdminView
+    ? adminLocations
+    : ((isBusiness ? businessData?.locations?.filter((l) => l.is_active) : []) ?? []);
+  const minTransactionAmount = isAdminView ? adminBusiness?.min_transaction_amount : businessData?.min_transaction_amount;
+
+  const effectiveLocationId = isManager && !isAdminView
     ? currentUser?.location_id ?? null
     : (selectedLocationId || (locations.length === 1 ? locations[0].id : null));
 
   // Location-bound assets (QRs, links) are easy to mix up between branches, so when a
   // real choice exists every download/copy re-asks which location it is for. Managers
   // and single-location businesses have no choice - they keep one-click downloads.
-  const alwaysAskLocation = !isManager && locations.length > 1;
+  const alwaysAskLocation = (isAdminView || !isManager) && locations.length > 1;
 
   const scanUrl = effectiveLocationId
     ? `${window.location.origin}/scan?l=${effectiveLocationId}`
@@ -86,17 +103,20 @@ const MarketingPage = () => {
   return (
     <Box sx={{ minHeight: { xs: MOBILE_CONTENT_HEIGHT, md: 'var(--dvh100, 100dvh)' }, pb: 8 }}>
 
-      {/* Hero entrance - riseIn (full-width, no scale to avoid mobile viewport flash) */}
-      <motion.div
-        variants={riseIn}
-        initial='hidden'
-        animate='visible'
-      >
-        <AppPageHero
-          title='Marketing Materials'
-          subtitle='Ready-made materials to promote your campaign and drive customer entries.'
-        />
-      </motion.div>
+      {/* Hero entrance - riseIn (full-width, no scale to avoid mobile viewport flash).
+          Hidden in the admin embed: AdminBusinessViewPage carries its own banner + tabs. */}
+      {!isAdminView && (
+        <motion.div
+          variants={riseIn}
+          initial='hidden'
+          animate='visible'
+        >
+          <AppPageHero
+            title='Marketing Materials'
+            subtitle='Ready-made materials to promote your campaign and drive customer entries.'
+          />
+        </motion.div>
+      )}
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 1 }, position: 'relative', zIndex: 1 }}>
 
@@ -106,8 +126,9 @@ const MarketingPage = () => {
           initial='hidden'
           animate='visible'
         >
-          {/* Resource documents - the guide and the participation guidelines, above the tabs */}
-          <motion.div variants={riseIn}>
+          {/* Resource documents - the guide and the participation guidelines, above the tabs.
+              Hidden in the admin embed (they navigate to business-facing pages). */}
+          {!isAdminView && <motion.div variants={riseIn}>
             <Box
               sx={{
                 display: 'grid',
@@ -174,7 +195,7 @@ const MarketingPage = () => {
                 </Paper>
               ))}
             </Box>
-          </motion.div>
+          </motion.div>}
 
           <motion.div variants={riseIn}>
             <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', mb: 3 }}>
@@ -220,7 +241,7 @@ const MarketingPage = () => {
             alwaysAskLocation={alwaysAskLocation}
             copied={copied}
             onCopy={handleCopyScanUrl}
-            minAmountLabel={businessData?.min_transaction_amount ? `${formatCurrency(Number(businessData.min_transaction_amount))}` : null}
+            minAmountLabel={minTransactionAmount ? `${formatCurrency(Number(minTransactionAmount))}` : null}
           />
         )}
 
