@@ -127,8 +127,8 @@ const OverviewTab: React.FC<Props> = ({ overview, currentOpenDraw, overviewLoadi
               tint={ALPHA_GREEN_10}
               color={METRIC_GOOD}
               label='Active Businesses'
-              value={overview?.businesses?.active ?? 0}
-              caption={`of ${overview?.businesses?.total ?? 0} total`}
+              value={overview?.businesses?.total ?? 0}
+              caption={`${overview?.businesses?.active ?? 0} subscribed`}
             />
           </Grid>
 
