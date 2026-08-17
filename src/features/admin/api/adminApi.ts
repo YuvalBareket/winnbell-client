@@ -79,8 +79,10 @@ export interface FunnelAnalytics {
   daily: { day: string; accounts: number; submissions: number }[];
   /** From the nightly rollup - excludes today; timings are n-weighted averages. */
   transitions: { from_step: string; to_step: string; n: number; avg_s: number | null; p50_s: number | null; p90_s: number | null }[];
-  /** PER-USER activation funnel for the cohort whose account was created in range. */
-  journey: { accounts: number; phone_verified: number; tried_entry: number; got_entry: number };
+  /** PER-USER activation funnel for the cohort whose account was created in range.
+   *  Optional: absent when the API is an older build (deploy version skew) - the
+   *  dashboard must render without it, never crash. */
+  journey?: { accounts: number; phone_verified: number; tried_entry: number; got_entry: number };
 }
 export const fetchFunnelAnalytics = (days: number) =>
   api.get<FunnelAnalytics>('/admin/funnel', { params: { days } });

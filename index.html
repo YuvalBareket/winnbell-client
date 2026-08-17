@@ -12,16 +12,11 @@
            2.1 AA violation and a standard ADA-lawsuit-scanner finding. Runtime scanners
            therefore see a clean viewport. Touch-capable "Mac" UA = modern iPad. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <script>
-      (function () {
-        var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
-          || (navigator.userAgent.includes('Mac') && navigator.maxTouchPoints > 1);
-        if (!isIOS) {
-          var wbViewport = document.querySelector('meta[name="viewport"]');
-          if (wbViewport) wbViewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
-        }
-      })();
-    </script>
+    <!-- External (not inline) because script-src carries no 'unsafe-inline'/hashes: the
+         CSP was silently blocking the inline version in production, which disabled the
+         Android zoom-cap removal. Parse-blocking on purpose - it must edit the viewport
+         meta before rendering, same timing as the inline version had. -->
+    <script src="/viewport-fix.js"></script>
     <title>Winnbell - Shop Local. Win Monthly Cash Prizes</title>
     <meta name="description" content="Turn everyday shopping into chances to win real monthly cash prizes. Earn entries through participating businesses or claim your weekly entry today. No purchase necessary." />
 

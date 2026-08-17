@@ -180,9 +180,10 @@ const FunnelTab = () => {
           )}
       </Grid>
 
-      {/* The headline: per-USER activation journey (people, not events). */}
+      {/* The headline: per-USER activation journey (people, not events). journey may be
+          absent when the API is an older build (deploy skew) - render nothing, not a crash. */}
       <motion.div variants={riseIn}>
-        {isLoading ? <AdminCardSkeleton height={230} sx={{ mb: 3 }} /> : data && (
+        {isLoading ? <AdminCardSkeleton height={230} sx={{ mb: 3 }} /> : data?.journey && (
           <AdminCard sx={{ p: 2.5, mb: 3 }}>
             <SectionHeader
               icon={<PersonAddAlt1Outlined />} tint={CHART_PURPLE_TINT} color={CHART_PURPLE}
