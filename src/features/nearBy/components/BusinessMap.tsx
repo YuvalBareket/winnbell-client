@@ -241,9 +241,12 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
       });
     }
 
-    // Use setCenter + setZoom (no animation) to trigger only a single idle event
+    // Use setCenter + setZoom (no animation) to trigger only a single idle event.
+    // Zoom 12 = district scale (user request 2026-08-17: 14 landed too close in) -
+    // shows the wider area's businesses on first load; the 30-row response cap
+    // bounds the payload regardless of viewport size.
     map.setCenter(pos);
-    map.setZoom(14);
+    map.setZoom(11);
   }, [userLocation, mapReady]);
 
   // Fly to a searched business. panTo animates; the resulting idle fires onViewportChange, so the
