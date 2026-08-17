@@ -119,7 +119,8 @@ const SettingsTab: React.FC = () => {
                   title='Allowed States'
                 />
                 <Typography variant='body2' sx={{ color: TEXT_SECONDARY, mb: 2 }}>
-                  Restrict registration to specific US states. When any state is selected, sign-ups from outside the US are blocked too. Remove all to allow sign-ups from anywhere.
+                  In production, sign-ups are always US-only. Select states to restrict
+                  registration further; remove all to allow every US state.
                 </Typography>
 
                 <Autocomplete
@@ -146,7 +147,7 @@ const SettingsTab: React.FC = () => {
 
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1.5 }}>
                   {localAllowedStates.length === 0 ? (
-                    <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>No restriction (open everywhere)</Typography>
+                    <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>All US states allowed (US-only always applies)</Typography>
                   ) : (
                     localAllowedStates.map((code) => {
                       const state = US_STATES.find((s) => s.code === code);
@@ -180,7 +181,7 @@ const SettingsTab: React.FC = () => {
                     disabled={saveMutation.isPending}
                     sx={{ mt: 1.5, fontWeight: 600 }}
                   >
-                    Open to everyone
+                    Open to all US states
                   </Button>
                 )}
               </Box>
