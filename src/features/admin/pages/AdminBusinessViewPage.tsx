@@ -15,6 +15,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useBusinessDetail } from '../hooks/useAdmin';
 import CampaignDashboardPage from '../../campaign/pages/CampaignDashboardPage';
 import BusinessAnalyticsPage from '../../partner/pages/BusinessAnalyticsPage';
+import MarketingPage from '../../marketing/pages/MarketingPage';
 import { MOBILE_CONTENT_HEIGHT, TEXT_SECONDARY, PRIMARY_MAIN } from '../../../shared/colors';
 
 interface TabPanelProps {
@@ -123,6 +124,7 @@ const AdminBusinessViewPage: React.FC = () => {
             >
               <Tab label="Campaign" value={0} />
               <Tab label="Analytics" value={1} />
+              <Tab label="Marketing" value={2} />
             </Tabs>
           </Paper>
         </motion.div>
@@ -133,6 +135,9 @@ const AdminBusinessViewPage: React.FC = () => {
         </TabPanel>
         <TabPanel value={tabValue} index={1}>
           <BusinessAnalyticsPage adminBusinessId={businessId ?? undefined} />
+        </TabPanel>
+        <TabPanel value={tabValue} index={2}>
+          <MarketingPage adminBusinessId={businessId ?? undefined} />
         </TabPanel>
       </Container>
     </Box>
