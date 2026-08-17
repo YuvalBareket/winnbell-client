@@ -63,8 +63,8 @@ const PinIcon = ({ color, size }: { color: string; size: number }) => (
 // ── Colorway definitions (measured values, one entry per design colorway) ────
 interface Colorway {
   pageBg: string;
-  headlineColor: string;      // "Cash Prize." + step labels' base text
-  accentColor: string;        // "Every Month.", "Scan to get your entries"
+  headlineColor: string;      // "$1,500." + step labels' base text
+  accentColor: string;        // "This Month's Draw.", "Scan to get your entries"
   sublineColor: string;
   chipColor: string;          // location chip text + pin (NOT always the accent)
   stepCircleBg: string;
@@ -216,11 +216,16 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps
       {/* Headline + subline */}
       <div style={{ position: 'absolute', left: 72, top: 236, width: 1270 }}>
         <div style={{ fontSize: 150, fontWeight: 800, letterSpacing: -5.25, lineHeight: '159px', color: cw.headlineColor }}>
-          Cash Prize.
+          $1,500
           <br />
-          <span style={{ color: cw.accentColor }}>Every Month.</span>
+          {/* Smaller than line one: at the design's 150px this line overflows the 1270px
+              column and wraps. 120px keeps it on one line; tracking keeps the same
+              -0.035em ratio as the design (150px : -5.25). */}
+          <span style={{ color: cw.accentColor, fontSize: 110, letterSpacing: -4.2 }}>This Month&apos;s Draw.</span>
         </div>
-        <div style={{ fontSize: 42, fontWeight: 800, letterSpacing: -0.42, lineHeight: '56.7px', color: cw.sublineColor, marginTop: 28 }}>
+        {/* Subline bumped from the design's 42px (user request 2026-08-17); tracking and
+            line-height scaled by the same ratio. Still one line at 48px in the 1270 column. */}
+        <div style={{ fontSize: 44, fontWeight: 800, letterSpacing: -0.48, lineHeight: '64.8px', color: cw.sublineColor, marginTop: 28 }}>
           {"Could today's purchase win you a big cash prize?"}
         </div>
       </div>
