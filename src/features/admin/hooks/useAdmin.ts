@@ -582,6 +582,7 @@ type AdminBusinessDetail = {
   sector: string;
   description: string | null;
   logo_url: string | null;
+  receipt_example_image_url: string | null;
   subscription_status: string | null;
   in_open_draw: boolean;
   fee_at_entry: number | null;
