@@ -5,7 +5,10 @@ import { useAppDispatch } from '../../../store/hook';
 import { updateBusinessUser } from '../../../store/slices/authSlice';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB original file
+// Guard on the ORIGINAL file exists only to protect canvas memory from absurd inputs -
+// the actual upload is the compressed WebP below (512px, tens of KB), so a normal
+// 6-15 MB phone photo must pass. 5 MB used to reject everyday camera shots.
+const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB original file
 const MAX_DIMENSION = 512; // px - logos are displayed small, 512 is plenty
 const WEBP_QUALITY = 0.85;
 
@@ -49,7 +52,7 @@ export const useUploadBusinessLogo = () => {
 
   const upload = async (file: File) => {
     if (file.size > MAX_SIZE_BYTES) {
-      setError('Image must be under 5 MB.');
+      setError('Image must be under 25 MB.');
       return;
     }
 

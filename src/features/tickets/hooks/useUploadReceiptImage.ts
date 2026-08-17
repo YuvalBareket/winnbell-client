@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { getReceiptUploadUrl } from '../api/ticketsApi';
 
-const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+// Original-file guard protects canvas memory only - the upload is the compressed WebP
+// (1920px max), so large phone photos must pass. The server's 10 MB presign cap applies
+// to the COMPRESSED size, which stays far below it.
+const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB original file
 const MAX_DIMENSION = 1920;              // keep receipts readable
 const WEBP_QUALITY = 0.9;
 
@@ -38,7 +41,7 @@ export const useUploadReceiptImage = () => {
 
   const upload = async (file: File): Promise<string | null> => {
     if (file.size > MAX_SIZE_BYTES) {
-      setError('File must be under 10 MB.');
+      setError('File must be under 25 MB.');
       return null;
     }
 
