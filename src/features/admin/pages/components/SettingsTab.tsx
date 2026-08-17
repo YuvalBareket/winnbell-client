@@ -13,7 +13,7 @@ import {
   FormControlLabel,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { WorkspacePremium } from '@mui/icons-material';
+import { WorkspacePremium, ConfirmationNumberOutlined } from '@mui/icons-material';
 import { usePlatformSettings, useSavePlatformSettings } from '../../hooks/useAdmin';
 import { US_STATES } from '../../../../shared/constants/usStates';
 import {
@@ -39,6 +39,20 @@ const SettingsTab: React.FC = () => {
   const [foundingActive, setFoundingActive] = useState<boolean>(true);
   const [foundingCapError, setFoundingCapError] = useState('');
 
+  // Global entry cap: the per-location cap for businesses WITHOUT a plan (manual/free
+  // campaign adds). Kept as a string so the field can be cleared; '' = no cap (NULL).
+  const [globalEntryCap, setGlobalEntryCap] = useState<string>('');
+  const [entryCapError, setEntryCapError] = useState('');
+
+  // '' -> null (no cap); otherwise must be a positive whole number.
+  const parseEntryCap = (): { ok: boolean; value: number | null } => {
+    const trimmed = globalEntryCap.trim();
+    if (trimmed === '') return { ok: true, value: null };
+    const n = Number(trimmed);
+    if (!Number.isInteger(n) || n < 1) return { ok: false, value: null };
+    return { ok: true, value: n };
+  };
+
   // Seed the form ONCE from the first server payload. Without the guard, any background
   // refetch of platformSettings re-fired this and silently wiped unsaved admin edits mid-typing.
   const didInitForm = useRef(false);
@@ -48,11 +62,13 @@ const SettingsTab: React.FC = () => {
       setLocalAllowedStates(platformSettings.allowed_states ?? []);
       setFoundingCap(platformSettings.founding_member_cap ?? 30);
       setFoundingActive(platformSettings.founding_phase_active ?? true);
+      setGlobalEntryCap(platformSettings.global_entry_cap != null ? String(platformSettings.global_entry_cap) : '');
     }
   }, [platformSettings]);
 
   const handleSave = () => {
     setFoundingCapError('');
+    setEntryCapError('');
 
     const taken = foundingAvailability?.taken ?? 0;
     if (foundingCap < taken) {
@@ -60,9 +76,15 @@ const SettingsTab: React.FC = () => {
       return;
     }
 
+    const cap = parseEntryCap();
+    if (!cap.ok) {
+      setEntryCapError('Must be a positive whole number, or empty for no cap.');
+      return;
+    }
+
     saveMutation.mutate(
       {
-        global_entry_cap: null,
+        global_entry_cap: cap.value,
         allowed_states: localAllowedStates,
         founding_member_cap: foundingCap,
         founding_phase_active: foundingActive,
@@ -145,10 +167,13 @@ const SettingsTab: React.FC = () => {
                     size='small'
                     color='error'
                     variant='outlined'
-                    onClick={() => {
+    onClick={() => {
                       setLocalAllowedStates([]);
+                      // Preserve the entry cap on this inline save - hardcoding null here
+                      // silently WIPED a configured cap (the bug this field's addition fixed).
+                      const cap = parseEntryCap();
                       saveMutation.mutate(
-                        { global_entry_cap: null, allowed_states: [], founding_member_cap: foundingCap, founding_phase_active: foundingActive },
+                        { global_entry_cap: cap.ok ? cap.value : null, allowed_states: [], founding_member_cap: foundingCap, founding_phase_active: foundingActive },
                         { onSuccess: () => setSettingsSaved(true) },
                       );
                     }}
@@ -244,6 +269,40 @@ const SettingsTab: React.FC = () => {
               </Stack>
             </AdminCard>
           </motion.div>
+
+        {/* ── Entry Cap (businesses without a plan) ─────────────────────── */}
+        <motion.div variants={riseIn}>
+          <AdminCard>
+            <Box sx={{ p: 2.25 }}>
+              <SectionHeader
+                icon={<ConfirmationNumberOutlined />}
+                tint={PRIMARY_TINT}
+                color={PRIMARY_MAIN}
+                title='Entry Cap'
+              />
+              <Typography variant='body2' sx={{ color: TEXT_SECONDARY, mb: 2 }}>
+                Per-location entry cap for businesses that are in a campaign without a paid plan
+                (added manually, e.g. a free trial). Businesses on a plan always use their plan&apos;s
+                own cap instead. Leave empty for no cap.
+              </Typography>
+              <TextField
+                label='Entries per location'
+                type='number'
+                size='small'
+                value={globalEntryCap}
+                onChange={(e) => { setGlobalEntryCap(e.target.value); setEntryCapError(''); }}
+                inputProps={{ min: 1, step: 1 }}
+                error={!!entryCapError}
+                helperText={entryCapError || (globalEntryCap.trim() === '' ? 'Currently: no cap (unlimited)' : `Currently: ${globalEntryCap} entries per location`)}
+                placeholder='e.g. 1000'
+                sx={{
+                  width: 220,
+                  '& .MuiOutlinedInput-root': { borderRadius: '12px', borderColor: BORDER_LIGHT },
+                }}
+              />
+            </Box>
+          </AdminCard>
+        </motion.div>
 
         {/* Success Alert */}
         {settingsSaved && (
