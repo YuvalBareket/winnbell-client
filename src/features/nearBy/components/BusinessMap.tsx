@@ -4,6 +4,7 @@ import type { NearbyLocation } from '../types/nearBy.types';
 import type { ViewportBounds } from '../hooks/useNearbyWithZoom';
 import { SECTOR_CONFIG, DEFAULT_SECTOR } from '../../../shared/sectorConfig';
 import { PRIMARY_MAIN } from '../../../shared/colors';
+import { spreadOffsets, type PixelOffset } from '../../../shared/mapPinSpread';
 
 setOptions({
   key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? '',
@@ -42,11 +43,13 @@ function makePinSvg(sector: string | null | undefined): string {
   </svg>`;
 }
 
-function makePinIcon(sector: string | null | undefined): google.maps.Icon {
+// `offset` (overlapping-pin spread) shifts the RENDERED icon in screen pixels while the
+// marker keeps its true geographic position - anchor moves opposite the image.
+function makePinIcon(sector: string | null | undefined, offset?: PixelOffset): google.maps.Icon {
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(makePinSvg(sector))}`,
     scaledSize: new google.maps.Size(30, 36),
-    anchor: new google.maps.Point(15, 36),
+    anchor: new google.maps.Point(15 - (offset?.dx ?? 0), 36 - (offset?.dy ?? 0)),
   };
 }
 
@@ -66,11 +69,11 @@ function makeSelectedPinSvg(sector: string | null | undefined): string {
   </svg>`;
 }
 
-function makeSelectedPinIcon(sector: string | null | undefined): google.maps.Icon {
+function makeSelectedPinIcon(sector: string | null | undefined, offset?: PixelOffset): google.maps.Icon {
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(makeSelectedPinSvg(sector))}`,
     scaledSize: new google.maps.Size(96, 96),
-    anchor: new google.maps.Point(48, 88),
+    anchor: new google.maps.Point(48 - (offset?.dx ?? 0), 88 - (offset?.dy ?? 0)),
   };
 }
 
@@ -110,6 +113,9 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
   const idleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Last applied selection - lets the selection effect skip no-op passes
   const prevSelectedRef = useRef<number | null>(null);
+  // Overlapping-pin pixel offsets by location id (see mapPinSpread.ts). Written by the
+  // marker-sync effect, read by the selection effect so icon swaps keep the offset.
+  const pinOffsetsRef = useRef<Map<number, PixelOffset>>(new Map());
 
   // Initialize map
   useEffect(() => {
@@ -160,6 +166,14 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
+    // Overlapping-pin spread: pixel offsets baked into icon anchors (screen-space, so
+    // separation is zoom-constant with ZERO work during gestures - fully smooth).
+    const prevOffsets = pinOffsetsRef.current;
+    const offsets = spreadOffsets(
+      (locations ?? []).map((l) => ({ id: l.location_id, lat: Number(l.latitude), lng: Number(l.longitude) })),
+    );
+    pinOffsetsRef.current = offsets;
+
     const nextIds = new Set<number>();
     locations?.forEach((loc) => {
       const id = loc.location_id;
@@ -168,7 +182,7 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
         const marker = new google.maps.Marker({
           map,
           position: { lat: Number(loc.latitude), lng: Number(loc.longitude) },
-          icon: makePinIcon(loc.sector),
+          icon: makePinIcon(loc.sector, offsets.get(id)),
           title: loc.name,
           cursor: 'pointer',
         });
@@ -176,6 +190,15 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
         // viewport-nearby list has since refetched and dropped this location.
         marker.addListener('click', () => onBusinessClickRef.current?.(id, loc));
         markersByLocRef.current.set(id, marker);
+      } else {
+        // Group membership can change as the viewport refetches (a neighbor scrolls in or
+        // out) - re-icon ONLY markers whose offset actually changed, so quiet refetches
+        // never redraw the whole pin set.
+        const prev = prevOffsets.get(id);
+        const next = offsets.get(id);
+        if (prev?.dx !== next?.dx || prev?.dy !== next?.dy) {
+          markersByLocRef.current.get(id)!.setIcon(makePinIcon(loc.sector, next));
+        }
       }
     });
     markersByLocRef.current.forEach((marker, id) => {
@@ -198,16 +221,18 @@ export default function BusinessMap({ locations, onBusinessClick, userLocation, 
     const sectorById = new Map(locations.map((loc) => [loc.location_id, loc.sector]));
     markersByLocRef.current.forEach((marker, id) => {
       const sector = sectorById.get(id);
+      // Preserve the overlapping-pin offset through icon swaps.
+      const offset = pinOffsetsRef.current.get(id);
       if (selectedLocationId == null) {
-        marker.setIcon(makePinIcon(sector));
+        marker.setIcon(makePinIcon(sector, offset));
         marker.setOpacity(1);
         marker.setZIndex(undefined as unknown as number);
       } else if (id === selectedLocationId) {
-        marker.setIcon(makeSelectedPinIcon(sector));
+        marker.setIcon(makeSelectedPinIcon(sector, offset));
         marker.setOpacity(1);
         marker.setZIndex(1000);
       } else {
-        marker.setIcon(makePinIcon(sector));
+        marker.setIcon(makePinIcon(sector, offset));
         marker.setOpacity(0.55);
         marker.setZIndex(undefined as unknown as number);
       }
