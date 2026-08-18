@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { SECTOR_CONFIG, DEFAULT_SECTOR } from '../../../../shared/sectorConfig';
+import { spreadOffsets, type PixelOffset } from '../../../../shared/mapPinSpread';
 import {
   BG_PAGE,
   BORDER_LIGHT,
@@ -66,11 +67,13 @@ function makePinSvg(sector: string | null | undefined, isInactive: boolean, isPa
   </svg>`;
 }
 
-function makePinIcon(sector: string | null | undefined, isInactive: boolean, isPaused: boolean): google.maps.Icon {
+// `offset` (overlapping-pin spread) shifts the RENDERED icon in screen pixels while the
+// marker keeps its true geographic position - anchor moves opposite the image.
+function makePinIcon(sector: string | null | undefined, isInactive: boolean, isPaused: boolean, offset?: PixelOffset): google.maps.Icon {
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(makePinSvg(sector, isInactive, isPaused))}`,
     scaledSize: new google.maps.Size(26, 32),
-    anchor: new google.maps.Point(13, 32),
+    anchor: new google.maps.Point(13 - (offset?.dx ?? 0), 32 - (offset?.dy ?? 0)),
   };
 }
 
@@ -253,6 +256,12 @@ export default function AdminMapTab() {
     const map = mapRef.current;
     if (!map || !mapReady || !locations) return;
 
+    // Overlapping-pin spread: pixel offsets baked into icon anchors (screen-space, so
+    // separation is zoom-constant with zero work during gestures - fully smooth).
+    const offsets = spreadOffsets(
+      locations.map((l) => ({ id: l.location_id, lat: Number(l.latitude), lng: Number(l.longitude) })),
+    );
+
     const markersRef = markersByLocRef.current;
     const nextIds = new Set<number>();
     locations.forEach((loc) => {
@@ -266,7 +275,7 @@ export default function AdminMapTab() {
         const marker = new google.maps.Marker({
           map,
           position: { lat: Number(loc.latitude), lng: Number(loc.longitude) },
-          icon: makePinIcon(loc.sector, isInactive, isPaused),
+          icon: makePinIcon(loc.sector, isInactive, isPaused, offsets.get(id)),
           title: loc.location_name || loc.business_name,
           cursor: 'pointer',
         });
@@ -282,7 +291,7 @@ export default function AdminMapTab() {
         // deactivated, moved) must not keep its stale icon/position, and the click handler
         // must close over the FRESH row or the popup shows outdated data.
         const existing = markersRef.get(id)!;
-        existing.setIcon(makePinIcon(loc.sector, isInactive, isPaused));
+        existing.setIcon(makePinIcon(loc.sector, isInactive, isPaused, offsets.get(id)));
         existing.setPosition({ lat: Number(loc.latitude), lng: Number(loc.longitude) });
         existing.setTitle(loc.location_name || loc.business_name);
         google.maps.event.clearListeners(existing, 'click');
