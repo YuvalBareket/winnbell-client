@@ -530,9 +530,12 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       setTransactionAmount(result.amount.toFixed(2));
       got.add('amount');
     }
-    // Only take a read date the form itself would accept (7-day window, not future);
-    // the field otherwise keeps its today default, exactly as it initialises.
-    if (result?.date && result.date >= sevenDaysAgo && result.date <= today) {
+    // Take any read date up to today - INCLUDING one older than the 7-day window. An old
+    // date must show as itself so the existing too-old error fires here, before submit;
+    // silently defaulting it to today walked honest holders of old receipts into a
+    // contradicted-date OCR fail (with a fraud penalty) after submission. Future dates
+    // stay discarded (a misread - "too old" messaging would be wrong for them).
+    if (result?.date && result.date <= today) {
       setPurchaseDate(result.date);
       got.add('date');
     }
