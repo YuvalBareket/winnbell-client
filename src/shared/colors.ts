@@ -36,6 +36,7 @@ export const TEXT_TERTIARY      = '#616f88';   // de-emphasized labels (5.1:1 on
 export const TEXT_TERTIARY_AA   = '#616f88';   // same value, kept for older call sites
 export const ACCENT_GOLD_TEXT_AA = '#8a6d24'; // AA gold for small text (4.9:1 on white, 4.7:1 on cream)
 export const SUCCESS_GREEN_TEXT_AA = '#048362'; // AA green for small text (4.7:1 on white)
+export const SUCCESS_GREEN_DEEP    = '#046a51'; // deeper companion: tiny bold text (Read chips) + icons on green tints
 export const AMBER_TEXT_AA = '#bc5709';      // AA amber for small text (4.7:1 on white)
 export const STATUS_ACTIVE_TEXT_AA = '#2c7830'; // AA green for the Active chip (4.8:1 on its tint bg)
 
@@ -160,6 +161,8 @@ export const SHADOW_FLOAT          = `0 8px 28px rgba(0,0,0,0.12), 0 2px 4px rgb
 export const SHADOW_CARD_DEEP      = `0 18px 40px rgba(0,0,0,0.34), 0 8px 16px rgba(0,0,0,0.24), 0 2px 4px rgba(0,0,0,0.18)`;
 export const SHADOW_PRIMARY_GLOW   = `0 4px 20px rgba(21,101,192,0.35), 0 0px 40px rgba(21,101,192,0.15)`;
 export const SHADOW_BOTTOM_NAV     = `0 -2px 12px rgba(0,0,0,0.06), 0 -1px 4px rgba(0,0,0,0.03)`;
+// Sticky mobile submit bar riding above the tab bar (receipt entry form).
+export const SHADOW_STICKY_SUBMIT  = `0 -6px 20px rgba(15,39,71,0.06)`;
 // Warm glow behind the gold prize amount on the live campaign card.
 export const SHADOW_GOLD_GLOW      = `0 0 18px rgba(251,191,36,0.55), 0 1px 2px rgba(0,0,0,0.25)`;
 

@@ -59,6 +59,7 @@ const QUARANTINE_LABELS: Record<string, string> = {
   contest_pending: 'Under review',
   contest_not_won: 'Not verified',
   duplicate_document: 'Duplicate document',
+  date_unreadable_review: 'Date unreadable - held for review',
 };
 
 const RISK_FLAG_LABELS: Record<string, string> = {
@@ -74,6 +75,7 @@ const RISK_FLAG_LABELS: Record<string, string> = {
   suspiciously_fast_input: 'Suspiciously fast input',
   superseded_duplicate_receipt: 'Duplicate receipt (owner verified theirs)',
   duplicate_document: 'Reused receipt (different number, same image)',
+  same_business_receipt_velocity: 'Many verified receipts at one business (24h)',
 };
 
 const SUB_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default'> = {

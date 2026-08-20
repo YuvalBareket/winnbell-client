@@ -24,23 +24,26 @@ import { alpha } from '@mui/material/styles';
 import AttractButton from '../../../shared/components/AttractButton';
 import AppDatePicker from '../../../shared/components/AppDatePicker';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { AccessTime, Close, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded, ConfirmationNumberOutlined, CelebrationRounded, PhotoCameraOutlined } from '@mui/icons-material';
+import { AccessTime, Close, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded, ConfirmationNumberOutlined, CelebrationRounded, PhotoCameraOutlined, InfoOutlined, WarningAmberRounded } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { trackFunnel } from '../../../shared/analytics/funnel';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
 import {
   PRIMARY_MAIN, PRIMARY_LIGHT, PRIMARY_DEEP, GRADIENT_PRIMARY, GRADIENT_FREE_CARD,
-  ACCENT_GOLD, ACCENT_GOLD_DARK, SUCCESS_GREEN, TEXT_HEADING, TEXT_SECONDARY, BORDER_LIGHT,
+  SUCCESS_GREEN, TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY, BORDER_LIGHT, BG_SUBTLE,
   GRADIENT_CELEBRATION, GRADIENT_DRAW_CARD, SHADOW_ELEVATED,
   ALPHA_WHITE_20, ALPHA_WHITE_30,
   ALPHA_PRIMARY_06, ALPHA_PRIMARY_10, ALPHA_PRIMARY_20,
   ALPHA_AMBER_06, ALPHA_AMBER_25, ALPHA_AMBER_80,
   ERROR_BG_TINT, ERROR_BORDER_TINT, ERROR_DARK,
+  SUCCESS_GREEN_TEXT_AA, SUCCESS_GREEN_DEEP,
+  BORDER_SUBTLE, BOTTOM_NAV_HEIGHT,
 } from '../../../shared/colors';
 import { apiErrorMessage, apiErrorCode } from '../../../shared/utils/apiError';
 import { staggerContainer, riseIn, popIn, pressable, pressableCard, SPRING_SNAPPY, heroPop } from '../../../shared/motion';
 import EntrySuccessDialog from './EntrySuccessDialog';
-import ReceiptImageUploadField from './ReceiptImageUploadField';
+import ReceiptImageUploadField, { SCAN_INPUT_ID } from './ReceiptImageUploadField';
+import { useReadReceipt } from '../hooks/useReadReceipt';
 import BusinessSelector from './BusinessSelector';
 import SelectedLocationPill from './SelectedLocationPill';
 import { getNearbyBusinesses } from '../../nearBy/api/nearBy.api';
@@ -83,6 +86,29 @@ const receiptFieldSx = (accentColor: string) => ({
   '& .MuiOutlinedInput-input': { fontSize: '16px' },
   '& .MuiInputLabel-root.Mui-focused': { color: accentColor },
 });
+
+// Photo-first read flow (design Turn 9): the middle block is the only thing that changes.
+// Fields mount for every state except awaiting_photo and reading; the Read chip renders
+// per field from readFields and clears on user edit.
+type ReadState = 'awaiting_photo' | 'reading' | 'read' | 'partial' | 'unread';
+type ReadableField = 'id' | 'amount' | 'date';
+
+// The tiny "Read" pill an OCR-filled field wears until the user edits it. Rendered inside
+// input adornments (and absolutely overlaid on the date picker, which has no adornment slot).
+const ReadChip = () => (
+  <Box
+    component={motion.span}
+    variants={popIn}
+    initial="hidden"
+    animate="visible"
+    sx={{ display: 'flex', alignItems: 'center', gap: '4px', px: 1, py: '3px', borderRadius: 999, bgcolor: alpha(SUCCESS_GREEN_TEXT_AA, 0.09), flexShrink: 0 }}
+  >
+    <CheckCircle sx={{ fontSize: 11, color: SUCCESS_GREEN_DEEP }} />
+    <Typography component="span" sx={{ fontSize: '9.5px', fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: SUCCESS_GREEN_DEEP, lineHeight: 1 }}>
+      Read
+    </Typography>
+  </Box>
+);
 
 // Same look as receiptFieldSx, but targeting the x-date-pickers field classes
 // (PickersOutlinedInput) so the date picker matches the other receipt fields.
@@ -261,11 +287,20 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const receiptKeystrokeTimesRef = useRef<number[]>([]);
   const [receiptWasPasted, setReceiptWasPasted] = useState(false);
-  const [requiresImage, setRequiresImage] = useState(false);
   // Anti-squatting: shown when the server says this receipt was already typed by someone else.
   // A dialog (not just the inline card) so the explanation can't be scrolled out of view.
   const [contestDialogOpen, setContestDialogOpen] = useState(false);
   const [receiptImageUrl, setReceiptImageUrl] = useState<string | null>(null);
+  // Photo-first read flow: no fields until a photo exists; 'reading' covers upload +
+  // extraction; read/partial/unread all keep the photo attached (it feeds the async OCR
+  // verification after submit) and differ only in how much arrived pre-filled.
+  const [readState, setReadState] = useState<ReadState>('awaiting_photo');
+  // Which values came from the read and are untouched - each renders a Read chip that
+  // clears on user edit, so a corrected value never wears a stale "we read this" badge.
+  const [readFields, setReadFields] = useState<Set<ReadableField>>(new Set());
+  const scannedAutofill = useRef(false);
+  const receiptIdInputRef = useRef<HTMLInputElement>(null);
+  const amountInputRef = useRef<HTMLInputElement>(null);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [submittedEntryCount, setSubmittedEntryCount] = useState<number>(1);
@@ -295,6 +330,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const isUnder21 = useAppSelector(selectIsUnder21);
   const { data: searchResults = [], isFetching: isSearching } = useSearchParticipatingLocations(debouncedTerm);
   const receiptImageUpload = useUploadReceiptImage();
+  const { readReceipt } = useReadReceipt();
 
   // Always resolve the AUTHORITATIVE participating detail by location id - it carries the real
   // business/location name and min_transaction_amount, which the compact object passed from the
@@ -400,7 +436,8 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // ──────────────────────────────────────────────────
   // Derived state
   // ──────────────────────────────────────────────────
-  const showImageUpload = requiresImage || riskLevel.requiresImage;
+  // Photo-first made the old risk-based showImageUpload gate moot: a photo is always
+  // required now. requiresImage (contest flow) is kept - it just cannot fire anymore.
   // Alcohol/tobacco venues (liquor, pub) are 21+ only (mirrors the server-side entry gate).
   const selectedAgeBlocked = isUnder21 && isAgeRestrictedSector(selectedLocation?.sector);
 
@@ -411,14 +448,17 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const purchaseDateTooOld = purchaseDate !== '' && purchaseDate < sevenDaysAgo;
 
+  // Photo-first: the receipt photo is unconditionally required (design Turn 9). The old
+  // risk-based requiresImage gate and contest dialog remain, but with a photo always
+  // present that path simply stops firing.
   const isFormValid =
     selectedLocation &&
-    receiptIdentifier.trim().length >= 5 &&
+    receiptIdentifier.trim().length >= 1 &&
     transactionAmount.trim().length > 0 &&
     parseFloat(transactionAmount) > 0 &&
     purchaseDate !== '' &&
     !purchaseDateTooOld &&
-    (!showImageUpload || receiptImageUrl !== null);
+    receiptImageUrl !== null;
 
   // ──────────────────────────────────────────────────
   // Handlers
@@ -442,12 +482,84 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     setErrorMessage('');
     receiptKeystrokeTimesRef.current = [];
     setReceiptWasPasted(false);
-    setRequiresImage(false);
     setReceiptImageUrl(null);
+    setReadState('awaiting_photo');
+    setReadFields(new Set());
+    scannedAutofill.current = false;
+    // Clear the receipt values too: a new business + new photo must not inherit the old
+    // entry's number/amount/date if the next read comes back partial.
+    setReceiptIdentifier('');
+    setTransactionAmount('');
+    setPurchaseDate(today);
     onLocationSelect?.(false);
   };
 
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── Photo-first read: upload the photo, let the server read it, then mount the fields
+  // pre-filled for the user to check. Soft-failure everywhere: an unreadable photo keeps
+  // the attachment and the user just types - never a dead end, never a red error.
+  const handleReceiptFile = async (file: File) => {
+    // One read at a time: the contest dialog's "Attach a photo" can reach the picker even
+    // while a read is in flight; stacking two uploads would race the fill.
+    if (readState === 'reading') return;
+    // Captured before the awaits: on upload failure restore the state that existed when
+    // THIS read started, not whatever a later render holds.
+    const prevState = readState;
+    setReadState('reading');
+    setErrorMessage('');
+    const url = await receiptImageUpload.upload(file);
+    if (!url) {
+      // Upload itself failed (hook shows its own error line under the panel).
+      setReadState(prevState);
+      return;
+    }
+    setReceiptImageUrl(url);
+    const result = await readReceipt(url);
+    // Reset ALL fields before applying the new read. Without this, replacing photo A (which
+    // filled id+amount) with photo B whose read is PARTIAL (only id) would leave photo A's
+    // amount in the field, chip-less, and the user would submit photo B carrying A's amount.
+    // Every field a photo owns must come from THAT photo's read or be typed fresh.
+    setReceiptIdentifier('');
+    setTransactionAmount('');
+    setPurchaseDate(today);
+    const got = new Set<ReadableField>();
+    if (result?.identifier) {
+      setReceiptIdentifier(result.identifier);
+      got.add('id');
+    }
+    if (result?.amount != null) {
+      setTransactionAmount(result.amount.toFixed(2));
+      got.add('amount');
+    }
+    // Only take a read date the form itself would accept (7-day window, not future);
+    // the field otherwise keeps its today default, exactly as it initialises.
+    if (result?.date && result.date >= sevenDaysAgo && result.date <= today) {
+      setPurchaseDate(result.date);
+      got.add('date');
+    }
+    setReadFields(got);
+    if (got.size > 0) {
+      scannedAutofill.current = true;
+      receiptKeystrokeTimesRef.current = [];
+      setReceiptWasPasted(false);
+    }
+    // The date is never a "hole": it falls back to today exactly as the field initialises,
+    // so only a missing id or amount demands repair. An unread date simply wears no chip.
+    if (got.has('id') && got.has('amount')) {
+      setReadState('read');
+    } else if (got.size > 0) {
+      setReadState('partial');
+      // Land the caret in the first hole so the repair is one tap shorter.
+      setTimeout(() => {
+        if (!got.has('id')) receiptIdInputRef.current?.focus();
+        else if (!got.has('amount')) amountInputRef.current?.focus();
+      }, 0);
+    } else {
+      setReadState('unread');
+      setTimeout(() => receiptIdInputRef.current?.focus(), 0);
+    }
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const value = e.target.value;
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
       setTransactionAmount(value);
@@ -460,7 +572,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
 
   // Funnel: receipt id + image milestones, first time each becomes meaningful.
   useEffect(() => {
-    if (!trackedReceiptId.current && receiptIdentifier.trim().length >= 5) {
+    if (!trackedReceiptId.current && receiptIdentifier.trim().length >= 1) {
       trackedReceiptId.current = true;
       trackFunnel('submit_receipt_id_entered');
     }
@@ -501,7 +613,12 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       }
       typingDurationMs = min;
     }
-    const receiptInputMethod = receiptWasPasted ? 'pasted' : 'typed';
+    // A scan-filled value the user never retyped counts as 'scanned': keystroke timing only
+    // applies to typed input (times are cleared when the scan fills the fields, so
+    // typingDurationMs is naturally undefined here).
+    const receiptInputMethod = receiptWasPasted
+      ? 'pasted'
+      : scannedAutofill.current && receiptKeystrokeTimesRef.current.length === 0 ? 'scanned' : 'typed';
 
     trackFunnel('submit_attempted', { flushNow: true });
     submitReceiptEntry.mutate({
@@ -520,25 +637,27 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         trackFunnel('submission_confirmed_shown');
         setReceiptIdentifier('');
         setTransactionAmount('');
+        setPurchaseDate(today);
         setErrorMessage('');
         receiptKeystrokeTimesRef.current = [];
         setReceiptWasPasted(false);
-        setRequiresImage(false);
         setReceiptImageUrl(null);
+        setReadState('awaiting_photo');
+        setReadFields(new Set());
+        scannedAutofill.current = false;
         onSuccess?.(data.ticketId);
       },
       onError: (err) => {
         const message = apiErrorMessage(err, 'Submission failed. Please try again.');
-        // Anti-squatting: this receipt was already typed (by someone with no photo). Reveal the
-        // image upload and ask for a photo so OCR can verify it is really theirs and override
-        // the squatter. Code-based so it does not depend on the exact server message text.
+        // Dedup ladder: this receipt NUMBER is already claimed (a squatter's typed entry, the
+        // user's own entry from another day at a daily-reset register, or another day's claim).
+        // Reveal the image upload and ask for a photo so the scan can verify the printed date
+        // and document. Code-based so it does not depend on the exact server message text.
         if (apiErrorCode(err) === 'RECEIPT_CONTEST_IMAGE_REQUIRED') {
-          setRequiresImage(true);
           // Explain it in a dialog so it can't be missed; keep a short inline note as a fallback.
           setContestDialogOpen(true);
-          setErrorMessage('This receipt was already entered. Attach a photo of it below and submit again to confirm it is yours.');
+          setErrorMessage('This receipt number was already entered. Attach a photo of your receipt below and submit again so we can verify it.');
         } else if (message === 'A receipt image is required to submit an entry.') {
-          setRequiresImage(true);
           setErrorMessage('Please attach a photo of your receipt to continue.');
         } else {
           setErrorMessage(message);
@@ -563,7 +682,9 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     ? (previewMin && previewMin > 0 ? Math.min(Math.floor(previewAmt / previewMin), MAX_ENTRIES_PER_RECEIPT) : 1)
     : 0;
 
-  const canSubmit = isFormValid && !submitReceiptEntry.isPending && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached;
+  // readState guard: during a re-read the previous values and photo URL are still in state,
+  // so without it the form could submit the OLD photo while the new one is mid-upload.
+  const canSubmit = isFormValid && readState !== 'reading' && !submitReceiptEntry.isPending && !riskLevel.isThrottled && !riskLevel.isDailyLimitReached;
 
   // Once every field is valid the CTA becomes the page's attractor and starts breathing.
   const renderSubmit = () => (
@@ -601,7 +722,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
       p: 2, borderRadius: 2.5,
       bgcolor: ERROR_BG_TINT, border: `1px solid ${ERROR_BORDER_TINT}`,
     }}>
-      <Typography sx={{ fontSize: '1rem', lineHeight: 1, mt: 0.1 }}>⚠️</Typography>
+      <WarningAmberRounded sx={{ fontSize: 20, color: ERROR_DARK, flexShrink: 0, mt: '1px' }} />
       <Typography variant="body2" sx={{ color: ERROR_DARK, fontWeight: 500, lineHeight: 1.5 }}>
         {errorMessage}
       </Typography>
@@ -884,14 +1005,19 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             Just one quick step
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
-           Someone already entered this receipt number. If this receipt is yours, please upload a clear photo so we can verify your entry.
+           This receipt number was already entered. If your receipt is from a different purchase, upload a clear photo of it so we can verify your entry.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
           <AttractButton
             fullWidth
             variant="contained"
-            onClick={() => setContestDialogOpen(false)}
+            onClick={() => {
+              setContestDialogOpen(false);
+              // Open the scan tile's picker directly - "Attach a photo" should attach a photo,
+              // not drop the user back on the form to find the tile themselves.
+              document.getElementById(SCAN_INPUT_ID)?.click();
+            }}
             startIcon={<PhotoCameraOutlined />}
             sx={{
               height: 48, borderRadius: 2.5, fontWeight: 800, textTransform: 'none',
@@ -951,19 +1077,78 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             </Box>
             <Box component={motion.div} variants={riseIn} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 
+          {/* Photo first: this block IS the step until a photo exists. It collapses into a
+              progress row while reading, then a green attached row; the fields only mount
+              once the read settles. */}
+          <ReceiptImageUploadField
+            state={readState === 'awaiting_photo' ? 'prompt' : readState === 'reading' ? 'reading' : 'row'}
+            receiptImageUrl={receiptImageUrl}
+            uploadError={receiptImageUpload.error}
+            onFile={handleReceiptFile}
+          />
+
+          {/* Reading: skeletons where the three fields and the submit are about to arrive. */}
+          {readState === 'reading' && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} aria-hidden>
+              <Skeleton variant="rounded" height={56} sx={{ borderRadius: 2.5, bgcolor: BORDER_SUBTLE }} />
+              <Skeleton variant="rounded" height={56} sx={{ borderRadius: 2.5, bgcolor: BORDER_SUBTLE }} />
+              <Skeleton variant="rounded" height={56} sx={{ borderRadius: 2.5, bgcolor: BG_SUBTLE }} />
+              <Skeleton variant="rounded" height={52} sx={{ borderRadius: 2.5, bgcolor: BG_SUBTLE }} />
+            </Box>
+          )}
+
+          {(readState === 'read' || readState === 'partial' || readState === 'unread') && (
+          <Box component={motion.div} variants={staggerContainer} initial="hidden" animate="visible" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+          {/* What the read produced, in one line - never red: a soft read is ours to fix. */}
+          <Box component={motion.div} variants={riseIn}>
+            {readState !== 'unread' ? (
+              <>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', pl: '2px' }}>
+                  <CheckCircle sx={{ fontSize: 16, color: SUCCESS_GREEN_TEXT_AA }} />
+                  <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.primary' }}>Check what we read</Typography>
+                </Box>
+                <Typography sx={{ mt: '3px', pl: '2px', fontSize: 12, lineHeight: 1.5, color: TEXT_TERTIARY }}>
+                  {readState === 'read' ? (
+                    <>
+                      <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>Tap a field to correct it.</Box>
+                      <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>Click a field to correct it.</Box>
+                    </>
+                  ) : !readFields.has('amount') && readFields.has('id') ? (
+                    'We could not make out the total. Add it below.'
+                  ) : !readFields.has('id') && readFields.has('amount') ? (
+                    'We could not make out the receipt number. Add it below.'
+                  ) : (
+                    'We could not make out everything. Fill in the rest below.'
+                  )}
+                </Typography>
+              </>
+            ) : (
+              <>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', pl: '2px' }}>
+                  <InfoOutlined sx={{ fontSize: 16, color: TEXT_TERTIARY }} />
+                  <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.primary' }}>Could not read this photo</Typography>
+                </Box>
+                <Typography sx={{ mt: '3px', pl: '2px', fontSize: 12, lineHeight: 1.5, color: TEXT_TERTIARY }}>
+                  Just type the details below. Your photo stays attached.
+                </Typography>
+              </>
+            )}
+          </Box>
+
           {/* Receipt ID */}
           <TextField
             fullWidth
             label="Receipt / Transaction ID"
             placeholder="e.g. RCP-12345"
             value={receiptIdentifier}
+            inputRef={receiptIdInputRef}
             onChange={(e) => {
               const val = e.target.value;
               setReceiptIdentifier(val);
-              // A different receipt number is a different situation: drop the contest-driven
-              // "image required" state and its error so a fresh, uncontested number is not stuck
-              // behind an image gate. (Risk-based requiresImage is separate and still applies.)
-              setRequiresImage(false);
+              // Editing removes the Read chip: the value is the user's now, not the read's.
+              if (readFields.has('id')) setReadFields((f) => { const n = new Set(f); n.delete('id'); return n; });
+              // A different receipt number is a different situation: clear the contest error.
               if (errorMessage) setErrorMessage('');
               if (val === '') {
                 receiptKeystrokeTimesRef.current = [];
@@ -977,12 +1162,9 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               setReceiptWasPasted(true);
               receiptKeystrokeTimesRef.current = [];
             }}
-            error={receiptIdentifier.trim().length > 0 && receiptIdentifier.trim().length < 5}
             helperText={
               <Box component="span">
-                {receiptIdentifier.trim().length > 0 && receiptIdentifier.trim().length < 5
-                  ? 'Minimum 5 characters'
-                  : 'Find this on your receipt - may say "Receipt #" or "Order #"'}
+                {'Find this on your receipt - may say "Receipt #", "Order #" or "Check #"'}
                 {selectedLocation?.receipt_example_image_url && (
                   <>
                     {' · '}
@@ -1000,9 +1182,17 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                   <ReceiptOutlined sx={{ fontSize: 20, color: 'text.disabled' }} />
                 </InputAdornment>
               ),
+              endAdornment: readFields.has('id') ? (
+                <InputAdornment position="end">
+                  <ReadChip />
+                </InputAdornment>
+              ) : undefined,
             }}
             sx={receiptFieldSx(primaryColor || PRIMARY_MAIN)}
           />
+
+          {/* Amount + date pair up on one desktop row (design 9f) - there is width for it. */}
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, '& > *': { flex: 1, minWidth: 0 } }}>
 
           {/* Amount */}
           <TextField
@@ -1010,76 +1200,95 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             label="Amount spent before tip"
             placeholder="0.00"
             value={transactionAmount}
-            onChange={handleAmountChange}
+            inputRef={amountInputRef}
+            onChange={(e) => {
+              if (readFields.has('amount')) setReadFields((f) => { const n = new Set(f); n.delete('amount'); return n; });
+              handleAmountChange(e);
+            }}
+            helperText={readState === 'partial' && !readFields.has('amount') && transactionAmount === '' ? 'Type the total from your receipt.' : undefined}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
                   <Typography sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '1.05rem', lineHeight: 1 }}>$</Typography>
                 </InputAdornment>
               ),
+              endAdornment: readFields.has('amount') ? (
+                <InputAdornment position="end">
+                  <ReadChip />
+                </InputAdornment>
+              ) : undefined,
             }}
             sx={receiptFieldSx(primaryColor || PRIMARY_MAIN)}
           />
 
-          {/* You'll earn N entries (design amber note). Springs in when the amount first
-              crosses the minimum; the count itself pops on every change. */}
+          {/* Purchase Date - the date picker has no adornment slot, so its Read chip is
+              overlaid inside the field, left of the calendar icon. Changing the date
+              removes the chip like any other edit. */}
+          <Box sx={{ position: 'relative' }}>
+            <AppDatePicker
+              label="Date of purchase"
+              value={purchaseDate}
+              onChange={(v) => {
+                if (readFields.has('date') && v !== purchaseDate) {
+                  setReadFields((f) => { const n = new Set(f); n.delete('date'); return n; });
+                }
+                setPurchaseDate(v);
+              }}
+              minDate={sevenDaysAgo}
+              maxDate={today}
+              error={purchaseDateTooOld}
+              helperText={purchaseDateTooOld ? 'Receipt is older than 7 days and cannot be accepted.' : ''}
+              sx={receiptDatePickerSx(primaryColor || PRIMARY_MAIN)}
+            />
+            {readFields.has('date') && (
+              <Box sx={{ position: 'absolute', top: 28, right: 52, transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                <ReadChip />
+              </Box>
+            )}
+          </Box>
+          </Box>
+
+          {/* This receipt earns N entries - MOBILE banner (the desktop rail carries its own
+              card). Springs in when the amount first crosses the minimum. */}
           <AnimatePresence initial={false}>
             {previewCount > 0 && (
-              <motion.div
+              <Box
+                component={motion.div}
                 initial={{ opacity: 0, y: 10, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.97, transition: { duration: 0.15 } }}
                 transition={SPRING_SNAPPY}
+                sx={{ display: { xs: 'block', md: 'none' } }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.5, borderRadius: 2.5, bgcolor: `${ACCENT_GOLD}14`, border: `1px solid ${ACCENT_GOLD}40` }}>
-                  <StarRounded sx={{ fontSize: 20, color: ACCENT_GOLD_DARK, flexShrink: 0 }} />
-                  <Box>
-                    <Typography sx={{ color: ACCENT_GOLD_DARK, fontWeight: 800, fontSize: '0.875rem', lineHeight: 1.3 }}>
-                      You'll earn{' '}
-                      <motion.span
-                        key={previewCount}
-                        style={{ display: 'inline-block' }}
-                        initial={{ y: 8, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={SPRING_SNAPPY}
-                      >
-                        {previewCount} {previewCount === 1 ? 'entry' : 'entries'}
-                      </motion.span>
+                <Box sx={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.25,
+                  p: '14px 16px', borderRadius: 2.5,
+                  background: `linear-gradient(135deg, ${alpha(PRIMARY_LIGHT, 0.1)} 0%, ${alpha(PRIMARY_MAIN, 0.06)} 100%)`,
+                  border: `1px solid ${alpha(PRIMARY_LIGHT, 0.33)}`,
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.125, minWidth: 0 }}>
+                    <ConfirmationNumberOutlined sx={{ fontSize: 20, color: PRIMARY_MAIN, flexShrink: 0 }} />
+                    <Typography sx={{ fontSize: 13, fontWeight: 700, color: PRIMARY_DEEP }}>This receipt earns</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, flexShrink: 0 }}>
+                    {/* Keyed by count so every change hops - same trick as the My Entries number. */}
+                    <motion.span
+                      key={previewCount}
+                      style={{ display: 'inline-block' }}
+                      initial={{ y: 8, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={SPRING_SNAPPY}
+                    >
+                      <Typography component="span" sx={{ fontSize: 20, fontWeight: 800, lineHeight: 1, color: PRIMARY_MAIN }}>{previewCount}</Typography>
+                    </motion.span>
+                    <Typography component="span" sx={{ fontSize: 12, fontWeight: 700, color: PRIMARY_MAIN }}>
+                      {previewCount === 1 ? 'entry' : 'entries'}
                     </Typography>
-                    {previewMin != null && previewMin > 0 && (
-                      <Typography sx={{ color: ACCENT_GOLD_DARK, opacity: 0.85, fontSize: '0.75rem', lineHeight: 1.3 }}>
-                        ${previewMin} per entry
-                      </Typography>
-                    )}
                   </Box>
                 </Box>
-              </motion.div>
+              </Box>
             )}
           </AnimatePresence>
-
-          {/* Purchase Date */}
-          <AppDatePicker
-            label="Date of purchase"
-            value={purchaseDate}
-            onChange={setPurchaseDate}
-            minDate={sevenDaysAgo}
-            maxDate={today}
-            error={purchaseDateTooOld}
-            helperText={purchaseDateTooOld ? 'Receipt is older than 7 days and cannot be accepted.' : ''}
-            sx={receiptDatePickerSx(primaryColor || PRIMARY_MAIN)}
-          />
-
-          {/* Receipt image upload */}
-          {showImageUpload && (
-            <ReceiptImageUploadField
-              primaryColor={primaryColor}
-              receiptImageUrl={receiptImageUrl}
-              setReceiptImageUrl={setReceiptImageUrl}
-              isUploading={receiptImageUpload.isUploading}
-              uploadError={receiptImageUpload.error}
-              onUpload={receiptImageUpload.upload}
-            />
-          )}
 
           {/* Error — MOBILE only. On desktop it lives in the right rail below the submit
               button (see renderErrorCard there) so it is never pushed off-screen below the
@@ -1090,10 +1299,22 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             </Box>
           )}
 
-              {/* Mobile submit (desktop submit lives in the summary rail) */}
-              <Box sx={{ display: { xs: 'block', md: 'none' }, mt: 1 }}>
+              {/* Mobile submit: sticks above the fixed tab bar with NO bar chrome - the
+                  button floats over the content on its own (its drop shadow separates it).
+                  Stays in the scroll flow (sticky, not fixed): an open keyboard pushes it
+                  with the content instead of pinning it over the field being typed in.
+                  (Desktop submit lives in the summary rail.) */}
+              <Box
+                sx={{
+                  display: { xs: 'block', md: 'none' },
+                  position: 'sticky', bottom: `${BOTTOM_NAV_HEIGHT + 10}px`, zIndex: 4,
+                  mt: 1,
+                }}
+              >
                 {renderSubmit()}
               </Box>
+          </Box>
+          )}
             </Box>
           </Box>
 
@@ -1134,6 +1355,15 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
                 {renderErrorCard()}
               </Box>
             )}
+            {/* Privacy note (design 9f rail). */}
+            <Box sx={{ mt: 2, display: 'flex', alignItems: 'flex-start', gap: 1, p: 1.75, borderRadius: 2.5, bgcolor: 'background.paper', border: `1px solid ${BORDER_LIGHT}` }}>
+              <Box component="svg" viewBox="0 0 24 24" sx={{ width: 15, height: 15, flexShrink: 0, mt: '1px', fill: SUCCESS_GREEN_TEXT_AA }}>
+                <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9z" />
+              </Box>
+              <Typography sx={{ fontSize: 12, lineHeight: 1.5, color: TEXT_TERTIARY }}>
+                Used to verify this entry only.
+              </Typography>
+            </Box>
           </Box>
         </Box>
         )}

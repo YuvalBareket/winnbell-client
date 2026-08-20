@@ -44,7 +44,7 @@ export interface ReceiptEntryPayload {
   transactionDate: string; // ISO date string (YYYY-MM-DD)
   receiptImageUrl?: string;
   typingDurationMs?: number;
-  receiptInputMethod?: 'typed' | 'pasted';
+  receiptInputMethod?: 'typed' | 'pasted' | 'scanned';
 }
 
 export interface ReceiptEntryResponse {
@@ -60,6 +60,18 @@ export const submitReceiptEntry = (payload: ReceiptEntryPayload): Promise<Receip
 
 export const getReceiptUploadUrl = (size: number): Promise<{ uploadUrl: string; publicUrl: string }> =>
   api.get('/tickets/receipt-upload-url', { params: { size } }).then(r => r.data);
+
+export interface ReceiptScanResult {
+  ok: boolean;
+  identifier: string | null;
+  amount: number | null;
+  date: string | null; // YYYY-MM-DD
+}
+
+// Reads an already-uploaded receipt photo and returns the form fields (autofill). Soft
+// contract: unreadable photos come back { ok: false }, never an error status.
+export const scanReceiptImage = (receiptImageUrl: string): Promise<ReceiptScanResult> =>
+  api.post('/tickets/receipt-scan', { receiptImageUrl }).then(r => r.data);
 
 export interface RiskLevelResponse {
   requiresImage: boolean;
