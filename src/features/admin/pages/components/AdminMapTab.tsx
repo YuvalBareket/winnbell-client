@@ -30,6 +30,7 @@ import {
   GRADIENT_PRIMARY,
 } from '../../../../shared/colors';
 import { useAdminMapLocations, type AdminMapLocation } from '../../hooks/useAdmin';
+import MapBusinessPopup from '../../../nearBy/components/MapBusinessPopup';
 
 setOptions({
   key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? '',
@@ -90,6 +91,8 @@ export default function AdminMapTab() {
   const infoWindowContentRef = useRef<AdminMapLocation | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [bounds, setBounds] = useState<ViewportBounds | null>(null);
+  // "View business" opens the location's PUBLIC profile drawer, as customers see it.
+  const [profileLocationId, setProfileLocationId] = useState<number | null>(null);
   const idleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: locations = [], isLoading } = useAdminMapLocations(bounds);
@@ -177,7 +180,7 @@ export default function AdminMapTab() {
           <strong>${location.entries_current}</strong> entries this campaign
         </div>
 
-        <button onclick="window.adminMapViewBusiness?.(${location.business_id})" style="
+        <button onclick="window.adminMapViewProfile?.(${location.location_id})" style="
           background: ${GRADIENT_PRIMARY};
           color: white;
           border: none;
@@ -189,6 +192,19 @@ export default function AdminMapTab() {
           width: 100%;
         ">
           View business
+        </button>
+        <button onclick="window.adminMapViewBusiness?.(${location.business_id})" style="
+          background: transparent;
+          color: ${TEXT_SECONDARY};
+          border: none;
+          padding: 6px 0 0;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          width: 100%;
+          text-decoration: underline;
+        ">
+          Open admin dashboard
         </button>
       </div>
     `;
@@ -310,15 +326,22 @@ export default function AdminMapTab() {
     });
   }, [locations, mapReady, showInfoWindow]);
 
-  // Expose navigate to InfoWindow button
+  // Expose the InfoWindow button handlers. "View business" opens the PUBLIC location
+  // profile drawer (MapBusinessPopup in adminView mode) - exactly what a customer sees
+  // when tapping this pin on the consumer map; "Open admin dashboard" keeps the old
+  // admin business view a click away.
   useEffect(() => {
     const windowObj = window as unknown as Record<string, unknown>;
     windowObj.adminMapViewBusiness = (businessId: number) => {
       navigate(`/admin/businesses/${businessId}/view`);
     };
+    windowObj.adminMapViewProfile = (locationId: number) => {
+      setProfileLocationId(locationId);
+    };
 
     return () => {
       delete windowObj.adminMapViewBusiness;
+      delete windowObj.adminMapViewProfile;
     };
   }, [navigate]);
 
@@ -438,6 +461,15 @@ export default function AdminMapTab() {
           {isAtMax && ' (max 30) - zoom in to see more'}
         </Typography>
       </motion.div>
+
+      {/* The public location profile, rendered by the SAME component customers get on the
+          consumer map - fetched live, with the submit action inert for admins. */}
+      <MapBusinessPopup
+        locationId={profileLocationId}
+        basicInfo={null}
+        onClose={() => setProfileLocationId(null)}
+        adminView
+      />
     </Box>
   );
 }

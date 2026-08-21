@@ -30,11 +30,14 @@ type Props = {
   userLocation?: { latitude: number; longitude: number } | null;
   /** When true the popup is shown as a read-only preview (business hub) — action buttons do nothing. */
   preview?: boolean;
-  /** In preview mode, render this detail directly instead of fetching the public (subscription-gated) endpoint. */
+  /** In preview mode, render this detail directly instead of fetching the public (participation-gated) endpoint. */
   previewDetail?: NearbyLocationDetail | null;
+  /** Admin map "view as customer": FETCHES the live public profile exactly like a consumer,
+      but the submit action is inert (the /scan route does not exist for admins). */
+  adminView?: boolean;
 };
 
-const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, userLocation, preview = false, previewDetail = null }) => {
+const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, userLocation, preview = false, previewDetail = null, adminView = false }) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
@@ -50,6 +53,9 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
 
   const detail = preview ? (previewDetail ?? undefined) : fetchedDetail;
   const detailLoading = preview ? false : fetchedLoading;
+
+  // Everything that must not ACT (navigate to /scan) when this popup is a look-only view.
+  const actionsInert = preview || adminView;
 
   const location = detail || basicInfo;
 
@@ -90,7 +96,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
   };
 
   const handleSubmitReceipt = () => {
-    if (!location || preview) return;
+    if (!location || actionsInert) return;
     onClose();
     navigate('/scan', { state: { preselectedBusinessId: businessId, preselectedLocation: detail || location } });
   };
@@ -556,14 +562,14 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
                 )}
                 <motion.div
                   {...pressable}
-                  {...(submitBlocked || preview ? {} : breathe)}
+                  {...(submitBlocked || actionsInert ? {} : breathe)}
                 >
                   <Button
                     fullWidth
                     variant='contained'
                     size='large'
                     startIcon={<ReceiptLong />}
-                    onClick={submitBlocked || preview ? undefined : handleSubmitReceipt}
+                    onClick={submitBlocked || actionsInert ? undefined : handleSubmitReceipt}
                     sx={{
                       py: 1.6,
                       fontWeight: 800,

@@ -92,12 +92,25 @@ const RISK_FLAG_LABELS: Record<string, string> = {
   same_business_receipt_velocity: 'Many verified receipts at one business (24h)',
 };
 
+type ManagedLocation = {
+  location_id: number;
+  location_name: string;
+  location_active: boolean;
+  business_id: number;
+  business_name: string;
+};
+
 const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
   const { data, isLoading } = useUserDetail(userId);
   const imageDecision = useAdminImageDecision();
   const [pendingTicket, setPendingTicket] = React.useState<number | null>(null);
   const user = data?.user;
   const entries = data?.entries ?? [];
+  // Branch managers own no business row - their tie to a business is the location(s)
+  // they manage, surfaced by getUserDetailService as a JSON array.
+  const managedLocations: ManagedLocation[] = Array.isArray(user?.managed_locations)
+    ? (user.managed_locations as ManagedLocation[])
+    : [];
 
   const riskLabel =
     (user?.risk_score ?? 0) >= 20 ? 'HIGH' : (user?.risk_score ?? 0) >= 10 ? 'MEDIUM' : 'LOW';
@@ -266,6 +279,39 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                 </Box>
               </AdminCard>
             </motion.div>
+
+            {/* Managed locations (branch managers): which location, at which business */}
+            {managedLocations.length > 0 && (
+              <motion.div variants={popIn}>
+                <AdminCard sx={{ p: 2 }}>
+                  <Typography variant='caption' sx={{ color: TEXT_TERTIARY, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }} display='block' mb={1.5}>
+                    Manages {managedLocations.length === 1 ? 'Location' : `${managedLocations.length} Locations`}
+                  </Typography>
+                  <Stack spacing={1}>
+                    {managedLocations.map((ml) => (
+                      <Stack key={ml.location_id} direction='row' spacing={1} alignItems='center' flexWrap='wrap' useFlexGap>
+                        <Typography variant='body2' fontWeight={700} sx={{ color: TEXT_HEADING }}>
+                          {ml.location_name}
+                        </Typography>
+                        <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>
+                          at
+                        </Typography>
+                        <Typography variant='body2' fontWeight={600} sx={{ color: PRIMARY_MAIN }}>
+                          {ml.business_name}
+                        </Typography>
+                        {!ml.location_active && (
+                          <Chip
+                            label='Inactive location'
+                            size='small'
+                            sx={{ bgcolor: METRIC_WARN_TINT, color: METRIC_WARN, fontWeight: 700, borderRadius: '8px', fontSize: 11 }}
+                          />
+                        )}
+                      </Stack>
+                    ))}
+                  </Stack>
+                </AdminCard>
+              </motion.div>
+            )}
 
             {/* Accumulated risk flags */}
             {Array.isArray(user.risk_flags) && user.risk_flags.length > 0 && (
