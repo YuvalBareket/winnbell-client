@@ -10,6 +10,7 @@ import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import { useSubscription } from '../../subscription/hooks/useSubscription';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
+import { useCampaigns } from '../../campaign/hooks/useCampaignData';
 import DrawPreparationView from '../../tickets/components/DrawPreparationView';
 import { MOBILE_CONTENT_HEIGHT } from '../../../shared/colors';
 import { riseIn, staggerContainer, pressable } from '../../../shared/motion';
@@ -26,23 +27,27 @@ const MyTicketsPage = () => {
 
   const { data: subscription, isLoading: subLoading } = useSubscription(isBusinessUser);
   const { data: businessData } = useBusinessData(isBusinessUser);
+  const { data: myCampaigns, isLoading: campaignsLoading } = useCampaigns(undefined, isBusinessUser);
 
   // The real "Distributed Entries" page is only meaningful while the business is
   // actually in an OPEN campaign. Otherwise (no subscription yet, subscribed but
   // the campaign hasn't opened, or cancelled and out of the draw) show the
   // preparation/steps view. `subscription` is null when the business has never
-  // subscribed (the details query inner-joins the subscription row).
+  // subscribed (the details query inner-joins the subscription row) - which is why a
+  // free-trial membership (a campaign joined with NO subscription) is detected via the
+  // campaigns list instead: an Open campaign there means the business is live.
   const isSubscribed = !!subscription && ['Active', 'Trialing', 'Past_Due'].includes(subscription.status);
-  const inOpenCampaign = subscription?.draw_status === 'Open' && !!subscription?.draw_id;
+  const inOpenCampaign = (subscription?.draw_status === 'Open' && !!subscription?.draw_id)
+    || (myCampaigns ?? []).some((c) => c.is_current);
   const showPreparation = isBusinessUser && !inOpenCampaign;
 
   const hasDescription = !!(businessData?.description?.trim());
   const hasLocations = (businessData?.locations?.length ?? 0) > 0;
   const locations = businessData?.locations ?? [];
 
-  // Wait for the subscription status before deciding which view to show, so we
-  // never flash the real entries page before falling back to preparation.
-  if (isBusinessUser && subLoading) {
+  // Wait for the subscription status AND the campaigns list before deciding which view to
+  // show, so we never flash the preparation view before a trial membership resolves.
+  if (isBusinessUser && (subLoading || campaignsLoading)) {
     return (
       <Box sx={{ minHeight: '60dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <CircularProgress size={36} />

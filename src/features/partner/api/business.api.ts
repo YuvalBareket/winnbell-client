@@ -68,6 +68,11 @@ export const updateBusinessLogo = async (key: string): Promise<void> => {
   await api.patch('/business/logo', { key });
 };
 
-export const updateCampaignSettingsApi = async (data: UpdateCampaignSettingsInput): Promise<void> => {
-  await api.patch('/business/campaign-settings', data);
+export const updateCampaignSettingsApi = async (
+  data: UpdateCampaignSettingsInput,
+): Promise<{ success: boolean; isPending: boolean }> => {
+  // isPending: a threshold change made while the business is in an OPEN campaign is staged
+  // and applies when the campaign ends - callers surface that so nobody thinks it is live.
+  const res = await api.patch<{ success: boolean; isPending: boolean }>('/business/campaign-settings', data);
+  return res.data;
 };

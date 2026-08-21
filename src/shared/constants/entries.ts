@@ -4,7 +4,8 @@ export const MAX_ENTRIES_PER_RECEIPT = 3;
 
 // Hard per-user cap on total entries in a single draw/campaign, across ALL entry types.
 // Must stay in sync with MAX_ENTRIES_PER_DRAW in server/src/features/tickets/tickets.service.ts
-export const MAX_ENTRIES_PER_DRAW = 30;
+// 80 since the September 2026 3-month free-trial campaign (was 30 for monthly campaigns).
+export const MAX_ENTRIES_PER_DRAW = 80;
 
 // Lowest allowed "minimum spend per receipt" a business can set.
 // Must stay in sync with MIN_RECEIPT_THRESHOLD in server/src/features/business/business.controller.ts

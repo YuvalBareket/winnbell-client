@@ -129,7 +129,10 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
   const hasLocations = (bizData?.locations?.length ?? 0) > 0;
 
   const { data: campaignsData, isLoading: campaignsLoading } = useCampaigns(adminBusinessId);
-  const campaigns = campaignsData ?? [];
+  // Upcoming memberships (a free-trial join made before the campaign opened) have no
+  // dashboard data yet - they belong to the preparation view, which derives them itself.
+  // Only Open/Closed campaigns count for the prep-vs-dashboard decision and the selector.
+  const campaigns = (campaignsData ?? []).filter((c) => c.status !== 'Upcoming');
   const selectedCampaign = campaigns.find(c => c.draw_id === selectedCampaignId) ?? campaigns.find(c => c.is_current) ?? campaigns[0] ?? null;
   const campaignIdForQuery = selectedCampaign?.draw_id;
   const isCurrentCampaign = selectedCampaign?.is_current ?? true;
@@ -188,11 +191,10 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
   // No campaign state
   const noCampaign = !headerData?.has_campaign;
 
+  // The receipt example is OPTIONAL (2026-08-21): it improves the customer scan guide when
+  // present, but never gates the dashboard - the old "held on the preparation view until
+  // uploaded" behavior is gone.
   const hasReceiptExample = !!bizData?.receipt_example_image_url;
-  // An owner who skipped the receipt example during subscribe is still enrolled and active
-  // (they paid), but keeps seeing the preparation view instead of the dashboard until they
-  // add it. Managers are not gated - they cannot upload the receipt example.
-  const ownerMissingReceipt = isBusiness && !!bizData && !hasReceiptExample;
 
   // Admin read-only view of a business with no campaigns: a plain empty state. The owner's
   // DrawPreparationView below is a setup checklist keyed to the LOGGED-IN user's own
@@ -211,7 +213,7 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
 
   // A business with no campaigns yet (just subscribed, waiting for the next draw to open, or
   // not subscribed at all) sees the preparation / "getting ready" view instead of an empty dashboard.
-  if (!campaignsLoading && (campaigns.length === 0 || ownerMissingReceipt)) {
+  if (!campaignsLoading && campaigns.length === 0) {
     return (
       <DrawPreparationView
         subscription={subscription ?? undefined}
@@ -219,7 +221,6 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
         hasLocations={hasLocations}
         hasReceiptExample={hasReceiptExample}
         minSpend={bizData?.min_transaction_amount ?? null}
-        inActiveCampaign={campaigns.length > 0}
         isDesktop={isDesktop}
         isManager={isManager}
         isSubscribed={businessIsActive}

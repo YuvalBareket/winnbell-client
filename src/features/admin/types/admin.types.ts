@@ -244,7 +244,7 @@ export interface GrowthAnalytics {
     single_business_pct: number;
     multi_business_pct: number;
     over_20_pct: number;
-    at_30_pct: number;
+    at_cap_pct: number;
     amoe_only_pct: number;
   };
   revenue: {

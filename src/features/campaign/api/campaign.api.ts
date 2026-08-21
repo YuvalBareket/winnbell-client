@@ -53,6 +53,16 @@ export const fetchCampaigns = async (adminBusinessId?: number): Promise<Campaign
   return res.data;
 };
 
+// Free-trial-era join: enrolls the owner's business in the current campaign (the open one,
+// or the earliest upcoming as a registration) with no payment. Owner-only server-side.
+export const joinCurrentCampaign = async (): Promise<{
+  joined: boolean;
+  campaign: { drawId: number; drawName: string; drawStatus: string };
+}> => {
+  const res = await api.post('/business/campaign/join');
+  return res.data;
+};
+
 export const fetchCampaignHeader = async (locationId?: number, campaignId?: number, adminBusinessId?: number): Promise<CampaignHeaderData> => {
   const params: Record<string, unknown> = {};
   if (locationId) params.location_id = locationId;

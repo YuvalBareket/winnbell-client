@@ -2,12 +2,16 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../../shared/api/client';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 import { US_STATES } from '../../../shared/constants/usStates';
+import { MAX_ENTRIES_PER_DRAW } from '../../../shared/constants/entries';
 import rulesContent from '../content/official-rules.md?raw';
 
 const SUPPORT_EMAIL = 'support@winnbell.com';
 const PRIVACY_URL = 'https://winnbell.com/privacy';
 const COMPANY_ADDRESS = 'Wilmington, Delaware';
-const MAX_ENTRIES_PER_USER = '30';
+// Derived from the enforced cap so the published rules can never drift from actual conduct
+// (they said 30 while enforcement moved to 80 exactly once; never again). The server-side
+// PDF snapshot (officialRulesSnapshot.ts) keeps a literal that must be updated in lockstep.
+const MAX_ENTRIES_PER_USER = String(MAX_ENTRIES_PER_DRAW);
 const TIME_ZONE = 'Eastern Time (ET)';
 
 // Eligible Jurisdictions (Section 2, and through it the physical-presence rule in 4.1) mirror the

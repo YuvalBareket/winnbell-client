@@ -1,15 +1,33 @@
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
-import { fetchCampaigns, fetchCampaignHeader, fetchCampaignKpis, fetchCampaignEntries, type DateRange } from '../api/campaign.api';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchCampaigns, fetchCampaignHeader, fetchCampaignKpis, fetchCampaignEntries, joinCurrentCampaign, type DateRange } from '../api/campaign.api';
 import { getDrawResult } from '../../draw/api/draw.api';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
-export const useCampaigns = (adminBusinessId?: number) => {
+export const useCampaigns = (adminBusinessId?: number, enabled: boolean = true) => {
   return useQuery({
     queryKey: adminBusinessId
       ? ['admin', 'business-campaign-list', adminBusinessId]
       : queryKeys.campaign.list(),
     queryFn: () => fetchCampaigns(adminBusinessId),
     staleTime: 60_000,
+    // The list endpoint is Business-role only; consumer-visible pages (My Entries) must
+    // not fire it for regular users.
+    enabled,
+  });
+};
+
+// Free-trial-era join. On success everything campaign-shaped refreshes: the campaigns
+// list flips the prep view to registered/live, and the business/campaign caches pick up
+// the new membership (map participation is server-cache-invalidated by the endpoint).
+export const useJoinCampaign = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: joinCurrentCampaign,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.campaign.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.business.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.draws.all });
+    },
   });
 };
 

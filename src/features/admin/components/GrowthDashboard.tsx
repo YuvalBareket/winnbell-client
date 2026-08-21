@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { MAX_ENTRIES_PER_DRAW } from '../../../shared/constants/entries';
 import {
   Box,
   Typography,
@@ -774,7 +775,7 @@ const GrowthDashboard: React.FC = () => {
                           { pct: data.engagement.single_business_pct, label: 'Single Business Only', tooltip: 'Share of players who only ever engaged with one business.' },
                           { pct: data.engagement.multi_business_pct, label: 'Multi-Business Users', tooltip: 'Share of players active across two or more businesses. Higher shows network effect.', color: CHART_BLUE },
                           { pct: data.engagement.over_20_pct, label: 'Over 20 Entries', tooltip: 'Share of players who collected more than 20 tickets. Your power users.', color: CHART_GREEN },
-                          { pct: data.engagement.at_30_pct, label: 'At 30 Entry Cap', tooltip: 'Share of players who hit the 30-ticket ceiling.' },
+                          { pct: data.engagement.at_cap_pct, label: `At ${MAX_ENTRIES_PER_DRAW} Entry Cap`, tooltip: `Share of players who hit the ${MAX_ENTRIES_PER_DRAW}-ticket ceiling.` },
                           { pct: data.engagement.amoe_only_pct, label: 'AMOE Only', tooltip: 'Share of players who only used the weekly entry.' },
                         ].map((item) => (
                           <Box key={item.label}>
