@@ -177,6 +177,7 @@ const AppRoutes = () => {
             <>
               <Route path='/admin' element={<BusinessDashboard />} />
               <Route path='/admin/campaigns' element={<BusinessDashboard />} />
+              <Route path='/admin/entries' element={<BusinessDashboard />} />
               <Route path='/admin/users' element={<BusinessDashboard />} />
               <Route path='/admin/businesses' element={<BusinessDashboard />} />
               <Route path='/admin/businesses/:businessId/view' element={<AdminBusinessViewPage />} />

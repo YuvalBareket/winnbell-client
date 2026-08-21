@@ -39,6 +39,7 @@ import {
   setBusinessParticipation,
   fetchBusinessDetail,
   fetchBusinessEntries,
+  fetchAdminEntries,
   adminImageDecision,
   sendNotification,
   fetchNotificationHistory,
@@ -571,8 +572,69 @@ export const useAdminImageDecision = (onSettled?: () => void) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.userDetailAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.businessDetailAll });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
+      // The Entries review queue reflects the decision immediately (drop from 'review',
+      // move to verified/rejected). Prefix match refreshes every draw/status/page variant.
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.entriesAll });
       onSettled?.();
     },
+  });
+};
+
+export type AdminEntryRow = {
+  id: number;
+  code: string;
+  entry_source: string;
+  activated_at: string | null;
+  transaction_date: string | null;
+  transaction_amount: number | null;
+  receipt_identifier: string | null;
+  is_quarantined: boolean;
+  quarantine_reason: string | null;
+  risk_flags: string[] | null;
+  receipt_image_url: string | null;
+  image_validation_status: string | null;
+  risk_score_delta: number;
+  draw_name: string | null;
+  draw_id: number | null;
+  user_id: number | null;
+  user_name: string | null;
+  user_email: string | null;
+  user_risk_score: number | null;
+  business_name: string | null;
+  location_name: string | null;
+};
+
+export type AdminEntriesStats = {
+  total: number;
+  active: number;
+  awaiting_review: number;
+  verified: number;
+  rejected: number;
+  held_date: number;
+  quarantined: number;
+  with_image: number;
+};
+
+export type AdminEntriesPage = {
+  stats: AdminEntriesStats;
+  rows: AdminEntryRow[];
+  total: number;
+};
+
+export const useAdminEntries = (
+  drawId: number | null,
+  status: string,
+  page: number,
+  enabled: boolean = true,
+) => {
+  return useQuery({
+    queryKey: queryKeys.admin.entries(drawId, status, page),
+    queryFn: async () => {
+      const { data } = await fetchAdminEntries(drawId, status, page);
+      return data as AdminEntriesPage;
+    },
+    enabled,
+    staleTime: 15_000,
   });
 };
 

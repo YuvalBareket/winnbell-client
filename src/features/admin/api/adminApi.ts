@@ -166,6 +166,11 @@ export const fetchBusinessEntries = (businessId: number, drawId: number | null, 
     params: { drawId: drawId ?? undefined, page, limit: 50 },
   });
 
+export const fetchAdminEntries = (drawId: number | null, status: string, page: number) =>
+  api.get('/admin/entries', {
+    params: { drawId: drawId ?? undefined, status, page, limit: 25 },
+  });
+
 export const sendNotification = (data: { title: string; body: string; url?: string; audience: 'all' | 'users' | 'businesses' }) =>
   api.post('/admin/notifications/send', data);
 
