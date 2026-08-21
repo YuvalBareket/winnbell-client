@@ -20,6 +20,7 @@ import {
   CardGiftcardOutlined,
   RocketLaunchOutlined,
   MapOutlined,
+  FactCheckOutlined,
 } from '@mui/icons-material';
 
 export interface NavItem {
@@ -59,6 +60,7 @@ export const managerNavItems: NavItem[] = [
 export const adminNavItems: NavItem[] = [
   { label: 'Overview', Icon: DashboardOutlined, path: '/admin' },
   { label: 'Campaigns', Icon: AdminPanelSettingsOutlined, path: '/admin/campaigns' },
+  { label: 'Entries', Icon: FactCheckOutlined, path: '/admin/entries' },
   { label: 'Users', Icon: PeopleOutlined, path: '/admin/users' },
   { label: 'Businesses', Icon: BusinessOutlined, path: '/admin/businesses' },
   { label: 'Map', Icon: MapOutlined, path: '/admin/map' },

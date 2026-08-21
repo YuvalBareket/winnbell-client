@@ -48,6 +48,10 @@ export const queryKeys = {
     businessDetail:  (id: number | null)        => ['admin', 'business-detail',  id]                 as const,
     businessEntries: (businessId: number | null, drawId: number | null, page: number) =>
       ['admin', 'business-entries', businessId, drawId, page] as const,
+    // Prefix form (no args) for broad invalidation after an image decision.
+    entriesAll: ['admin', 'entries'] as const,
+    entries: (drawId: number | null, status: string, page: number) =>
+      ['admin', 'entries', drawId, status, page] as const,
   },
 
   // --- Business (partner) --------------------------------------------------

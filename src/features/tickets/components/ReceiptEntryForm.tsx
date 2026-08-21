@@ -537,7 +537,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     // stay discarded (a misread - "too old" messaging would be wrong for them).
     if (result?.date && result.date <= today) {
       setPurchaseDate(result.date);
-      got.add('date');
+      // Only badge it as a confirmed read when it is actually usable. An out-of-window date
+      // still fills (surfacing the too-old error) but wears no green "Read" chip - a success
+      // affirmation next to a rejection reads as a bug; the error line does the explaining.
+      if (result.date >= sevenDaysAgo) got.add('date');
     }
     setReadFields(got);
     if (got.size > 0) {

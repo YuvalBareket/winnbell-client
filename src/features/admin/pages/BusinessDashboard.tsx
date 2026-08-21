@@ -14,6 +14,7 @@ import {
 } from '../hooks/useAdmin';
 import CreateDrawModal from './components/CreateDrawModal';
 import OverviewTab from './components/OverviewTab';
+import EntriesTab from './components/EntriesTab';
 import UsersTab from './components/UsersTab';
 import BusinessesTab from './components/BusinessesTab';
 import DrawsTab from './components/DrawsTab';
@@ -36,9 +37,10 @@ const BusinessDashboard: React.FC = () => {
 
   // This shell serves every /admin/* tab; only fetch what the ACTIVE tab consumes.
   // Overview (the default '/admin' branch) needs both; Campaigns needs the draws list.
-  const isOverviewTab = !['/admin/campaigns', '/admin/users', '/admin/businesses', '/admin/map', '/admin/analytics', '/admin/funnel', '/admin/settings', '/admin/notifications'].includes(path);
+  const isOverviewTab = !['/admin/campaigns', '/admin/entries', '/admin/users', '/admin/businesses', '/admin/map', '/admin/analytics', '/admin/funnel', '/admin/settings', '/admin/notifications'].includes(path);
   const { data: overview, isLoading: overviewLoading } = useAdminOverview(isOverviewTab);
-  const { data: draws, isLoading: drawsLoading } = useAllDraws(isOverviewTab || path === '/admin/campaigns');
+  // Entries needs the draws list too, for its campaign filter.
+  const { data: draws, isLoading: drawsLoading } = useAllDraws(isOverviewTab || path === '/admin/campaigns' || path === '/admin/entries');
 
   const currentOpenDraw = draws?.find((d) => d.status?.toUpperCase() === 'OPEN');
 
@@ -52,6 +54,16 @@ const BusinessDashboard: React.FC = () => {
           onSnackError={setSnackError}
           onSnackSuccess={setSnackSuccess}
           onCreateDraw={() => setIsDrawModalOpen(true)}
+        />
+      );
+    }
+    if (path === '/admin/entries') {
+      return (
+        <EntriesTab
+          draws={draws}
+          isMobile={isMobile}
+          onSnackError={setSnackError}
+          onSnackSuccess={setSnackSuccess}
         />
       );
     }
@@ -96,6 +108,7 @@ const BusinessDashboard: React.FC = () => {
   const sectionTitle: Record<string, string> = {
     '/admin': 'Overview',
     '/admin/campaigns': 'Campaigns',
+    '/admin/entries': 'Entries',
     '/admin/users': 'Users',
     '/admin/businesses': 'Businesses',
     '/admin/map': 'Map',
