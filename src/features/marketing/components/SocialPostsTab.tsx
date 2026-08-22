@@ -214,7 +214,7 @@ const SocialPostsTab = ({
   // Fixed marketing copy baked into the generated image. No longer user-editable: businesses
   // share the campaign link (shown in the controls) instead of rewriting the post text.
   const headline = 'WE ARE NOW ON WINNBELL!';
-  const subtext = "Every qualifying purchase can enter you into this month's cash prize campaign";
+  const subtext = 'Every qualifying purchase can enter you into the current cash prize campaign';
   const imageRef = useRef<HTMLDivElement>(null);
 
   const currentRatio = RATIOS.find((r) => r.id === selectedRatio) || RATIOS[0];

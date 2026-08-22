@@ -15,10 +15,13 @@ interface ScriptsTabProps {
 
 // Lawyer-approved staff scripts (supersedes the earlier deferred version). Bracketed tokens
 // [amount]/[prize]/[product]/[number] are placeholders staff fill in at the register.
+// 2026-08-22: "this month's draw" -> "the current draw" (campaigns are no longer strictly
+// monthly - the September trial runs 3 months); cadence wording only, flag to the lawyer
+// with the other trial-era rules updates.
 const SCRIPTS = [
-  { label: 'Near the threshold', text: 'You\'re only $[amount] away from qualifying for a Winnbell entry. Would you like to add anything so you can enter this month\'s draw for a chance to win $[prize]?' },
-  { label: 'Suggest an add-on', text: 'If you add [product], your purchase will reach the Winnbell threshold, and you can enter this month\'s draw for a chance to win $[prize]. Would you like to add one?' },
-  { label: 'New to Winnbell', text: 'Have you tried Winnbell yet? Today\'s purchase may qualify you to enter this month\'s draw for a chance to win $[prize]. Just scan the QR code and submit your receipt. It takes seconds.' },
+  { label: 'Near the threshold', text: 'You\'re only $[amount] away from qualifying for a Winnbell entry. Would you like to add anything so you can enter the current draw for a chance to win $[prize]?' },
+  { label: 'Suggest an add-on', text: 'If you add [product], your purchase will reach the Winnbell threshold, and you can enter the current draw for a chance to win $[prize]. Would you like to add one?' },
+  { label: 'New to Winnbell', text: 'Have you tried Winnbell yet? Today\'s purchase may qualify you to enter the current draw for a chance to win $[prize]. Just scan the QR code and submit your receipt. It takes seconds.' },
   { label: 'Complete the entry', text: 'Your purchase may qualify for [number] Winnbell entry/entries. Just scan the QR code and submit your receipt now. It takes seconds, and you\'ll be in the draw for a chance to win $[prize].' },
 ];
 
