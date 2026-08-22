@@ -240,9 +240,10 @@ const SubscribePage = () => {
           <Stack spacing={2} sx={{ mt: 0.5 }}>
             <Typography variant='body2' sx={{ color: TEXT_SECONDARY, lineHeight: 1.6 }}>
               Customers earn one entry each time a single receipt at your business reaches
-              your threshold, up to {MAX_ENTRIES_PER_RECEIPT} entries per receipt. Yours is
-              currently ${currentThreshold}. This is the moment to change it if you want to:
-              once your campaign is live, the threshold stays locked until the campaign ends.
+              your threshold, counting what they paid before tax and tip, up to{' '}
+              {MAX_ENTRIES_PER_RECEIPT} entries per receipt. Yours is currently ${currentThreshold}.
+              This is the moment to change it if you want to: once your campaign is live, the
+              threshold stays locked until the campaign ends.
             </Typography>
             <TextField
               label='Entry threshold'

@@ -1203,7 +1203,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           {/* Amount */}
           <TextField
             fullWidth
-            label="Amount spent before tip"
+            label="Amount spent before tax and tip"
             placeholder="0.00"
             value={transactionAmount}
             inputRef={amountInputRef}
