@@ -63,7 +63,7 @@ const InviteFriendsPage = () => {
     {
       icon: <CardGiftcardOutlined />,
       title: 'Bonus entry granted',
-      text: 'They receive a bonus entry in the current monthly draw right away.',
+      text: 'They receive a bonus entry in the current draw right away.',
     },
   ];
 
@@ -124,7 +124,7 @@ const InviteFriendsPage = () => {
                   lineHeight: 1.6,
                 }}
               >
-Know someone who could use a little extra luck this month? Share your link and invite them to join Winnbell. Because sometimes the little things mean the most.              </Typography>
+Know someone who could use a little extra luck? Share your link and invite them to join Winnbell. Because sometimes the little things mean the most.              </Typography>
             </Box>
 
             {/* Link display */}

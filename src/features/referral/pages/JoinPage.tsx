@@ -39,7 +39,7 @@ const JoinPage = () => {
 
   return (
     <WelcomeInvite
-      brandHeadline={<>Your invite to<br />the monthly draw.</>}
+      brandHeadline={<>Your invite to<br />the cash prize draw.</>}
       brandTagline={
         referrerName
           ? `${referrerName} invited you to Winnbell. Create your free account and claim a bonus entry just for joining.`
@@ -64,8 +64,8 @@ const JoinPage = () => {
         },
         {
           icon: <EmojiEventsOutlined />,
-          title: 'Enter the monthly draw',
-          text: 'Compete for cash prizes every month. No purchase necessary.',
+          title: 'Enter the current draw',
+          text: 'Compete for real cash prizes. No purchase necessary.',
           tint: ACCENT_GOLD_LIGHT,
           iconColor: ACCENT_GOLD_DARK,
         },

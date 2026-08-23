@@ -167,7 +167,7 @@ const DrawPreparationView = ({
             <Box sx={{ background: GRADIENT_HERO, p: 3, color: 'white' }}>
               <Typography variant='overline' sx={{ opacity: 0.8, letterSpacing: 1.5 }}>{registered ? 'Registered Campaign' : 'Upcoming Campaign'}</Typography>
               <Typography variant='h6' fontWeight={800} sx={{ mt: 0.5 }}>
-                {drawName ?? 'Upcoming Monthly Campaign'}
+                {drawName ?? 'Upcoming Campaign'}
               </Typography>
               {drawDate && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>

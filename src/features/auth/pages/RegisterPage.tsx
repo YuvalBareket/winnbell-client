@@ -517,18 +517,18 @@ const RegisterPage = () => {
       ? <>Grow Your<br />Business</>
       : isLocationManager
       ? <>Manage Your<br />Branch</>
-      : <>Cash Prizes.<br />Every Month.</>;
+      : <>Cash Prizes.<br />Every Campaign.</>;
 
     const desktopTagline = isBusinessOwner
       ? 'Partner with Winnbell. Customers can submit receipts at your location to earn campaign entries - bringing them back month after month.'
       : isLocationManager
       ? 'Complete your onboarding to start managing your branch and issuing entries.'
-      : 'Join thousands of members supporting local businesses and competing for real monthly prizes. No purchase necessary.';
+      : 'Join thousands of members supporting local businesses and competing for real cash prizes. No purchase necessary.';
 
     const desktopBullets = isBusinessOwner
       ? [
           { icon: <ConfirmationNumber sx={{ fontSize: 18 }} />, text: 'Customers can earn entries instantly' },
-          { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Run monthly campaigns effortlessly' },
+          { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Run prize campaigns effortlessly' },
           { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Grow foot traffic and customer loyalty' },
         ]
       : isLocationManager
@@ -540,7 +540,7 @@ const RegisterPage = () => {
       : [
           { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local businesses' },
           { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your weekly entry - no purchase needed' },
-          { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
+          { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every campaign' },
         ];
 
     return (

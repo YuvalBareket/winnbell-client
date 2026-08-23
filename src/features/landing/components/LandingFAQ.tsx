@@ -10,7 +10,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How are winners chosen?',
-    a: 'At the end of each monthly campaign, one winner is selected at random from all eligible entries in the pool. Every entry - whether earned from a receipt or claimed as the weekly entry - has an equal chance of winning.',
+    a: 'At the end of each campaign, one winner is selected at random from all eligible entries in the pool. Every entry - whether earned from a receipt or claimed as the weekly entry - has an equal chance of winning.',
   },
   {
     q: 'How do businesses benefit?',
@@ -18,7 +18,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How does the business subscription work?',
-    a: 'Businesses subscribe monthly to participate in Winnbell campaigns. There are no long-term commitments - you can cancel at any time. Pricing depends on the number of locations.',
+    a: 'Businesses subscribe to participate in Winnbell campaigns. There are no long-term commitments - you can cancel at any time. Pricing depends on the number of locations.',
   },
 ];
 

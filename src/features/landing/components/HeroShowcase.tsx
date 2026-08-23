@@ -427,7 +427,7 @@ function SuccessScreen({ reduced }: ScreenProps) {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.45 }}>
         <Box sx={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em', color: 'white' }}>You're In!</Box>
         <Box sx={{ mt: 0.6, fontSize: 11.5, fontWeight: 500, lineHeight: 1.6, color: ALPHA_WHITE_80 }}>
-          Your entry is in this month's draw.
+          Your entry is in the current draw.
           <br />
           Good luck!
         </Box>
@@ -493,7 +493,7 @@ function EntriesScreen({ reduced }: ScreenProps) {
           <ConfirmationNumber sx={{ position: 'absolute', right: 8, bottom: 6, fontSize: 52, color: 'white', opacity: 0.2, transform: 'rotate(12deg)' }} />
           <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-              <Box sx={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: ALPHA_WHITE_80 }}>Monthly Cash Draw</Box>
+              <Box sx={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: ALPHA_WHITE_80 }}>Cash Prize Draw</Box>
               <Box sx={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 0.6, px: 1, py: 0.35, borderRadius: 50, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}` }}>
                 <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: GOLD_TROPHY }} />
                 <Box component='span' sx={{ fontSize: 7.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACCENT_GOLD_LIGHT }}>Live now</Box>

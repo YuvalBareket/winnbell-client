@@ -312,7 +312,7 @@ function ConceptScreen({ reduced }: ScreenProps) {
             <ConfirmationNumber sx={{ position: 'absolute', right: 6, bottom: 4, fontSize: 56, color: 'white', opacity: 0.14, transform: 'rotate(12deg)' }} />
             <Box sx={{ position: 'relative', zIndex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                <Box sx={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: ALPHA_WHITE_80 }}>Monthly Cash Draw</Box>
+                <Box sx={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: ALPHA_WHITE_80 }}>Cash Prize Draw</Box>
                 <Box sx={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 0.6, px: 1, py: 0.35, borderRadius: 50, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}` }}>
                   <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: GOLD_TROPHY }} />
                   <Box component='span' sx={{ fontSize: 7.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACCENT_GOLD_LIGHT }}>Live now</Box>
@@ -819,7 +819,7 @@ const BEATS: ShowcaseBeat[] = [
 const BusinessHeroShowcase = () => (
   <PhoneShowcase
     beats={BEATS}
-    srDescription='A quick look at Winnbell for business owners: a qualifying purchase at your shop enters your customer in the monthly cash draw, new customers find your shop on the Winnbell map, entries and sales climb on your campaign dashboard, Winnbell sponsors the prize and runs the whole campaign, and ready-made marketing materials put your name on professional posters.'
+    srDescription='A quick look at Winnbell for business owners: a qualifying purchase at your shop enters your customer in the cash prize draw, new customers find your shop on the Winnbell map, entries and sales climb on your campaign dashboard, Winnbell sponsors the prize and runs the whole campaign, and ready-made marketing materials put your name on professional posters.'
   />
 );
 

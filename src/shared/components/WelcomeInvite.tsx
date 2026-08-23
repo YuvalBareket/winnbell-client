@@ -37,7 +37,7 @@ const DrawPrizeCard = ({ prizeAmount, drawDate }: { prizeAmount: number; drawDat
     {/* Label + Live pill */}
     <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
       <Typography sx={{ fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: ACCENT_GOLD_DARK }}>
-        This month's draw
+        The current draw
       </Typography>
       <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, bgcolor: ACCENT_GOLD_CREAM, borderRadius: '999px', px: 1.125, py: 0.5 }}>
         <Box sx={{ width: '5px', height: '5px', borderRadius: '50%', bgcolor: ACCENT_GOLD_DARK }} />
@@ -92,7 +92,7 @@ interface WelcomeInviteProps {
   steps: WelcomeStep[];
 }
 
-const DEFAULT_SUBTEXT = 'You are one step from entering this month\'s draw. Here is how it works.';
+const DEFAULT_SUBTEXT = 'You are one step from entering the current draw. Here is how it works.';
 
 // Shared "friendly welcome" screen for logged-out visitors arriving via a referral link (JoinPage)
 // or a location flyer QR (ScanWelcomePage). Identical layout + CTAs; only the copy and the

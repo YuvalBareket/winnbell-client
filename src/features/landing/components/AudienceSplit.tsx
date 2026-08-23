@@ -36,7 +36,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
-                Compete for real cash prizes every month
+                Compete for real cash prizes every campaign
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
@@ -98,7 +98,7 @@ const AudienceSplit = ({ onNavigate }: AudienceSplitProps) => {
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />
-                Simple monthly subscription, cancel anytime
+                Simple subscription, cancel anytime
               </Typography>
               <Typography sx={{ color: TEXT_SECONDARY, fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: PRIMARY_MAIN, flexShrink: 0 }} />

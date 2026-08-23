@@ -14,7 +14,7 @@ export interface BulletItem {
 const DEFAULT_BULLETS: BulletItem[] = [
   { icon: <Storefront sx={{ fontSize: 18 }} />, text: 'Earn entries at local businesses' },
   { icon: <EmojiEvents sx={{ fontSize: 18 }} />, text: 'Claim your weekly entry - no purchase needed' },
-  { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every month' },
+  { icon: <CardGiftcard sx={{ fontSize: 18 }} />, text: 'Compete for real cash prizes every campaign' },
 ];
 
 interface AuthBrandPanelProps {
@@ -29,10 +29,10 @@ interface AuthBrandPanelProps {
 const AuthBrandPanel: React.FC<AuthBrandPanelProps> = ({
   headline = (
     <>
-      Cash Prizes.<br />Every Month.
+      Cash Prizes.<br />Every Campaign.
     </>
   ),
-  tagline = 'Join thousands of members supporting local businesses and competing for real monthly prizes. No purchase necessary.',
+  tagline = 'Join thousands of members supporting local businesses and competing for real cash prizes. No purchase necessary.',
   bullets = DEFAULT_BULLETS,
   isBusinessVariant = false,
   footer,

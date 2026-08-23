@@ -863,7 +863,7 @@ export default function SubscriptionManagementPage() {
                   <>
                     <Typography variant='body1' fontWeight={700} color='text.primary'>You are in for the next campaign</Typography>
                     <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
-                      You are all set. When the next monthly campaign opens, your business goes live on the Winnbell map and customers can start earning entries from you.
+                      You are all set. When the next campaign opens, your business goes live on the Winnbell map and customers can start earning entries from you.
                     </Typography>
                   </>
                 ) : (

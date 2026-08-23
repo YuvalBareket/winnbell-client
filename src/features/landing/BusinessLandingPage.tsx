@@ -108,7 +108,7 @@ const BusinessLandingPage = () => {
                     fontWeight: 400,
                   }}
                 >
-                  Every month, Winnbell runs a cash prize campaign your customers can join through you. We handle the prize, the rules, and the winner. You take the credit.
+                  Winnbell runs cash prize campaigns your customers can join through you. We handle the prize, the rules, and the winner. You take the credit.
                 </Typography>
               </motion.div>
 
@@ -295,7 +295,7 @@ const BusinessLandingPage = () => {
             {[
               { Icon: TravelExploreRounded, title: 'They find you', desc: 'New faces discover you on the Winnbell map. Regulars get a reason to round up their purchase.' },
               { Icon: QrCodeScannerRounded, title: 'They scan', desc: 'One QR at checkout. Receipt in, less than 30 seconds.' },
-              { Icon: ConfirmationNumberRounded, title: "They're in the draw", desc: "Every qualified receipt earns entries into this month's cash prize draw." },
+              { Icon: ConfirmationNumberRounded, title: "They're in the draw", desc: 'Every qualified receipt earns entries into the current cash prize draw.' },
               { Icon: AutoAwesomeRounded, title: 'They come back', desc: 'They link the excitement of the draw with your business, and keep coming back.' },
             ].map((card, i) => (
               <motion.div
@@ -364,7 +364,7 @@ const BusinessLandingPage = () => {
           <Stack spacing={1.5}>
             {[
               { Icon: TrendingUpRounded, title: 'Increase average purchase value', detail: 'A qualifying spend threshold gives customers a concrete reason to add one more item and reach it. Small nudges, applied to every transaction, lift your average basket.' },
-              { Icon: AutorenewRounded, title: 'Encourage repeat visits', detail: 'A live campaign every month gives customers an ongoing reason to come back. Each qualifying visit is another opportunity to earn entries into the current prize draw.' },
+              { Icon: AutorenewRounded, title: 'Encourage repeat visits', detail: 'A live campaign gives customers an ongoing reason to come back. Each qualifying visit is another opportunity to earn entries into the current prize draw.' },
               { Icon: TrackChangesRounded, title: 'Stand out from competitors', detail: 'Offer an experience most competing businesses simply don\'t have. Winnbell turns an ordinary purchase into something memorable, and memorable businesses get chosen.' },
               { Icon: SavingsRounded, title: 'No prize costs or campaign administration', detail: 'Winnbell sponsors the prize, operates the campaign, validates entries, selects the winner, and manages everything end to end. You stay focused on running your business.' },
               { Icon: CampaignRounded, title: 'Marketing platform, not just a promotion', detail: 'Your business is listed and discoverable on the Winnbell platform, putting you in front of users who are actively looking for places to earn entries.' },
@@ -542,7 +542,7 @@ const BusinessLandingPage = () => {
                 <AccordionDetails sx={{ bgcolor: 'rgba(21,101,192,0.02)', borderTop: `1px solid ${BORDER_LIGHT}`, py: { xs: 2, md: 2.5 } }}>
                   <Box>
                     <Typography sx={{ color: TEXT_SECONDARY, lineHeight: 1.7, fontSize: { xs: '0.9rem', md: '0.95rem' }, mb: { xs: 2.5, md: 3 } }}>
-                      Create your business account, subscribe to the monthly campaigns, set up your profile, and choose your qualifying purchase amount. Most businesses are live in the next campaign within 10 minutes.
+                      Create your business account, join the campaigns, set up your profile, and choose your qualifying purchase amount. Most businesses are live in the next campaign within 10 minutes.
                     </Typography>
                     <AttractButton
                       variant='contained'

@@ -16,7 +16,7 @@ const STEPS = [
   {
     num: '03',
     title: 'Win prizes',
-    body: 'At the end of each monthly campaign, one winner is selected at random from all eligible entries.',
+    body: 'At the end of each campaign, one winner is selected at random from all eligible entries.',
   },
 ];
 

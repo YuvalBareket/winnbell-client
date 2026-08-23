@@ -54,7 +54,7 @@ const ScanWelcomePage = () => {
 
   return (
     <WelcomeInvite
-      brandHeadline={<>One step from<br />this month&apos;s draw.</>}
+      brandHeadline={<>One step from<br />the current draw.</>}
       brandTagline={
         loc?.business_name
           ? `You scanned a flyer from ${loc.business_name}. Create your free account to submit your receipt and join the draw.`
@@ -81,10 +81,10 @@ const ScanWelcomePage = () => {
         },
         {
           icon: <EmojiEventsOutlined />,
-          title: 'Enter the monthly draw',
+          title: 'Enter the current draw',
           text: prize
-            ? `Every entry competes for this month's ${formatCurrency(prize)} cash prize.`
-            : "Every entry competes for this month's cash prize.",
+            ? `Every entry competes for the current ${formatCurrency(prize)} cash prize.`
+            : 'Every entry competes for the current cash prize.',
           tint: ACCENT_GOLD_LIGHT,
           iconColor: ACCENT_GOLD_DARK,
         },

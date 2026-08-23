@@ -263,7 +263,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
               This spot is buzzing!
             </Typography>
             <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7, maxWidth: 320 }}>
-              All of this location's entries for this month's campaign have been claimed.
+              All of this location's entries for the current campaign have been claimed.
               This location will by live again next campaign.
             </Typography>
             <Typography variant='caption' color='text.disabled' sx={{ mt: 0.5 }}>

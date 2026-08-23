@@ -54,7 +54,7 @@ const PrizeSpotlight = ({ onNavigate }: PrizeSpotlightProps) => {
 
             <Stack spacing={{ xs: 2, md: 2.5 }} alignItems='center' sx={{ position: 'relative', zIndex: 1 }}>
               <Typography sx={{ color: ACCENT_GOLD_LIGHT, fontWeight: 800, fontSize: { xs: '0.7rem', md: '0.75rem' }, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-                This month's prize
+                The current prize
               </Typography>
 
               <Typography sx={{ color: GOLD_TROPHY, fontWeight: 900, fontSize: { xs: '3.4rem', md: '4.5rem' }, lineHeight: 1, letterSpacing: '-0.02em', textShadow: '0 4px 24px rgba(251,191,36,0.35)' }}>
@@ -71,7 +71,7 @@ const PrizeSpotlight = ({ onNavigate }: PrizeSpotlightProps) => {
                 <Stack direction='row' spacing={0.75} alignItems='center' sx={{ whiteSpace: 'nowrap' }}>
                   <EmojiEventsRounded sx={{ fontSize: 17, color: ACCENT_GOLD_LIGHT, flexShrink: 0 }} />
                   <Typography sx={{ color: ALPHA_WHITE_80, fontWeight: 600, fontSize: { xs: '0.85rem', md: '0.9rem' }, lineHeight: 1 }}>
-                    One winner selected every month
+                    One winner selected every campaign
                   </Typography>
                 </Stack>
               </Stack>
@@ -92,7 +92,7 @@ const PrizeSpotlight = ({ onNavigate }: PrizeSpotlightProps) => {
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' },
                 }}
               >
-                Join this month's campaign
+                Join the current campaign
               </AttractButton>
 
               <Typography sx={{ color: ALPHA_WHITE_80, fontSize: '0.72rem', bgcolor: ALPHA_WHITE_15, borderRadius: 99, px: 1.5, py: 0.4 }}>

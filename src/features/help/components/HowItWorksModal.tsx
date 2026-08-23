@@ -54,7 +54,7 @@ const steps = [
   {
     icon: EmojiEventsOutlined,
     title: 'A Chance to Win',
-    description: 'Every valid entry gives you a chance to win in the monthly prize draw',
+    description: 'Every valid entry gives you a chance to win in the campaign prize draw',
     color: ACCENT_GOLD,
   },
 ];
