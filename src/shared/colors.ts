@@ -38,6 +38,7 @@ export const ACCENT_GOLD_TEXT_AA = '#8a6d24'; // AA gold for small text (4.9:1 o
 export const SUCCESS_GREEN_TEXT_AA = '#048362'; // AA green for small text (4.7:1 on white)
 export const SUCCESS_GREEN_DEEP    = '#046a51'; // deeper companion: tiny bold text (Read chips) + icons on green tints
 export const AMBER_TEXT_AA = '#bc5709';      // AA amber for small text (4.7:1 on white)
+export const AMBER_TEXT_AA_TINT = '#b35107'; // deeper companion: small text on tinted strips like BG_ROW_SUBTLE (AMBER_TEXT_AA drops to 4.45:1 there)
 export const STATUS_ACTIVE_TEXT_AA = '#2c7830'; // AA green for the Active chip (4.8:1 on its tint bg)
 
 // ── Manager / Dark role accent ───────────────

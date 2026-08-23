@@ -14,7 +14,8 @@ type Context = 'free' | 'receipt' | 'promo' | 'referral' | 'generic' | 'setup';
 interface Props {
   open: boolean;
   onClose: () => void;
-  onVerified: (referralBonusGranted: boolean) => void;
+  /** phoneNumber = the verified 10-digit US number, for callers that display it. */
+  onVerified: (referralBonusGranted: boolean, phoneNumber?: string) => void;
   context: Context;
   pendingCode?: string;
 }
@@ -62,8 +63,8 @@ const PhoneVerifySheet = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const config = contextConfig[context];
 
-  const handleVerified = (referralBonusGranted: boolean) => {
-    onVerified(referralBonusGranted);
+  const handleVerified = (referralBonusGranted: boolean, phoneNumber?: string) => {
+    onVerified(referralBonusGranted, phoneNumber);
     onClose();
   };
 

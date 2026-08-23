@@ -5,7 +5,7 @@ import {
   Select, MenuItem, IconButton,
 } from '@mui/material';
 import AttractButton from '../../../shared/components/AttractButton';
-import { Warning, Female, Male, Transgender, MoreHoriz, CheckCircle, ArrowBackIosNew, PhoneOutlined } from '@mui/icons-material';
+import { Warning, Female, Male, Transgender, MoreHoriz, CheckCircle, ArrowBackIosNew, PhoneOutlined, ChevronRight, CalendarToday, LocationOn } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -21,10 +21,12 @@ import { api } from '../../../shared/api/client';
 import { useLogout } from '../../../shared/hooks/useLogout';
 import { trackFunnel } from '../../../shared/analytics/funnel';
 import {
-  BG_PAGE, BORDER_LIGHT, PRIMARY_MAIN, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10,
-  TEXT_SECONDARY, TEXT_TERTIARY, TEXT_TERTIARY_AA, TEXT_HEADING, AMBER_TEXT_AA,
+  BG_SUBTLE, BG_SURFACE, BG_ROW_SUBTLE, BORDER_LIGHT, BORDER_SUBTLE,
+  PRIMARY_MAIN, PRIMARY_TINT, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10,
+  TEXT_SECONDARY, TEXT_TERTIARY, TEXT_TERTIARY_AA, TEXT_HEADING, AMBER_TEXT_AA_TINT,
   GRADIENT_HERO, GRADIENT_HERO_WARM, GRADIENT_CTA,
   ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, SHADOW_PRIMARY_MEDIUM,
+  SHADOW_CARD,
   STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
 } from '../../../shared/colors';
 import { staggerContainer, popIn, riseIn } from '../../../shared/motion';
@@ -77,10 +79,16 @@ const ProfileSetupPage = () => {
   const queryClient = useQueryClient();
   const [phoneSheetOpen, setPhoneSheetOpen] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
+  const [verifiedPhone, setVerifiedPhone] = useState<string | null>(null);
   const [bonusDialogOpen, setBonusDialogOpen] = useState(false);
+  // "+1 (212) 555-0148" for the verified card; null when the digits are unavailable.
+  const verifiedPhoneDisplay = verifiedPhone && verifiedPhone.length === 10
+    ? `+1 (${verifiedPhone.slice(0, 3)}) ${verifiedPhone.slice(3, 6)}-${verifiedPhone.slice(6)}`
+    : null;
 
-  const handlePhoneVerified = (referralBonusGranted: boolean) => {
+  const handlePhoneVerified = (referralBonusGranted: boolean, phoneNumber?: string) => {
     setPhoneVerified(true);
+    setVerifiedPhone(phoneNumber ?? null);
     // Entry gates read verification from the risk-level query - refresh it so /scan
     // never re-prompts a user who verified right here.
     queryClient.invalidateQueries({ queryKey: queryKeys.tickets.riskLevel });
@@ -172,6 +180,14 @@ const ProfileSetupPage = () => {
           // authInputSx (MuiOutlinedInput) doesn't reach it - mirror it on the pickers classes.
           textField: {
             fullWidth: true,
+            // PickersTextField has no InputProps; the adornment goes on its input slot.
+            slotProps: {
+              input: {
+                startAdornment: (
+                  <CalendarToday className='wb-field-icon' sx={{ fontSize: 18, color: TEXT_TERTIARY, mr: 1 }} />
+                ),
+              },
+            },
             sx: {
               '& .MuiPickersOutlinedInput-root': {
                 bgcolor: 'white',
@@ -183,6 +199,7 @@ const ProfileSetupPage = () => {
                 '&:hover .MuiPickersOutlinedInput-notchedOutline': { borderColor: BORDER_LIGHT },
                 '&.Mui-focused .MuiPickersOutlinedInput-notchedOutline': { borderColor: PRIMARY_MAIN, borderWidth: '1.5px' },
                 '&.Mui-focused': { boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}` },
+                '&.Mui-focused .wb-field-icon': { color: PRIMARY_MAIN },
                 // Empty MM/DD/YYYY placeholder: MUI dims the whole sectionsContainer to 0.42
                 // opacity, compositing the text below WCAG AA. Keep the container at full
                 // opacity and de-emphasize via an AA-safe color on the empty sections instead.
@@ -210,6 +227,7 @@ const ProfileSetupPage = () => {
         return US_STATES.find((s) => s.code === code)?.name ?? code;
       }}
       MenuProps={{ PaperProps: { sx: { maxHeight: 320, borderRadius: '12px' } } }}
+      startAdornment={<LocationOn className='wb-field-icon' sx={{ fontSize: 18, color: TEXT_TERTIARY, mr: 0.75 }} />}
       sx={{
         bgcolor: 'white',
         borderRadius: '12px',
@@ -220,6 +238,7 @@ const ProfileSetupPage = () => {
         '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: BORDER_LIGHT },
         '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY_MAIN, borderWidth: '1.5px' },
         '&.Mui-focused': { boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}` },
+        '&.Mui-focused .wb-field-icon': { color: PRIMARY_MAIN },
       }}
     >
       {stateOptions.map((s) => (
@@ -230,65 +249,73 @@ const ProfileSetupPage = () => {
     </Select>
   );
 
-  // Phone group (consumers only): collapsed 48px button matching the input shape (white,
-  // radius 12, 1px BORDER_LIGHT) so nothing shifts when it flips to the verified row. The
-  // button carries its own label - no field heading while collapsed (design Turn 10).
-  const phoneGroup = (
-    <Box>
-      {phoneVerified ? (
-        <Box
-          sx={{
-            width: '100%', height: 48, borderRadius: '12px',
-            border: `1px solid ${BORDER_LIGHT}`, bgcolor: 'white',
-            display: 'flex', alignItems: 'center', gap: '10px', px: '12px',
-          }}
-        >
-          <Box sx={{
-            width: 32, height: 32, borderRadius: '9px', flexShrink: 0,
-            bgcolor: STATUS_ACTIVATED_BG, color: STATUS_ACTIVATED_TEXT,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <CheckCircle sx={{ fontSize: 17 }} />
-          </Box>
-          <Typography sx={{ flex: 1, fontSize: '14px', fontWeight: 700, color: TEXT_HEADING }}>
-            Phone verified
+  // Phone group (consumers only, design Turn 11): a white CARD, not a control - the
+  // selected-input treatment made an optional item outshout the required fields. Two
+  // lines (action + why), tinted icon tile, chevron affordance. The verified state keeps
+  // the exact same card and swaps the tile to the activated green, showing the number.
+  const phoneGroup = phoneVerified ? (
+    <Box
+      sx={{
+        width: '100%', borderRadius: '16px',
+        border: `1px solid ${BORDER_SUBTLE}`, bgcolor: BG_SURFACE, boxShadow: SHADOW_CARD,
+        display: 'flex', alignItems: 'center', gap: '12px', px: '16px', py: '13px',
+      }}
+    >
+      <Box sx={{
+        width: 36, height: 36, borderRadius: '10px', flexShrink: 0,
+        bgcolor: STATUS_ACTIVATED_BG, color: STATUS_ACTIVATED_TEXT,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <CheckCircle sx={{ fontSize: 19 }} />
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontSize: '14px', fontWeight: 700, color: TEXT_HEADING, lineHeight: 1.3 }}>
+          Phone verified
+        </Typography>
+        {verifiedPhoneDisplay && (
+          <Typography sx={{ fontSize: '12.5px', fontWeight: 600, color: TEXT_SECONDARY, mt: '2px' }}>
+            {verifiedPhoneDisplay}
           </Typography>
-          <Box component='span' sx={{
-            fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.04em',
-            color: STATUS_ACTIVATED_TEXT, bgcolor: STATUS_ACTIVATED_BG,
-            px: '7px', py: '3px', borderRadius: '6px',
-          }}>
-            VERIFIED
-          </Box>
-        </Box>
-      ) : (
-        <motion.button
-          type='button'
-          whileTap={{ scale: 0.96 }}
-          onClick={() => setPhoneSheetOpen(true)}
-          aria-haspopup='dialog'
-          style={{
-            width: '100%', height: 48, borderRadius: '12px',
-            border: `1.5px solid ${PRIMARY_MAIN}`, background: ALPHA_PRIMARY_06,
-            boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}`,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px',
-            padding: '0 12px', fontFamily: 'inherit', textAlign: 'left',
-          }}
-        >
-          <span style={{
-            width: '32px', height: '32px', borderRadius: '9px', flexShrink: 0,
-            background: GRADIENT_CTA, color: 'white',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <PhoneOutlined sx={{ fontSize: 17 }} />
-          </span>
-          <span style={{ flex: 1, minWidth: 0, fontSize: '14px', fontWeight: 700, color: PRIMARY_MAIN }}>
-            Add phone number
-          </span>
-        </motion.button>
-      )}
-    
+        )}
+      </Box>
+      <Box component='span' sx={{
+        fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.04em',
+        color: STATUS_ACTIVATED_TEXT, bgcolor: STATUS_ACTIVATED_BG,
+        px: '7px', py: '3px', borderRadius: '6px', flexShrink: 0,
+      }}>
+        VERIFIED
+      </Box>
     </Box>
+  ) : (
+    <motion.button
+      type='button'
+      whileTap={{ scale: 0.97 }}
+      onClick={() => setPhoneSheetOpen(true)}
+      aria-haspopup='dialog'
+      style={{
+        width: '100%', borderRadius: '16px',
+        border: `1px solid ${BORDER_SUBTLE}`, background: BG_SURFACE, boxShadow: SHADOW_CARD,
+        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px',
+        padding: '13px 16px', fontFamily: 'inherit', textAlign: 'left',
+      }}
+    >
+      <span style={{
+        width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
+        background: PRIMARY_TINT, color: PRIMARY_MAIN,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <PhoneOutlined sx={{ fontSize: 19 }} />
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: TEXT_HEADING, lineHeight: 1.3 }}>
+          Verify your phone
+        </span>
+        <span style={{ display: 'block', fontSize: '12.5px', fontWeight: 500, color: TEXT_SECONDARY, marginTop: '2px' }}>
+          Skip extra checks when you submit receipts.
+        </span>
+      </span>
+      <ChevronRight sx={{ fontSize: 20, color: TEXT_TERTIARY, flexShrink: 0 }} />
+    </motion.button>
   );
 
   // The verification sheet + referral congrats, rendered by both layouts. The congrats CTA
@@ -310,40 +337,47 @@ const ProfileSetupPage = () => {
   ) : null;
 
   // Gender cards: icon tile + label, gradient tile and soft ring when selected.
-  const genderCards = (
+  // Desktop uses the design's 12b variant - one row of four stacked tiles (icon over
+  // label, check as a corner badge) so the gender block stops being half the card.
+  // Mobile keeps the 2x2 inline rows; a four-way row at 390px squeezes tap targets.
+  const renderGenderCards = (stacked: boolean) => (
     <Grid container spacing={1.25}>
       {GENDERS.map((gender) => {
         const selected = selectedGender === gender;
         const Icon = GENDER_ICONS[gender];
         return (
-          <Grid size={{ xs: 6 }} key={gender}>
+          <Grid size={{ xs: stacked ? 3 : 6 }} key={gender}>
             <motion.button
               variants={popIn}
               whileTap={{ scale: 0.96 }}
               onClick={() => setSelectedGender(gender)}
               style={{
                 width: '100%',
+                height: '100%',
+                position: stacked ? 'relative' : undefined,
                 border: selected ? `1.5px solid ${PRIMARY_MAIN}` : `1px solid ${BORDER_LIGHT}`,
                 background: selected ? ALPHA_PRIMARY_06 : 'white',
                 borderRadius: '14px',
-                padding: '11px 12px',
+                padding: stacked ? '11px 6px 10px' : '11px 12px',
                 cursor: 'pointer',
                 display: 'flex',
+                flexDirection: stacked ? 'column' : 'row',
                 alignItems: 'center',
-                gap: '10px',
+                justifyContent: stacked ? 'flex-start' : undefined,
+                gap: stacked ? '9px' : '10px',
                 transition: 'border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease',
                 boxShadow: selected ? `0 0 0 3px ${ALPHA_PRIMARY_10}` : 'none',
                 fontFamily: 'inherit',
-                fontSize: '13.5px',
+                fontSize: stacked ? '11.5px' : '13.5px',
                 fontWeight: selected ? 800 : 600,
                 color: TEXT_HEADING,
-                textAlign: 'left',
+                textAlign: stacked ? 'center' : 'left',
               }}
             >
               <span
                 style={{
-                  width: '34px',
-                  height: '34px',
+                  width: stacked ? '32px' : '34px',
+                  height: stacked ? '32px' : '34px',
                   borderRadius: '10px',
                   display: 'flex',
                   alignItems: 'center',
@@ -356,14 +390,18 @@ const ProfileSetupPage = () => {
               >
                 <Icon sx={{ fontSize: 19 }} />
               </span>
-              <span style={{ flex: 1, minWidth: 0 }}>{gender}</span>
+              <span style={{ flex: stacked ? undefined : 1, minWidth: 0, lineHeight: 1.25 }}>{gender}</span>
               {selected && (
                 <motion.span
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  style={{ display: 'flex', flexShrink: 0 }}
+                  style={
+                    stacked
+                      ? { display: 'flex', position: 'absolute', top: 6, right: 6 }
+                      : { display: 'flex', flexShrink: 0 }
+                  }
                 >
-                  <CheckCircle sx={{ fontSize: 17, color: PRIMARY_MAIN }} />
+                  <CheckCircle sx={{ fontSize: stacked ? 15 : 17, color: PRIMARY_MAIN }} />
                 </motion.span>
               )}
             </motion.button>
@@ -372,6 +410,23 @@ const ProfileSetupPage = () => {
       })}
     </Grid>
   );
+  const genderCards = renderGenderCards(false);
+
+  // The CTA only attracts when the form is actually submittable (design Turn 11): the
+  // AttractButton's breathe + sweep both stop on disabled by themselves.
+  const canSubmit = !!(dob && dob.isValid() && !dobError && selectedGender && selectedState);
+
+  // The legal notice as the details card's FOOTER strip (not floating amber mid-scroll).
+  const legalFooter = (
+    <Box sx={{ bgcolor: BG_ROW_SUBTLE, borderTop: `1px solid ${BORDER_SUBTLE}`, px: 2, py: 1.5, mx: -2, mb: -2, mt: 2.25, borderRadius: '0 0 16px 16px' }}>
+      <Typography variant="caption" sx={{ lineHeight: 1.5, color: AMBER_TEXT_AA_TINT, display: 'block' }}>
+        <Warning sx={{ fontSize: 13, verticalAlign: 'text-bottom', mr: 0.5, color: AMBER_TEXT_AA_TINT }} />
+        <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
+      </Typography>
+    </Box>
+  );
+
+  const fieldLabelSx = { fontSize: '12.5px', fontWeight: 700, color: TEXT_SECONDARY, marginBottom: '8px' };
 
   // ─── Desktop Layout ──────────────────────────────────────────────────────────
 
@@ -386,7 +441,7 @@ const ProfileSetupPage = () => {
           bullets={[]}
         />
 
-        {/* Right Form Panel */}
+        {/* Right Form Panel - BG_SUBTLE so the white cards read as surfaces (Turn 11) */}
         <Box
           sx={{
             flex: 1,
@@ -394,11 +449,11 @@ const ProfileSetupPage = () => {
             flexDirection: 'column',
             justifyContent: 'center',
             padding: '28px 56px',
-            background: BG_PAGE,
+            background: BG_SUBTLE,
           }}
         >
           <motion.div variants={staggerContainer} initial="hidden" animate="visible">
-            <Box sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
+            <Box sx={{ maxWidth: 440, width: '100%', mx: 'auto' }}>
               {/* Heading - back chip like the login/register pages. Setup has no page
                   behind it, so back signs the user out. */}
               <motion.div variants={riseIn}>
@@ -453,65 +508,36 @@ const ProfileSetupPage = () => {
                   </motion.div>
                 )}
 
-                {/* Date of birth + state of residence, side by side */}
+                {/* Required fields grouped in ONE card, legal notice as its footer strip */}
                 <motion.div variants={popIn}>
                   <Box>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          sx={{
-                            fontSize: '12.5px',
-                            fontWeight: 700,
-                            color: TEXT_SECONDARY,
-                            marginBottom: '8px',
-                          }}
-                        >
-                          Date of birth
-                        </Typography>
-                        {dobPicker}
-                      </Box>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          sx={{
-                            fontSize: '12.5px',
-                            fontWeight: 700,
-                            color: TEXT_SECONDARY,
-                            marginBottom: '8px',
-                          }}
-                        >
-                          State of residence
-                        </Typography>
-                        {statePicker}
-                      </Box>
+                    <Typography sx={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT_TERTIARY, mb: 1 }}>
+                      Your details
+                    </Typography>
+                    <Box sx={{ bgcolor: BG_SURFACE, borderRadius: '16px', border: `1px solid ${BORDER_SUBTLE}`, boxShadow: SHADOW_CARD, p: 2, overflow: 'hidden' }}>
+                      <Stack spacing={2.25}>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography sx={fieldLabelSx}>Date of birth</Typography>
+                            {dobPicker}
+                          </Box>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography sx={fieldLabelSx}>State of residence</Typography>
+                            {statePicker}
+                          </Box>
+                        </Box>
+                        {dobError && (
+                          <motion.div variants={popIn}>
+                            <Alert severity="error">{dobError}</Alert>
+                          </motion.div>
+                        )}
+                        <Box>
+                          <Typography sx={{ ...fieldLabelSx, marginBottom: '11px' }}>Gender</Typography>
+                          {renderGenderCards(true)}
+                        </Box>
+                      </Stack>
+                      {legalFooter}
                     </Box>
-                    <Typography variant="caption" sx={{ lineHeight: 1.5, color: AMBER_TEXT_AA, display: 'block', mt: 1 }}>
-                      <Warning sx={{ fontSize: 14, verticalAlign: 'text-bottom', mr: 0.5, color: AMBER_TEXT_AA }} />
-                      <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
-                    </Typography>
-                    {dobError && (
-                      <motion.div variants={popIn}>
-                        <Alert severity="error" sx={{ mt: 1.5 }}>
-                          {dobError}
-                        </Alert>
-                      </motion.div>
-                    )}
-                  </Box>
-                </motion.div>
-
-                {/* Gender */}
-                <motion.div variants={popIn}>
-                  <Box>
-                    <Typography
-                      sx={{
-                        fontSize: '12.5px',
-                        fontWeight: 700,
-                        color: TEXT_SECONDARY,
-                        marginBottom: '11px',
-                      }}
-                    >
-                      Gender
-                    </Typography>
-                    {genderCards}
                   </Box>
                 </motion.div>
 
@@ -521,7 +547,7 @@ const ProfileSetupPage = () => {
                     <AttractButton
                       fullWidth
                       onClick={handleSubmit}
-                      disabled={mutation.isPending}
+                      disabled={mutation.isPending || !canSubmit}
                       sx={{
                         borderRadius: '13px',
                         padding: '15px',
@@ -563,7 +589,7 @@ const ProfileSetupPage = () => {
         minHeight: 'var(--dvh100, 100dvh)',
         display: 'flex',
         flexDirection: 'column',
-        background: BG_PAGE,
+        background: BG_SUBTLE,
       }}
     >
       {/* Gradient header band - mirrors the main layout's AppPageHero: brand row (back arrow +
@@ -631,78 +657,55 @@ const ProfileSetupPage = () => {
               </motion.div>
             )}
 
-            {/* Date of Birth */}
+            {/* Required fields grouped in ONE card, legal notice as its footer strip */}
             <motion.div variants={popIn}>
               <Box>
-                <Typography
-                  sx={{
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    color: TEXT_SECONDARY,
-                    marginBottom: '8px',
-                  }}
-                >
-                  Date of birth
+                <Typography sx={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT_TERTIARY, mb: 1 }}>
+                  Your details
                 </Typography>
-                {dobPicker}
-                {dobError && (
-                  <motion.div variants={popIn}>
-                    <Alert severity="error" sx={{ mt: 1.5 }}>
-                      {dobError}
-                    </Alert>
-                  </motion.div>
-                )}
-              </Box>
-            </motion.div>
-
-            {/* State of residence */}
-            <motion.div variants={popIn}>
-              <Box>
-                <Typography
-                  sx={{
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    color: TEXT_SECONDARY,
-                    marginBottom: '8px',
-                  }}
-                >
-                  State of residence
-                </Typography>
-                {statePicker}
-                <Typography variant="caption" sx={{ lineHeight: 1.5, color: AMBER_TEXT_AA, display: 'block', mt: 1 }}>
-                  <Warning sx={{ fontSize: 13, verticalAlign: 'text-bottom', mr: 0.5 }} />
-                  <strong>Legal notice:</strong> Falsely declaring your age or residency is a criminal offence. If a prize winner is found to be under 18 or not a legal U.S. resident, their winnings will be immediately cancelled.
-                </Typography>
-              </Box>
-            </motion.div>
-
-            {/* Gender */}
-            <motion.div variants={popIn}>
-              <Box>
-                <Typography
-                  sx={{
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    color: TEXT_SECONDARY,
-                    marginBottom: '10px',
-                  }}
-                >
-                  Gender
-                </Typography>
-                {genderCards}
+                <Box sx={{ bgcolor: BG_SURFACE, borderRadius: '16px', border: `1px solid ${BORDER_SUBTLE}`, boxShadow: SHADOW_CARD, p: 2, overflow: 'hidden' }}>
+                  <Stack spacing={2.25}>
+                    <Box>
+                      <Typography sx={fieldLabelSx}>Date of birth</Typography>
+                      {dobPicker}
+                      {dobError && (
+                        <motion.div variants={popIn}>
+                          <Alert severity="error" sx={{ mt: 1.5 }}>
+                            {dobError}
+                          </Alert>
+                        </motion.div>
+                      )}
+                    </Box>
+                    <Box>
+                      <Typography sx={fieldLabelSx}>State of residence</Typography>
+                      {statePicker}
+                    </Box>
+                    <Box>
+                      <Typography sx={{ ...fieldLabelSx, marginBottom: '10px' }}>Gender</Typography>
+                      {genderCards}
+                    </Box>
+                  </Stack>
+                  {legalFooter}
+                </Box>
               </Box>
             </motion.div>
           </Stack>
         </motion.div>
       </Box>
 
-      {/* CTA - pinned near bottom */}
-      <Box sx={{ padding: '24px 22px', flexShrink: 0 }}>
+      {/* CTA - pinned near bottom, in normal flow (user preference: no sticky, no dock band) */}
+      <Box
+        sx={{
+          flexShrink: 0,
+          padding: '18px 22px',
+          pb: 'calc(env(safe-area-inset-bottom, 0px) + 18px)',
+        }}
+      >
         <motion.div variants={popIn}>
           <AttractButton
             fullWidth
             onClick={handleSubmit}
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || !canSubmit}
             sx={{
               borderRadius: '14px',
               padding: '16px',

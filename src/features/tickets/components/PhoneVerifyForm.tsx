@@ -20,7 +20,8 @@ import { apiErrorMessage } from '../../../shared/utils/apiError';
 import { readOtpSession, writeOtpSession, clearOtpSession, RESEND_COOLDOWN_S } from '../lib/phoneOtpSession';
 
 interface Props {
-  onVerified: (referralBonusGranted: boolean) => void;
+  /** phoneNumber = the verified 10-digit US number, for callers that display it. */
+  onVerified: (referralBonusGranted: boolean, phoneNumber?: string) => void;
 }
 
 type Step = 'phone' | 'otp';
@@ -80,7 +81,7 @@ const PhoneVerifyForm = ({ onVerified }: Props) => {
       // treat it as success and let the pending entry action resume instead of dead-ending.
       if (status === 400 && /already verified/i.test(message)) {
         clearOtpSession();
-        onVerified(false);
+        onVerified(false, rawPhone);
         return;
       }
       if (status === 400) {
@@ -102,7 +103,7 @@ const PhoneVerifyForm = ({ onVerified }: Props) => {
     onSuccess: (data) => {
       setError('');
       clearOtpSession();
-      onVerified(data?.referralBonusGranted ?? false);
+      onVerified(data?.referralBonusGranted ?? false, rawPhone);
     },
     onError: (err: unknown) => {
       const message = apiErrorMessage(err, 'Invalid or expired code. Please try again.');
