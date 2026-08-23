@@ -9,7 +9,7 @@ import {
   ALPHA_WHITE_15, ALPHA_WHITE_30,
 } from '../../../shared/colors';
 
-type Context = 'free' | 'receipt' | 'promo' | 'referral' | 'generic';
+type Context = 'free' | 'receipt' | 'promo' | 'referral' | 'generic' | 'setup';
 
 interface Props {
   open: boolean;
@@ -39,6 +39,12 @@ const contextConfig = {
   generic: {
     title: 'Confirm your phone',
     message: 'A quick, one-time confirmation before your first entry. You\'ll never be asked again.',
+  },
+  // Profile setup: the optional add-phone button. Purpose copy matches the setup page
+  // (account confirmation), and "one time" reassures exactly like the entry contexts.
+  setup: {
+    title: 'Add your phone',
+    message: 'A quick one-time check to confirm your account. You\'ll never be asked again.',
   },
 };
 

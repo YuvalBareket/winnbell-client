@@ -11,11 +11,15 @@ import { useConfettiTaps } from '../../../shared/hooks/useConfettiTaps';
 interface Props {
   open: boolean;
   onViewEntries: () => void;
+  /** CTA label override - profile setup uses "Continue setup" (entries are not reachable
+      until the gate completes; the default suits the entry pages). */
+  ctaLabel?: string;
 }
 
 const ReferralBonusSuccessDialog: React.FC<Props> = ({
   open,
   onViewEntries,
+  ctaLabel = 'View My Entries',
 }) => {
   const { triggerInstallPrompt } = useInstallPromptTrigger();
   useEffect(() => { if (open) triggerInstallPrompt(); }, [open, triggerInstallPrompt]);
@@ -55,7 +59,7 @@ const ReferralBonusSuccessDialog: React.FC<Props> = ({
             You're In!
           </Typography>
           <Typography variant="body1" sx={{ color: ALPHA_WHITE_70, mb: 4, lineHeight: 1.6 }}>
-            Your bonus entry is locked in for this month's draw. Good luck!
+            Your bonus entry is locked in for the current draw. Good luck!
           </Typography>
           <Button
             variant="contained"
@@ -64,7 +68,7 @@ const ReferralBonusSuccessDialog: React.FC<Props> = ({
             onClick={(e) => { e.stopPropagation(); onViewEntries(); }}
             sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 800, py: 1.8, px: 4, '&:hover': { bgcolor: ALPHA_WHITE_90 } }}
           >
-            View My Entries
+            {ctaLabel}
           </Button>
         </Box>
       </Fade>

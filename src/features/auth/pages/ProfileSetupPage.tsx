@@ -5,14 +5,14 @@ import {
   Select, MenuItem, IconButton,
 } from '@mui/material';
 import AttractButton from '../../../shared/components/AttractButton';
-import { Warning, Female, Male, Transgender, MoreHoriz, CheckCircle, ArrowBackIosNew } from '@mui/icons-material';
+import { Warning, Female, Male, Transgender, MoreHoriz, CheckCircle, ArrowBackIosNew, PhoneOutlined } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAppDispatch, useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager } from '../../../store/selectors/authSelectors';
 import { completeProfileSetup } from '../../../store/slices/authSlice';
@@ -25,9 +25,13 @@ import {
   TEXT_SECONDARY, TEXT_TERTIARY, TEXT_TERTIARY_AA, TEXT_HEADING, AMBER_TEXT_AA,
   GRADIENT_HERO, GRADIENT_HERO_WARM, GRADIENT_CTA,
   ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, SHADOW_PRIMARY_MEDIUM,
+  STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
 } from '../../../shared/colors';
 import { staggerContainer, popIn, riseIn } from '../../../shared/motion';
 import { US_STATES } from '../../../shared/constants/usStates';
+import { queryKeys } from '../../../shared/constants/queryKeys';
+import PhoneVerifySheet from '../../tickets/components/PhoneVerifySheet';
+import ReferralBonusSuccessDialog from '../../tickets/components/ReferralBonusSuccessDialog';
 
 const GENDERS = ['Female', 'Male', 'Other', 'Prefer not to say'] as const;
 type Gender = typeof GENDERS[number];
@@ -63,6 +67,25 @@ const ProfileSetupPage = () => {
   const [selectedGender, setSelectedGender] = useState<Gender | ''>('');
   const [selectedState, setSelectedState] = useState('');
   const [submitError, setSubmitError] = useState('');
+
+  // Optional phone verification (design Turn 10, consumers only): a collapsed add-phone
+  // button leading the form; clicking opens the standard one-time OTP sheet, so the number
+  // is verified AND persisted by the existing /phone flow - the setup payload never
+  // carries it. Managers and business owners skip this entirely (entry gates are a
+  // consumer concern).
+  const isConsumer = !isBusiness && !isLocationManager;
+  const queryClient = useQueryClient();
+  const [phoneSheetOpen, setPhoneSheetOpen] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [bonusDialogOpen, setBonusDialogOpen] = useState(false);
+
+  const handlePhoneVerified = (referralBonusGranted: boolean) => {
+    setPhoneVerified(true);
+    // Entry gates read verification from the risk-level query - refresh it so /scan
+    // never re-prompts a user who verified right here.
+    queryClient.invalidateQueries({ queryKey: queryKeys.tickets.riskLevel });
+    if (referralBonusGranted) setBonusDialogOpen(true);
+  };
 
   // States where Winnbell operates (platform setting). Empty list = no restriction,
   // in which case every U.S. state is offered.
@@ -207,6 +230,85 @@ const ProfileSetupPage = () => {
     </Select>
   );
 
+  // Phone group (consumers only): collapsed 48px button matching the input shape (white,
+  // radius 12, 1px BORDER_LIGHT) so nothing shifts when it flips to the verified row. The
+  // button carries its own label - no field heading while collapsed (design Turn 10).
+  const phoneGroup = (
+    <Box>
+      {phoneVerified ? (
+        <Box
+          sx={{
+            width: '100%', height: 48, borderRadius: '12px',
+            border: `1px solid ${BORDER_LIGHT}`, bgcolor: 'white',
+            display: 'flex', alignItems: 'center', gap: '10px', px: '12px',
+          }}
+        >
+          <Box sx={{
+            width: 32, height: 32, borderRadius: '9px', flexShrink: 0,
+            bgcolor: STATUS_ACTIVATED_BG, color: STATUS_ACTIVATED_TEXT,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <CheckCircle sx={{ fontSize: 17 }} />
+          </Box>
+          <Typography sx={{ flex: 1, fontSize: '14px', fontWeight: 700, color: TEXT_HEADING }}>
+            Phone verified
+          </Typography>
+          <Box component='span' sx={{
+            fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.04em',
+            color: STATUS_ACTIVATED_TEXT, bgcolor: STATUS_ACTIVATED_BG,
+            px: '7px', py: '3px', borderRadius: '6px',
+          }}>
+            VERIFIED
+          </Box>
+        </Box>
+      ) : (
+        <motion.button
+          type='button'
+          whileTap={{ scale: 0.96 }}
+          onClick={() => setPhoneSheetOpen(true)}
+          aria-haspopup='dialog'
+          style={{
+            width: '100%', height: 48, borderRadius: '12px',
+            border: `1.5px solid ${PRIMARY_MAIN}`, background: ALPHA_PRIMARY_06,
+            boxShadow: `0 0 0 3px ${ALPHA_PRIMARY_10}`,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '0 12px', fontFamily: 'inherit', textAlign: 'left',
+          }}
+        >
+          <span style={{
+            width: '32px', height: '32px', borderRadius: '9px', flexShrink: 0,
+            background: GRADIENT_CTA, color: 'white',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <PhoneOutlined sx={{ fontSize: 17 }} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0, fontSize: '14px', fontWeight: 700, color: PRIMARY_MAIN }}>
+            Add phone number
+          </span>
+        </motion.button>
+      )}
+    
+    </Box>
+  );
+
+  // The verification sheet + referral congrats, rendered by both layouts. The congrats CTA
+  // says "Continue setup": entries are unreachable until this gate completes.
+  const phoneOverlays = isConsumer ? (
+    <>
+      <PhoneVerifySheet
+        open={phoneSheetOpen}
+        onClose={() => setPhoneSheetOpen(false)}
+        onVerified={handlePhoneVerified}
+        context='setup'
+      />
+      <ReferralBonusSuccessDialog
+        open={bonusDialogOpen}
+        onViewEntries={() => setBonusDialogOpen(false)}
+        ctaLabel='Continue setup'
+      />
+    </>
+  ) : null;
+
   // Gender cards: icon tile + label, gradient tile and soft ring when selected.
   const genderCards = (
     <Grid container spacing={1.25}>
@@ -291,7 +393,7 @@ const ProfileSetupPage = () => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            padding: '48px 56px',
+            padding: '28px 56px',
             background: BG_PAGE,
           }}
         >
@@ -341,6 +443,13 @@ const ProfileSetupPage = () => {
                 {submitError && (
                   <motion.div variants={popIn}>
                     <Alert severity="error">{submitError}</Alert>
+                  </motion.div>
+                )}
+
+                {/* Optional phone (consumers only) - leads the form, above Date of birth */}
+                {isConsumer && (
+                  <motion.div variants={popIn}>
+                    {phoneGroup}
                   </motion.div>
                 )}
 
@@ -441,6 +550,7 @@ const ProfileSetupPage = () => {
             </Box>
           </motion.div>
         </Box>
+        {phoneOverlays}
       </Box>
     );
   }
@@ -511,6 +621,13 @@ const ProfileSetupPage = () => {
             {submitError && (
               <motion.div variants={popIn}>
                 <Alert severity="error">{submitError}</Alert>
+              </motion.div>
+            )}
+
+            {/* Optional phone (consumers only) - leads the form, above Date of birth */}
+            {isConsumer && (
+              <motion.div variants={popIn}>
+                {phoneGroup}
               </motion.div>
             )}
 
@@ -606,9 +723,10 @@ const ProfileSetupPage = () => {
           >
             {mutation.isPending ? 'Setting up...' : 'Finish setup'}
           </AttractButton>
-        
+
         </motion.div>
       </Box>
+      {phoneOverlays}
     </Box>
   );
 };

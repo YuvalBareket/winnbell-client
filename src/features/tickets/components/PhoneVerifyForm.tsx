@@ -164,7 +164,7 @@ const PhoneVerifyForm = ({ onVerified }: Props) => {
                 Enter your phone number
               </Typography>
               <Typography variant='body2' color='text.secondary'>
-                We'll send a 6-digit code to verify it's you.
+                We'll send a 6-digit code
               </Typography>
             </Box>
 
