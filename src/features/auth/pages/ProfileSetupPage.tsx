@@ -432,8 +432,8 @@ const ProfileSetupPage = () => {
 
   if (isDesktop) {
     return (
-      <Box sx={{ display: 'flex', minHeight: 'var(--dvh100, 100dvh)' }}>
-        {/* Left Brand Panel */}
+      <Box sx={{ display: 'flex', height: 'var(--dvh100, 100dvh)', overflow: 'hidden' }}>
+        {/* Left Brand Panel - pinned to the viewport; only the form column scrolls */}
         <AuthBrandPanel
           isBusinessVariant={isLocationManager}
           headline="Almost in."
@@ -441,18 +441,20 @@ const ProfileSetupPage = () => {
           bullets={[]}
         />
 
-        {/* Right Form Panel - BG_SUBTLE so the white cards read as surfaces (Turn 11) */}
+        {/* Right Form Panel - BG_SUBTLE so the white cards read as surfaces (Turn 11).
+            Auto margins on the column (not justifyContent center): centered when it fits,
+            scrollable from the TOP when it doesn't - center + overflow clips the top. */}
         <Box
           sx={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            overflowY: 'auto',
             padding: '28px 56px',
             background: BG_SUBTLE,
           }}
         >
-          <motion.div variants={staggerContainer} initial="hidden" animate="visible">
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
             <Box sx={{ maxWidth: 440, width: '100%', mx: 'auto' }}>
               {/* Heading - back chip like the login/register pages. Setup has no page
                   behind it, so back signs the user out. */}
