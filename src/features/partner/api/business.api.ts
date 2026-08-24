@@ -8,9 +8,10 @@ import type {
   UpdateLocationInput,
 } from '../types/business.types';
 
+// receipt_example_image_url was removed from this input 2026-08-24 (feature dropped from
+// the client; the server PATCH still accepts it, the client just never sends it anymore).
 export interface UpdateCampaignSettingsInput {
   min_transaction_amount?: number;
-  receipt_example_image_url?: string | null;
 }
 
 export const setupBusinessProfile = async (data: BusinessSetupInput): Promise<{ businessId: number }> => {

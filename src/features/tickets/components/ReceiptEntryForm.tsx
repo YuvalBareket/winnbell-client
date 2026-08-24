@@ -12,9 +12,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   FormControlLabel,
-  IconButton,
   InputAdornment,
   Skeleton,
   TextField,
@@ -24,7 +22,7 @@ import { alpha } from '@mui/material/styles';
 import AttractButton from '../../../shared/components/AttractButton';
 import AppDatePicker from '../../../shared/components/AppDatePicker';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { AccessTime, Close, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded, ConfirmationNumberOutlined, CelebrationRounded, PhotoCameraOutlined, InfoOutlined, WarningAmberRounded } from '@mui/icons-material';
+import { AccessTime, ReceiptOutlined, EventBusy, GppGood, CheckCircle, CardGiftcardOutlined, StarRounded, ArrowForwardRounded, ConfirmationNumberOutlined, CelebrationRounded, PhotoCameraOutlined, InfoOutlined, WarningAmberRounded } from '@mui/icons-material';
 import { useUploadReceiptImage } from '../hooks/useUploadReceiptImage';
 import { trackFunnel } from '../../../shared/analytics/funnel';
 import { useMyRiskLevel } from '../hooks/useMyRiskLevel';
@@ -304,7 +302,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [submittedEntryCount, setSubmittedEntryCount] = useState<number>(1);
-  const [exampleOpen, setExampleOpen] = useState(false);
   const [confirmSubmitOpen, setConfirmSubmitOpen] = useState(false);
   // "Don't show again" for the before-you-submit dialog: device-level preference,
   // saved only when the user actually submits with the box checked.
@@ -1036,35 +1033,6 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
         </DialogActions>
       </Dialog>
 
-      {/* ── Receipt example dialog ──────────────────── */}
-      <Dialog open={exampleOpen} onClose={() => setExampleOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle
-          sx={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            fontWeight: 800, fontSize: '1.1rem', color: 'text.primary',
-            borderBottom: '1px solid', borderColor: 'divider',
-          }}
-        >
-          Receipt Example
-          <IconButton
-            onClick={() => setExampleOpen(false)}
-            size="small"
-            sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover' } }}
-          >
-            <Close fontSize="small" />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ p: 2, bgcolor: 'common.white' }}>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5, fontWeight: 500 }}>
-            Use this to find the unique number on your receipt
-          </Typography>
-          {selectedLocation?.receipt_example_image_url && (
-            <Box component="img" src={selectedLocation.receipt_example_image_url} alt="Receipt example"
-              sx={{ display: 'block', width: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: 2 }} />
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* ── Step 2: Receipt details ─────────────────── */}
       <Collapse in={Boolean(selectedLocation) && !successDialogOpen && !selectedLocationCapReached && !selectedAgeBlocked}>
         {selectedLocation && (
@@ -1168,20 +1136,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               setReceiptWasPasted(true);
               receiptKeystrokeTimesRef.current = [];
             }}
-            helperText={
-              <Box component="span">
-                {'Find this on your receipt - may say "Receipt #", "Order #" or "Check #"'}
-                {selectedLocation?.receipt_example_image_url && (
-                  <>
-                    {' · '}
-                    <Box component="button" type="button" onClick={() => setExampleOpen(true)}
-                      sx={{ font: 'inherit', background: 'none', border: 0, p: 0, color: primaryColor || PRIMARY_MAIN, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}>
-                      Can't find it? See example
-                    </Box>
-                  </>
-                )}
-              </Box>
-            }
+            helperText={'Find this on your receipt - may say "Receipt #", "Order #" or "Check #"'}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">

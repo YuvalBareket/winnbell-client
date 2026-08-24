@@ -114,7 +114,7 @@ const FILTER_TYPES = [
     tipTitle: 'Setup gaps',
     tipLines: [
       'Subscribed, but something is missing.',
-      'No receipt example, no active locations, or not enrolled in the live campaign.',
+      'No active locations, or not enrolled in the live campaign.',
       'They are paying but cannot receive entries.',
     ],
   },

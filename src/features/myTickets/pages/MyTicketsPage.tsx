@@ -62,7 +62,6 @@ const MyTicketsPage = () => {
           subscription={subscription ?? undefined}
           hasDescription={hasDescription}
           hasLocations={hasLocations}
-          hasReceiptExample={!!businessData?.receipt_example_image_url}
           minSpend={businessData?.min_transaction_amount ?? null}
           isDesktop={isDesktop}
           isManager={isManager}

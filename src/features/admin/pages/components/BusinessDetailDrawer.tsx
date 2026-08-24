@@ -257,22 +257,6 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                     borderRadius: '8px',
                   }}
                 />
-                {/* Receipt example gates the business going live - surface it plainly. When set,
-                    clicking opens the uploaded image so the admin can eyeball it. */}
-                <Chip
-                  clickable={!!biz.receipt_example_image_url}
-                  onClick={biz.receipt_example_image_url
-                    ? () => window.open(biz.receipt_example_image_url as string, '_blank', 'noopener,noreferrer')
-                    : undefined}
-                  label={biz.receipt_example_image_url ? 'Receipt example set' : 'No receipt example'}
-                  size='small'
-                  sx={{
-                    bgcolor: biz.receipt_example_image_url ? STATUS_ACTIVATED_BG : METRIC_BAD_TINT,
-                    color: biz.receipt_example_image_url ? STATUS_ACTIVATED_TEXT : METRIC_BAD,
-                    fontWeight: 700,
-                    borderRadius: '8px',
-                  }}
-                />
               </Stack>
             </motion.div>
 

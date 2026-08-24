@@ -1,20 +1,18 @@
 import { useState, useMemo } from 'react';
 import {
   Paper, Box, Typography, Stack, Chip, IconButton, TextField, Button,
-  CircularProgress, Divider, InputAdornment, Dialog, DialogContent, Alert,
+  CircularProgress, Divider, InputAdornment, Alert,
 } from '@mui/material';
 import {
   ReceiptLong, Edit, ChevronRight, Check, Close, TuneOutlined,
-  AttachMoneyOutlined, ImageOutlined, VisibilityOutlined, WarningAmberOutlined,
+  AttachMoneyOutlined, WarningAmberOutlined,
 } from '@mui/icons-material';
-import CanvasAnnotationEditor from '../../../../shared/components/CanvasAnnotationEditor';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BusinessData } from '../../types/business.types';
-import { PRIMARY_MAIN, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10, STATUS_ACTIVE_TEXT_AA, TEXT_TERTIARY_AA } from '../../../../shared/colors';
+import { PRIMARY_MAIN, ALPHA_PRIMARY_06, ALPHA_PRIMARY_10, STATUS_ACTIVE_TEXT_AA } from '../../../../shared/colors';
 import { formatCurrency } from '../../../../shared/utils/date';
 import { MIN_RECEIPT_THRESHOLD } from '../../../../shared/constants/entries';
-import { getUploadUrl } from '../../api/business.api';
 
 // ────────────────────────────────────────────────────────────
 // Props
@@ -22,7 +20,7 @@ import { getUploadUrl } from '../../api/business.api';
 
 interface CampaignCardProps {
   business: BusinessData;
-  updateCampaignSettings?: (data: { min_transaction_amount?: number; receipt_example_image_url?: string | null }) => void;
+  updateCampaignSettings?: (data: { min_transaction_amount?: number }) => void;
   isUpdatingSettings?: boolean;
 }
 
@@ -65,13 +63,6 @@ const CampaignCard = ({
   const [editingThreshold, setEditingThreshold] = useState(false);
   const [thresholdValue, setThresholdValue] = useState('');
 
-  // ── Receipt example state ────────────────────────────
-  const [editingReceipt, setEditingReceipt] = useState(false);
-  const [receiptError, setReceiptError] = useState('');
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [isSavingReceipt, setIsSavingReceipt] = useState(false);
-  const [imgFile, setImgFile] = useState<File | null>(null);
-
   // ── Threshold handlers ────────────────────────────────
   const openThresholdEdit = () => {
     const prefill = business.pending_min_transaction_amount ?? business.min_transaction_amount;
@@ -91,39 +82,6 @@ const CampaignCard = ({
     if (isNaN(parsed) || parsed <= 0) return; // Prevent non-positive submission
     updateCampaignSettings?.({ min_transaction_amount: parsed });
     setEditingThreshold(false);
-  };
-
-  // ── Receipt edit handlers ─────────────────────────────
-  const openReceiptEdit = () => {
-    setImgFile(null);
-    setEditingReceipt(true);
-  };
-
-  const cancelReceiptEdit = () => {
-    setEditingReceipt(false);
-    setImgFile(null);
-    setReceiptError('');
-  };
-
-  const handleSaveReceipt = async (blob: Blob) => {
-    setIsSavingReceipt(true);
-    setReceiptError('');
-    try {
-      const { uploadUrl, publicUrl } = await getUploadUrl('image/jpeg', blob.size);
-      // A rejected fetch (network/CSP) throws; a non-2xx from R2 (e.g. expired presigned
-      // URL) does NOT, so check res.ok - otherwise a dead image URL gets saved as success.
-      const res = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
-      if (!res.ok) throw new Error(`Upload failed (${res.status})`);
-      // The receipt example is independent of the threshold, so only send the image.
-      updateCampaignSettings?.({ receipt_example_image_url: publicUrl });
-      setEditingReceipt(false);
-      setImgFile(null);
-    } catch (err) {
-      console.error('Failed to save receipt example:', err);
-      setReceiptError('Failed to upload the receipt example. Please try again.');
-    } finally {
-      setIsSavingReceipt(false);
-    }
   };
 
   // ── Live preview for threshold ───────────────────────
@@ -378,121 +336,7 @@ const CampaignCard = ({
           </Box>
         </MotionBox>
 
-        {/* ── Setting 2: Receipt Example ────────────── */}
-        <MotionBox
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: 'easeOut', delay: 0.08 }}
-        >
-          <Box
-            sx={{
-              p: 2, borderRadius: 2.5,
-              bgcolor: ALPHA_PRIMARY_06,
-              border: '1px solid',
-              borderColor: editingReceipt ? PRIMARY_MAIN : 'transparent',
-              transition: 'border-color 160ms ease-out',
-              mb: 1.5,
-            }}
-          >
-            {/* Row header */}
-            <Stack direction='row' alignItems='center' justifyContent='space-between'>
-              <Stack direction='row' alignItems='center' gap={1.5}>
-                <Box
-                  sx={{
-                    width: 36, height: 36, borderRadius: 2,
-                    bgcolor: ALPHA_PRIMARY_10,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <ImageOutlined sx={{ fontSize: 20, color: PRIMARY_MAIN }} />
-                </Box>
-                <Box>
-                  <Typography variant='body2' fontWeight={700} sx={{ lineHeight: 1.3 }}>
-                    Receipt example
-                  </Typography>
-                  {!editingReceipt && (
-                    <Typography variant='body2' sx={{ color: business.receipt_example_image_url ? STATUS_ACTIVE_TEXT_AA : TEXT_TERTIARY_AA, fontWeight: 600, mt: 0.25 }}>
-                      {business.receipt_example_image_url ? 'Uploaded' : 'Not uploaded'}
-                    </Typography>
-                  )}
-                </Box>
-              </Stack>
-              {!editingReceipt && (
-                <Stack direction='row' gap={0.5} flexShrink={0}>
-                  {business.receipt_example_image_url && (
-                    <IconButton size='small' onClick={() => setPreviewOpen(true)} aria-label='Preview receipt example' sx={{ transition: 'transform 160ms ease-out', '&:active': { transform: 'scale(0.97)' } }}>
-                      <VisibilityOutlined fontSize='small' />
-                    </IconButton>
-                  )}
-                  <IconButton size='small' onClick={openReceiptEdit} aria-label='Edit receipt example' sx={{ transition: 'transform 160ms ease-out', '&:active': { transform: 'scale(0.97)' } }}>
-                    <Edit fontSize='small' />
-                  </IconButton>
-                </Stack>
-              )}
-            </Stack>
-
-            {/* Edit form - canvas annotation */}
-            <AnimatePresence mode='wait'>
-              {editingReceipt && (
-                <MotionBox
-                  key='receipt-edit'
-                  variants={editFormVariants}
-                  initial='hidden'
-                  animate='visible'
-                  exit='exit'
-                >
-                  <Box sx={{ mt: 2 }}>
-                    <CanvasAnnotationEditor
-                      imgFile={imgFile}
-                      onFileSelect={(file) => setImgFile(file)}
-                      onSave={handleSaveReceipt}
-                      isSaving={isSavingReceipt}
-                    />
-
-                    <AnimatePresence>
-                      {receiptError && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          transition={{ duration: 0.25 }}
-                        >
-                          <Alert severity='error' sx={{ mt: 1.5, borderRadius: 2 }}>{receiptError}</Alert>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <Stack direction='row' spacing={1} justifyContent='flex-end' sx={{ mt: 1 }}>
-                      <Button size='small' onClick={cancelReceiptEdit} startIcon={<Close sx={{ fontSize: 16 }} />} sx={btnBase}>
-                        Cancel
-                      </Button>
-                    </Stack>
-                  </Box>
-                </MotionBox>
-              )}
-            </AnimatePresence>
-          </Box>
-        </MotionBox>
-
       </Stack>
-
-      {/* ── Receipt preview dialog ────────────────────── */}
-      <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth='md' fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
-        <DialogContent sx={{ p: 0, position: 'relative' }}>
-          <IconButton
-            onClick={() => setPreviewOpen(false)}
-            aria-label='Close preview'
-            sx={{ position: 'absolute', top: 8, right: 8, zIndex: 10, bgcolor: 'rgba(0,0,0,0.4)', color: 'white', '&:hover': { bgcolor: 'rgba(0,0,0,0.6)' } }}
-          >
-            <Close />
-          </IconButton>
-          {business.receipt_example_image_url && (
-            <Box component='img' src={business.receipt_example_image_url} alt='Receipt example'
-              sx={{ display: 'block', width: '100%', maxHeight: '85vh', objectFit: 'contain', borderRadius: 2 }} />
-          )}
-        </DialogContent>
-      </Dialog>
     </Paper>
   );
 };

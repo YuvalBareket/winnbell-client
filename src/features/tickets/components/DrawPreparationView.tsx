@@ -16,7 +16,6 @@ interface DrawPreparationViewProps {
   subscription: SubscriptionDetails | undefined;
   hasDescription: boolean;
   hasLocations: boolean;
-  hasReceiptExample?: boolean;
   /** Current minimum spend per receipt. Always has a value ($20 default), so the
       checklist row shows the amount as a reminder to review it rather than a task. */
   minSpend?: number | null;
@@ -29,7 +28,6 @@ const DrawPreparationView = ({
   subscription,
   hasDescription,
   hasLocations,
-  hasReceiptExample = false,
   minSpend = null,
   isDesktop,
   isManager = false,
@@ -114,20 +112,12 @@ const DrawPreparationView = ({
     ? { label: 'Reactivate your campaign plan', done: false, path: '/subscription/manage' }
     : { label: 'Join the current campaign', done: false, path: '/subscribe', emphasis: true };
 
-  // The receipt example is OPTIONAL (2026-08-21): a helpful customer guide, never a gate.
-  const receiptExampleItem: ChecklistItem = {
-    label: 'Add a receipt example for your customers (optional)',
-    done: hasReceiptExample,
-    path: '/nearby',
-  };
-
   const checklist: ChecklistItem[] = registered
     ? [
         effectivelySubscribed
           ? { label: 'Subscription active', done: true }
           : { label: `Joined ${drawName ?? 'the campaign'}`, done: true },
         { label: `Registered for ${drawName ?? 'upcoming campaign'}`, done: true },
-        receiptExampleItem,
         minSpendItem,
         { label: 'Add your business description', done: hasDescription, path: '/nearby' },
         { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },
@@ -135,7 +125,6 @@ const DrawPreparationView = ({
       ]
     : [
         membershipItem,
-        receiptExampleItem,
         minSpendItem,
         { label: 'Add your business description', done: hasDescription, path: '/nearby' },
         { label: 'Add at least one active location', done: hasLocations, path: '/nearby' },

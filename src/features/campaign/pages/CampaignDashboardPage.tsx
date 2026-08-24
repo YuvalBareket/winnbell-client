@@ -191,11 +191,6 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
   // No campaign state
   const noCampaign = !headerData?.has_campaign;
 
-  // The receipt example is OPTIONAL (2026-08-21): it improves the customer scan guide when
-  // present, but never gates the dashboard - the old "held on the preparation view until
-  // uploaded" behavior is gone.
-  const hasReceiptExample = !!bizData?.receipt_example_image_url;
-
   // Admin read-only view of a business with no campaigns: a plain empty state. The owner's
   // DrawPreparationView below is a setup checklist keyed to the LOGGED-IN user's own
   // subscription/business state, which is meaningless (and misleading) for an admin viewer.
@@ -219,7 +214,6 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
         subscription={subscription ?? undefined}
         hasDescription={hasDescription}
         hasLocations={hasLocations}
-        hasReceiptExample={hasReceiptExample}
         minSpend={bizData?.min_transaction_amount ?? null}
         isDesktop={isDesktop}
         isManager={isManager}

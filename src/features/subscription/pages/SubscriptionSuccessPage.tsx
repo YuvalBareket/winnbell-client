@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Typography, Button, Paper, Stack, CircularProgress, Chip, alpha } from '@mui/material';
-import { CheckCircle, Storefront, ErrorOutline, WorkspacePremium, ReceiptLongOutlined, LocalAtmOutlined, CreditCardOutlined } from '@mui/icons-material';
+import { CheckCircle, Storefront, ErrorOutline, WorkspacePremium, LocalAtmOutlined, CreditCardOutlined } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
@@ -316,12 +316,6 @@ const SubscriptionSuccessPage = () => {
                 <LocalAtmOutlined sx={{ fontSize: 20, color: 'primary.main', mt: '1px', flexShrink: 0 }} />
                 <Typography variant='body2' color='text.secondary' lineHeight={1.5}>
                   <strong>Set your minimum spend per receipt.</strong> It starts at $20 - adjust it to fit your store.
-                </Typography>
-              </Stack>
-              <Stack direction='row' spacing={1.25} alignItems='flex-start'>
-                <ReceiptLongOutlined sx={{ fontSize: 20, color: 'primary.main', mt: '1px', flexShrink: 0 }} />
-                <Typography variant='body2' color='text.secondary' lineHeight={1.5}>
-                  <strong>Add a receipt example.</strong> Show customers where to find the receipt number.
                 </Typography>
               </Stack>
             </Stack>
