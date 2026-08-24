@@ -10,6 +10,7 @@ import {
   pickWinner,
   extendDrawOrder,
   confirmWinner,
+  purgeDrawReceiptImages,
   fetchDrawWinnerOrder,
   reopenDraw,
   setDrawPrizeRevealed,
@@ -182,6 +183,19 @@ export const useConfirmWinner = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawCandidate(drawId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawWinnerOrder(drawId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.draws.result(drawId) });
+    },
+  });
+};
+
+export const usePurgeReceiptImages = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (drawId: number) => purgeDrawReceiptImages(drawId),
+    onSuccess: () => {
+      // Purged tickets lost their image URL - every surface that renders receipt photos
+      // (entries queue, user/business detail drawers) must refetch.
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.entriesAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.drawsAll });
     },
   });
 };

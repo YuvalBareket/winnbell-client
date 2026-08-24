@@ -48,6 +48,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DownloadIcon from '@mui/icons-material/Download';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   useOpenDraw,
@@ -55,6 +56,7 @@ import {
   usePickWinner,
   useExtendDrawOrder,
   useConfirmWinner,
+  usePurgeReceiptImages,
   useReopenDraw,
   useSetDrawPrizeRevealed,
   useDrawBusinesses,
@@ -412,6 +414,7 @@ const DrawsTab: React.FC<Props> = ({ draws, drawsLoading, isMobile, onSnackError
   // Second-step "are you sure?" gate before confirming or rejecting a winner.
   const [confirmDecision, setConfirmDecision] = useState<null | 'confirm' | 'reject'>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [confirmPurgeImages, setConfirmPurgeImages] = useState<number | null>(null);
   const [expandedDrawId, setExpandedDrawId] = useState<number | null>(null);
   // Draw order card: tracks which row is expanded (position value), and defaults current to open
   const [expandedOrderPosition, setExpandedOrderPosition] = useState<number | null>(null);
@@ -421,6 +424,7 @@ const DrawsTab: React.FC<Props> = ({ draws, drawsLoading, isMobile, onSnackError
   const pickWinner = usePickWinner();
   const extendOrder = useExtendDrawOrder();
   const confirmWinnerMutation = useConfirmWinner();
+  const purgeImages = usePurgeReceiptImages();
   const reopenDraw = useReopenDraw();
   const deleteDraw = useDeleteDraw();
   const duplicateDraw = useDuplicateDraw();
@@ -463,6 +467,18 @@ const DrawsTab: React.FC<Props> = ({ draws, drawsLoading, isMobile, onSnackError
       onSnackError(apiErrorMessage(e, 'Failed to close campaign'));
     }
     setConfirmClose(null);
+  };
+
+  const handlePurgeImages = async () => {
+    if (!confirmPurgeImages) return;
+    try {
+      const { data } = await purgeImages.mutateAsync(confirmPurgeImages);
+      const failedNote = data.failed > 0 ? ` ${data.failed} could not be deleted - run the cleanup again to retry.` : '';
+      onSnackSuccess(`Deleted ${data.deleted} receipt image${data.deleted === 1 ? '' : 's'}. Kept ${data.kept} (winner + rejected candidates).${failedNote}`);
+    } catch (e: unknown) {
+      onSnackError(apiErrorMessage(e, 'Failed to clean receipt images'));
+    }
+    setConfirmPurgeImages(null);
   };
 
   const handleReopenDraw = async () => {
@@ -652,6 +668,11 @@ const DrawsTab: React.FC<Props> = ({ draws, drawsLoading, isMobile, onSnackError
         <>
           <Chip label='Winner Verified' size='small' color='success' />
           <Button size='small' variant='outlined' color='secondary' startIcon={<EmojiEventsIcon />} onClick={(e) => { e.stopPropagation(); setReviewDismissed(false); setReviewDrawId(draw.id); }} fullWidth={!inline}>Campaign Info</Button>
+          <Tooltip title="Permanently delete this campaign's receipt photos from storage, keeping only the confirmed winner's and the rejected candidates' (legal evidence).">
+            <Button size='small' variant='outlined' color='warning' startIcon={<DeleteSweepIcon />} onClick={(e) => { e.stopPropagation(); setConfirmPurgeImages(draw.id); }} fullWidth={!inline}>
+              Clean Receipt Images
+            </Button>
+          </Tooltip>
         </>
       )}
       <Button size='small' variant='outlined' startIcon={<ContentCopyIcon />} onClick={(e) => { e.stopPropagation(); handleDuplicate(draw.id); }} fullWidth={!inline} disabled={duplicateDraw.isPending}>
@@ -890,6 +911,46 @@ const DrawsTab: React.FC<Props> = ({ draws, drawsLoading, isMobile, onSnackError
             sx={{ fontWeight: 800, textTransform: 'none' }}
           >
             {closeDraw.isPending ? 'Closing...' : 'Yes, close the campaign'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Receipt-image purge confirmation - permanent storage deletion, heavy/red on purpose */}
+      <Dialog
+        open={!!confirmPurgeImages}
+        onClose={() => { if (!purgeImages.isPending) setConfirmPurgeImages(null); }}
+        maxWidth='xs'
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2, border: '2px solid', borderColor: 'error.main', overflow: 'hidden' } }}
+      >
+        <Box sx={{ bgcolor: 'error.main', color: 'white', px: 3, py: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <DeleteSweepIcon sx={{ fontSize: 32 }} />
+          <Typography variant='h6' fontWeight={800} sx={{ letterSpacing: '-0.2px' }}>Delete receipt images?</Typography>
+        </Box>
+        <DialogContent sx={{ pt: 3 }}>
+          <DialogContentText sx={{ color: 'text.primary', fontWeight: 600, mb: 1.5 }}>
+            This permanently deletes every receipt photo from this campaign from storage,
+            EXCEPT the confirmed winner's and the rejected winner candidates' - those stay as
+            legal evidence. Entry records, amounts, and verification results are kept; only
+            the photos are removed.
+          </DialogContentText>
+          <DialogContentText sx={{ color: 'error.main', fontWeight: 800, fontSize: '1.05rem' }}>
+            Deleted photos cannot be recovered. Continue?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button variant='outlined' onClick={() => setConfirmPurgeImages(null)} disabled={purgeImages.isPending} sx={{ fontWeight: 700, textTransform: 'none' }}>
+            Cancel
+          </Button>
+          <Button
+            variant='contained'
+            color='error'
+            startIcon={!purgeImages.isPending && <DeleteSweepIcon />}
+            onClick={handlePurgeImages}
+            disabled={purgeImages.isPending}
+            sx={{ fontWeight: 800, textTransform: 'none' }}
+          >
+            {purgeImages.isPending ? 'Deleting...' : 'Yes, delete the images'}
           </Button>
         </DialogActions>
       </Dialog>

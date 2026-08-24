@@ -38,6 +38,12 @@ export const confirmWinner = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/confirm-winner`);
 export const reopenDraw = (drawId: number) =>
   api.post(`/admin/draws/${drawId}/reopen`);
+// Post-winner cleanup: deletes the draw's receipt images from storage except the confirmed
+// winner's and rejected winner candidates' (legal keep-set). Only valid once winner_confirmed.
+export const purgeDrawReceiptImages = (drawId: number) =>
+  api.post<{ deleted: number; kept: number; skipped: number; failed: number }>(
+    `/admin/draws/${drawId}/purge-receipt-images`,
+  );
 export const setDrawPrizeRevealed = (drawId: number, revealed: boolean) =>
   api.patch(`/admin/draws/${drawId}/prize-reveal`, { revealed });
 export const fetchAdminOverview = () => api.get('/admin/overview');
