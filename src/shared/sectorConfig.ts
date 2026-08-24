@@ -44,6 +44,13 @@ export const SECTOR_CONFIG: Record<string, SectorConfig> = {
     iconPath:
       'M16.13 15.13 18 3h-4V2h-4v1H5c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h2.23l.64 4.13C6.74 16.05 6 17.43 6 19v1c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-1c0-1.57-.74-2.95-1.87-3.87M5 9V5h1.31l.62 4zm7 10c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1m2.29-5H9.72L8.33 5h7.34z',
   },
+  Kava: {
+    // Earthy brown — kava bars and tea lounges (EmojiFoodBeverage tea cup).
+    color: '#6d4c41',
+    bgColor: '#efebe9',
+    iconPath:
+      'M20 3H9v2.4l1.81 1.45c.12.09.19.24.19.39v4.26c0 .28-.22.5-.5.5h-4c-.28 0-.5-.22-.5-.5V7.24c0-.15.07-.3.19-.39L8 5.4V3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2m0 5h-2V5h2zM4 19h16v2H4z',
+  },
   Grocery: {
     color: '#2e7d32',
     bgColor: '#e8f5e9',
