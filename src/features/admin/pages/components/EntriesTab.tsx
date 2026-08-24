@@ -16,6 +16,7 @@ import {
   TableCell,
   IconButton,
   Button,
+  Dialog,
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { motion } from 'framer-motion';
@@ -27,6 +28,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import CloseIcon from '@mui/icons-material/Close';
 import { AdminCard, StatCard, StatCardSkeleton, AdminCardSkeleton, SectionHeader, IconTile } from './adminUi';
 import { useAdminEntries, useAdminImageDecision } from '../../hooks/useAdmin';
 import type { AdminEntryRow } from '../../hooks/useAdmin';
@@ -82,6 +84,8 @@ const EntriesTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuc
   const [status, setStatus] = useState<string>('failed');
   const [page, setPage] = useState(1);
   const [pendingTicket, setPendingTicket] = useState<number | null>(null);
+  // Full-screen receipt viewer (was a new-tab link; the admin reviews without leaving the queue)
+  const [imageViewUrl, setImageViewUrl] = useState<string | null>(null);
 
   // Default the campaign filter to the current Open campaign once the draws list loads; the
   // user's own pick (including "All campaigns") overrides it. Derived from props, so there is
@@ -339,11 +343,11 @@ const EntriesTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuc
                               {e.receipt_image_url ? (
                                 <Stack direction='row' spacing={1} alignItems='center'>
                                   <Box
-                                    component='a'
-                                    href={e.receipt_image_url}
-                                    target='_blank'
-                                    rel='noopener noreferrer'
-                                    sx={{ display: 'inline-block', lineHeight: 0 }}
+                                    component='button'
+                                    type='button'
+                                    aria-label='View receipt full size'
+                                    onClick={() => setImageViewUrl(e.receipt_image_url)}
+                                    sx={{ display: 'inline-block', lineHeight: 0, p: 0, border: 0, background: 'none', cursor: 'pointer' }}
                                   >
                                     <Box
                                       component='img'
@@ -356,7 +360,6 @@ const EntriesTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuc
                                         borderRadius: '8px',
                                         border: '1px solid',
                                         borderColor: imgStatus === 'failed' || imgStatus === 'ocr_error' ? METRIC_BAD : imgStatus === 'passed' ? METRIC_GOOD : BORDER_SUBTLE,
-                                        cursor: 'pointer',
                                         transition: 'opacity 150ms',
                                         '&:hover': { opacity: 0.8 },
                                       }}
@@ -493,6 +496,46 @@ const EntriesTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuc
           </Box>
         </motion.div>
       </Stack>
+
+      {/* Full-screen receipt lightbox: near-black backdrop, image fit to the viewport,
+          click anywhere (or the X) to close. */}
+      <Dialog
+        open={!!imageViewUrl}
+        onClose={() => setImageViewUrl(null)}
+        maxWidth={false}
+        PaperProps={{
+          sx: { bgcolor: 'transparent', boxShadow: 'none', m: 0, maxWidth: '100vw', maxHeight: 'var(--dvh100, 100dvh)' },
+        }}
+        slotProps={{ backdrop: { sx: { bgcolor: 'rgba(10,16,26,0.92)' } } }}
+      >
+        <IconButton
+          onClick={() => setImageViewUrl(null)}
+          aria-label='Close receipt viewer'
+          sx={{
+            position: 'fixed', top: 14, right: 14, zIndex: 10,
+            color: 'white', bgcolor: 'rgba(255,255,255,0.12)',
+            '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' },
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        {imageViewUrl && (
+          <Box
+            component='img'
+            src={imageViewUrl}
+            alt='Receipt, full size'
+            onClick={() => setImageViewUrl(null)}
+            sx={{
+              display: 'block',
+              maxWidth: '96vw',
+              maxHeight: 'calc(var(--dvh100, 100dvh) - 32px)',
+              objectFit: 'contain',
+              borderRadius: '10px',
+              cursor: 'zoom-out',
+            }}
+          />
+        )}
+      </Dialog>
     </motion.div>
   );
 };
