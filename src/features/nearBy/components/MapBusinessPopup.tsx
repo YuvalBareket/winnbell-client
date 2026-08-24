@@ -264,7 +264,7 @@ const MapBusinessPopup: React.FC<Props> = ({ locationId, basicInfo, onClose, use
             </Typography>
             <Typography variant='body2' color='text.secondary' sx={{ lineHeight: 1.7, maxWidth: 320 }}>
               All of this location's entries for the current campaign have been claimed.
-              This location will by live again next campaign.
+              This location will be live again next campaign.
             </Typography>
             <Typography variant='caption' color='text.disabled' sx={{ mt: 0.5 }}>
               Plenty of other participating locations are ready on the map.

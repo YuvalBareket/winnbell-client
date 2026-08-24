@@ -23,18 +23,26 @@ const TIME_ZONE = 'Eastern Time (ET)';
 const ERROR_FALLBACK_JURISDICTIONS = 'State of Florida, United States only';
 const UNRESTRICTED_JURISDICTIONS = 'United States (excluding where prohibited by applicable law)';
 
+// Join names into legal-list prose: "X", "X and Y", "X, Y, and Z".
+const nameList = (names: string[]): string => names.length === 1
+  ? names[0]
+  : names.length === 2
+  ? `${names[0]} and ${names[1]}`
+  : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+
 const formatJurisdictions = (codes: string[] | undefined): string => {
   if (codes === undefined) return ERROR_FALLBACK_JURISDICTIONS;
   if (codes.length === 0) return UNRESTRICTED_JURISDICTIONS;
+  // Near-complete allowlist (a state ban, e.g. Rhode Island): standard sweepstakes
+  // exclusion wording instead of enumerating the 45+ eligible states.
+  const excluded = US_STATES.filter((s) => !codes.includes(s.code)).map((s) => s.name).sort();
+  if (excluded.length > 0 && excluded.length <= 5) {
+    return `United States, excluding the ${excluded.length === 1 ? 'State' : 'States'} of ${nameList(excluded)} (and excluding where prohibited by applicable law)`;
+  }
   const names = codes
     .map((code) => US_STATES.find((s) => s.code === code)?.name ?? code)
     .sort();
-  const list = names.length === 1
-    ? names[0]
-    : names.length === 2
-    ? `${names[0]} and ${names[1]}`
-    : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
-  return `${names.length === 1 ? 'State' : 'States'} of ${list}, United States only`;
+  return `${names.length === 1 ? 'State' : 'States'} of ${nameList(names)}, United States only`;
 };
 
 const applyStaticSubstitutions = (text: string, eligibleJurisdictions: string) => text

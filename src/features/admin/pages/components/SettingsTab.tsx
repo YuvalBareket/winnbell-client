@@ -123,27 +123,40 @@ const SettingsTab: React.FC = () => {
                   registration further; remove all to allow every US state.
                 </Typography>
 
-                <Autocomplete
-                  options={US_STATES}
-                  getOptionLabel={(o) => o.name}
-                  value={null}
-                  inputValue={stateInputValue}
-                  onInputChange={(_e, val) => setStateInputValue(val)}
-                  onChange={(_e, selected) => {
-                    if (selected && !localAllowedStates.includes(selected.code)) {
-                      setLocalAllowedStates((prev) => [...prev, selected.code]);
-                    }
-                    setStateInputValue('');
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      size='small'
-                      placeholder='Search state…'
-                      sx={{ width: 300, '& .MuiOutlinedInput-root': { borderRadius: '12px', borderColor: BORDER_LIGHT } }}
-                    />
-                  )}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                  <Autocomplete
+                    options={US_STATES}
+                    getOptionLabel={(o) => o.name}
+                    value={null}
+                    inputValue={stateInputValue}
+                    onInputChange={(_e, val) => setStateInputValue(val)}
+                    onChange={(_e, selected) => {
+                      if (selected && !localAllowedStates.includes(selected.code)) {
+                        setLocalAllowedStates((prev) => [...prev, selected.code]);
+                      }
+                      setStateInputValue('');
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        size='small'
+                        placeholder='Search state…'
+                        sx={{ width: 300, '& .MuiOutlinedInput-root': { borderRadius: '12px', borderColor: BORDER_LIGHT } }}
+                      />
+                    )}
+                  />
+                  {/* Blocking one state (e.g. Rhode Island) means allowlisting the other 49:
+                      fill all, delete the banned chip, Save. */}
+                  <Button
+                    size='small'
+                    variant='text'
+                    onClick={() => setLocalAllowedStates(US_STATES.map((s) => s.code))}
+                    disabled={localAllowedStates.length === US_STATES.length}
+                    sx={{ fontWeight: 700 }}
+                  >
+                    Add all states
+                  </Button>
+                </Box>
 
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1.5 }}>
                   {localAllowedStates.length === 0 ? (

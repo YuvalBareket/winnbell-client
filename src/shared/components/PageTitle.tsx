@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 // title, so each page gets its own headline in search results instead of the shared static
 // one from index.html). Authed app routes are robots-disallowed, so they just keep the brand
 // default. Render once near the top of AppRoutes.
-const DEFAULT_TITLE = 'Winnbell - Shop Local. Win Real Cash Prizes.';
+const DEFAULT_TITLE = 'Winnbell - Shop Local. Win Cash Prizes.';
 
 const PAGE_TITLES: Record<string, string> = {
   '/': DEFAULT_TITLE,
