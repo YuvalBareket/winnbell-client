@@ -42,7 +42,7 @@ export const BUSINESS_SECTORS: Record<
   Bakery:        { label: 'Bakery',        icon: <BakeryDining />,     color: SECTOR_CONFIG.Bakery.color,        bgColor: SECTOR_CONFIG.Bakery.bgColor },
   IceCream:      { label: 'Ice Cream',     icon: <Icecream />,         color: SECTOR_CONFIG.IceCream.color,      bgColor: SECTOR_CONFIG.IceCream.bgColor },
   Juice:         { label: 'Smoothies & Juices', icon: <Blender />,     color: SECTOR_CONFIG.Juice.color,         bgColor: SECTOR_CONFIG.Juice.bgColor },
-  Kava:          { label: 'Kava & Tea Lounge', icon: <EmojiFoodBeverage />, color: SECTOR_CONFIG.Kava.color,     bgColor: SECTOR_CONFIG.Kava.bgColor },
+  Kava:          { label: 'Kava & Kratom', icon: <EmojiFoodBeverage />, color: SECTOR_CONFIG.Kava.color,     bgColor: SECTOR_CONFIG.Kava.bgColor },
   Grocery:       { label: 'Grocery',       icon: <LocalGroceryStore />,color: SECTOR_CONFIG.Grocery.color,       bgColor: SECTOR_CONFIG.Grocery.bgColor },
   Liquor:        { label: 'Tobacco & Liquor', icon: <Liquor />,        color: SECTOR_CONFIG.Liquor.color,        bgColor: SECTOR_CONFIG.Liquor.bgColor },
   Pub:           { label: 'Pub',           icon: <NightlifeOutlined />, color: SECTOR_CONFIG.Pub.color,          bgColor: SECTOR_CONFIG.Pub.bgColor },
