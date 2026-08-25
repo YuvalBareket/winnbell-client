@@ -80,8 +80,9 @@ export interface RiskLevelResponse {
   dailyCount: number;
   dailyLimit: number;
   isPhoneVerified: boolean;
-  // Invited signup (referral link or location flyer) whose welcome entry has not been granted
-  // yet - it is granted at phone-verify time, so the client prompts verification to claim it.
+  // Referred signup whose welcome entry has not been granted yet - it is granted at phone-verify
+  // time, so the client prompts verification to claim it. (Location-flyer/QR signups no longer
+  // earn a welcome entry, so this is always false for them.)
   welcomeBonusPending: boolean;
 }
 

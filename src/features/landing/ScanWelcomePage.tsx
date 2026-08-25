@@ -61,7 +61,7 @@ const ScanWelcomePage = () => {
           : 'You scanned a flyer. Create your free account to submit your receipt and join the draw.'
       }
       headline={loc?.business_name ? `Welcome to ${loc.business_name}` : 'Welcome to Winnbell'}
-      headerSubline="Create your account to claim your welcome entry."
+      headerSubline="Create your account, submit a receipt, and enter the current draw."
       steps={[
         {
           icon: <PersonAddOutlined />,

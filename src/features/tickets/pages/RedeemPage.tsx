@@ -114,9 +114,10 @@ const RedeemPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isPhoneVerified, isPhoneVerifiedLoaded]);
 
-  // Invited signup (referral link / location flyer) with an unclaimed welcome entry: the bonus
-  // is only granted at phone-verify time, and since the old full-page verify gate is gone,
-  // nothing else would prompt a fresh invitee. Open the sheet proactively so they claim it.
+  // Referred signup with an unclaimed welcome entry: the bonus is only granted at phone-verify
+  // time, and since the old full-page verify gate is gone, nothing else would prompt a fresh
+  // invitee. Open the sheet proactively so they claim it. (Location-flyer/QR signups no longer
+  // earn a welcome entry, so welcomeBonusPending is false for them and this never fires.)
   // A pending scanned code takes priority - the effect above already prompts, and verifying
   // through ANY context grants the welcome bonus in the same transaction.
   const didPromptWelcome = useRef(false);
