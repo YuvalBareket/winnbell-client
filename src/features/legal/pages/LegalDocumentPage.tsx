@@ -6,7 +6,9 @@ import LegalMarkdown from '../components/LegalMarkdown';
 
 interface Props {
   title: string;
-  lastUpdated: string;
+  // Optional: some documents (Official Rules, Business Agreement, ToS) carry their own
+  // "Last updated" line inside the markdown, so we omit this to avoid a duplicate date.
+  lastUpdated?: string;
   content: string;
 }
 
@@ -22,12 +24,14 @@ const LegalDocumentPage = ({ title, lastUpdated, content }: Props) => {
       </Box>
 
       <Container maxWidth="sm" sx={{ pb: 8, px: { xs: 3, sm: 4 } }}>
-        <Typography variant="h4" fontWeight={800} sx={{ mb: 0.5 }}>
+        <Typography variant="h4" fontWeight={800} sx={{ mb: lastUpdated ? 0.5 : 0 }}>
           {title}
         </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {lastUpdated}
-        </Typography>
+        {lastUpdated && (
+          <Typography variant="caption" color="text.secondary">
+            {lastUpdated}
+          </Typography>
+        )}
 
         <Divider sx={{ my: 3 }} />
 
