@@ -1,6 +1,6 @@
 **WINNBELL OFFICIAL RULES**
 
-Official Rules Version Date: 09 Aug 2026
+Official Rules Version Date: 25 Aug 2026
 
 NO PURCHASE NECESSARY TO ENTER OR WIN. A PURCHASE WILL NOT INCREASE YOUR CHANCES OF WINNING. VOID WHERE PROHIBITED OR RESTRICTED BY LAW.
 
@@ -67,7 +67,7 @@ Bonus Entries, if made available, are provided for promotional purposes and do n
 Participation in the Campaign is open only to individuals who:
 
 - are at least eighteen (18) years of age at the time of participation;
-- are legal residents of the 50 United States or District of Columbia;
+- are legal residents of the 50 United States or District of Columbia, excluding Rhode Island;
 - are physically present within an Eligible Jurisdiction identified in Section 2 at the time they participate in the Campaign or request or submit an Entry;
 - create and maintain a valid account on the Winnbell platform (the "**Platform**");
 - are not employees, officers, directors, members, managers, agents, and/or representatives of Winnbell, any prize provider, any Campaign administrator, and any advertising, promotion, or fulfillment agency involved in the development or administration of the Campaign; or
@@ -129,33 +129,52 @@ Winnbell may, from time to time and at its sole discretion, make available addit
 
 **7\. Entry Through Participating Businesses**
 
-Participating Businesses may enable customers to access participation opportunities in the Campaign based on predefined eligibility conditions. These conditions are determined by each Participating Business prior to the Campaign and are presented on the Platform.
+**7.1 Participating Business Eligibility Conditions**
 
-Participating Businesses may define eligibility conditions based on qualifying interactions, including transactions or other customer activity, as specified on the Platform. Any transaction-based participation method is offered solely as one possible means of entry. A purchase is not required to enter or win, and a purchase will not increase a participant's chances of winning. To the extent a Participating Business offers entry opportunities based on qualifying transactions or other customer activity, the Alternative Method of Entry described in Section 8 is intended to provide a method of entry without requiring purchase or payment.
+Participating Businesses may enable customers to access participation opportunities in the Campaign based on predefined eligibility conditions. These conditions are determined by each Participating Business before its participation in that Campaign becomes active and are presented on the Platform. Once a Participating Business's participation in a Campaign becomes active, its applicable eligibility conditions remain fixed for the remainder of that Campaign.
 
-For purposes of determining whether a transaction satisfies a minimum purchase threshold or other transaction-value eligibility condition, only the transaction amount before any voluntary gratuity or tip will be considered. Tips and gratuities, whether added before or after payment, do not count toward satisfying the applicable eligibility threshold.
+Participating Businesses may define eligibility conditions based on qualifying interactions, including transactions or other customer activity, as specified on the Platform. Any transaction-based participation method is offered solely as one possible means of entry. A purchase is not required to enter or win, and a purchase will not increase an Entry's chance of winning. The Alternative Method of Entry described in Section 8 provides a free method of entry without requiring purchase or payment.
 
-To participate through a Participating Business, you must:
+**7.2 Transaction-Based Eligibility**
 
-- complete a qualifying interaction that satisfies the applicable eligibility conditions; and
-- submit the required information through the Platform, which may include:
-  - the Participating Business;
-  - transaction-related information, such as amount; and
-  - a receipt, transaction identifier, or other supporting proof, as specified on the Platform.
+For purposes of determining whether a transaction satisfies a minimum purchase threshold or other transaction-value eligibility condition, only the transaction amount before any tax, voluntary gratuity, or tip will be considered. Taxes, tips, and gratuities, whether added before or after payment, do not count toward satisfying the applicable eligibility threshold.
 
-The Platform may provide tools designed to facilitate submission, including QR-based access or pre-filled information where available. Such tools are provided for convenience only and do not, by themselves, constitute participation or create an Entry.
+**7.3 Participation Availability and Platform Status**
 
-Each submission is subject to validation and acceptance by Winnbell. An Entry is created only when the Platform determines, in accordance with its validation processes, that the submitted information satisfies the applicable conditions.
+The availability of participation through a Participating Business may change during the Campaign Period, including upon exhaustion of applicable Participation Capacity or if the Participating Business otherwise ceases or suspends participation. Physical signage, QR codes, or other promotional materials do not independently establish current participation availability. Current participation availability and applicable eligibility conditions are determined by the Platform.
 
-If a single qualifying interaction satisfies eligibility conditions multiple times, multiple Entries may be created in accordance with the Participating Business's defined rules. Notwithstanding the foregoing, all Entries remain subject to the maximum entry limits in Section 10, and Winnbell may impose operational controls designed to preserve equal treatment across entry methods and the integrity of the Campaign.
+**7.4 Submission Requirements and Timing**
+
+To participate through a Participating Business, a participant must:
+
+- complete a qualifying interaction that satisfies the applicable eligibility conditions while the Participating Business is actively participating in the Campaign; and
+- submit the required information through the Platform no later than seven (7) calendar days after the date of the qualifying interaction and, in all cases, before the end of the applicable Campaign Period.
+
+The required information may include:
+
+- the Participating Business;
+- transaction-related information, such as amount; and
+- a receipt, transaction identifier, or other supporting proof, as specified on the Platform.
+
+The seven (7)-day period is a maximum submission window only and does not guarantee or reserve participation availability or Participation Capacity. Participants are responsible for submitting qualifying interactions promptly. Delaying submission may result in the loss of the opportunity to obtain an Entry if the applicable Participating Business exhausts its Participation Capacity, ceases participation, or the Campaign ends before the submission is accepted and recorded by the Platform.
+
+**7.5 Submission Tools; Validation and Entry Creation**
+
+The Platform may provide tools designed to facilitate submission, including QR-based access, receipt-image analysis, or pre-filled information where available. Such tools are provided for convenience only and do not, by themselves, constitute participation or create an Entry.
+
+Each submission is subject to validation and acceptance by Winnbell. An Entry is created only when the Platform determines, in accordance with its validation processes, that the submitted information satisfies the applicable conditions and the Entry is accepted and recorded by the Platform. Completion of a qualifying interaction or submission of information does not, by itself, entitle a participant to an Entry.
+
+**7.6 Multiple Entries and Participation Integrity**
+
+If a single qualifying interaction satisfies eligibility conditions multiple times, multiple Entries may be created in accordance with the Participating Business's defined rules. Notwithstanding the foregoing, all Entries remain subject to the maximum Entry limits in Section 10, and Winnbell may impose operational controls designed to preserve equal treatment across entry methods and the integrity of the Campaign.
 
 Participation must reflect legitimate customer activity. Submissions based on fabricated, manipulated, or non-genuine interactions may be rejected, invalidated, or subject to further review.
 
-Participating Businesses do not create, issue, or control Entries and have no role in the validation, acceptance, or recording of Entries, all of which are determined solely by Winnbell through the Platform.
+**7.7 Role of Participating Businesses**
 
-Completion of a qualifying interaction or submission of information does not, by itself, entitle a participant to an Entry.
+Participating Businesses do not create, issue, validate, accept, record, or control Entries and have no role in determining whether a submission results in an Entry. All such determinations are made solely by Winnbell through the Platform.
 
-All Entries are subject to the entry limits set forth in Section 10 for this Campaign.
+All Entries are subject to the Entry limits set forth in Section 10 for the applicable Campaign.
 
 **8\. Alternative Method of Entry (AMOE)**
 

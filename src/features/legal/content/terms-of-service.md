@@ -1,4 +1,4 @@
-**Winnbell terms of service (ToS)**  Date of Last Update: 09 Aug 2026
+**Winnbell terms of service (ToS)**  Date of Last Update: 25 Aug 2026
 
 ---
 
@@ -292,9 +292,9 @@ Participating businesses have no authority or influence over the operation of th
 
 **6.4 No Purchase Requirement and Separation from Transactions**
 
-Participation in campaigns is not conditioned on the purchase of goods or services. Participation methods, including any alternative method of entry that requires no purchase, are defined in the applicable Official Rules.
+Participation in campaigns is not conditioned on the purchase of goods or services. Participation methods, including any available free method of entry, are defined in the applicable Official Rules.
 
-No participating business payment, promotion, or commercial activity is tied to, or influences, the number, validity, or odds of entries in any campaign.
+Participating Business payments or commercial arrangements do not themselves create Entries, affect the validity of any Entry, or alter the odds associated with any valid Entry. Entries are created only through user participation and validation and acceptance by Winnbell through the Platform in accordance with the applicable Official Rules.
 
 Where participation is associated with interactions involving participating businesses, such interactions remain separate from the operation of the campaign. The existence, nature, or value of any commercial transaction does not itself create or guarantee a valid submission. All submissions are subject to independent validation and acceptance by Winnbell through the Platform.
 
@@ -413,11 +413,15 @@ Participation is considered received only when it has been successfully recorded
 
 Access to the ability to submit participation associated with a participating business is conditional and time-sensitive. Entry opportunities must be activated through the Platform while the applicable campaign is active and while the participating business remains active within the campaign, including where the maximum number of Entries that may be created in connection with that participating business has not been exhausted.
 
-The completion of any transaction or qualifying activity with a participating business does not, by itself, create or guarantee an entry or a right to an entry. Users are solely responsible for completing activation in a timely manner in accordance with the applicable campaign requirements.
+The completion of any transaction or qualifying activity with a participating business does not, by itself, create or guarantee an entry or a right to an entry. Users are solely responsible for completing the required submission through the Platform no later than seven (7) calendar days after the date of the applicable transaction or qualifying activity and, in all cases, before the end of the applicable Campaign Period. Failure to complete the submission within these time limits will result in rejection of the submission.
 
-If activation is not completed before the applicable campaign ends, or before the participating business exhausts its entry cap or otherwise ceases participation, any ability to submit a qualifying participation may no longer be available and will not be accepted or recognized by the Platform.
+If activation is not completed before the applicable campaign ends, or before the participating business exhausts its Participation Capacity or otherwise ceases participation, any ability to submit a qualifying participation may no longer be available and will not be accepted or recognized by the Platform.
 
-**8.5 Additional Participation Mechanisms**
+**8.5 Participation Availability and Platform Status**
+
+Physical signs, QR codes, stickers, promotional materials, or other references to Winnbell displayed by a Participating Business are provided for informational or access purposes only and do not constitute confirmation that participation through that Participating Business is currently available. Users are solely responsible for checking the Platform for current participation availability and applicable participation conditions before completing any transaction or other activity in reliance on such participation. The then-current status and participation conditions displayed through the Platform will control.
+
+**8.6 Additional Participation Mechanisms**
 
 Winnbell may, at its sole discretion, make available additional participation mechanisms in connection with marketing, promotional, or user acquisition activities (as defined in the applicable Official Rules).
 
@@ -425,7 +429,7 @@ Such mechanisms may be made accessible through channels determined by Winnbell, 
 
 Access to any additional participation mechanism does not, by itself, create or guarantee an entry. Any participation initiated through such mechanisms remains subject to submission, validation, and acceptance by the Platform in accordance with these Terms and the applicable Official Rules.
 
-**8.6 Compliance with Campaign Rules; Forfeiture**
+**8.7 Compliance with Campaign Rules; Forfeiture**
 
 It is your responsibility to review and comply with the applicable Official Rules and any campaign-specific instructions before participating in any campaign, game, or promotional mechanic. Failure to comply with these Terms, the applicable Official Rules, or any campaign-specific requirements may result in rejection or invalidation of submissions or entries, disqualification, forfeiture of any claimed or awarded prize, suspension or termination of your Account, or any combination of the foregoing.
 
@@ -441,7 +445,7 @@ Submission of information, completion of an activation step, or display of activ
 
 Entries do not exist prior to submission and are not issued, allocated, or distributed by any participating business or third party.
 
-For clarity, only Entries that are successfully validated and accepted by the Platform count toward any applicable Entry Cap. Submission attempts, rejected submissions, or unaccepted participation do not create or consume Entries and do not reserve any capacity.
+For clarity, only Entries that are successfully validated and accepted by the Platform count toward any applicable Participation Capacity. Submission attempts, rejected submissions, or unaccepted participation do not create or consume Entries and do not reserve any capacity.
 
 Platform records and system determinations are governed by Section 6.8.
 

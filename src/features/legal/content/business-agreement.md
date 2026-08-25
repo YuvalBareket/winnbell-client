@@ -1,6 +1,6 @@
 **WINNBELL PARTICIPATING BUSINESS AGREEMENT**
 
-**Last updated 01/08/2026**
+**Last updated 25 Aug 2026**
 
 This Participating Business Agreement (the "**Agreement**") governs access to and use of the Winnbell Platform by businesses that enroll to participate in Winnbell promotional campaigns.
 
@@ -22,7 +22,7 @@ NOW THEREFORE IN CONSIDERATION of the mutual covenants, terms and conditions set
 
 **1.2 Scope.** This Agreement governs the Participating Business's access to and use of the Platform, services, tools, Campaign participation features, and related offerings made available to the Participating Business in connection with the Campaigns (collectively, the "**Services**").
 
-**1.3 Future Campaigns.** This Agreement applies to the Participating Business's participation in all current and future campaigns made available by the Provider and elected by the Participating Business during the Term, unless otherwise expressly stated in a signed order form, campaign enrollment confirmation, or custom addendum executed by both Parties.
+**1.3 Future Campaigns.** This Agreement applies to the Participating Business's participation in all current and future Campaigns made available by the Provider during the Term for which the Participating Business is approved and activated, unless otherwise expressly stated in an applicable order form, enrollment confirmation, Campaign configuration, or custom addendum.
 
 **1.4 Nature of Relationship.** The Participating Business is purchasing access to the Services and participation opportunities within the Campaigns. It is not purchasing entries, chances to win, or any guaranteed commercial outcome.
 
@@ -46,9 +46,8 @@ The Incorporated Documents are posted on the website located at Winnbell.com and
 - (c) third, the applicable Official Rules;
 - (d) fourth, the Cancellation Policy with respect to cancellation, refunds, subscription renewals, and related billing matters;
 - (e) fifth, the Business Guidelines;
-- (f) sixth, any Campaign-specific written instructions or operational notices.
-- (g) seventh, the Referral Program Terms, solely with respect to matters relating to the referral program; and
-- (h) eighth, any Campaign-specific written instructions or operational notices.
+- (f) sixth, the Referral Program Terms, solely with respect to matters relating to the referral program; and
+- (g) seventh, any Campaign-specific written instructions or operational notices.
 
 **2.3 Conflicts.** If a lower-order document conflicts with a higher-order document, the higher-order document will control to the extent of the conflict.
 
@@ -100,47 +99,47 @@ The Incorporated Documents are posted on the website located at Winnbell.com and
 
 - (a) access to participate in Campaigns approved for the Participating Business;
 - (b) tools to configure campaign participation parameters made available by the Provider;
-- (c) visibility within the Platform during active participation, subject to applicable campaign configuration and entry cap exhaustion;
+- (c) visibility within the Platform during active participation, subject to applicable campaign configuration and Participation Capacity exhaustion;
 - (d) campaign administration, operational controls, validation systems, and anti-abuse processes managed by the Provider; and
 - (e) reasonable onboarding or support as the Provider may choose to provide.
 
 **5.2 No Guarantee.** The Provider does not guarantee any level of customer engagement, sales, revenue, participation volume, entry activation, return on investment, or commercial performance.
 
-**5.3 Service Evolution.** The Provider may modify, update, improve, suspend, or discontinue features, activation methods, interfaces, or aspects of the Services from time to time, provided that the Provider will not materially reduce the Participating Business's paid-for rights for an active campaign except as permitted under this Agreement, the Official Rules, or applicable law.
+**5.3 Service Evolution.** The Provider may modify, update, improve, suspend, or discontinue features, activation methods, interfaces, participation mechanisms, or other aspects of the Services from time to time. The Provider will not materially reduce the core Services provided under the Participating Business's then-current paid participation plan during the applicable Subscription Term except as permitted under this Agreement, the Cancellation & Refund Policy, the applicable Official Rules, or applicable law.
 
 **5.4 Campaign Changes.** Campaigns may be modified, suspended, or terminated by the Provider where reasonably necessary for legal, regulatory, integrity, operational, security, anti-fraud, reputational, or business reasons. The commercial treatment of such changes will be governed by Section 8.9 and the Cancellation Policy, as applicable.
 
 **6\. PARTICIPATION MODELS**
 
-**6.1 Subscription Participation.** The Participating Business may participate in Campaigns through either a monthly subscription or a yearly subscription (each, a "**Subscription**"), as offered by the Provider.
+**6.1 Subscription Participation.** The Participating Business may participate in the Services through either a monthly subscription or a yearly subscription (each, a "**Subscription**"), as offered by the Provider through the Platform. Each Subscription is divided into recurring one-month periods (each, a "**Subscription Cycle**"). A monthly Subscription has a term of one (1) Subscription Cycle, while a yearly Subscription has a term of twelve (12) consecutive Subscription Cycles (each applicable period, the "**Subscription Term**"). A yearly Subscription is paid in advance at the applicable yearly rate.
 
-**6.2 Auto Payment Date.** The twenty-fourth (24th) day of each calendar month (the "**Auto Payment Date**") is the date on which the Provider will automatically charge the payment method on file for the applicable subscription fee for the upcoming Campaign, unless otherwise specified by the Provider.
+**6.2 Free Trials and Promotional Offers.** The Provider may, from time to time, offer free trials, promotional pricing, discounts, credits, or other promotional terms as described through the Platform. Unless otherwise specified, a free trial will operate in the same manner as a monthly Subscription, except that no subscription fee will be charged during the applicable free-trial period.
 
-**6.3 Enrollment.** To enroll in a Subscription, the Participating Business must complete the Provider's onboarding process and provide a valid payment method. If enrollment occurs before the Auto Payment Date, no payment will be collected until the Auto Payment Date, and the Participating Business may cancel its enrollment at any time before the Auto Payment Date without charge. If enrollment occurs on or after the Auto Payment Date, the applicable subscription fee will be charged immediately and, upon successful payment, the Participating Business will be enrolled in the upcoming Campaign.
+**6.3 Enrollment.** To enroll in a Subscription or applicable free trial, the Participating Business must complete the Provider's onboarding process and, where required, provide a valid payment method. Participation may begin during an active Campaign once the Participating Business has completed the applicable requirements and has been activated by the Provider.
 
-**6.4 Automatic Renewal.** Each Subscription will automatically renew unless cancelled before the applicable Auto Payment Date. By enrolling in a Subscription, the Participating Business authorizes the Provider to automatically charge the payment method on file for each renewal in accordance with this Agreement.
+**6.4 Automatic Renewal.** Paid Subscriptions will automatically renew for successive monthly or yearly Subscription Terms, as applicable, unless cancelled in accordance with this Agreement and the Cancellation & Refund Policy. Monthly Subscriptions will ordinarily renew on the same numerical day of each month as the initial paid Subscription start date, and yearly Subscriptions will ordinarily renew on the corresponding annual date. By enrolling in a paid Subscription, the Participating Business authorizes the Provider to automatically charge the payment method on file for each renewal.
 
-**6.5 Order Forms and Platform Settings.** Participation details, including campaign elections, pricing, subscription terms, participating locations, payment information, entry caps, territories, and other commercial terms may be established through the Provider's online enrollment process, Platform settings, order forms, invoices, enrollment confirmations, or other electronic records maintained by the Provider.
+**6.5 Order Forms and Platform Settings.** Participation details, including pricing, Subscription terms, Participation Capacity, Subscription Cycles, participating locations, payment information, territories, and other commercial or operational terms may be established through the Provider's online enrollment process, Platform settings, order forms, invoices, enrollment confirmations, or other electronic records maintained by the Provider.
 
-**6.6 Approval and Availability.** Participation in any campaign is subject to the Provider's approval, campaign availability, geographic eligibility, compliance review, configuration requirements, and payment.
+**6.6 Approval and Availability.** Participation in any Campaign is subject to the Provider's approval, Campaign availability, geographic eligibility, compliance review, configuration requirements, and payment of any applicable Fees.
 
-**6.7 Participation Details.** The specific commercial and operational details of the Parties' arrangement, including the initial Campaign or Subscription type, entry cap or participation tier, fee amount, participating locations, approved territories, and any additional agreed terms, are those reflected in the Participating Business's enrollment record maintained by Winnbell, including any subsequent updates accepted through the Platform.
+**6.7 Participation Details.** The specific commercial and operational details of the Parties' arrangement, including the Subscription type, Participation Capacity, applicable Subscription Cycle, Fee amount, participating locations, approved territories, and any additional agreed terms, are those reflected in the Participating Business's enrollment record maintained by Winnbell, including any subsequent updates accepted through the Platform.
 
 **7\. CAMPAIGN ONBOARDING AND CONFIGURATION**
 
-**7.1 Onboarding Requirements.** The Participating Business will timely complete all onboarding, setup, and configuration requirements specified by the Provider for each campaign.
+**7.1 Onboarding Requirements.** The Participating Business will complete all onboarding, setup, and configuration requirements specified by the Provider before a business/location becomes active in the applicable Campaign.
 
 **7.2 Eligibility Conditions.** The Participating Business may define business-specific eligibility conditions only to the extent permitted by the Provider and only through the configuration tools and rules made available by the Provider. Such conditions must comply with the Official Rules, Business Guidelines, applicable law, and the Provider's instructions.
 
-**7.3 No Mid-Campaign Changes Without Approval.** Once a campaign has commenced, the Participating Business may not modify eligibility conditions, campaign-facing messaging, or related participation settings without the Provider's prior written approval.
+**7.3 No Mid-Campaign Changes.** Once a Participating Business's participation in a Campaign has commenced, the Participating Business may not modify its eligibility conditions for the remainder of that Campaign. Campaign-facing messaging or other participation settings may not be modified without the Provider's prior approval.
 
 **8\. FEES, PAYMENT, REFUNDS, AND FINANCIAL TERMS**
 
-**8.1 Fees.** The Participating Business will pay all applicable subscription fees, entry cap-based fees, implementation fees, integration fees, and any other fees specified by the Provider (collectively, the "**Fees**").
+**8.1 Fees.** The Participating Business will pay all applicable subscription fees, participation tier-based fees, implementation fees, integration fees, and any other fees, if any, specified by the Provider (collectively, the "**Fees**").
 
 **8.2 Nature of Fees.** Fees are paid in consideration for access to the Services and participation opportunities and are not consideration for entries, chances to win, or any specific campaign outcome.
 
-**8.3 Payment Terms.** Unless otherwise stated in an applicable order form or invoice, all subscription fees are payable in advance. Subscription fees will be charged in accordance with Section 6, including on the applicable Auto Payment Date or, where applicable, immediately upon enrollment. The Provider may charge the applicable subscription fee using the payment method authorized by the Participating Business.
+**8.3 Payment Terms.** Subscription Fees will be charged on the applicable Subscription start date and on each subsequent renewal date in accordance with Section 6, unless otherwise stated through the Platform, in an applicable order form, invoice, or promotional terms. The Provider may charge the applicable Subscription Fees using the payment method authorized by the Participating Business.
 
 **8.4 Taxes.** Fees are exclusive of all sales, use, value-added, withholding, and similar taxes, duties, or levies, other than taxes based on the Provider's net income. The Participating Business is responsible for all such taxes associated with its purchase of the Services.
 
@@ -150,20 +149,13 @@ The Incorporated Documents are posted on the website located at Winnbell.com and
 
 **8.7 Cancellation and Refunds.** Cancellation rights, refund eligibility, refund processing, and the financial consequences of cancellation or termination will be governed by the Cancellation Policy, except to the extent expressly modified in a signed order form or addendum.
 
-**8.8 Failed Payment.** If the Provider is unable to successfully process a payment, the Provider may retry the payment, suspend the Subscription, cancel the Participating Business's enrollment in the applicable Campaign, suspend access to the Services, or take any other action permitted under this Agreement until payment is successfully received.
+**8.8 Failed Payment.** If the Provider is unable to successfully process a payment, the Provider may retry the payment, suspend the Subscription, cancel the Participating Business's enrollment in the applicable Campaigns, suspend access to the Services, or take any other action permitted under this Agreement until payment is successfully received.
 
-**8.9 Campaign Modification, Suspension or Termination by the Provider.** If the Provider modifies, suspends, or terminates a campaign for legal, operational, regulatory, integrity, security, anti-fraud, or business reasons, the Provider may, in its discretion and acting reasonably, provide a refund, prorated credit, replacement campaign participation, or no refund, depending on:
+**8.9 Campaign Modification, Suspension or Termination by the Provider.** If the Provider modifies, suspends, or terminates a campaign for legal, operational, regulatory, integrity, security, anti-fraud, or business reasons, the Provider may, in its discretion and acting reasonably, provide a refund, prorated credit, Subscription extension, replacement campaign participation, prorated adjustment, or no refund, as governed by the Cancellation & Refund Policy.
 
-- (a) the stage of the campaign;
-- (b) the extent of Services already performed;
-- (c) campaign-specific costs already incurred;
-- (d) third-party commitments already made;
-- (e) whether the Participating Business caused or contributed to the issue; and
-- (f) the terms of the Official Rules and Cancellation Policy.
+**8.10 Subscription Upgrades.** The Participating Business may upgrade its Subscription tier or Participation Capacity where permitted through the Platform. Any upgrade will take effect at the beginning of the next Subscription Cycle and will not increase Participation Capacity during the then-current Subscription Cycle. For a yearly Subscription, the Participating Business will be charged the applicable difference between the existing and upgraded yearly rates for the Subscription Cycles remaining in the then-current yearly Subscription Term. An upgrade does not restart or extend the existing yearly Subscription Term.
 
-**8.10 Subscription Upgrades.** Where made available by the Provider, a Participating Business with a yearly Subscription may increase its participation tier or Entry Cap during the Subscription. Any applicable fees and conditions will be specified on the Platform. In no event may a participation tier or Entry Cap be modified during an active Campaign, and any approved change will take effect beginning with the next Campaign.
-
-**8.11 Pricing Changes.** The Provider may modify subscription fees applicable to future Campaigns or future Subscription renewals by providing reasonable prior notice to the Participating Business. Any revised pricing will apply only to payments processed on or after the effective date of the pricing change and will not affect any Campaign for which payment has already been processed. If the Participating Business does not wish to renew at the revised pricing, it may cancel its Subscription before the applicable Auto Payment Date, in which case no further automatic payments will be processed.
+**8.11 Pricing Changes.** The Provider may modify Subscription Fees applicable to future Subscription renewals by providing reasonable prior notice to the Participating Business. Revised pricing will not affect Fees already paid for the then-current Subscription Term and will take effect only upon the next applicable renewal. If the Participating Business does not wish to renew at the revised pricing, it may cancel the Subscription before the applicable renewal date in accordance with the Cancellation Policy.
 
 **9\. ENTRY MODEL AND PLATFORM CONTROL**
 
@@ -180,26 +172,26 @@ The Incorporated Documents are posted on the website located at Winnbell.com and
 **9.6 Final Authority.** The Provider has sole and final authority, subject to applicable law, to determine:
 
 - (a) whether a submission results in a valid Entry;
-- (b) whether an Entry counts toward any Entry Cap;
+- (b) whether an Entry counts toward any Participation Capacity;
 - (c) whether a user or submission is eligible;
 - (d) how anti-abuse and validation procedures are applied; and
 - (e) all campaign administration matters.
 
-**10\. ENTRY CAPS AND SERVICE FULFILLMENT**
+**10\. PARTICIPATION CAPACITY AND SERVICE FULFILLMENT**
 
-**10.1 Entry Cap Allocation.** The Provider may allocate to the Participating Business a maximum number of entry opportunities, submissions, recognitions, or countable Entries for a campaign (an "**Entry Cap**"), as specified in the applicable order form, configuration, or platform setting.
+**10.1 Participation Capacity Allocation.** The Provider may allocate to the Participating Business a maximum number of entry opportunities, submissions, recognitions, or countable Entries for a Subscription Cycle (the "**Participation Capacity**"), as specified in the applicable order form, configuration, or platform setting.
 
-**10.2 Nature of Entry Cap.** An Entry Cap is a participation capacity limit only. It is not a guarantee of any number of actual Entries, participants, transactions or customer actions.
+**10.2 Nature of Participation Capacity.** The Participation Capacity is a capacity limit only. It is not a guarantee of any number of actual Entries, participants, transactions or customer actions.
 
-**10.3 Application of Entry Cap.** The Provider will determine how Entry Caps are applied, counted, reduced, exhausted, or otherwise administered in accordance with the campaign configuration, Official Rules, and the Provider's validation logic.
+**10.3 Application of Participation Capacity.** The Provider will determine how Participation Capacity is applied, counted, reduced, exhausted, or otherwise administered in accordance with the campaign configuration, Official Rules, and the Provider's validation logic.
 
-**10.4 Exhaustion.** Once the Participating Business's Entry Cap is exhausted for a campaign:
+**10.4 Exhaustion.** Once the Participating Business's Participation Capacity is exhausted for a Subscription Cycle:
 
-- (a) no additional Entries associated with the Participating Business will be recognized for that campaign;
-- (b) the Participating Business may be removed from active campaign visibility or otherwise limited operationally; and
-- (c) the Provider's campaign-related Services for that campaign will be deemed substantially fulfilled, subject to any remaining post-campaign obligations under this Agreement.
+- (a) no additional Entries associated with the Participating Business will be recognized for that Subscription Cycle;
+- (b) the Participating Business may be removed from visibility as an active Participating Business or otherwise limited operationally; and
+- (c) the Provider's obligations with respect to providing the applicable Participation Capacity for that Subscription Cycle will be deemed substantially fulfilled, subject to any remaining obligations under this Agreement.
 
-**10.5 No Carryover.** Unused Entry Cap capacity has no cash value, does not roll over, and does not carry forward unless expressly stated in a signed writing by the Provider.
+**10.5 No Carryover.** Unused Participation Capacity remains available until the end of the Subscription Cycle for which it was provided. A change from one Campaign to another during that same Subscription Cycle does not reset or extinguish remaining Participation Capacity. Any unused Participation Capacity expires at the end of that Subscription Cycle, has no cash or credit value, and does not accumulate or carry forward into a later Subscription Cycle unless Winnbell expressly provides otherwise.
 
 **10.6 No Refund for Utilization Rate.** Except as expressly provided in the Cancellation Policy or a signed writing, the Participating Business is not entitled to any refund, credit or adjustment based on the rate of utilization, timing of exhaustion, or number of Entries ultimately created.
 
@@ -236,20 +228,22 @@ The Incorporated Documents are posted on the website located at Winnbell.com and
 **12.4 Prohibited Statements.** The Participating Business will not, and will ensure its Personnel do not:
 
 - (a) state or imply that a purchase is required to participate;
-- (b) represent that making a purchase improves a person's odds of winning except to the extent strictly and lawfully reflected in the Campaign mechanics and Official Rules;
+- (b) represent that making a purchase improves a person's odds of winning;
 - (c) promise or imply that any person will win or is likely to win;
 - (d) misstate or omit material Campaign terms;
 - (e) present any additional access mechanisms made available by the Provider as dependent on a purchase, or otherwise suggest that a purchase is required or necessary to access participation opportunities;
 - (f) represent that the Participating Business creates, controls, or guarantees Entries; or
 - (g) otherwise misrepresent how the Campaign works.
 
-**12.5 Materials.** The Provider may provide pre-approved marketing materials. The Participating Business may use custom materials only if they comply with this Agreement and the Business Guidelines.
+**12.5 Materials.** The Provider may provide pre-approved marketing materials. The Participating Business may use custom materials only if they comply with this Agreement and the Business Guidelines. Provider-approved physical materials may direct customers to the Platform for current participation information. The continued physical display of such materials does not, by itself, represent that participation is currently available, provided that the materials do not expressly state otherwise. Current participation availability and applicable eligibility conditions are determined by the Platform.
 
 **12.6 Provider Brand License.** Subject to this Agreement, the Provider grants the Participating Business a limited, non-exclusive, non-transferable, revocable license during the Term to use the Provider's name, logos, and approved campaign materials solely to promote the Participating Business's authorized participation in Campaigns and only in accordance with the Provider's brand requirements and Business Guidelines.
 
 **12.7 Business Brand License.** The Participating Business grants the Provider a limited, non-exclusive, worldwide, royalty-free license during the Term to use the Participating Business's name, trademarks, logos, store names, and approved descriptive materials solely to identify the Participating Business as a participating business, operate the Services, display the Participating Business on the Platform, and promote the applicable campaign, subject to any reasonable written brand guidelines provided by the Participating Business in advance.
 
 **12.8 Review and Correction Rights.** The Provider may require the Participating Business to modify, remove, or stop using any materials or messaging that the Provider reasonably believes are inaccurate, misleading, non-compliant, or inconsistent with campaign integrity. The Participating Business will promptly comply.
+
+**12.9 Display of Marketing Materials During Inactivity.** Provider-approved signs, QR codes, stickers, and other marketing materials may remain displayed during periods in which participation through the Participating Business is temporarily unavailable, including due to exhaustion of Participation Capacity, provided that such materials do not expressly represent that participation is currently available. Current participation availability and applicable participation conditions are determined through the Platform. Upon termination or expiration of the Participating Business's participation, permanent deactivation of an applicable location, or the Provider's request, the Participating Business will discontinue use of and remove Provider-branded Campaign materials within a reasonable period.
 
 **13\. VERIFICATION AND COOPERATION**
 
@@ -288,7 +282,7 @@ The Incorporated Documents are posted on the website located at Winnbell.com and
 
 **15.3 Minimum Necessary Sharing.** Any transaction-related information provided by the Participating Business to the Provider for validation or compliance purposes will be limited to the minimum reasonably necessary and provided in compliance with applicable law.
 
-**15.4 Privacy Compliance.** Each Party will comply with applicable privacy and data protection laws in connection with its own processing activities under this Agreement. The Participating Business is solely responsible for the privacy notices and disclosures applicable to its own customer relationship and transaction data, except to the extent the Provider directly controls user-facing platform disclosures. The Provider's handling of platform user data is described in its [Privacy Policy](/privacy).
+**15.4 Privacy Compliance.** Each Party will comply with applicable privacy and data protection laws in connection with its own processing activities under this Agreement. The Participating Business is solely responsible for the privacy notices and disclosures applicable to its own customer relationship and transaction data, except to the extent the Provider directly controls user-facing platform disclosures.
 
 **15.5 No Agency for User Data.** Except as expressly stated for limited verification cooperation, the Participating Business does not act as the Provider's processor, agent, or service provider with respect to platform user data, and the Provider does not act as the Participating Business's processor, agent, or service provider with respect to the Participating Business's internal business records.
 
@@ -387,15 +381,15 @@ The Incorporated Documents are posted on the website located at Winnbell.com and
 - (d) refuses or fails to cooperate with verification or compliance requirements; or
 - (e) creates material legal, regulatory, or reputational risk.
 
-**21.3 Termination for Convenience.** Either Party may terminate this Agreement for convenience on thirty (30) days' prior written notice, provided that such termination will not affect campaign commitments, fees, or refund treatment already fixed under the Cancellation Policy or an applicable order form.
+**21.3 Termination for Convenience.** Either Party may terminate this Agreement for convenience on thirty (30) days' prior written notice, provided that such termination will not affect Subscription commitments, fees, or refund treatment already fixed under the Cancellation Policy or an applicable order form.
 
 **21.4 Effect of Termination.** Upon expiration or termination:
 
 - (a) the Participating Business's rights to access and use the Services will cease, except as needed for residual administrative matters;
-- (b) the Provider may remove the Participating Business from active campaign visibility and disable access credentials;
+- (b) the Provider may remove the Participating Business from active campaigns visibility and disable access credentials;
 - (c) accrued payment obligations and all Sections that by their nature should survive will remain in effect.
 
-**21.5 No Retroactive Effect.** Termination or cancellation does not reverse Services already performed, does not affect campaign outcomes already determined, and does not entitle the Participating Business to refunds except as expressly provided in the Cancellation Policy or a signed writing.
+**21.5 No Retroactive Effect.** Termination or cancellation does not reverse Services already performed, does not affect campaign outcomes already determined, does not by itself invalidate previously valid Entries, and does not entitle the Participating Business to refunds except as expressly provided in the Cancellation Policy or a signed writing.
 
 **22\. AMENDMENTS AND POLICY UPDATES**
 
@@ -419,21 +413,15 @@ The Incorporated Documents are posted on the website located at Winnbell.com and
 
 **24\. NOTICES**
 
-**24.1 Form of Notice.** Notices under this Agreement must be in writing and will be deemed given:
+**24.1 Form of Notice.** Unless otherwise expressly provided in this Agreement, any notice, request, consent, approval, claim, or other communication required or permitted under this Agreement must be in writing and may be delivered by email, through the Platform, or by another electronic method made available by the Provider.
 
-- (a) when delivered personally;
-- (b) one (1) business day after being sent by nationally recognized overnight courier;
-- (c) three (3) business days after being sent by certified or registered mail, return receipt requested; or
-- (d) when sent by email to the notice email address set forth below, provided no delivery failure notice is received.
+**24.2 Notices to the Provider.** Notices to the Provider relating to general business or account matters must be sent to businesses@winnbell.com. Legal notices, dispute-related communications, or other formal legal correspondence must be sent to legal@winnbell.com.
 
-**24.2 Notice Details.** Notices to the Parties will be sent to the contact details below, or to any updated contact details provided by notice:
+**24.3 Notices to the Participating Business.** Notices to the Participating Business may be sent to the email address associated with its account, through the Platform, or to any other contact information provided by the Participating Business.
 
-If to the Provider:
-Winnbell, Inc.
-131 Continental Dr, Suite 305, Newark, DE 19713, US
-Email: legal@winnbell.com
+**24.4 Effectiveness of Notices.** Electronic notices will be deemed received when sent to the applicable email address or made available through the Platform, provided that the sender does not receive a delivery failure notice, subject to any different requirement imposed by applicable law.
 
-If to the Participating Business: the contact name, address, and email provided by the Participating Business during enrollment (or as later updated through the Platform).
+**24.5 Contact Information.** Each Party is responsible for maintaining accurate and current contact information. The Provider may update its notice contact information by posting the updated information through the Platform or otherwise providing notice in accordance with this Section.
 
 **25\. MISCELLANEOUS**
 
@@ -453,9 +441,7 @@ If to the Participating Business: the contact name, address, and email provided 
 
 **25.8 No Third-Party Beneficiaries.** Except for the Provider Indemnified Parties expressly referenced in Section 19, this Agreement does not create any rights in any third party.
 
-**25.9 Notices.** Unless otherwise expressly provided in this Agreement, any notice, request, claim, or other communication required or permitted under this Agreement shall be provided in writing. Notices to the Provider shall be sent to: businesses@winnbell.com. Legal notices and dispute-related communications: legal@winnbell.com. The Provider may update its contact information from time to time by notice through the Platform or otherwise in accordance with this Agreement.
-
-**25.10 Survival.** Sections that by their nature should survive expiration or termination will survive, including Sections 8, 9, 10.6, 12.7, 13, 14, 15, 16, 17, 18.3, 19, 20, 21.4, 21.5, 23, 24, and 25.
+**25.9 Survival.** Sections that by their nature should survive expiration or termination will survive, including Sections 8, 9, 10.6, 12.7, 13, 14, 15, 16, 17, 18.3, 19, 20, 21.4, 21.5, 23, 24, and 25.
 
 **26\. EXHIBITS**
 
