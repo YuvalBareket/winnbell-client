@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Box, Chip, Grid, Stack, Typography } from '@mui/material';
 import {
   PersonAddAlt1Outlined, ReceiptLongOutlined, TaskAltOutlined, TimerOutlined, SmsOutlined,
-  FilterAltOutlined, BlockOutlined, ShowChartOutlined,
+  FilterAltOutlined, BlockOutlined, ShowChartOutlined, CloudOffOutlined,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import {
@@ -148,33 +148,41 @@ const FunnelTab = () => {
       {/* KPI row */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {isLoading
-          ? Array.from({ length: 5 }, (_, i) => (
-              <Grid size={{ xs: 6, md: 2.4 }} key={i}><StatCardSkeleton /></Grid>
+          ? Array.from({ length: 6 }, (_, i) => (
+              <Grid size={{ xs: 6, md: 2 }} key={i}><StatCardSkeleton /></Grid>
             ))
           : (
             <>
-              <Grid size={{ xs: 6, md: 2.4 }}>
+              <Grid size={{ xs: 6, md: 2 }}>
                 <StatCard icon={<PersonAddAlt1Outlined />} tint={CHART_BLUE_TINT} color={CHART_BLUE}
                   label='Accounts created' value={(totals['account_created'] ?? 0).toLocaleString()} />
               </Grid>
-              <Grid size={{ xs: 6, md: 2.4 }}>
+              <Grid size={{ xs: 6, md: 2 }}>
                 <StatCard icon={<ReceiptLongOutlined />} tint={CHART_GREEN_TINT} color={CHART_GREEN}
                   label='Entries accepted' value={accepted.toLocaleString()} />
               </Grid>
-              <Grid size={{ xs: 6, md: 2.4 }}>
+              <Grid size={{ xs: 6, md: 2 }}>
                 <StatCard icon={<TaskAltOutlined />} tint={CHART_PURPLE_TINT} color={CHART_PURPLE}
                   label='Sign-up completion' value={pct(totals['account_created'] ?? 0, totals['registration_started'] ?? 0)}
                   caption='Started form to account' />
               </Grid>
-              <Grid size={{ xs: 6, md: 2.4 }}>
+              <Grid size={{ xs: 6, md: 2 }}>
                 <StatCard icon={<TimerOutlined />} tint={ALPHA_PRIMARY_10} color={PRIMARY_MAIN}
                   label='Median sign-up time' value={fmtSeconds(regTime?.p50_s)}
                   caption='Updates nightly' />
               </Grid>
-              <Grid size={{ xs: 6, md: 2.4 }}>
+              <Grid size={{ xs: 6, md: 2 }}>
                 <StatCard icon={<SmsOutlined />} tint={CHART_TEAL_TINT} color={CHART_TEAL}
                   label='Phone verify success' value={pct(otpVerified, otpRequested)}
                   caption={otpRequested > 0 ? `${otpVerified.toLocaleString()} of ${otpRequested.toLocaleString()} codes` : 'No codes sent yet'} />
+              </Grid>
+              <Grid size={{ xs: 6, md: 2 }}>
+                {/* Receipt-photo uploads that failed after the automatic retry (client-reported,
+                    stage convert or upload). A spike here = storage/network trouble users are
+                    feeling before any entry ever reaches the server. */}
+                <StatCard icon={<CloudOffOutlined />} tint={METRIC_BAD_TINT} color={METRIC_BAD}
+                  label='Upload failures' value={(totals['submit_image_upload_failed'] ?? 0).toLocaleString()}
+                  caption='Receipt photos that failed to upload' />
               </Grid>
             </>
           )}

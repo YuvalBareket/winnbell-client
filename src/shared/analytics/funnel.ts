@@ -32,6 +32,7 @@ export type FunnelClientEvent =
   | 'submit_receipt_id_entered'
   | 'receipt_scan_used'
   | 'submit_image_attached'
+  | 'submit_image_upload_failed'
   | 'submit_attempted'
   | 'submission_confirmed_shown';
 
@@ -41,7 +42,7 @@ interface QueuedEvent {
   ts: number;
   locationId?: number;
   reason?: 'email_taken' | 'weak_password' | 'provider_error';
-  meta?: { preselected?: boolean };
+  meta?: { preselected?: boolean; stage?: 'convert' | 'upload' };
 }
 
 const SESSION_KEY = 'wb_fsid';
