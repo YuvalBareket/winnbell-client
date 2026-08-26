@@ -1,17 +1,13 @@
 import { useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ReceiptLongOutlined, EmojiEventsOutlined, PersonAddOutlined } from '@mui/icons-material';
+import { LocationOn, PersonAdd, Receipt, CheckCircle } from '@mui/icons-material';
 import { api } from '../../shared/api/client';
 import { useAppSelector } from '../../store/hook';
 import { selectIsAuthenticated } from '../../store/selectors/authSelectors';
-import WelcomeInvite from '../../shared/components/WelcomeInvite';
+import WelcomeInvite, { WelcomeHighlight } from '../../shared/components/WelcomeInvite';
 import { formatCurrency } from '../../shared/utils/date';
 import { trackFunnel } from '../../shared/analytics/funnel';
-import {
-  PRIMARY_MAIN, ALPHA_PRIMARY_10, ALPHA_GREEN_10, STATUS_ACTIVATED_TEXT,
-  ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
-} from '../../shared/colors';
 
 // Friendly landing-style welcome shown when a logged-out visitor scans a flyer QR (/start?l=<id>).
 // Shares its layout with the referral JoinPage via WelcomeInvite; only the copy and steps differ.
@@ -53,14 +49,21 @@ const ScanWelcomePage = () => {
 
   const prize = loc?.draw_prize_amount ?? null;
   const threshold = loc?.min_transaction_amount ?? null;
-  // "the $3,000 cash-prize draw" when the prize is public, "the current cash-prize draw" otherwise.
-  const drawLabel = prize ? `${formatCurrency(prize)} cash-prize draw` : 'current cash-prize draw';
   const subline = threshold
     ? `Spent ${formatCurrency(threshold)} or more? Submit your receipt and collect your Winnbell entries. It only takes a moment.`
     : 'Submit your receipt and collect your Winnbell entries. It only takes a moment.';
 
+  // "the $5,000 cash-prize draw" with the amount emphasized, or plain when the prize is hidden.
+  const drawLabel = prize
+    ? <><WelcomeHighlight>{formatCurrency(prize)}</WelcomeHighlight> cash-prize draw</>
+    : <>current cash-prize draw</>;
+
   return (
     <WelcomeInvite
+      contextChip={{
+        icon: <LocationOn />,
+        label: loc?.business_name ? `Scanned at ${loc.business_name}` : 'Scanned a Winnbell flyer',
+      }}
       brandHeadline={<>You're already<br />shopping here.<br />Make it count.</>}
       brandTagline={
         loc?.business_name
@@ -69,34 +72,27 @@ const ScanWelcomePage = () => {
       }
       headline={
         loc?.business_name
-          ? `Your purchase at ${loc.business_name} could get you into the ${drawLabel}.`
-          : `Your purchase could get you into the ${drawLabel}.`
+          ? <>Your purchase at <WelcomeHighlight>{loc.business_name}</WelcomeHighlight> could get you into the {drawLabel}.</>
+          : <>Your purchase could get you into the {drawLabel}.</>
       }
       subtext={subline}
-      headerSubline={subline}
       steps={[
         {
-          icon: <PersonAddOutlined />,
+          icon: <PersonAdd />,
           title: 'Join for free',
           text: 'Create an account in seconds, no payment required.',
-          tint: ALPHA_GREEN_10,
-          iconColor: STATUS_ACTIVATED_TEXT,
         },
         {
-          icon: <ReceiptLongOutlined />,
+          icon: <Receipt />,
           title: 'Submit your receipt',
           text: 'Snap your receipt to earn your entries.',
-          tint: ALPHA_PRIMARY_10,
-          iconColor: PRIMARY_MAIN,
         },
         {
-          icon: <EmojiEventsOutlined />,
+          icon: <CheckCircle />,
           title: "You're in!",
           text: prize
             ? `Once accepted, your entries automatically join the current ${formatCurrency(prize)} cash-prize draw.`
             : 'Once accepted, your entries automatically join the current cash-prize draw.',
-          tint: ACCENT_GOLD_LIGHT,
-          iconColor: ACCENT_GOLD_DARK,
         },
       ]}
       ctaLabel="Get my entries!"
