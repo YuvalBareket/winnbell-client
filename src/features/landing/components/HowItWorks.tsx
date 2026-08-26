@@ -6,17 +6,17 @@ const STEPS = [
   {
     num: '01',
     title: 'Join for free',
-    body: 'Create your free account and claim your weekly entry. No purchase necessary.',
+    body: 'Sign up in under a minute and claim your first weekly entry on us. No purchase necessary.',
   },
   {
     num: '02',
-    title: 'Earn entries',
-    body: 'Visit a Winnbell partner business, make a qualifying purchase, and submit your receipt to earn additional campaign entries.',
+    title: 'Snap your receipt',
+    body: 'Buy what you normally buy at a participating business, snap the receipt, and the entries are yours.',
   },
   {
     num: '03',
-    title: 'Win prizes',
-    body: 'At the end of each campaign, one winner is selected at random from all eligible entries.',
+    title: 'Win real cash',
+    body: 'When the campaign ends, one winner is drawn at random from all eligible entries. It could be you.',
   },
 ];
 
@@ -43,7 +43,7 @@ const HowItWorks = () => {
             transition={{ duration: 0.45, delay: 0.05 }}
           >
             <Typography variant='h2' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '1.75rem', md: '2.8rem' }, letterSpacing: '-0.03em', lineHeight: 1.15 }}>
-              Three steps to your first entry
+              Your first entry takes a minute
             </Typography>
           </motion.div>
         </Box>

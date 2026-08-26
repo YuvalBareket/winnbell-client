@@ -27,7 +27,7 @@ const FinalCTA = ({ onNavigate }: FinalCTAProps) => {
           transition={{ duration: 0.45, delay: 0.05 }}
         >
           <Typography variant='h3' sx={{ fontWeight: 900, color: TEXT_HEADING, fontSize: { xs: '1.6rem', md: '2.4rem' }, letterSpacing: '-0.03em', lineHeight: 1.15, mb: { xs: 1.5, md: 2 } }}>
-            Ready to start winning?
+            Your weekly entry is waiting.
           </Typography>
         </motion.div>
         <motion.div
@@ -37,7 +37,7 @@ const FinalCTA = ({ onNavigate }: FinalCTAProps) => {
           transition={{ duration: 0.45, delay: 0.1 }}
         >
           <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '0.95rem', md: '1.05rem' }, lineHeight: 1.6, mb: { xs: 3.5, md: 5 }, maxWidth: 380, mx: 'auto' }}>
-            Sign up for free, claim your weekly entry, and compete for real cash prizes. No purchase necessary.
+            Sign up free, claim this week's entry on us, and you're in the draw for real cash. No purchase necessary.
           </Typography>
         </motion.div>
         <motion.div
@@ -53,7 +53,7 @@ const FinalCTA = ({ onNavigate }: FinalCTAProps) => {
             onClick={() => onNavigate('/register')}
             sx={{ fontWeight: 700, fontSize: { xs: '0.95rem', md: '1.05rem' }, px: { xs: 2.5, md: 5 }, py: { xs: 1.3, md: 1.6 }, width: { xs: '100%', md: 'auto' }, boxShadow: '0 8px 24px rgba(25,93,230,0.3)', '&:hover': { boxShadow: '0 12px 32px rgba(25,93,230,0.4)' } }}
           >
-            Create free account
+            Claim your weekly entry
           </AttractButton>
         </motion.div>
       </Container>

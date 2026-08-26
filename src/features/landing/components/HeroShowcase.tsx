@@ -9,6 +9,9 @@ import {
   AccessTime,
   Star,
   CardGiftcard,
+  PhotoCamera,
+  AutoAwesome,
+  CheckCircle,
 } from '@mui/icons-material';
 import {
   PRIMARY_MAIN,
@@ -37,6 +40,7 @@ import {
   SHADOW_PRIMARY_SOFT,
   ALPHA_BLACK_06,
   ALPHA_PRIMARY_06,
+  ALPHA_PRIMARY_40,
   ALPHA_WHITE_10,
   ALPHA_WHITE_15,
   ALPHA_WHITE_20,
@@ -57,7 +61,7 @@ import { shortDate, TODAY, DAYS_AGO_3, RECEIPT_DATE, CAMPAIGN_ENDS } from './sho
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HeroShowcase - the consumer landing's five-beat story loop:
-// find a shop → submit a receipt → entry success → all entries → weekly entry.
+// find a shop → snap a receipt (auto-filled) → entry success → all entries → weekly entry.
 // Frame/loop machinery lives in PhoneShowcase; this file is just the screens.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -241,23 +245,7 @@ function MapScreen({ reduced }: ScreenProps) {
   );
 }
 
-// ── Beat 2 · Receipt form filling itself in ──────────────────────────────────
-
-/** One character at a time, like someone typing. Collapses to a plain fade under reduced motion. */
-const TypedText = ({ text, delay, reduced, sx }: { text: string; delay: number; reduced: boolean; sx: object }) => (
-  <Box component='span' sx={sx}>
-    {text.split('').map((ch, i) => (
-      <motion.span
-        key={i}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: reduced ? delay : delay + i * 0.055, duration: 0.08 }}
-      >
-        {ch}
-      </motion.span>
-    ))}
-  </Box>
-);
+// ── Beat 2 · Snap the receipt, the form fills itself ──────────────────────────
 
 function ReceiptScreen({ reduced }: ScreenProps) {
   const fieldStyle = {
@@ -286,7 +274,7 @@ function ReceiptScreen({ reduced }: ScreenProps) {
     <Box sx={{ position: 'absolute', inset: 0, bgcolor: BG_SUBTLE }}>
       <Box sx={{ height: 64, background: GRADIENT_HERO, borderRadius: '0 0 20px 20px', p: '12px 14px 0' }}>
         <Box sx={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.01em', color: 'white' }}>Submit receipt</Box>
-        <Box sx={{ mt: 0.3, fontSize: 10.5, fontWeight: 500, color: ALPHA_WHITE_70 }}>Step 2 of 2 · Receipt details</Box>
+        <Box sx={{ mt: 0.3, fontSize: 10.5, fontWeight: 500, color: ALPHA_WHITE_70 }}>Step 2 of 2 · Snap your receipt</Box>
       </Box>
 
       <Box sx={{ p: '14px 14px 0', display: 'flex', flexDirection: 'column', gap: 1.75 }}>
@@ -303,38 +291,144 @@ function ReceiptScreen({ reduced }: ScreenProps) {
           </Box>
         </motion.div>
 
+        {/* Photo tile: camera prompt -> receipt photo lands -> scan sweep -> done */}
         <motion.div
           initial={{ borderColor: BORDER_LIGHT }}
-          animate={reduced ? { borderColor: BORDER_LIGHT } : { borderColor: [BORDER_LIGHT, PRIMARY_MAIN, PRIMARY_MAIN, BORDER_LIGHT] }}
-          transition={{ delay: 0.6, duration: 1.5, times: [0, 0.1, 0.8, 1] }}
-          style={fieldStyle}
+          animate={{ borderColor: PRIMARY_MAIN }}
+          transition={{ delay: 1.1, duration: 0.3 }}
+          style={{ position: 'relative', height: 64, border: '1.5px dashed', borderRadius: 14, background: BG_SURFACE, overflow: 'hidden' }}
         >
-          <Box sx={labelSx}>Receipt / Transaction ID</Box>
-          <TypedText text='RCP-48213' delay={0.85} reduced={reduced} sx={{ fontSize: 13, fontWeight: 600, color: TEXT_PRIMARY }} />
+          {/* Prompt state */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={reduced ? { opacity: 0 } : { opacity: [0, 1, 1, 0] }}
+            transition={{ delay: 0.45, duration: 0.75, times: [0, 0.3, 0.8, 1] }}
+            style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9 }}
+          >
+            <Box sx={{ width: 30, height: 30, borderRadius: '10px', bgcolor: PRIMARY_TINT, display: 'grid', placeItems: 'center' }}>
+              <PhotoCamera sx={{ fontSize: 17, color: PRIMARY_MAIN }} />
+            </Box>
+            <Box component='span' sx={{ fontSize: 11, fontWeight: 700, color: TEXT_SECONDARY }}>Snap or upload your receipt</Box>
+          </motion.div>
+
+          {/* Photo state */}
+          <motion.div
+            initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...SPRING_POP, delay: 1.1 }}
+            style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 11, padding: '0 13px' }}
+          >
+            {/* Mini receipt thumbnail with a scan line sweeping over it */}
+            <Box sx={{ position: 'relative', width: 34, height: 46, borderRadius: '7px', bgcolor: BG_SUBTLE, border: `1px solid ${BORDER_SUBTLE}`, overflow: 'hidden', flex: 'none', p: '6px 5px 0' }}>
+              <Box sx={{ width: 20, height: 2.5, borderRadius: 2, bgcolor: BORDER_LIGHT, mb: 0.6 }} />
+              <Box sx={{ width: 16, height: 2.5, borderRadius: 2, bgcolor: BORDER_LIGHT, mb: 0.6 }} />
+              <Box sx={{ width: 19, height: 2.5, borderRadius: 2, bgcolor: BORDER_LIGHT, mb: 0.9 }} />
+              <Box sx={{ width: 13, height: 3, borderRadius: 2, bgcolor: TEXT_TERTIARY }} />
+              {!reduced && (
+                <motion.div
+                  initial={{ y: -6, opacity: 0 }}
+                  animate={{ y: [-6, 40, -6, 40], opacity: [0, 1, 1, 0] }}
+                  transition={{ delay: 1.35, duration: 2.0, times: [0, 0.45, 0.5, 1], ease: 'easeInOut' }}
+                  style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 12, background: `linear-gradient(180deg, transparent, ${ALPHA_PRIMARY_40}, transparent)` }}
+                />
+              )}
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Box sx={{ fontSize: 11, fontWeight: 800, color: TEXT_PRIMARY }}>receipt.jpg</Box>
+              <Box sx={{ position: 'relative', height: 16, mt: 0.2 }}>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={reduced ? { opacity: 0 } : { opacity: [0, 1, 1, 0] }}
+                  transition={{ delay: 1.25, duration: 2.1, times: [0, 0.1, 0.9, 1] }}
+                  style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}
+                >
+                  <Box component='span' sx={{ fontSize: 9.5, fontWeight: 600, color: TEXT_TERTIARY }}>Reading the details...</Box>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 3.4, duration: 0.3 }}
+                  style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+                >
+                  <CheckCircle sx={{ fontSize: 12, color: SUCCESS_GREEN_TEXT_AA }} />
+                  <Box component='span' sx={{ fontSize: 9.5, fontWeight: 700, color: SUCCESS_GREEN_TEXT_AA }}>Filled in for you</Box>
+                </motion.div>
+              </Box>
+            </Box>
+          </motion.div>
         </motion.div>
 
         <motion.div
           initial={{ borderColor: BORDER_LIGHT }}
           animate={reduced ? { borderColor: BORDER_LIGHT } : { borderColor: [BORDER_LIGHT, PRIMARY_MAIN, PRIMARY_MAIN, BORDER_LIGHT] }}
-          transition={{ delay: 1.9, duration: 1.3, times: [0, 0.12, 0.78, 1] }}
+          transition={{ delay: 3.4, duration: 1.0, times: [0, 0.15, 0.7, 1] }}
+          style={fieldStyle}
+        >
+          <Box sx={labelSx}>Receipt / Transaction ID</Box>
+          <motion.div
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, delay: 3.5 }}
+          >
+            <Box component='span' sx={{ fontSize: 13, fontWeight: 600, color: TEXT_PRIMARY }}>RCP-48213</Box>
+          </motion.div>
+          <motion.div
+            initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.4, rotate: -30 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ ...SPRING_POP, delay: 3.6 }}
+            style={{ marginLeft: 'auto', display: 'flex' }}
+          >
+            <AutoAwesome sx={{ fontSize: 14, color: PRIMARY_MAIN }} />
+          </motion.div>
+        </motion.div>
+
+        <motion.div
+          initial={{ borderColor: BORDER_LIGHT }}
+          animate={reduced ? { borderColor: BORDER_LIGHT } : { borderColor: [BORDER_LIGHT, PRIMARY_MAIN, PRIMARY_MAIN, BORDER_LIGHT] }}
+          transition={{ delay: 3.5, duration: 1.0, times: [0, 0.15, 0.7, 1] }}
           style={fieldStyle}
         >
           <Box sx={labelSx}>Amount spent</Box>
           <Box component='span' sx={{ fontSize: 13, fontWeight: 700, color: TEXT_TERTIARY }}>$</Box>
-          <TypedText text='30.00' delay={2.15} reduced={reduced} sx={{ fontSize: 13, fontWeight: 600, color: TEXT_PRIMARY }} />
+          <motion.div
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, delay: 3.62 }}
+          >
+            <Box component='span' sx={{ fontSize: 13, fontWeight: 600, color: TEXT_PRIMARY }}>30.00</Box>
+          </motion.div>
+          <motion.div
+            initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.4, rotate: -30 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ ...SPRING_POP, delay: 3.72 }}
+            style={{ marginLeft: 'auto', display: 'flex' }}
+          >
+            <AutoAwesome sx={{ fontSize: 14, color: PRIMARY_MAIN }} />
+          </motion.div>
         </motion.div>
 
-        <Box sx={{ ...fieldStyle, borderColor: BORDER_LIGHT, justifyContent: 'space-between' }}>
+        <motion.div
+          initial={{ borderColor: BORDER_LIGHT }}
+          animate={reduced ? { borderColor: BORDER_LIGHT } : { borderColor: [BORDER_LIGHT, PRIMARY_MAIN, PRIMARY_MAIN, BORDER_LIGHT] }}
+          transition={{ delay: 3.6, duration: 1.0, times: [0, 0.15, 0.7, 1] }}
+          style={{ ...fieldStyle, justifyContent: 'space-between' }}
+        >
           <Box sx={labelSx}>Purchase date</Box>
-          <Box component='span' sx={{ fontSize: 13, fontWeight: 500, color: TEXT_PRIMARY }}>{RECEIPT_DATE}</Box>
+          <motion.div
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, delay: 3.74 }}
+          >
+            <Box component='span' sx={{ fontSize: 13, fontWeight: 500, color: TEXT_PRIMARY }}>{RECEIPT_DATE}</Box>
+          </motion.div>
           <CalendarMonth sx={{ fontSize: 16, color: TEXT_TERTIARY }} />
-        </Box>
+        </motion.div>
 
         {/* Button wakes up once the form is "complete", then presses itself */}
-        <motion.div initial={{ opacity: 0.4 }} animate={{ opacity: 1 }} transition={{ delay: 2.95, duration: 0.3 }}>
+        <motion.div initial={{ opacity: 0.4 }} animate={{ opacity: 1 }} transition={{ delay: 4.15, duration: 0.3 }}>
           <motion.div
             animate={reduced ? undefined : { scale: [1, 1, 0.95, 1] }}
-            transition={{ delay: 3.45, duration: 0.4, times: [0, 0.1, 0.5, 1] }}
+            transition={{ delay: 4.65, duration: 0.4, times: [0, 0.1, 0.5, 1] }}
             style={{
               marginTop: 2,
               height: 44,
@@ -690,8 +784,8 @@ function WeeklyScreen({ reduced }: ScreenProps) {
 
 const BEATS: ShowcaseBeat[] = [
   { key: 'map', caption: 'Find a shop near you', duration: 4400, Screen: MapScreen },
-  { key: 'receipt', caption: 'Add your receipt', duration: 4800, Screen: ReceiptScreen },
-  { key: 'success', caption: "You're in, with your code", duration: 4400, Screen: SuccessScreen },
+  { key: 'receipt', caption: 'Snap it, we fill in the rest', duration: 5900, Screen: ReceiptScreen },
+  { key: 'success', caption: "You're in, with your entry", duration: 4400, Screen: SuccessScreen },
   { key: 'entries', caption: 'All your entries in one place', duration: 4400, Screen: EntriesScreen },
   { key: 'weekly', caption: 'Or claim your weekly entry', duration: 4200, Screen: WeeklyScreen },
 ];
@@ -699,7 +793,7 @@ const BEATS: ShowcaseBeat[] = [
 const HeroShowcase = () => (
   <PhoneShowcase
     beats={BEATS}
-    srDescription='A quick look inside the app: find a participating shop near you, add your receipt, get your entry code, see all your entries in one place, or claim your weekly entry.'
+    srDescription='A quick look inside the app: find a participating shop near you, snap a photo of your receipt and the details fill in for you, get your entry code, see all your entries in one place, or claim your weekly entry.'
   />
 );
 

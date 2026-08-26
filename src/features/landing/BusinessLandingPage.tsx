@@ -82,10 +82,11 @@ const BusinessLandingPage = () => {
                   sx={{
                     fontWeight: 900,
                     // Matches the user LandingHero headline sizing so the two heroes feel like one family.
-                    fontSize: { xs: 'min(2.6rem, 7.6vw - 4px)', sm: '2.6rem', md: 'min(3.4rem, 7.6vw - 38px)' },
+                    fontSize: { xs: 'min(2.6rem, 8.4vw - 3px)', sm: '2.6rem', md: 'min(3.4rem, 7.6vw - 38px)' },
                     lineHeight: 1.1,
                     letterSpacing: '-0.03em',
                     color: 'white',
+                    mx: { xs: -2, sm: 0 },
                     mb: { xs: 2, md: 3 },
                   }}
                 >

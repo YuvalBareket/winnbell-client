@@ -97,10 +97,13 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
                   fontWeight: 900,
                   // Fluid caps keep each <br> row on a single line (3 rows total): the widest row
                   // ("Turn everyday purchases") is 13.09em wide, so font <= column width / 13.09.
-                  fontSize: { xs: 'min(2.6rem, 7.6vw - 4px)', sm: '2.6rem', md: 'min(3.4rem, 7.6vw - 38px)' },
+                  // On xs the h1 bleeds 16px per side into the hero padding (mx -2) to buy a
+                  // larger font while the text still keeps a 20px margin from the screen edge.
+                  fontSize: { xs: 'min(2.6rem, 8.4vw - 3px)', sm: '2.6rem', md: 'min(3.4rem, 7.6vw - 38px)' },
                   lineHeight: 1.1,
-                  letterSpacing: '-0.03em',
+                  letterSpacing: '0.01em',
                   color: 'white',
+                  mx: { xs: -2, sm: 0 },
                   mb: { xs: 2, md: 3 },
                 }}
               >
@@ -124,9 +127,9 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
                   fontWeight: 400,
                 }}
               >
-                Already shopping at participating businesses? Turn purchases you're already
-                making into chances to win real cash prizes with Winnbell. Earn entries along
-                the way, plus one weekly entry on us. No purchase necessary to enter or win.
+                Your morning coffee, your lunch run, your usual spots. Snap your receipt
+                from any participating business and you're in the draw for a real cash
+                prize. Plus one weekly entry on us. No purchase necessary to enter or win.
               </Typography>
             </motion.div>
 
@@ -159,7 +162,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
                     '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.25)' },
                   }}
                 >
-                  Start collecting entries
+                  Claim your weekly entry
                 </AttractButton>
                 <BusinessOwnerLink onNavigate={onNavigate} />
               </Stack>
