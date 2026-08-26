@@ -1,17 +1,17 @@
 import { useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { LocationOn, PersonAdd, Receipt, CheckCircle } from '@mui/icons-material';
+import { LocationOn } from '@mui/icons-material';
 import { api } from '../../shared/api/client';
 import { useAppSelector } from '../../store/hook';
 import { selectIsAuthenticated } from '../../store/selectors/authSelectors';
-import WelcomeInvite, { WelcomeHighlight } from '../../shared/components/WelcomeInvite';
+import WelcomeInvite from '../../shared/components/WelcomeInvite';
 import { formatCurrency } from '../../shared/utils/date';
 import { trackFunnel } from '../../shared/analytics/funnel';
 
-// Friendly landing-style welcome shown when a logged-out visitor scans a flyer QR (/start?l=<id>).
-// Shares its layout with the referral JoinPage via WelcomeInvite; only the copy and steps differ.
-// After sign-up, useSupabaseSync returns them to /scan?l=<id>.
+// Conversion hero shown when a logged-out visitor scans a flyer QR (/start?l=<id>).
+// Shares its layout with the referral JoinPage via WelcomeInvite; only the copy and
+// steps differ. After sign-up, useSupabaseSync returns them to /scan?l=<id>.
 interface PublicLocation {
   business_name: string;
   location_name: string;
@@ -29,12 +29,12 @@ const ScanWelcomePage = () => {
   // Remember the location so that after sign-up the user lands back on /scan?l=<id>.
   useEffect(() => {
     if (lid) {
-      localStorage.setItem('pendingLocationId', lid);
+      try { localStorage.setItem('pendingLocationId', lid); } catch { /* storage unavailable (private mode) - signup still works, only the return-to-location hop is lost */ }
       trackFunnel('scan_landing_viewed', { locationId: Number(lid) || undefined });
     }
   }, [lid]);
 
-  const { data: loc } = useQuery({
+  const { data: loc, isLoading: locLoading } = useQuery({
     queryKey: ['publicLocation', lid],
     queryFn: () => api.get<PublicLocation>(`/business/participating/locations/${lid}`).then(r => r.data).catch(() => null),
     enabled: !!lid,
@@ -53,11 +53,6 @@ const ScanWelcomePage = () => {
     ? `Spent ${formatCurrency(threshold)} or more? Submit your receipt and collect your Winnbell entries. It only takes a moment.`
     : 'Submit your receipt and collect your Winnbell entries. It only takes a moment.';
 
-  // "the $5,000 cash-prize draw" with the amount emphasized, or plain when the prize is hidden.
-  const drawLabel = prize
-    ? <><WelcomeHighlight>{formatCurrency(prize)}</WelcomeHighlight> cash-prize draw</>
-    : <>current cash-prize draw</>;
-
   return (
     <WelcomeInvite
       contextChip={{
@@ -70,30 +65,18 @@ const ScanWelcomePage = () => {
           ? `You scanned a flyer from ${loc.business_name}. Create your free account, snap your receipt, and collect your Winnbell entries.`
           : 'You scanned a flyer. Create your free account, snap your receipt, and collect your Winnbell entries.'
       }
-      headline={
+      leadClause={
         loc?.business_name
-          ? <>Your purchase at <WelcomeHighlight>{loc.business_name}</WelcomeHighlight> could get you into the {drawLabel}.</>
-          : <>Your purchase could get you into the {drawLabel}.</>
+          ? `Your purchase at ${loc.business_name} could get you into the`
+          : 'Your purchase could get you into the'
       }
+      prizeAmount={prize}
+      loading={locLoading}
       subtext={subline}
       steps={[
-        {
-          icon: <PersonAdd />,
-          title: 'Join for free',
-          text: 'Create an account in seconds, no payment required.',
-        },
-        {
-          icon: <Receipt />,
-          title: 'Submit your receipt',
-          text: 'Snap your receipt to earn your entries.',
-        },
-        {
-          icon: <CheckCircle />,
-          title: "You're in!",
-          text: prize
-            ? `Once accepted, your entries automatically join the current ${formatCurrency(prize)} cash-prize draw.`
-            : 'Once accepted, your entries automatically join the current cash-prize draw.',
-        },
+        'Sign up in seconds',
+        'Snap your receipt to enter',
+        'Claim your weekly entry on us',
       ]}
       ctaLabel="Get my entries!"
     />
