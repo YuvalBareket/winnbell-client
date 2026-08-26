@@ -127,9 +127,9 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
                   fontWeight: 400,
                 }}
               >
-                Your morning coffee, your lunch run, your usual spots. Snap your receipt
-                from any participating business and you're in the draw for a real cash
-                prize. Plus one weekly entry on us. No purchase necessary to enter or win.
+                Your morning coffee, your lunch run, your usual spots. Snap a receipt from
+                any participating business, or claim your weekly entry on us. No purchase
+                necessary to enter or win.
               </Typography>
             </motion.div>
 
