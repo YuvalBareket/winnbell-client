@@ -128,7 +128,7 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
                 }}
               >
                 Your morning coffee, your lunch run, your usual spots. Snap a receipt from
-                any participating business, or claim your weekly entry on us. No purchase
+                any participating business, and claim your weekly entry on us. No purchase
                 necessary to enter or win.
               </Typography>
             </motion.div>
