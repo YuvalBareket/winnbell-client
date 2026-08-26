@@ -69,7 +69,6 @@ const CHAPTERS: Chapter[] = [
       { type: 'p', text: 'Before your campaign begins, we recommend completing the following:' },
       { type: 'check', items: [
         'Complete your business profile',
-        'Upload a sample receipt or invoice',
         'Choose the right qualifying threshold',
         'Download and display your QR posters',
         'Train your staff to mention Winnbell at checkout',
@@ -133,23 +132,6 @@ const CHAPTERS: Chapter[] = [
       ] },
       { type: 'p', text: 'A well-crafted profile takes only a few minutes to complete but can make a lasting difference in how customers discover and engage with your business.' },
       { type: 'p', text: 'Use the preview option to see what our users are going to see when they find you on the map.' },
-    ],
-  },
-  {
-    id: 'receipt',
-    kicker: 'Setup',
-    title: 'Upload a Sample Receipt',
-    blocks: [
-      { type: 'p', text: 'Uploading a sample receipt or invoice helps your customers quickly recognize which number they should use when submitting their entries through the Winnbell app.' },
-      { type: 'p', text: 'After uploading your sample, simply indicate where the **receipt number** appears. This makes it easier for customers to identify the correct number on their own receipts and helps reduce confusion during the submission process.' },
-      { type: 'h3', text: 'Best Practices' },
-      { type: 'ul', items: [
-        '**Use a scanned copy or PDF whenever possible.** These provide the clearest image and are easier for customers to read than photographs of printed receipts.',
-        '**Avoid uploading photos of wrinkled, folded, damaged, or poorly lit receipts.** A clean, professional-looking sample is much easier to understand.',
-        '**Protect sensitive information.** Before uploading your sample, ensure it does not display customer names, payment card numbers, or any other confidential information. If necessary, redact or cover with the black marker feature.',
-        '**Use a typical receipt.** Choose a receipt that accurately represents what most of your customers will receive.',
-      ] },
-      { type: 'p', text: 'A clear sample receipt only needs to be uploaded once, but it helps every customer understand exactly which receipt to use and where to find the receipt number when participating in Winnbell.' },
     ],
   },
   {
