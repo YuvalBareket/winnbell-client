@@ -1054,11 +1054,17 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           {/* Photo first: this block IS the step until a photo exists. It collapses into a
               progress row while reading, then a green attached row; the fields only mount
               once the read settles. */}
+          {/* Phone verification interposes BEFORE the upload starts: the upload-url endpoint
+              is phone-gated server-side, and without the sheet a 403 there surfaces as a
+              misleading "try a different image" error for every unverified user. */}
           <ReceiptImageUploadField
             state={readState === 'awaiting_photo' ? 'prompt' : readState === 'reading' ? 'reading' : 'row'}
             receiptImageUrl={receiptImageUrl}
             uploadError={receiptImageUpload.error}
-            onFile={handleReceiptFile}
+            onFile={(file) => {
+              if (guardEntryAction) guardEntryAction(() => void handleReceiptFile(file));
+              else void handleReceiptFile(file);
+            }}
           />
 
           {/* Reading: skeletons where the three fields and the submit are about to arrive. */}
