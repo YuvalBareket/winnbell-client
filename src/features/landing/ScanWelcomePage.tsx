@@ -20,6 +20,7 @@ interface PublicLocation {
   business_name: string;
   location_name: string;
   logo_url: string | null;
+  min_transaction_amount: number | null;
   draw_prize_amount: number | null;
   draw_date: string | null;
 }
@@ -51,17 +52,28 @@ const ScanWelcomePage = () => {
   if (!lid) return <Navigate to="/" replace />;
 
   const prize = loc?.draw_prize_amount ?? null;
+  const threshold = loc?.min_transaction_amount ?? null;
+  // "the $3,000 cash-prize draw" when the prize is public, "the current cash-prize draw" otherwise.
+  const drawLabel = prize ? `${formatCurrency(prize)} cash-prize draw` : 'current cash-prize draw';
+  const subline = threshold
+    ? `Spent ${formatCurrency(threshold)} or more? Submit your receipt and collect your Winnbell entries. It only takes a moment.`
+    : 'Submit your receipt and collect your Winnbell entries. It only takes a moment.';
 
   return (
     <WelcomeInvite
-      brandHeadline={<>One step from<br />the current draw.</>}
+      brandHeadline={<>You're already<br />shopping here.<br />Make it count.</>}
       brandTagline={
         loc?.business_name
-          ? `You scanned a flyer from ${loc.business_name}. Create your free account to submit your receipt and join the draw.`
-          : 'You scanned a flyer. Create your free account to submit your receipt and join the draw.'
+          ? `You scanned a flyer from ${loc.business_name}. Create your free account, snap your receipt, and collect your Winnbell entries.`
+          : 'You scanned a flyer. Create your free account, snap your receipt, and collect your Winnbell entries.'
       }
-      headline={loc?.business_name ? `Welcome to ${loc.business_name}` : 'Welcome to Winnbell'}
-      headerSubline="Create your account, submit a receipt, and enter the current draw."
+      headline={
+        loc?.business_name
+          ? `Your purchase at ${loc.business_name} could get you into the ${drawLabel}.`
+          : `Your purchase could get you into the ${drawLabel}.`
+      }
+      subtext={subline}
+      headerSubline={subline}
       steps={[
         {
           icon: <PersonAddOutlined />,
@@ -73,22 +85,21 @@ const ScanWelcomePage = () => {
         {
           icon: <ReceiptLongOutlined />,
           title: 'Submit your receipt',
-          text: loc?.business_name
-            ? `Type in your receipt from ${loc.business_name} to earn your entries.`
-            : 'Type in your receipt from your visit to earn your entries.',
+          text: 'Snap your receipt to earn your entries.',
           tint: ALPHA_PRIMARY_10,
           iconColor: PRIMARY_MAIN,
         },
         {
           icon: <EmojiEventsOutlined />,
-          title: 'Enter the current draw',
+          title: "You're in!",
           text: prize
-            ? `Every entry competes for the current ${formatCurrency(prize)} cash prize.`
-            : 'Every entry competes for the current cash prize.',
+            ? `Once accepted, your entries automatically join the current ${formatCurrency(prize)} cash-prize draw.`
+            : 'Once accepted, your entries automatically join the current cash-prize draw.',
           tint: ACCENT_GOLD_LIGHT,
           iconColor: ACCENT_GOLD_DARK,
         },
       ]}
+      ctaLabel="Get my entries!"
     />
   );
 };

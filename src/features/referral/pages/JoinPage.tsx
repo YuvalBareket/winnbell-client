@@ -1,10 +1,14 @@
 import { useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { PersonAddOutlined, CardGiftcardOutlined, EmojiEventsOutlined } from '@mui/icons-material';
+import { useQuery } from '@tanstack/react-query';
+import { CardGiftcardOutlined, StorefrontOutlined, EventRepeatOutlined } from '@mui/icons-material';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsAuthenticated } from '../../../store/selectors/authSelectors';
 import { useReferralCode } from '../hooks/useReferralCode';
 import WelcomeInvite from '../../../shared/components/WelcomeInvite';
+import { getActiveDraws } from '../../draw/api/draw.api';
+import { queryKeys } from '../../../shared/constants/queryKeys';
+import { formatCurrency } from '../../../shared/utils/date';
 import {
   PRIMARY_MAIN, ALPHA_PRIMARY_10, ALPHA_GREEN_10, STATUS_ACTIVATED_TEXT,
   ACCENT_GOLD_LIGHT, ACCENT_GOLD_DARK,
@@ -32,44 +36,61 @@ const JoinPage = () => {
   const { data: referralData } = useReferralCode(ref);
   const referrerName = referralData?.referrerName;
 
+  // Live prize amount for the "head start toward the $X cash-prize draw" headline.
+  const { data: draws } = useQuery({
+    queryKey: queryKeys.draws.active,
+    queryFn: getActiveDraws,
+    staleTime: 2 * 60_000,
+  });
+  const prize = draws?.find(d => d.status?.toLowerCase() === 'open')?.prize_amount ?? null;
+  const drawLabel = prize ? `${formatCurrency(prize)} cash-prize draw` : 'cash-prize draw';
+
   // Already signed in? Go to the main app.
   if (isAuthenticated) return <Navigate to="/scan" replace />;
   // No referral code - nothing to personalize, fall back to the normal landing.
   if (!ref) return <Navigate to="/" replace />;
 
+  const subline = 'Start with a bonus entry, explore participating businesses for more, and come back every week for one entry on us.';
+
   return (
     <WelcomeInvite
-      brandHeadline={<>Your invite to<br />the cash prize draw.</>}
+      brandHeadline={<>A little extra luck,<br />sent your way.</>}
       brandTagline={
         referrerName
-          ? `${referrerName} invited you to Winnbell. Create your free account and claim a bonus entry just for joining.`
-          : 'You have been invited to Winnbell. Create your free account and claim a bonus entry just for joining.'
+          ? `${referrerName} invited you to Winnbell. ${subline}`
+          : `You have been invited to Winnbell. ${subline}`
       }
-      headline={referrerName ? `${referrerName} invited you to Winnbell` : 'You are invited to Winnbell'}
-      headerSubline="Create your account to claim your bonus entry."
+      headline={
+        referrerName
+          ? `${referrerName} sent you a head start toward the ${drawLabel}.`
+          : `You have been sent a head start toward the ${drawLabel}.`
+      }
+      subtext={subline}
+      headerSubline={subline}
       steps={[
         {
-          icon: <PersonAddOutlined />,
-          title: 'Join for free',
-          text: 'Create an account in seconds, no payment required.',
-          tint: ALPHA_PRIMARY_10,
-          iconColor: PRIMARY_MAIN,
-        },
-        {
           icon: <CardGiftcardOutlined />,
-          title: 'Earn your bonus entry',
-          text: 'Get a bonus entry just for joining.',
+          title: 'Start with a bonus entry',
+          text: 'Join Winnbell for free and your referral bonus gets you started.',
           tint: ALPHA_GREEN_10,
           iconColor: STATUS_ACTIVATED_TEXT,
         },
         {
-          icon: <EmojiEventsOutlined />,
-          title: 'Enter the current draw',
-          text: 'Compete for real cash prizes. No purchase necessary.',
+          icon: <StorefrontOutlined />,
+          title: 'Keep earning entries',
+          text: 'Turn purchases at participating businesses into more chances to win.',
+          tint: ALPHA_PRIMARY_10,
+          iconColor: PRIMARY_MAIN,
+        },
+        {
+          icon: <EventRepeatOutlined />,
+          title: 'Come back every week',
+          text: 'Get one entry on us every week - just claim it.',
           tint: ACCENT_GOLD_LIGHT,
           iconColor: ACCENT_GOLD_DARK,
         },
       ]}
+      ctaLabel={referrerName ? `Accept ${referrerName}'s Invite` : 'Accept the Invite'}
     />
   );
 };

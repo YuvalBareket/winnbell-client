@@ -90,6 +90,7 @@ interface WelcomeInviteProps {
     subtitle: string;
   };
   steps: WelcomeStep[];
+  ctaLabel?: string;        // primary CTA text (both desktop and mobile)
 }
 
 const DEFAULT_SUBTEXT = 'You are one step from entering the current draw. Here is how it works.';
@@ -105,7 +106,8 @@ const WelcomeInvite = ({
   subtext = DEFAULT_SUBTEXT,
   headerSubline,
   highlight,
-  steps
+  steps,
+  ctaLabel = 'Create your free account',
 }: WelcomeInviteProps) => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -184,7 +186,7 @@ const WelcomeInvite = ({
                     onClick={() => navigate('/register')}
                     sx={{ fontWeight: 800, fontSize: '1rem', py: 1.5, textTransform: 'none' }}
                   >
-                    Create your free account
+                    {ctaLabel}
                   </AttractButton>
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <Button
@@ -413,7 +415,7 @@ const WelcomeInvite = ({
                 },
               }}
             >
-              Create your free account
+              {ctaLabel}
             </Button>
             <Typography sx={{ textAlign: 'center', fontSize: '10.5px', fontWeight: 600, color: TEXT_TERTIARY_AA }}>
               No purchase necessary. Alternative method of entry available. 18+.

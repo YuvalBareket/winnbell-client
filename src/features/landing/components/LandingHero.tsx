@@ -95,14 +95,16 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
                 variant='h1'
                 sx={{
                   fontWeight: 900,
-                  fontSize: { xs: '2.1rem', sm: '3.5rem', md: '4.5rem' },
+                  // Fluid caps keep each <br> row on a single line (3 rows total): the widest row
+                  // ("Turn everyday purchases") is 13.09em wide, so font <= column width / 13.09.
+                  fontSize: { xs: 'min(2.6rem, 7.6vw - 4px)', sm: '2.6rem', md: 'min(3.4rem, 7.6vw - 38px)' },
                   lineHeight: 1.1,
                   letterSpacing: '-0.03em',
                   color: 'white',
                   mb: { xs: 2, md: 3 },
                 }}
               >
-                Shop local. Win real cash prizes.
+                Turn everyday purchases<br />into chances to win<br />a real cash prize.
               </Typography>
             </motion.div>
 
@@ -122,8 +124,9 @@ const LandingHero = ({ onNavigate }: LandingHeroProps) => {
                   fontWeight: 400,
                 }}
               >
-                Turn everyday shopping into chances to win real cash prizes. Earn entries
-                through participating businesses or claim your weekly entry today. No purchase necessary.
+                Already shopping at participating businesses? Turn purchases you're already
+                making into chances to win real cash prizes with Winnbell. Earn entries along
+                the way, plus one weekly entry on us. No purchase necessary to enter or win.
               </Typography>
             </motion.div>
 

@@ -81,14 +81,15 @@ const BusinessLandingPage = () => {
                   variant='h1'
                   sx={{
                     fontWeight: 900,
-                    fontSize: { xs: '2rem', sm: '3.2rem', md: '4rem' },
+                    // Matches the user LandingHero headline sizing so the two heroes feel like one family.
+                    fontSize: { xs: 'min(2.6rem, 7.6vw - 4px)', sm: '2.6rem', md: 'min(3.4rem, 7.6vw - 38px)' },
                     lineHeight: 1.1,
                     letterSpacing: '-0.03em',
                     color: 'white',
                     mb: { xs: 2, md: 3 },
                   }}
                 >
-                  Drive your business growth through customer excitement.
+                  Run big-brand sweepstakes on a small-business budget.
                 </Typography>
               </motion.div>
 
@@ -108,7 +109,7 @@ const BusinessLandingPage = () => {
                     fontWeight: 400,
                   }}
                 >
-                  Winnbell runs cash prize campaigns your customers can join through you. We handle the prize, the rules, and the winner. You take the credit.
+                  Winnbell lets small businesses share one major cash-prize campaign, without having to fund or manage one themselves. We handle the prize, the rules, and the winner. You take the credit.
                 </Typography>
               </motion.div>
 
@@ -142,7 +143,7 @@ const BusinessLandingPage = () => {
                       '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)' },
                     }}
                   >
-                    Become a partner
+                    Join the Campaign
                   </AttractButton>
                   <Button
                     variant='text'
