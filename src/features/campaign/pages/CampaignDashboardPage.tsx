@@ -54,6 +54,7 @@ import {
   ACCENT_GOLD_DARK,
   STATUS_ACTIVATED_TEXT,
   STATUS_PENDING_TEXT,
+  AMBER_TEXT_AA,
   GRADIENT_GOLD_PRIZE,
   GRADIENT_PROGRESS_BAR,
   ALPHA_PRIMARY_10,
@@ -595,7 +596,7 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
                       <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
                         <Typography sx={{ fontSize: '14px', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</Typography>
                         {isUnderReview && (
-                          <Box component="span" sx={{ fontSize: '10px', fontWeight: 700, color: STATUS_PENDING_TEXT, border: `1px solid ${BORDER_REVIEW}`, borderRadius: '6px', px: '7px', py: '1px', whiteSpace: 'nowrap', flexShrink: 0 }}>Under review</Box>
+                          <Box component="span" sx={{ fontSize: '10px', fontWeight: 700, color: AMBER_TEXT_AA, border: `1px solid ${BORDER_REVIEW}`, borderRadius: '6px', px: '7px', py: '1px', whiteSpace: 'nowrap', flexShrink: 0 }}>Under review</Box>
                         )}
                       </Stack>
                       <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: '3px', minWidth: 0 }}>
@@ -620,7 +621,7 @@ const CampaignDashboardPage: React.FC<CampaignDashboardPageProps> = ({ adminBusi
                       <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
                         <Typography sx={{ fontSize: '13.5px', fontWeight: 700, color: TEXT_HEADING, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</Typography>
                         {isUnderReview && (
-                          <Box component="span" sx={{ fontSize: '8.5px', fontWeight: 700, color: STATUS_PENDING_TEXT, border: `1px solid ${BORDER_REVIEW}`, borderRadius: '5px', px: '5px', py: '1px', whiteSpace: 'nowrap', flexShrink: 0 }}>Under review</Box>
+                          <Box component="span" sx={{ fontSize: '8.5px', fontWeight: 700, color: AMBER_TEXT_AA, border: `1px solid ${BORDER_REVIEW}`, borderRadius: '5px', px: '5px', py: '1px', whiteSpace: 'nowrap', flexShrink: 0 }}>Under review</Box>
                         )}
                       </Stack>
                       <Stack direction="row" alignItems="center" spacing={0.875} sx={{ mt: '2px', minWidth: 0 }}>
