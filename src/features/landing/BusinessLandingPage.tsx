@@ -198,7 +198,7 @@ const BusinessLandingPage = () => {
             transition={{ duration: 0.45, delay: 0.1 }}
           >
             <Typography sx={{ color: TEXT_SECONDARY, fontSize: { xs: '0.95rem', md: '1.1rem' }, lineHeight: 1.6, maxWidth: 640, mx: 'auto', mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
-              One campaign a month. One randomly selected winner. Minimal effort on your side. Winnbell operates and administers the whole thing, and your customers earn entries through qualifying purchases at your business.
+              One campaign at a time. One randomly selected winner. Minimal effort on your side. Winnbell operates and administers the whole thing, and your customers earn entries through qualifying purchases at your business.
             </Typography>
           </motion.div>
 
