@@ -1,17 +1,18 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Box, Typography, Button, Stack, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
-import { ArrowForward } from '@mui/icons-material';
+import { ArrowForward, AccessTime } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AttractButton from './AttractButton';
 import AuthBrandPanel from '../../features/auth/components/AuthBrandPanel';
 import { staggerContainer, popIn, riseIn } from '../motion';
-import { formatCurrency } from '../utils/date';
+import { formatCurrency, formatDrawDate, nyMidnightUtcMs } from '../utils/date';
 import { goldShineSx } from '../../features/draw/components/goldShine';
 import {
   GRADIENT_HERO, GRADIENT_CTA, ACCENT_GOLD, ACCENT_GOLD_DARK, GOLD_TROPHY,
+  ACCENT_GOLD_LIGHT, ACCENT_GOLD_CREAM, ACCENT_GOLD_TEXT_AA,
   PRIMARY_MAIN, BG_SUBTLE, BG_SURFACE, TEXT_HEADING, TEXT_SECONDARY, TEXT_TERTIARY,
-  ALPHA_PRIMARY_20, ALPHA_WHITE_80,
+  ALPHA_PRIMARY_20, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_80,
 } from '../colors';
 
 interface WelcomeInviteProps {
@@ -31,9 +32,95 @@ interface WelcomeInviteProps {
   // True while the page's personalization queries are in flight - shows a branded
   // loader instead of flashing fallback copy that then swaps to the real name/prize.
   loading?: boolean;
+  // Pre-campaign: the upcoming draw's start date (ISO). Renders a live ticking
+  // countdown under the hero sentence so an early flyer scan builds anticipation
+  // instead of reading as an empty page.
+  opensAt?: string | null;
 }
 
 const FINE_PRINT = 'No purchase necessary to enter or win. 18+.';
+
+// ── Pre-campaign countdown ──────────────────────────────────────────────────────
+// Ticks once a second toward midnight New York on the campaign's start date (the
+// documented opening convention - NOT the raw stored timestamp, whose hour drifts).
+// Null for a missing/invalid/past target, so a bad date can never render garbage -
+// the block simply doesn't show. The interval stops itself once the target passes.
+const useCountdown = (targetIso?: string | null) => {
+  const [now, setNow] = useState(() => Date.now());
+  const target = nyMidnightUtcMs(targetIso) ?? NaN;
+  const live = Number.isFinite(target) && target > now;
+  useEffect(() => {
+    if (!live) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [live]);
+  if (!live) return null;
+  const diff = target - now;
+  return {
+    days: Math.floor(diff / 86_400_000),
+    hours: Math.floor(diff / 3_600_000) % 24,
+    minutes: Math.floor(diff / 60_000) % 60,
+    seconds: Math.floor(diff / 1_000) % 60,
+  };
+};
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+// Glassy gold countdown under the hero sentence: white-glass tiles on the mobile
+// gradient band, warm gold cream on the white desktop panel. Isolated component so
+// the once-a-second tick re-renders only this block, never the whole page.
+const CountdownSection = ({ opensAt, onGradient }: { opensAt: string; onGradient: boolean }) => {
+  const countdown = useCountdown(opensAt);
+  if (!countdown) return null;
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.16 }}>
+      <Box sx={{ position: 'relative', zIndex: 1, mt: onGradient ? 2 : 2.25 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1.25 }}>
+          <AccessTime sx={{ fontSize: 13, color: onGradient ? ACCENT_GOLD_LIGHT : ACCENT_GOLD_TEXT_AA }} />
+          <Typography sx={{ fontSize: { xs: '10.5px', md: '11px' }, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: onGradient ? ACCENT_GOLD_LIGHT : ACCENT_GOLD_TEXT_AA }}>
+            Campaign opens {formatDrawDate(opensAt)}
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {(
+            [
+              [countdown.days, 'Days'],
+              [countdown.hours, 'Hours'],
+              [countdown.minutes, 'Min'],
+              [countdown.seconds, 'Sec'],
+            ] as const
+          ).map(([value, unit], i) => (
+            <motion.div
+              key={unit}
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 340, damping: 26, delay: 0.2 + i * 0.07 }}
+            >
+              <Box
+                sx={{
+                  minWidth: { xs: 58, md: 66 },
+                  py: { xs: 1, md: 1.25 },
+                  px: 0.5,
+                  borderRadius: '14px',
+                  textAlign: 'center',
+                  bgcolor: onGradient ? ALPHA_WHITE_15 : ACCENT_GOLD_LIGHT,
+                  border: `1px solid ${onGradient ? ALPHA_WHITE_20 : ACCENT_GOLD_CREAM}`,
+                }}
+              >
+                <Typography sx={{ fontSize: { xs: '21px', md: '24px' }, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', color: onGradient ? 'white' : ACCENT_GOLD_TEXT_AA }}>
+                  {pad2(value)}
+                </Typography>
+                <Typography sx={{ mt: 0.5, fontSize: '9.5px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: onGradient ? ALPHA_WHITE_80 : TEXT_TERTIARY }}>
+                  {unit}
+                </Typography>
+              </Box>
+            </motion.div>
+          ))}
+        </Box>
+      </Box>
+    </motion.div>
+  );
+};
 
 // Branded interstitial while the referral/location lookup resolves: the same gradient
 // the hero opens with, so the reveal reads as one continuous surface, not a swap.
@@ -162,6 +249,7 @@ const WelcomeInvite = ({
   steps,
   ctaLabel = 'Create your free account',
   loading = false,
+  opensAt,
 }: WelcomeInviteProps) => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -195,15 +283,8 @@ const WelcomeInvite = ({
         >
           <Box sx={{ maxWidth: 520, width: '100%' }}>
             <motion.div variants={staggerContainer} initial='hidden' animate='visible'>
-              <motion.div variants={riseIn}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1.75, '& svg': { fontSize: 15, color: PRIMARY_MAIN } }}>
-                  {contextChip.icon}
-                  <Typography sx={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: PRIMARY_MAIN }}>
-                    {contextChip.label}
-                  </Typography>
-                </Box>
-              </motion.div>
-
+              {/* No context chip on desktop - the brand panel already tells the visitor
+                  why the page is personalized; the chip is mobile-only. */}
               {/* The approved sentence, broken around the prize figure */}
               <motion.div variants={riseIn}>
                 <Typography component='h1' sx={{ m: 0 }}>
@@ -220,6 +301,8 @@ const WelcomeInvite = ({
                   </Box>
                 </Typography>
               </motion.div>
+
+              {opensAt && <CountdownSection opensAt={opensAt} onGradient={false} />}
 
               <motion.div variants={riseIn}>
                 <Typography sx={{ color: TEXT_SECONDARY, fontSize: '15.5px', fontWeight: 500, lineHeight: 1.55, mt: 2, mb: 3 }}>
@@ -376,6 +459,8 @@ const WelcomeInvite = ({
             </Box>
           </Typography>
         </motion.div>
+
+        {opensAt && <CountdownSection opensAt={opensAt} onGradient />}
       </Box>
 
       {/* Light body: support line, stepper, CTA riding the bottom */}

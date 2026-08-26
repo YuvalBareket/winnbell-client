@@ -67,6 +67,7 @@ export const queryKeys = {
   draws: {
     all:     ['draws']            as const,
     active:  ['draws', 'active']  as const,
+    current: ['draws', 'current'] as const,
     history: ['draws', 'history'] as const,
     result:  (drawId: number) => ['draws', 'result', drawId] as const,
   },

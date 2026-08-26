@@ -113,3 +113,22 @@ export const formatDrawDate = (dateStr: string | undefined): string => {
   if (!dateStr) return 'TBD';
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'America/New_York' });
 };
+
+/** The campaign convention is "opens midnight America/New_York on the 1st", but the stored
+ * start_date timestamp is not always exactly that instant. This returns the UTC epoch of
+ * midnight NY on the timestamp's NY calendar date, so a countdown and formatDrawDate always
+ * agree with each other and with the convention. Null for a missing/invalid input. */
+export const nyMidnightUtcMs = (dateStr: string | null | undefined): number | null => {
+  if (!dateStr) return null;
+  const src = new Date(dateStr);
+  if (!Number.isFinite(src.getTime())) return null;
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(src);
+  const get = (t: string) => Number(parts.find(p => p.type === t)?.value);
+  const y = get('year'), m = get('month'), d = get('day');
+  if (!y || !m || !d) return null;
+  // Midnight NY is 04:00 or 05:00 UTC depending on DST. Start from the EST guess and
+  // subtract however far into the NY day that instant actually lands (0h in EST, 1h in EDT).
+  const guess = Date.UTC(y, m - 1, d, 5, 0, 0);
+  const nyHour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', hourCycle: 'h23' }).format(guess));
+  return guess - nyHour * 3_600_000;
+};

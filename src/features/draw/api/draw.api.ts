@@ -6,6 +6,14 @@ export const getActiveDraws = async (): Promise<IDrawSummary[]> => {
   return data;
 };
 
+// The campaign visitor-facing pages talk about: the open draw, or the next Upcoming
+// one when nothing is open (its prize is null until the admin reveals it). Null when
+// neither exists.
+export const getCurrentDraw = async (): Promise<IDrawSummary | null> => {
+  const { data } = await api.get('/draws/current');
+  return data;
+};
+
 export const getDrawHistory = async (): Promise<IDrawResult[]> => {
   const { data } = await api.get('/draws/history');
   return data;

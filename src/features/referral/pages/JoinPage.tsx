@@ -6,7 +6,7 @@ import { useAppSelector } from '../../../store/hook';
 import { selectIsAuthenticated } from '../../../store/selectors/authSelectors';
 import { useReferralCode } from '../hooks/useReferralCode';
 import WelcomeInvite from '../../../shared/components/WelcomeInvite';
-import { getActiveDraws } from '../../draw/api/draw.api';
+import { getCurrentDraw } from '../../draw/api/draw.api';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 
 import { trackFunnel } from '../../../shared/analytics/funnel';
@@ -31,16 +31,17 @@ const JoinPage = () => {
   const { data: referralData, isLoading: refLoading } = useReferralCode(ref);
   const referrerName = referralData?.referrerName;
 
-  // Live prize amount - the gold numeral the whole hero is built around.
-  // retry 1 (not the default 3) so an API hiccup degrades to the no-numeral copy
-  // quickly instead of holding the loader for the full backoff ladder.
-  const { data: draws, isLoading: drawsLoading } = useQuery({
-    queryKey: queryKeys.draws.active,
-    queryFn: getActiveDraws,
+  // The campaign this page talks about: the open draw, or the next Upcoming one
+  // pre-launch (prize null until revealed). retry 1 (not the default 3) so an API
+  // hiccup degrades to the no-numeral copy quickly instead of holding the loader.
+  const { data: currentDraw, isLoading: drawLoading } = useQuery({
+    queryKey: queryKeys.draws.current,
+    queryFn: getCurrentDraw,
     staleTime: 2 * 60_000,
     retry: 1,
   });
-  const prize = draws?.find(d => d.status?.toLowerCase() === 'open')?.prize_amount ?? null;
+  const prize = currentDraw?.prize_amount ?? null;
+  const isUpcoming = currentDraw?.status === 'Upcoming';
 
   // Already signed in? Go to the main app.
   if (isAuthenticated) return <Navigate to="/scan" replace />;
@@ -71,7 +72,8 @@ const JoinPage = () => {
           : 'You have been sent a head start toward the'
       }
       prizeAmount={prize}
-      loading={refLoading || drawsLoading}
+      loading={refLoading || drawLoading}
+      opensAt={isUpcoming ? currentDraw?.start_date : undefined}
       subtext={subline}
       steps={[
         'Claim your bonus entry',
