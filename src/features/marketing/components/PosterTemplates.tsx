@@ -4,12 +4,16 @@ import type { PosterProps } from './posterConstants';
 import confettiPng from '../assets/confetti/confetti.png';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Poster templates - EXACT replica of the approved "winnbell-poster-colorways"
-// design. Every value below is a design-space pixel (1414x2000 canvas) measured
-// from the design's computed styles - do not round or "tidy" them. The canvas
-// components lay out at full design size; the exported templates show them
-// through a scale() wrapper (crisp text, zero fractional-px layout), and the
-// download path captures the full-size canvas 1:1 for print.
+// Poster templates - based on the approved "winnbell-poster-colorways" design.
+// Values are design-space pixels measured from the design's computed styles - do not
+// round or "tidy" them. The canvas was widened from the approved 1414x2000 (A4) to
+// 1545x2000 = US Letter (8.5x11). The headline and logo stay left-anchored; the QR column
+// and the 3-step row are centered on the full Letter width; the top confetti sits in the
+// right corner; and the legal disclosure is bottom-anchored so it reaches the end of the
+// flyer with a print-safe margin.
+// The canvas components lay out at full design size; the exported templates show them
+// through a scale() wrapper (crisp text, zero fractional-px layout), and the download
+// path captures the full-size canvas 1:1 for print.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SANS = '"Plus Jakarta Sans", system-ui, sans-serif';
@@ -155,7 +159,7 @@ const COLORWAYS: Record<'blue' | 'navy' | 'cream' | 'light', Colorway> = {
   },
 };
 
-// ── Full-size canvas (1414x2000 design pixels, no scaling inside) ────────────
+// ── Full-size canvas (1545x2000 design pixels = Letter ratio, no scaling inside) ─
 const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps & { cw: Colorway }) => {
   const logoSrc = cw.logoVariant === 'white' ? '/winnbell_app_name_white.svg' : '/winnbell_app_name.svg';
   // Same semantics as the previous posters: minAmountLabel is a formatted amount
@@ -174,7 +178,7 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps
         flexShrink: 0,
       }}
     >
-      {/* Ambient glow circles (exact design offsets) */}
+      {/* Ambient glow circles (exact design offsets; both bleed off the right edge) */}
       <div style={{ position: 'absolute', left: 474, top: -400, pointerEvents: 'none' }}>
         <RadialGlow color={cw.glow1.color} size={1240} fade={cw.glow1.fade} />
       </div>
@@ -189,7 +193,7 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps
         src={confettiPng}
         alt=''
         aria-hidden
-        style={{ position: 'absolute', left: 640, top: -30, width: 774, height: 820, pointerEvents: 'none' }}
+        style={{ position: 'absolute', left: 771, top: -30, width: 774, height: 820, pointerEvents: 'none' }}
       />
       <img
         src={confettiPng}
@@ -230,7 +234,8 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps
         </div>
       </div>
 
-      {/* Center column: location chip, QR card, scan caption */}
+      {/* Center column: location chip, QR card, scan caption. Centered on the full canvas
+          width (DESIGN_W) so the QR sits in the middle of the Letter-width poster. */}
       <div style={{ position: 'absolute', left: 0, top: 775, width: DESIGN_W, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {/* Chip enlarged from the design's 26px per user request 2026-08-01 ("too small");
             marginBottom shrunk by the same height gain so the QR card stays at y=846. */}
@@ -265,8 +270,9 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps
         </div>
       </div>
 
-      {/* Steps row */}
-      <div style={{ position: 'absolute', left: 72, top: 1689, width: 1270, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Steps row centered on the canvas ((1545-1270)/2 = 138); width 1270 keeps the
+          design's space-between rhythm between the three steps. */}
+      <div style={{ position: 'absolute', left: 138, top: 1660, width: 1270, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {[
           { n: '1', label: stepLabel1 },
           { n: '2', label: 'Submit your receipt' },
@@ -290,8 +296,12 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps
         ))}
       </div>
 
-      {/* Legal fine print with the design's hairline rule above (1px + 22px padding) */}
-      <div style={{ position: 'absolute', left: 72, top: 1816, width: 1270, borderTop: `1px solid ${cw.legalRule}`, paddingTop: 22, fontSize: 24.5, fontWeight: 400, letterSpacing: 0.343, lineHeight: '34px', color: cw.legalColor, boxSizing: 'border-box' }}>
+      {/* Legal fine print with the design's hairline rule above (1px + 22px padding).
+          Bottom-anchored (bottom: 72, matching the side margins) so the disclosure reaches
+          the end of the flyer with a print-safe margin no matter how many lines it wraps.
+          Width 1401 = full content width (DESIGN_W 1545 - 72 side margins x2), so the rule
+          and text span the whole flyer instead of the old 1270 (A4) column. */}
+      <div style={{ position: 'absolute', left: 72, bottom: 72, width: 1401, borderTop: `1px solid ${cw.legalRule}`, paddingTop: 22, fontSize: 24.5, fontWeight: 400, letterSpacing: 0.343, lineHeight: '34px', color: cw.legalColor, boxSizing: 'border-box' }}>
         {LEGAL_TEXT}
       </div>
     </div>

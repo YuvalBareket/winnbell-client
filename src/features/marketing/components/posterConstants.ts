@@ -3,11 +3,14 @@
 // the react-refresh/only-export-components lint rule.
 
 // ── Poster dimensions ─────────────────────────────────────────────────────────
-// The poster is laid out in DESIGN pixels (1414x2000, exactly the approved design
-// canvas) and displayed through a CSS scale() wrapper. Layout in design space keeps
-// every font size / spacing value integer-exact to the design; the browser rasterizes
-// text at full resolution before scaling, so the preview stays crisp too.
-export const DESIGN_W = 1414;
+// Canvas is 1545x2000 = US Letter ratio (8.5x11), so it prints on Letter paper without
+// cropping. The composition was authored on the approved 1414x2000 (A4) canvas; widening
+// to 1545 for Letter keeps the headline and logo left-anchored while the QR column and the
+// 3-step row are centered on the full width and the legal disclosure is bottom-anchored so
+// it reaches the end of the flyer. Layout stays in DESIGN pixels and is shown through a CSS scale() wrapper,
+// so every font/spacing value stays integer-exact and the browser rasterizes text at full
+// resolution before scaling (crisp preview + 1:1 print capture).
+export const DESIGN_W = 1545;
 export const DESIGN_H = 2000;
 
 export const POSTER_W = 320;
