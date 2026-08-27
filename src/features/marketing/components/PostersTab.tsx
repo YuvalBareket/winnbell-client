@@ -140,7 +140,7 @@ const PostersTab = ({
   const thumbW = isDesktop ? THUMB_W : THUMB_W_MOBILE;
   const thumbH = isDesktop ? THUMB_H : THUMB_H_MOBILE;
 
-  // ── Shared capture: rasterize the HIDDEN full-size canvas (1414x2000) 1:1 ──
+  // ── Shared capture: rasterize the HIDDEN full-size canvas (1545x2000) 1:1 ──
   // The capture node is unscaled design pixels, so no transform juggling and no
   // fractional-px text metrics; output is exactly the design canvas resolution.
   const capturePosterJpeg = async (): Promise<string> => {
@@ -201,8 +201,10 @@ const PostersTab = ({
     const selected = TEMPLATES.find(t => t.id === selectedId) ?? TEMPLATES[0];
     try {
       const imgData = await capturePosterJpeg();
-      // A4 portrait: same 1:1.414 ratio as the 1414x2000 design canvas.
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      // US Letter portrait: same 8.5x11 ratio as the 1545x2000 design canvas, so the
+      // full-bleed image fills the page with zero distortion and drops straight into
+      // Letter print products (e.g. Canva 8.5x11in) edge to edge.
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
@@ -223,9 +225,9 @@ const PostersTab = ({
       const imgData = await capturePosterJpeg();
 
       if (isDesktop) {
-        // Desktop: build the exact same A4 PDF the Download button produces
+        // Desktop: build the exact same Letter PDF the Download button produces
         // and print it from a hidden iframe (popup-free, gesture-free).
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
         pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
