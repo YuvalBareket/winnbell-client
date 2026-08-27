@@ -17,6 +17,11 @@ import {
   Button,
   Autocomplete,
   TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  InputAdornment,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { motion } from 'framer-motion';
@@ -30,13 +35,14 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import {
   PRIMARY_MAIN, PRIMARY_TINT, GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, ALPHA_WHITE_80, BG_ROW_SUBTLE,
   TEXT_TERTIARY, TEXT_HEADING, BORDER_SUBTLE, STATUS_ACTIVATED_BG, STATUS_ACTIVATED_TEXT,
   STATUS_PENDING_BG, STATUS_PENDING_TEXT, METRIC_BAD_TINT, METRIC_BAD,
 } from '../../../../shared/colors';
 import { AdminCard, SectionHeader } from './adminUi';
-import { useBusinessDetail, useAdminImageDecision, useBusinessEntries } from '../../hooks/useAdmin';
+import { useBusinessDetail, useAdminImageDecision, useBusinessEntries, useUpdateBusinessThreshold } from '../../hooks/useAdmin';
 
 interface Props {
   businessId: number | null;
@@ -91,6 +97,7 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
   const [entriesPage, setEntriesPage] = useState(1);
   const imageDecision = useAdminImageDecision();
   const [pendingTicket, setPendingTicket] = useState<number | null>(null);
+  const [thresholdOpen, setThresholdOpen] = useState(false);
 
   // Reset both campaign selection and entries page when a different business opens.
   // Collapsed from two chained effects (3 renders) to one (2 renders).
@@ -279,20 +286,31 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
             {/* Stats — scoped to selected campaign */}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
               <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 1.5 }}>
-                {[
+                {([
                   { label: selectedDrawId === ALL ? 'Total Entries' : 'Entries (campaign)', value: activeEntries },
                   { label: selectedDrawId === ALL ? 'Quarantined' : 'Quarantined (campaign)', value: quarantinedEntries },
                   { label: 'Locations', value: locations.length },
                   { label: 'Active Locations', value: locations.filter((l: any) => l.is_active).length },
                   { label: 'Fee at Entry', value: biz.fee_at_entry != null ? `$${Number(biz.fee_at_entry).toFixed(2)}` : '—' },
                   { label: 'Entry Cap', value: biz.entries_per_location ?? '—' },
-                  { label: 'Min. Transaction', value: biz.min_transaction_amount ? `$${Number(biz.min_transaction_amount).toFixed(2)}` : '—' },
+                  { label: 'Min. Transaction', value: biz.min_transaction_amount ? `$${Number(biz.min_transaction_amount).toFixed(2)}` : '—', editable: true },
+                  { label: 'Campaign Min.', value: biz.open_draw_min_transaction != null ? `$${Number(biz.open_draw_min_transaction).toFixed(2)}` : '—', editable: true },
                   { label: 'Legal Name', value: biz.legal_name ?? '—' },
                   { label: 'Member Since', value: new Date(biz.created_at).toLocaleDateString('en-US') },
-                ].map(({ label, value }) => (
-                  <AdminCard key={label} sx={{ p: 1.5 }}>
+                ] as Array<{ label: string; value: string | number; editable?: boolean }>).map(({ label, value, editable }) => (
+                  <AdminCard key={label} sx={{ p: 1.5, position: 'relative' }}>
                     <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', fontWeight: 700 }}>{label}</Typography>
                     <Typography variant='body2' fontWeight={800} sx={{ color: TEXT_HEADING, mt: 0.5 }}>{String(value)}</Typography>
+                    {editable && (
+                      <IconButton
+                        size='small'
+                        aria-label={`Edit ${label}`}
+                        onClick={() => setThresholdOpen(true)}
+                        sx={{ position: 'absolute', top: 4, right: 4, p: 0.5 }}
+                      >
+                        <EditOutlinedIcon sx={{ fontSize: 15, color: TEXT_TERTIARY }} />
+                      </IconButton>
+                    )}
                   </AdminCard>
                 ))}
               </Box>
@@ -649,7 +667,129 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
           <Typography color='text.secondary'>Business not found.</Typography>
         )}
       </Box>
+
+      {/* Conditional render so each open remounts with fresh field state from the latest data */}
+      {biz && businessId !== null && thresholdOpen && (
+        <ThresholdEditDialog
+          businessId={businessId}
+          currentMin={biz.min_transaction_amount != null ? Number(biz.min_transaction_amount) : null}
+          currentDrawMin={biz.open_draw_min_transaction != null ? Number(biz.open_draw_min_transaction) : null}
+          pendingMin={biz.pending_min_transaction_amount != null ? Number(biz.pending_min_transaction_amount) : null}
+          inOpenDraw={biz.in_open_draw === true}
+          onClose={() => setThresholdOpen(false)}
+        />
+      )}
     </Drawer>
+  );
+};
+
+// ── Threshold edit dialog ─────────────────────────────────────────────────────
+// Admin override for both threshold values:
+//  - Business threshold (business.min_transaction_amount): enforcement reads it LIVE,
+//    so the change applies to new entries immediately (no owner-style pending dance).
+//  - Campaign threshold (draw_entry.min_transaction_at_entry on the open draw): the
+//    snapshot per-campaign analytics display; editable only while in an open campaign.
+interface ThresholdEditDialogProps {
+  businessId: number;
+  currentMin: number | null;
+  currentDrawMin: number | null;
+  pendingMin: number | null;
+  inOpenDraw: boolean;
+  onClose: () => void;
+}
+
+const ThresholdEditDialog: React.FC<ThresholdEditDialogProps> = ({
+  businessId, currentMin, currentDrawMin, pendingMin, inOpenDraw, onClose,
+}) => {
+  const [minTx, setMinTx] = useState(currentMin != null ? String(currentMin) : '');
+  const [drawMinTx, setDrawMinTx] = useState(currentDrawMin != null ? String(currentDrawMin) : '');
+  const [error, setError] = useState<string | null>(null);
+  const mutation = useUpdateBusinessThreshold();
+
+  const parseField = (raw: string): number | null | undefined => {
+    const trimmed = raw.trim();
+    if (!trimmed) return undefined;
+    const n = parseFloat(trimmed);
+    if (!Number.isFinite(n) || n <= 0 || n > 100000) return null;
+    return Math.round(n * 100) / 100;
+  };
+
+  const handleSave = () => {
+    setError(null);
+    const min = parseField(minTx);
+    const drawMin = inOpenDraw ? parseField(drawMinTx) : undefined;
+    if (min === null || drawMin === null) {
+      setError('Thresholds must be between $0.01 and $100,000.');
+      return;
+    }
+    // Send only what actually changed - the campaign update 400s when not enrolled,
+    // and an unchanged value is not a change worth writing.
+    const payload: { businessId: number; minTransactionAmount?: number; drawEntryMinTransaction?: number } = { businessId };
+    if (min !== undefined && min !== currentMin) payload.minTransactionAmount = min;
+    if (drawMin !== undefined && drawMin !== currentDrawMin) payload.drawEntryMinTransaction = drawMin;
+    if (payload.minTransactionAmount === undefined && payload.drawEntryMinTransaction === undefined) {
+      onClose();
+      return;
+    }
+    mutation.mutate(payload, {
+      onSuccess: onClose,
+      onError: (err: unknown) => {
+        const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message;
+        setError(msg ?? 'Failed to update thresholds. Please try again.');
+      },
+    });
+  };
+
+  return (
+    <Dialog open onClose={onClose} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: '16px' } }}>
+      <DialogTitle sx={{ fontWeight: 800, color: TEXT_HEADING, pb: 1 }}>Edit thresholds</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2.5} sx={{ mt: 0.5 }}>
+          <TextField
+            label='Business threshold'
+            value={minTx}
+            onChange={(e) => setMinTx(e.target.value)}
+            size='small'
+            type='number'
+            slotProps={{ input: { startAdornment: <InputAdornment position='start'>$</InputAdornment> } }}
+            helperText='Applies to new entries immediately.'
+          />
+          <TextField
+            label='Current campaign threshold'
+            value={drawMinTx}
+            onChange={(e) => setDrawMinTx(e.target.value)}
+            size='small'
+            type='number'
+            disabled={!inOpenDraw}
+            slotProps={{ input: { startAdornment: <InputAdornment position='start'>$</InputAdornment> } }}
+            helperText={inOpenDraw
+              ? 'The threshold recorded for the open campaign (shown in per-campaign analytics).'
+              : 'Not in an open campaign.'}
+          />
+          {pendingMin != null && (
+            <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+              The owner has a queued change to ${pendingMin.toFixed(2)} that will apply when the campaign closes.
+            </Typography>
+          )}
+          {error && (
+            <Typography variant='caption' sx={{ color: METRIC_BAD, fontWeight: 600 }}>{error}</Typography>
+          )}
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onClose} disabled={mutation.isPending} sx={{ textTransform: 'none', fontWeight: 600, color: TEXT_TERTIARY }}>
+          Cancel
+        </Button>
+        <Button
+          variant='contained'
+          onClick={handleSave}
+          disabled={mutation.isPending}
+          sx={{ textTransform: 'none', fontWeight: 700 }}
+        >
+          {mutation.isPending ? 'Saving...' : 'Save'}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

@@ -39,6 +39,7 @@ import {
   removeBusinessFromDraw,
   setBusinessParticipation,
   fetchBusinessDetail,
+  updateBusinessThreshold,
   fetchBusinessEntries,
   fetchAdminEntries,
   adminImageDecision,
@@ -576,6 +577,20 @@ export const useSetBusinessParticipation = () => {
   });
 };
 
+export const useUpdateBusinessThreshold = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ businessId, minTransactionAmount, drawEntryMinTransaction }: {
+      businessId: number; minTransactionAmount?: number; drawEntryMinTransaction?: number;
+    }) => updateBusinessThreshold(businessId, { minTransactionAmount, drawEntryMinTransaction }),
+    onSuccess: () => {
+      // Threshold shows in the detail drawer and the businesses stats list.
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businessDetailAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses });
+    },
+  });
+};
+
 export const useAdminImageDecision = (onSettled?: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -663,6 +678,8 @@ type AdminBusinessDetail = {
   fee_at_entry: number | null;
   entries_per_location: number | null;
   min_transaction_amount: number | null;
+  pending_min_transaction_amount: number | null;
+  open_draw_min_transaction: number | null;
   created_at: string;
   owner_name: string | null;
   owner_email: string | null;

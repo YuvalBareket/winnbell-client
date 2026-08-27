@@ -164,6 +164,11 @@ export const setBusinessParticipation = (drawId: number, businessId: number, pau
 export const fetchBusinessDetail = (businessId: number) =>
   api.get(`/admin/businesses/${businessId}`);
 
+export const updateBusinessThreshold = (
+  businessId: number,
+  payload: { minTransactionAmount?: number; drawEntryMinTransaction?: number },
+) => api.patch(`/admin/businesses/${businessId}/threshold`, payload);
+
 export const adminImageDecision = (ticketId: number, decision: 'approve' | 'reject') =>
   api.patch(`/admin/tickets/${ticketId}/image-decision`, { decision });
 
