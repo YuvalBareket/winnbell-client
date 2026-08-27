@@ -59,9 +59,13 @@ export const submitReceiptEntry = (payload: ReceiptEntryPayload): Promise<Receip
   api.post('/tickets/receipt-entry', payload).then(r => r.data);
 
 // Bounded so a stalled API request can't hang the upload flow (the R2 PUT that follows
-// carries its own timeout in useUploadReceiptImage).
-export const getReceiptUploadUrl = (size: number): Promise<{ uploadUrl: string; publicUrl: string }> =>
-  api.get('/tickets/receipt-upload-url', { params: { size }, timeout: 15_000 }).then(r => r.data);
+// carries its own timeout in useUploadReceiptImage). contentType is signed into the presigned
+// URL server-side, so the PUT must send exactly this type.
+export const getReceiptUploadUrl = (
+  size: number,
+  contentType: string,
+): Promise<{ uploadUrl: string; publicUrl: string }> =>
+  api.get('/tickets/receipt-upload-url', { params: { size, contentType }, timeout: 15_000 }).then(r => r.data);
 
 export interface ReceiptScanResult {
   ok: boolean;
