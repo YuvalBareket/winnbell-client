@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Box, Typography, Stack, Paper, Button,
   useMediaQuery, useTheme, CircularProgress,
@@ -16,7 +16,7 @@ import { StickerCanvas, StickerPreview } from './StickerTemplates';
 import { STICKER_COLORWAYS } from './stickerConstants';
 import type { StickerShape } from './stickerConstants';
 import {
-  POSTER_W, POSTER_H, DESIGN_W, DESIGN_H,
+  POSTER_W, POSTER_H, DESIGN_W, DESIGN_H, HALF_DESIGN_W,
   THUMB_SCALE, THUMB_W, THUMB_H,
   THUMB_SCALE_MOBILE, THUMB_W_MOBILE, THUMB_H_MOBILE,
 } from './posterConstants';
@@ -25,11 +25,19 @@ import {
   PosterBlueCanvas, PosterNavyCanvas, PosterCreamCanvas, PosterLightCanvas,
 } from './PosterTemplates';
 
-// Print capture: 2x the 1414x2000 design canvas = 2828x4000 output, ~340 DPI on A4
-// (above the 300 DPI print standard). SVGs rasterize at capture resolution so the
-// QR and wordmark edges stay sharp at print size.
+// Print capture: 2x the design canvas (Letter 1545x2000 -> 3090x4000, ~364 DPI on
+// 8.5x11; half sheet 1294x2000 -> 2588x4000, ~470 DPI on 5.5x8.5 - both above the
+// 300 DPI print standard). SVGs rasterize at capture resolution so the QR and
+// wordmark edges stay sharp at print size.
 const PRINT_SCALE = 2;
 const SVG_RASTER_SCALE = PRINT_SCALE * 2;
+
+// Download page sizes. 'letter' = 8.5x11 in, 'half' = 5.5x8.5 in (half sheet).
+type PosterSize = 'letter' | 'half';
+
+// Half-sheet preview width at the shared preview height (same scale as the Letter
+// preview, so switching sizes keeps the poster the same height and only narrows it).
+const HALF_PREVIEW_W = Math.round(HALF_DESIGN_W * (POSTER_H / DESIGN_H));
 
 const TEMPLATES = [
   { id: 'blue',  label: 'Blue',  Component: PosterBlue,  Canvas: PosterBlueCanvas },
@@ -95,8 +103,13 @@ const PostersTab = ({
   const [selectedId, setSelectedId] = useState('blue');
   const [downloading, setDownloading] = useState(false);
 
-  // Hidden full-size (1414x2000) canvas of the selected template - the capture target.
+  // Hidden full-size canvases of the selected template - the capture targets.
+  // captureRef = Letter (1545x2000), captureHalfRef = half sheet (1294x2000).
   const captureRef = useRef<HTMLDivElement>(null);
+  const captureHalfRef = useRef<HTMLDivElement>(null);
+  // Selected page size - drives the preview ratio AND what Download/Print produce
+  // (segmented control, same pattern as the Social Assets size switch).
+  const [posterSize, setPosterSize] = useState<PosterSize>('letter');
 
   // Mobile print keeps its hidden overlay + print CSS mounted until the next
   // print or unmount; iOS re-renders the preview on any setting change (zoom,
@@ -140,12 +153,16 @@ const PostersTab = ({
   const thumbW = isDesktop ? THUMB_W : THUMB_W_MOBILE;
   const thumbH = isDesktop ? THUMB_H : THUMB_H_MOBILE;
 
-  // ── Shared capture: rasterize the HIDDEN full-size canvas (1545x2000) 1:1 ──
-  // The capture node is unscaled design pixels, so no transform juggling and no
-  // fractional-px text metrics; output is exactly the design canvas resolution.
-  const capturePosterJpeg = async (): Promise<string> => {
-    if (!captureRef.current) throw new Error('capture node missing');
-    const node = captureRef.current;
+  // ── Shared capture: rasterize a HIDDEN full-size canvas 1:1 ────────────────
+  // Two canvases stay mounted offscreen: Letter (1545x2000) and half sheet (1294x2000,
+  // the SAME composition re-flowed for the 5.5x8.5 ratio - scaling the Letter image
+  // would stretch or letterbox it). The capture node is unscaled design pixels, so no
+  // transform juggling and no fractional-px text metrics.
+  const capturePosterJpeg = async (size: PosterSize = 'letter'): Promise<string> => {
+    const ref = size === 'half' ? captureHalfRef : captureRef;
+    if (!ref.current) throw new Error('capture node missing');
+    const node = ref.current;
+    const nodeW = size === 'half' ? HALF_DESIGN_W : DESIGN_W;
     const swaps: Array<{ svg: SVGSVGElement; img: HTMLImageElement }> = [];
     const logoSwaps: Array<{ img: HTMLImageElement; originalSrc: string }> = [];
     try {
@@ -178,7 +195,7 @@ const PostersTab = ({
       await document.fonts.ready;
       const canvas = await html2canvas(node, {
         scale: PRINT_SCALE,
-        width: DESIGN_W,
+        width: nodeW,
         height: DESIGN_H,
         useCORS: true,
         backgroundColor: '#ffffff',
@@ -196,19 +213,25 @@ const PostersTab = ({
   };
 
   // ── PDF download ────────────────────────────────────────────────────────────
-  const handleDownload = async () => {
+  // Each size gets its own capture AND its own page format so the full-bleed image
+  // fills the page with zero distortion and drops straight into print products
+  // (e.g. Canva 8.5x11in) edge to edge.
+  //   letter: 1545x2000 capture on a US Letter page (8.5x11 in)
+  //   half:   1294x2000 capture on a half-sheet page (5.5x8.5 in = 139.7x215.9 mm)
+  const handleDownload = async (size: PosterSize = 'letter') => {
     setDownloading(true);
     const selected = TEMPLATES.find(t => t.id === selectedId) ?? TEMPLATES[0];
     try {
-      const imgData = await capturePosterJpeg();
-      // US Letter portrait: same 8.5x11 ratio as the 1545x2000 design canvas, so the
-      // full-bleed image fills the page with zero distortion and drops straight into
-      // Letter print products (e.g. Canva 8.5x11in) edge to edge.
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+      const imgData = await capturePosterJpeg(size);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: size === 'half' ? [139.7, 215.9] : 'letter',
+      });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
-      pdf.save(`winnbell-${selected.id}-poster.pdf`);
+      pdf.save(size === 'half' ? `winnbell-${selected.id}-poster-5.5x8.5.pdf` : `winnbell-${selected.id}-poster.pdf`);
       onToast('Poster downloaded!');
     } catch (err) {
       console.error(err);
@@ -218,16 +241,20 @@ const PostersTab = ({
     }
   };
 
-  // ── Print: same full-size capture, then the platform-specific print path ──
-  const handlePrint = async () => {
+  // ── Print: same size-matched capture, then the platform-specific print path ──
+  const handlePrint = async (size: PosterSize = 'letter') => {
     setDownloading(true);
     try {
-      const imgData = await capturePosterJpeg();
+      const imgData = await capturePosterJpeg(size);
 
       if (isDesktop) {
-        // Desktop: build the exact same Letter PDF the Download button produces
-        // and print it from a hidden iframe (popup-free, gesture-free).
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+        // Desktop: build the exact same size-matched PDF the Download button
+        // produces and print it from a hidden iframe (popup-free, gesture-free).
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: size === 'half' ? [139.7, 215.9] : 'letter',
+        });
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
         pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
@@ -246,14 +273,14 @@ const PostersTab = ({
         // Mobile: iOS/Android cannot print a PDF loaded in an iframe; calling
         // print() there falls back to printing the whole app page. Instead, print
         // the main document with print-only CSS that hides the app and shows just
-        // the poster image on a single US Letter page.
+        // the poster image on a single size-matched page.
         const overlay = document.createElement('div');
         overlay.className = 'poster-print-overlay';
         const style = document.createElement('style');
         style.textContent = `
           .poster-print-overlay{display:none}
           @media print{
-            @page{size:letter portrait;margin:0}
+            @page{size:${size === 'half' ? '5.5in 8.5in' : 'letter'} portrait;margin:0}
             body>*:not(.poster-print-overlay){display:none !important}
             .poster-print-overlay{display:block !important}
             .poster-print-overlay img{display:block;width:100%;height:auto;page-break-inside:avoid;break-inside:avoid}
@@ -296,8 +323,13 @@ const PostersTab = ({
     pickVersion: locationPickVersion,
     alwaysAsk: alwaysAskLocation,
     actions: {
-      download: () => { void handleDownload(); },
-      print: () => { void handlePrint(); },
+      // Explicit per-size actions (not a posterSize closure): the gate can resume an
+      // action after the location picker, and a stale closure would download the size
+      // selected at click-arming time rather than the one on screen.
+      download: () => { void handleDownload('letter'); },
+      downloadHalf: () => { void handleDownload('half'); },
+      print: () => { void handlePrint('letter'); },
+      printHalf: () => { void handlePrint('half'); },
       copy: onCopy,
       sticker: () => { void handleDownloadSticker(); },
     },
@@ -311,10 +343,16 @@ const PostersTab = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.05 }}
     >
-      {/* Offscreen full-resolution capture node (kept mounted so downloads are instant). */}
+      {/* Offscreen full-resolution capture nodes (kept mounted so downloads are instant).
+          One per page size: Letter and the re-flowed 5.5x8.5 half sheet. */}
       <Box aria-hidden style={{ position: 'fixed', left: -20000, top: 0, width: DESIGN_W, height: DESIGN_H, pointerEvents: 'none', zIndex: -1 }}>
         <Box ref={captureRef} style={{ width: DESIGN_W, height: DESIGN_H }}>
           <SelectedCanvas businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} />
+        </Box>
+      </Box>
+      <Box aria-hidden style={{ position: 'fixed', left: -20000, top: DESIGN_H + 40, width: HALF_DESIGN_W, height: DESIGN_H, pointerEvents: 'none', zIndex: -1 }}>
+        <Box ref={captureHalfRef} style={{ width: HALF_DESIGN_W, height: DESIGN_H }}>
+          <SelectedCanvas businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} pageW={HALF_DESIGN_W} />
         </Box>
       </Box>
 
@@ -396,25 +434,41 @@ const PostersTab = ({
                     Preview
                   </Typography>
                   <Box sx={{ display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
-                    <Box sx={{
-                      flexShrink: 0,
-                      boxShadow: SHADOW_CARD,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      transformOrigin: 'top center',
-                      transform: { xs: 'scale(0.92)', sm: 'none' },
-                      mb: { xs: `-${Math.round(POSTER_H * 0.08)}px`, sm: 0 },
-                    }}>
-                      <Box style={{ width: POSTER_W, height: POSTER_H, overflow: 'hidden' }}>
-                        {TEMPLATES.find(t => t.id === selectedId)?.Component
-                          ? (() => {
-                            const Comp = TEMPLATES.find(t => t.id === selectedId)!.Component;
-                            return <Comp businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} />;
-                          })()
-                          : null
-                        }
-                      </Box>
-                    </Box>
+                    {/* Re-animates on size switch (same pattern as the Social Assets preview);
+                        template/colorway changes update in place. */}
+                    <AnimatePresence mode='wait'>
+                      <motion.div
+                        key={posterSize}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Box sx={{
+                          flexShrink: 0,
+                          boxShadow: SHADOW_CARD,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          transformOrigin: 'top center',
+                          transform: { xs: 'scale(0.92)', sm: 'none' },
+                          mb: { xs: `-${Math.round(POSTER_H * 0.08)}px`, sm: 0 },
+                        }}>
+                          <Box style={{ width: posterSize === 'half' ? HALF_PREVIEW_W : POSTER_W, height: POSTER_H, overflow: 'hidden' }}>
+                            {posterSize === 'half' ? (
+                              // Half sheet: the re-flowed 1294-wide canvas at preview scale.
+                              <Box style={{ width: HALF_DESIGN_W, height: DESIGN_H, transform: `scale(${POSTER_H / DESIGN_H})`, transformOrigin: 'top left' }}>
+                                <SelectedCanvas businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} pageW={HALF_DESIGN_W} />
+                              </Box>
+                            ) : (
+                              (() => {
+                                const Comp = (TEMPLATES.find(t => t.id === selectedId) ?? TEMPLATES[0]).Component;
+                                return <Comp businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} />;
+                              })()
+                            )}
+                          </Box>
+                        </Box>
+                      </motion.div>
+                    </AnimatePresence>
                   </Box>
                 </Box>
               </Box>
@@ -424,13 +478,59 @@ const PostersTab = ({
                 {/* Download + Print + Copy. All gated: with no location chosen the
                     picker opens and the clicked action resumes after the pick. */}
                 <Stack spacing={1.5}>
+                  {/* Size segmented control - same pattern as the Social Assets size switch.
+                      Drives the preview ratio and what Download/Print produce. */}
+                  <Box>
+                    <Typography variant='caption' fontWeight={700} color='text.secondary' display='block' sx={{ mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      Size
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: '3px',
+                        background: '#f7f9fc',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: '12px',
+                        p: '3px',
+                      }}
+                    >
+                      {([
+                        { id: 'letter' as PosterSize, label: 'Full page · 8.5x11' },
+                        { id: 'half' as PosterSize, label: 'Half sheet · 5.5x8.5' },
+                      ]).map((opt) => (
+                        <motion.button
+                          key={opt.id}
+                          onClick={() => setPosterSize(opt.id)}
+                          style={{
+                            flex: 1,
+                            padding: '9px 8px',
+                            border: 'none',
+                            borderRadius: '10px',
+                            background: posterSize === opt.id ? '#fff' : 'transparent',
+                            color: posterSize === opt.id ? PRIMARY_MAIN : 'rgba(0,0,0,0.6)',
+                            fontSize: '13px',
+                            fontWeight: posterSize === opt.id ? 800 : 600,
+                            cursor: 'pointer',
+                            boxShadow: posterSize === opt.id ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                            transition: 'all 0.2s ease',
+                            whiteSpace: 'nowrap',
+                          }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          {opt.label}
+                        </motion.button>
+                      ))}
+                    </Box>
+                  </Box>
                   <Stack direction={{ xs: 'column', md: 'column' }} spacing={1.5}>
                     <Button
                       fullWidth
                       variant='contained'
                       size='large'
                       startIcon={downloading ? undefined : <FileDownload />}
-                      onClick={() => runGated('download')}
+                      onClick={() => runGated(posterSize === 'half' ? 'downloadHalf' : 'download')}
                       disabled={downloading}
                       sx={{
                         py: 1.4,
@@ -446,7 +546,7 @@ const PostersTab = ({
                       variant='outlined'
                       size='large'
                       startIcon={<Print />}
-                      onClick={() => runGated('print')}
+                      onClick={() => runGated(posterSize === 'half' ? 'printHalf' : 'print')}
                       disabled={downloading}
                       sx={{
                         py: 1.4,

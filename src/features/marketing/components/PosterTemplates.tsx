@@ -159,17 +159,27 @@ const COLORWAYS: Record<'blue' | 'navy' | 'cream' | 'light', Colorway> = {
   },
 };
 
-// ── Full-size canvas (1545x2000 design pixels = Letter ratio, no scaling inside) ─
-const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps & { cw: Colorway }) => {
+// ── Full-size canvas (design pixels, no scaling inside) ──────────────────────
+// Default width is DESIGN_W (1545 = US Letter). pageW=HALF_DESIGN_W (1294) re-flows the
+// SAME composition for the 5.5x8.5 half sheet: text metrics scale by s (the headline
+// column ratio), right-anchored art tracks the right edge, centered blocks re-center.
+// At the Letter width every derived value reduces EXACTLY to the approved design
+// measurements (s = 1), so the Letter output is pixel-identical to before.
+const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, pageW, cw }: PosterProps & { cw: Colorway }) => {
   const logoSrc = cw.logoVariant === 'white' ? '/winnbell_app_name_white.svg' : '/winnbell_app_name.svg';
   // Same semantics as the previous posters: minAmountLabel is a formatted amount
   // ("$20") or null when the business has no threshold.
   const stepLabel1 = minAmountLabel ? `Spend ${minAmountLabel} or more` : 'Make a purchase';
 
+  const W = pageW ?? DESIGN_W;
+  // Headline column: the approved 1270 on Letter, shrinking with the page (72px margins).
+  const headlineW = Math.min(1270, W - 144);
+  const s = headlineW / 1270; // 1 on Letter; ~0.906 on the half sheet
+
   return (
     <div
       style={{
-        width: DESIGN_W,
+        width: W,
         height: DESIGN_H,
         position: 'relative',
         overflow: 'hidden',
@@ -178,22 +188,23 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps
         flexShrink: 0,
       }}
     >
-      {/* Ambient glow circles (exact design offsets; both bleed off the right edge) */}
-      <div style={{ position: 'absolute', left: 474, top: -400, pointerEvents: 'none' }}>
+      {/* Ambient glow circles (right-anchored: Letter offsets 474/514 = W - 1071/1031) */}
+      <div style={{ position: 'absolute', left: W - 1071, top: -400, pointerEvents: 'none' }}>
         <RadialGlow color={cw.glow1.color} size={1240} fade={cw.glow1.fade} />
       </div>
       {cw.glow2 && (
-        <div style={{ position: 'absolute', left: 514, top: 1180, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', left: W - 1031, top: 1180, pointerEvents: 'none' }}>
           <RadialGlow color={cw.glow2.color} size={1200} fade={cw.glow2.fade} />
         </div>
       )}
 
-      {/* Confetti - one shared asset for all colorways, per the design */}
+      {/* Confetti - one shared asset for all colorways; top copy hugs the right corner
+          (Letter left 771 = W - 774, i.e. flush with the right edge) */}
       <img
         src={confettiPng}
         alt=''
         aria-hidden
-        style={{ position: 'absolute', left: 771, top: -30, width: 774, height: 820, pointerEvents: 'none' }}
+        style={{ position: 'absolute', left: W - 774, top: -30, width: 774, height: 820, pointerEvents: 'none' }}
       />
       <img
         src={confettiPng}
@@ -218,30 +229,30 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps
       />
 
       {/* Headline + subline */}
-      <div style={{ position: 'absolute', left: 72, top: 236, width: 1270 }}>
-        <div style={{ fontSize: 150, fontWeight: 800, letterSpacing: -5.25, lineHeight: '159px', color: cw.headlineColor }}>
+      <div style={{ position: 'absolute', left: 72, top: 236, width: headlineW }}>
+        <div style={{ fontSize: 150 * s, fontWeight: 800, letterSpacing: -5.25 * s, lineHeight: `${159 * s}px`, color: cw.headlineColor }}>
           $3,000
           <br />
           {/* Smaller than line one: at the design's 150px this line overflows the 1270px
-              column and wraps. 120px keeps it on one line; tracking keeps the same
+              column and wraps. 110px keeps it on one line; tracking keeps the same
               -0.035em ratio as the design (150px : -5.25). */}
-          <span style={{ color: cw.accentColor, fontSize: 110, letterSpacing: -4.2 }}>This Current Draw.</span>
+          <span style={{ color: cw.accentColor, fontSize: 110 * s, letterSpacing: -4.2 * s }}>This Current Draw.</span>
         </div>
         {/* Subline bumped from the design's 42px (user request 2026-08-17); tracking and
-            line-height scaled by the same ratio. Still one line at 48px in the 1270 column. */}
-        <div style={{ fontSize: 44, fontWeight: 800, letterSpacing: -0.48, lineHeight: '64.8px', color: cw.sublineColor, marginTop: 28 }}>
+            line-height scaled by the same ratio. One line in the headline column. */}
+        <div style={{ fontSize: 44 * s, fontWeight: 800, letterSpacing: -0.48 * s, lineHeight: `${64.8 * s}px`, color: cw.sublineColor, marginTop: 28 }}>
           {"Could today's purchase win you a big cash prize?"}
         </div>
       </div>
 
       {/* Center column: location chip, QR card, scan caption. Centered on the full canvas
-          width (DESIGN_W) so the QR sits in the middle of the Letter-width poster. */}
-      <div style={{ position: 'absolute', left: 0, top: 775, width: DESIGN_W, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          width so the QR sits in the middle of the poster at any page size. */}
+      <div style={{ position: 'absolute', left: 0, top: 775, width: W, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {/* Chip enlarged from the design's 26px per user request 2026-08-01 ("too small");
             marginBottom shrunk by the same height gain so the QR card stays at y=846. */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 25 }}>
-          <PinIcon color={cw.chipColor} size={40} />
-          <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: 2.16, textTransform: 'uppercase', color: cw.chipColor, whiteSpace: 'nowrap' }}>
+          <PinIcon color={cw.chipColor} size={40 * s} />
+          <span style={{ fontSize: 36 * s, fontWeight: 800, letterSpacing: 2.16 * s, textTransform: 'uppercase', color: cw.chipColor, whiteSpace: 'nowrap' }}>
             {businessName}
           </span>
         </div>
@@ -264,32 +275,32 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps
         </div>
 
         <div style={{ marginTop: 30 }}>
-          <span style={{ fontSize: 62, fontWeight: 800, letterSpacing: -0.93, color: cw.accentColor }}>
+          <span style={{ fontSize: 62 * s, fontWeight: 800, letterSpacing: -0.93 * s, color: cw.accentColor }}>
             Scan to get your entries
           </span>
         </div>
       </div>
 
-      {/* Steps row centered on the canvas ((1545-1270)/2 = 138); width 1270 keeps the
-          design's space-between rhythm between the three steps. */}
-      <div style={{ position: 'absolute', left: 138, top: 1660, width: 1270, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Steps row centered on the canvas; width = headline column keeps the design's
+          space-between rhythm between the three steps. */}
+      <div style={{ position: 'absolute', left: Math.round((W - headlineW) / 2), top: 1660, width: headlineW, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {[
           { n: '1', label: stepLabel1 },
           { n: '2', label: 'Submit your receipt' },
           { n: '3', label: 'Enter the current drawing' },
         ].map((step) => (
-          <div key={step.n} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div key={step.n} style={{ display: 'flex', alignItems: 'center', gap: 14 * s }}>
             <span
               style={{
-                width: 52, height: 52, flexShrink: 0, borderRadius: '50%',
+                width: 52 * s, height: 52 * s, flexShrink: 0, borderRadius: '50%',
                 background: cw.stepCircleBg, color: cw.stepNumColor,
-                fontSize: 27, fontWeight: 800,
+                fontSize: 27 * s, fontWeight: 800,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
               {step.n}
             </span>
-            <span style={{ fontSize: 29, fontWeight: 700, letterSpacing: -0.29, lineHeight: '36.25px', color: cw.stepLabelColor, whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 29 * s, fontWeight: 700, letterSpacing: -0.29 * s, lineHeight: `${36.25 * s}px`, color: cw.stepLabelColor, whiteSpace: 'nowrap' }}>
               {step.label}
             </span>
           </div>
@@ -299,9 +310,8 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, cw }: PosterProps
       {/* Legal fine print with the design's hairline rule above (1px + 22px padding).
           Bottom-anchored (bottom: 72, matching the side margins) so the disclosure reaches
           the end of the flyer with a print-safe margin no matter how many lines it wraps.
-          Width 1401 = full content width (DESIGN_W 1545 - 72 side margins x2), so the rule
-          and text span the whole flyer instead of the old 1270 (A4) column. */}
-      <div style={{ position: 'absolute', left: 72, bottom: 72, width: 1401, borderTop: `1px solid ${cw.legalRule}`, paddingTop: 22, fontSize: 24.5, fontWeight: 400, letterSpacing: 0.343, lineHeight: '34px', color: cw.legalColor, boxSizing: 'border-box' }}>
+          Full content width (W - 72 side margins x2) so the rule and text span the flyer. */}
+      <div style={{ position: 'absolute', left: 72, bottom: 72, width: W - 144, borderTop: `1px solid ${cw.legalRule}`, paddingTop: 22, fontSize: 24.5, fontWeight: 400, letterSpacing: 0.343, lineHeight: '34px', color: cw.legalColor, boxSizing: 'border-box' }}>
         {LEGAL_TEXT}
       </div>
     </div>
