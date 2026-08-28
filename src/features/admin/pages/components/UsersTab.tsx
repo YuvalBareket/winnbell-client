@@ -40,6 +40,7 @@ import {
   useToggleUserActive,
   useSetUserRisk,
   useUserAnalyticsSummary,
+  useAcquisitionLocations,
 } from '../../hooks/useAdmin';
 import { useDebounce } from '../../../../shared/hooks/useDebounce';
 import type { AdminUser } from '../../types/admin.types';
@@ -109,6 +110,10 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
   const [role, setRole] = useState('');
   const [riskLevel, setRiskLevel] = useState('');
   const [segment, setSegment] = useState<string>('');
+  // Joined via filter: acquisition source, plus a specific flyer location when the
+  // source is location_flyer ('' / 0 = no filter).
+  const [acqSource, setAcqSource] = useState('');
+  const [acqLocationId, setAcqLocationId] = useState(0);
   const [page, setPage] = useState(0);
   const [riskConfirmUser, setRiskConfirmUser] = useState<{ id: number; name: string; action: 'disqualify' | 'clear' } | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
@@ -130,7 +135,12 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
     role,
     riskLevel,
     segment: segment || undefined,
+    acquisitionSource: acqSource || undefined,
+    acquisitionLocationId: acqSource === 'location_flyer' && acqLocationId ? acqLocationId : undefined,
   });
+
+  // Location dropdown data: fetched only once the flyer source is picked.
+  const { data: acqLocations } = useAcquisitionLocations(acqSource === 'location_flyer');
 
   // Refetch overlay: keepPreviousData shows the STALE list while a new filter/segment/search
   // loads, which reads as "the click did nothing". Blur + spinner make the refresh visible.
@@ -405,6 +415,51 @@ const UsersTab: React.FC<Props> = ({ isMobile, onSnackError, onSnackSuccess }) =
               <MenuItem value='low'>Low (&lt;10)</MenuItem>
             </Select>
           </FormControl>
+
+          <FormControl size='small' sx={{ minWidth: 170 }}>
+            <InputLabel>Joined via</InputLabel>
+            <Select
+              value={acqSource}
+              label='Joined via'
+              onChange={(e) => { setAcqSource(e.target.value); setAcqLocationId(0); setPage(0); }}
+              sx={{
+                borderRadius: '12px',
+                '& .MuiOutlinedInput-root': {
+                  borderColor: BORDER_LIGHT,
+                },
+              }}
+            >
+              <MenuItem value=''>Any source</MenuItem>
+              <MenuItem value='location_flyer'>QR flyer scan</MenuItem>
+              <MenuItem value='referral'>Friend referral</MenuItem>
+              <MenuItem value='promo_code'>Promo code</MenuItem>
+              <MenuItem value='direct'>Direct signup</MenuItem>
+            </Select>
+          </FormControl>
+
+          {acqSource === 'location_flyer' && (
+            <FormControl size='small' sx={{ minWidth: 230 }}>
+              <InputLabel>Flyer location</InputLabel>
+              <Select
+                value={acqLocationId}
+                label='Flyer location'
+                onChange={(e) => { setAcqLocationId(Number(e.target.value)); setPage(0); }}
+                sx={{
+                  borderRadius: '12px',
+                  '& .MuiOutlinedInput-root': {
+                    borderColor: BORDER_LIGHT,
+                  },
+                }}
+              >
+                <MenuItem value={0}>All locations</MenuItem>
+                {(acqLocations ?? []).map((l) => (
+                  <MenuItem key={l.location_id} value={l.location_id}>
+                    {l.location_name} · {l.business_name} ({l.signup_count})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
         </Stack>
 
         {/* Users table / cards - blurred while a filter/search refetch is in flight */}

@@ -100,12 +100,35 @@ type ManagedLocation = {
   business_name: string;
 };
 
+// How the user arrived (user_acquisition, written once at signup). null for accounts
+// that predate acquisition tracking.
+type Acquisition = {
+  source: 'referral' | 'promo_code' | 'location_flyer' | 'direct';
+  promo_code: string | null;
+  referral_rewarded_at: string | null;
+  location_id: number | null;
+  location_name: string | null;
+  location_business_id: number | null;
+  location_business_name: string | null;
+  referrer_id: number | null;
+  referrer_name: string | null;
+  referrer_email: string | null;
+};
+
+const ACQUISITION_LABELS: Record<Acquisition['source'], string> = {
+  location_flyer: 'QR flyer scan',
+  referral: 'Friend referral',
+  promo_code: 'Promo code',
+  direct: 'Direct signup',
+};
+
 const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
   const { data, isLoading } = useUserDetail(userId);
   const imageDecision = useAdminImageDecision();
   const [pendingTicket, setPendingTicket] = React.useState<number | null>(null);
   const user = data?.user;
   const entries = data?.entries ?? [];
+  const acquisition = (user?.acquisition ?? null) as Acquisition | null;
   // Branch managers own no business row - their tie to a business is the location(s)
   // they manage, surfaced by getUserDetailService as a JSON array.
   const managedLocations: ManagedLocation[] = Array.isArray(user?.managed_locations)
@@ -277,6 +300,92 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                     </Box>
                   ))}
                 </Box>
+              </AdminCard>
+            </motion.div>
+
+            {/* Joined via: the exact acquisition channel recorded at signup */}
+            <motion.div variants={popIn}>
+              <AdminCard sx={{ p: 2 }}>
+                <Typography variant='caption' sx={{ color: TEXT_TERTIARY, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }} display='block' mb={1.5}>
+                  Joined via
+                </Typography>
+                {acquisition ? (
+                  <Stack spacing={1}>
+                    <Stack direction='row' spacing={1} alignItems='center' flexWrap='wrap' useFlexGap>
+                      <Chip
+                        label={ACQUISITION_LABELS[acquisition.source] ?? acquisition.source}
+                        size='small'
+                        sx={{ bgcolor: PRIMARY_MAIN, color: 'white', fontWeight: 700, borderRadius: '8px' }}
+                      />
+                      {acquisition.source === 'location_flyer' && (
+                        acquisition.location_name ? (
+                          <Typography variant='body2' sx={{ color: TEXT_HEADING }}>
+                            Scanned the flyer at{' '}
+                            <Box component='span' sx={{ fontWeight: 700 }}>{acquisition.location_name}</Box>
+                            {acquisition.location_business_name && (
+                              <>
+                                {' '}·{' '}
+                                <Box component='span' sx={{ fontWeight: 600, color: PRIMARY_MAIN }}>{acquisition.location_business_name}</Box>
+                              </>
+                            )}
+                          </Typography>
+                        ) : (
+                          <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>
+                            Scanned a location flyer (that location has since been removed)
+                          </Typography>
+                        )
+                      )}
+                      {acquisition.source === 'referral' && (
+                        acquisition.referrer_id ? (
+                          <Typography variant='body2' sx={{ color: TEXT_HEADING }}>
+                            Invited by{' '}
+                            <Box component='span' sx={{ fontWeight: 700 }}>{acquisition.referrer_name ?? '—'}</Box>
+                            {acquisition.referrer_email && (
+                              <Typography component='span' variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                                {' '}({acquisition.referrer_email})
+                              </Typography>
+                            )}
+                          </Typography>
+                        ) : (
+                          <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>
+                            Referred by a user whose account no longer exists
+                          </Typography>
+                        )
+                      )}
+                      {acquisition.source === 'promo_code' && (
+                        <Typography variant='body2' sx={{ color: TEXT_HEADING }}>
+                          Used promo code{' '}
+                          <Box component='span' sx={{ fontWeight: 700 }}>{acquisition.promo_code ?? '—'}</Box>
+                        </Typography>
+                      )}
+                      {acquisition.source === 'direct' && (
+                        <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>
+                          Signed up directly - no referral link, flyer, or promo code
+                        </Typography>
+                      )}
+                    </Stack>
+                    {acquisition.source === 'referral' && (
+                      <Chip
+                        label={acquisition.referral_rewarded_at
+                          ? `Welcome bonus granted ${new Date(acquisition.referral_rewarded_at).toLocaleDateString('en-US')}`
+                          : 'Welcome bonus pending phone verification'}
+                        size='small'
+                        sx={{
+                          alignSelf: 'flex-start',
+                          bgcolor: acquisition.referral_rewarded_at ? STATUS_ACTIVATED_BG : STATUS_PENDING_BG,
+                          color: acquisition.referral_rewarded_at ? STATUS_ACTIVATED_TEXT : STATUS_PENDING_TEXT,
+                          fontWeight: 700,
+                          borderRadius: '8px',
+                          fontSize: 11,
+                        }}
+                      />
+                    )}
+                  </Stack>
+                ) : (
+                  <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>
+                    Unknown - this account predates acquisition tracking
+                  </Typography>
+                )}
               </AdminCard>
             </motion.div>
 

@@ -20,6 +20,7 @@ import {
   fetchAdminOverview,
   fetchFunnelAnalytics,
   fetchAllUsers,
+  fetchAcquisitionLocations,
   fetchUserAnalyticsSummary,
   updateUserRole,
   toggleUserActive,
@@ -288,6 +289,18 @@ export const useFunnelAnalytics = (days: number) => {
   });
 };
 
+// Flyer locations with signup counts for the Users tab "Joined via" dropdown.
+// enabled: fetched only once the admin actually picks the flyer source - the list is
+// static per session, so a long staleTime avoids refetch churn.
+export const useAcquisitionLocations = (enabled: boolean) => {
+  return useQuery({
+    queryKey: queryKeys.admin.acquisitionLocations,
+    queryFn: async () => (await fetchAcquisitionLocations()).data,
+    enabled,
+    staleTime: 5 * 60_000,
+  });
+};
+
 export const useUserAnalyticsSummary = () => {
   return useQuery({
     queryKey: queryKeys.admin.userAnalyticsSummary,
@@ -305,9 +318,11 @@ export const useAdminUsers = (params: {
   role: string;
   riskLevel: string;
   segment?: string;
+  acquisitionSource?: string;
+  acquisitionLocationId?: number;
 }) => {
   return useInfiniteQuery({
-    queryKey: [...queryKeys.admin.users, params.limit ?? null, params.search ?? '', params.role ?? '', params.riskLevel ?? '', params.segment ?? ''],
+    queryKey: [...queryKeys.admin.users, params.limit ?? null, params.search ?? '', params.role ?? '', params.riskLevel ?? '', params.segment ?? '', params.acquisitionSource ?? '', params.acquisitionLocationId ?? 0],
     queryFn: async ({ pageParam }) => {
       const { data } = await fetchAllUsers({
         page: pageParam as number,
@@ -316,6 +331,8 @@ export const useAdminUsers = (params: {
         role: params.role || undefined,
         riskLevel: params.riskLevel || undefined,
         segment: params.segment || undefined,
+        acquisitionSource: params.acquisitionSource || undefined,
+        acquisitionLocationId: params.acquisitionLocationId || undefined,
       });
       return data as AdminUsersPage;
     },

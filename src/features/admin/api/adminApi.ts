@@ -56,7 +56,19 @@ export const fetchAllUsers = (params: {
   role?: string;
   riskLevel?: string;
   segment?: string;
+  acquisitionSource?: string;
+  acquisitionLocationId?: number;
 }) => api.get<AdminUsersPage>('/admin/users', { params });
+
+export interface AcquisitionLocation {
+  location_id: number;
+  location_name: string;
+  business_name: string;
+  signup_count: number;
+}
+
+export const fetchAcquisitionLocations = () =>
+  api.get<AcquisitionLocation[]>('/admin/acquisition-locations');
 export const setUserRiskScore = async (userId: number, riskScore: number): Promise<void> => {
   await api.patch(`/admin/users/${userId}/risk`, { risk_score: riskScore });
 };
