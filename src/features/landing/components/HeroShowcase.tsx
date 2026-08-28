@@ -60,12 +60,325 @@ import PhoneShowcase, {
 import { shortDate, TODAY, DAYS_AGO_3, RECEIPT_DATE, CAMPAIGN_ENDS } from './showcaseDates';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HeroShowcase - the consumer landing's five-beat story loop:
-// find a shop → snap a receipt (auto-filled) → entry success → all entries → weekly entry.
+// HeroShowcase - the consumer landing's five-beat story loop, hook first:
+// what is this (a purchase you already make becomes a shot at a big cash prize)
+// → where (participating shops on the map) → how easy is it (snap a receipt,
+// auto-filled) → entries add up → weekly entry on us (no purchase necessary).
+// The concept beat mirrors the business hero's concept beat on purpose (same
+// receipt-to-prize flip; headline echoes the page hero), opposite sides of the
+// marketplace.
 // Frame/loop machinery lives in PhoneShowcase; this file is just the screens.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Beat 1 · Nearby map ───────────────────────────────────────────────────────
+// ── Beat 1 · The concept: what you already buy becomes a shot at the prize ────
+
+/** Shimmering gold prize figure (concept card + campaign card share it). */
+const GOLD_SHIMMER_SX = {
+  fontWeight: 900,
+  lineHeight: 1,
+  letterSpacing: '-0.02em',
+  background: `linear-gradient(90deg, ${ACCENT_GOLD} 0%, ${GOLD_TROPHY} 25%, ${ACCENT_GOLD_LIGHT} 50%, ${GOLD_TROPHY} 75%, ${ACCENT_GOLD} 100%)`,
+  backgroundSize: '200% auto',
+  WebkitBackgroundClip: 'text',
+  backgroundClip: 'text',
+  color: 'transparent',
+  animation: 'wbGoldShimmer 3s linear infinite',
+  '@keyframes wbGoldShimmer': {
+    '0%': { backgroundPosition: '0% center' },
+    '100%': { backgroundPosition: '200% center' },
+  },
+  '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+} as const;
+
+// Gold flecks raining once the prize card lands.
+const FLECKS = [
+  { left: 8, dx: -20, spin: 360, w: 5, h: 5, color: GOLD_TROPHY, delay: 0 },
+  { left: 97, dx: -8, spin: 460, w: 7.5, h: 13, color: ACCENT_GOLD, delay: 0.35 },
+  { left: 186, dx: 3, spin: 550, w: 5.5, h: 9, color: ACCENT_GOLD_LIGHT, delay: 0.7 },
+  { left: 34, dx: 15, spin: 650, w: 8, h: 8, color: 'white', delay: 1.05 },
+  { left: 123, dx: -14, spin: 750, w: 6, h: 10, color: GOLD_TROPHY, delay: 0.2 },
+  { left: 212, dx: -2, spin: 845, w: 8.5, h: 14, color: ACCENT_GOLD, delay: 0.55 },
+  { left: 61, dx: 10, spin: 400, w: 6, h: 6, color: ACCENT_GOLD_LIGHT, delay: 0.9 },
+  { left: 150, dx: -19, spin: 500, w: 9, h: 15, color: 'white', delay: 0.1 },
+  { left: 238, dx: -7, spin: 595, w: 6.5, h: 11, color: GOLD_TROPHY, delay: 0.42 },
+  { left: 87, dx: 4, spin: 690, w: 9, h: 9, color: ACCENT_GOLD, delay: 0.75 },
+  { left: 176, dx: 16, spin: 790, w: 7, h: 12, color: ACCENT_GOLD_LIGHT, delay: 1.15 },
+  { left: 25, dx: -12, spin: 885, w: 9.5, h: 16, color: 'white', delay: 0.28 },
+];
+
+// The flip happens at FLIP seconds: the receipt has left the stage by then and
+// the prize card takes its place, so only one object ever holds the screen.
+// Same pacing as the business hero's concept beat, so the two landings read as
+// one brand; the headline gets ~4.5s of reading time before anything moves.
+const FLIP = 4.5;
+
+function ConceptScreen({ reduced }: ScreenProps) {
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        background: GRADIENT_HERO,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: '0 20px',
+        textAlign: 'center',
+      }}
+    >
+      {!reduced &&
+        FLECKS.map((f, i) => (
+          <motion.div
+            key={i}
+            initial={{ y: -18, x: 0, rotate: 0, opacity: 0 }}
+            animate={{ y: SCREEN_H + 30, x: f.dx, rotate: f.spin, opacity: [0, 1, 1, 0.9] }}
+            transition={{ delay: FLIP + 0.5 + f.delay, duration: 2.2, ease: 'easeIn' }}
+            style={{ position: 'absolute', top: 0, left: f.left, width: f.w, height: f.h, borderRadius: f.w === f.h ? '50%' : 1.5, background: f.color }}
+          />
+        ))}
+
+      {/* Soft radial glows, like the app's hero bands */}
+      <Box sx={{ position: 'absolute', top: -70, right: -50, width: 210, height: 210, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 66%)` }} />
+      <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 190, height: 190, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 66%)` }} />
+
+      {/* The story headline holds the whole beat */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.4 }} style={{ position: 'relative', zIndex: 1 }}>
+        <Box sx={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.015em', lineHeight: 1.45, color: 'white' }}>
+          Turn everyday purchases
+          <br />
+          into chances to win
+          <br />
+          <Box component='span' sx={{ color: ACCENT_GOLD_LIGHT }}>a real cash prize</Box>
+        </Box>
+      </motion.div>
+
+      {/* The stage: an everyday receipt flips into the prize card */}
+      <Box sx={{ position: 'relative', mt: 2, width: 200, height: 200, zIndex: 1 }} style={{ perspective: 900 }}>
+        {/* Gold halo warming up behind the prize card */}
+        {!reduced && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: FLIP + 0.1, duration: 0.9 }}
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              width: 250,
+              height: 250,
+              margin: '-125px 0 0 -125px',
+              borderRadius: '50%',
+              background: `radial-gradient(circle, ${GOLD_TROPHY}40 0%, transparent 62%)`,
+            }}
+          />
+        )}
+
+        {/* An everyday paper receipt */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={
+            reduced
+              ? { opacity: [0, 1, 1, 0] }
+              : { opacity: [0, 1, 1, 0], y: [26, 0, 0, 0], scale: [0.92, 1, 1, 1], rotateY: [0, 0, 0, 90] }
+          }
+          transition={{ delay: 0.35, duration: FLIP - 0.35 + 0.2, times: [0, 0.16, 0.86, 1], ease: 'easeInOut' }}
+          style={{ position: 'absolute', inset: 0 }}
+        >
+          <Box sx={{ mx: 'auto', width: 172 }}>
+            <Box sx={{ borderRadius: '14px 14px 0 0', bgcolor: BG_SURFACE, boxShadow: SHADOW_FLOAT, p: '13px 15px 11px', textAlign: 'left' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.9, mb: 1.3 }}>
+                <Box sx={{ width: 28, height: 28, borderRadius: '10px', bgcolor: SECTOR_CONFIG.Coffee.bgColor, display: 'grid', placeItems: 'center', flex: 'none' }}>
+                  <SectorGlyph sector='Coffee' size={16} color={SECTOR_CONFIG.Coffee.color} />
+                </Box>
+                <Box>
+                  <Box sx={{ fontSize: 11.5, fontWeight: 800, lineHeight: 1.2, color: TEXT_PRIMARY }}>Bella's Coffee</Box>
+                  <Box sx={{ fontSize: 8.5, fontWeight: 600, color: TEXT_TERTIARY }}>120 Main St · 9:41 AM</Box>
+                </Box>
+              </Box>
+              {(
+                [
+                  { w: 62, p: 20 },
+                  { w: 44, p: 16 },
+                  { w: 52, p: 18 },
+                ] as const
+              ).map((row, i) => (
+                <Box key={i} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.9 }}>
+                  <Box sx={{ height: 6, width: `${row.w}%`, borderRadius: 3, bgcolor: ALPHA_BLACK_06 }} />
+                  <Box sx={{ height: 6, width: row.p, borderRadius: 3, bgcolor: ALPHA_BLACK_06 }} />
+                </Box>
+              ))}
+              <Box sx={{ my: 1.1, borderTop: `2px dashed ${ALPHA_BLACK_06}` }} />
+              <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                <Box component='span' sx={{ fontSize: 10, fontWeight: 700, color: TEXT_TERTIARY }}>Total</Box>
+                <Box component='span' sx={{ fontSize: 15, fontWeight: 900, color: TEXT_HEADING }}>$30.00</Box>
+              </Box>
+            </Box>
+            {/* Torn receipt edge */}
+            <Box
+              sx={{
+                height: 7,
+                backgroundImage: `linear-gradient(135deg, ${BG_SURFACE} 50%, transparent 50%), linear-gradient(225deg, ${BG_SURFACE} 50%, transparent 50%)`,
+                backgroundSize: '11px 7px',
+                backgroundRepeat: 'repeat-x',
+              }}
+            />
+          </Box>
+        </motion.div>
+
+        {/* The prize card it turns into: the prize is the star, the entry is the footnote */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={reduced ? { opacity: 1 } : { opacity: [0, 1], rotateY: [-90, 0], scale: [0.96, 1] }}
+          transition={{ delay: FLIP + 0.05, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}
+        >
+          <Box
+            sx={{
+              position: 'relative',
+              overflow: 'hidden',
+              mx: 'auto',
+              width: 200,
+              borderRadius: '18px',
+              p: '14px 15px 13px',
+              background: GRADIENT_HERO,
+              border: `1px solid ${ALPHA_WHITE_20}`,
+              boxShadow: SHADOW_CARD_DEEP,
+              textAlign: 'left',
+            }}
+          >
+            <ConfirmationNumber sx={{ position: 'absolute', right: 6, bottom: 4, fontSize: 56, color: 'white', opacity: 0.14, transform: 'rotate(12deg)' }} />
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                <Box sx={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: ALPHA_WHITE_80 }}>Cash Prize Draw</Box>
+                <Box sx={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 0.6, px: 1, py: 0.35, borderRadius: 50, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}` }}>
+                  <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: GOLD_TROPHY }} />
+                  <Box component='span' sx={{ fontSize: 7.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACCENT_GOLD_LIGHT }}>Live now</Box>
+                </Box>
+              </Box>
+              <Box sx={{ ...GOLD_SHIMMER_SX, mt: 0.5, fontSize: 52 }}>$$$</Box>
+              <Box sx={{ my: 1.2, borderTop: `2px dashed ${ALPHA_WHITE_30}` }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box component='span' sx={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: ALPHA_WHITE_80 }}>Your entry</Box>
+                <Box component='span' sx={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 900, letterSpacing: '0.2em', color: ACCENT_GOLD_LIGHT }}>8KD2QP</Box>
+              </Box>
+            </Box>
+          </Box>
+        </motion.div>
+      </Box>
+
+      {/* The payoff moment, straight out of the entry success screen */}
+      <motion.div
+        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.92 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ ...SPRING_BOUNCY, delay: FLIP + 0.7 }}
+        style={{ marginTop: 18 }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.9, px: 2, py: 1, borderRadius: 999, bgcolor: 'white', boxShadow: SHADOW_FLOAT }}>
+          <EmojiEvents sx={{ fontSize: 17, color: GOLD_TROPHY }} />
+          <Box component='span' sx={{ fontSize: 12, fontWeight: 800, color: TEXT_HEADING }}>You're in! Good luck</Box>
+        </Box>
+      </motion.div>
+    </Box>
+  );
+}
+
+// ── The "You're In!" confetti takeover ────────────────────────────────────────
+// Fades in over a screen the moment its CTA fires (receipt submit, weekly
+// claim), straight out of EntrySuccessDialog: gold flecks, trophy, entry code.
+
+function SuccessOverlay({ reduced, delay, code, sub, fine }: { reduced: boolean; delay: number; code: string; sub: string; fine?: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.45, delay }}
+      style={{ position: 'absolute', inset: 0, zIndex: 2 }}
+    >
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          overflow: 'hidden',
+          background: GRADIENT_SUCCESS,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: '16px 18px',
+          textAlign: 'center',
+        }}
+      >
+        {!reduced &&
+          FLECKS.map((f, i) => (
+            <motion.div
+              key={i}
+              initial={{ y: -18, x: 0, rotate: 0, opacity: 0 }}
+              animate={{ y: SCREEN_H + 30, x: f.dx, rotate: f.spin, opacity: [0, 1, 1, 0.9] }}
+              transition={{ delay: delay + 0.3 + f.delay, duration: 2.1, ease: 'easeIn' }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: f.left,
+                width: f.w,
+                height: f.h,
+                borderRadius: f.w === f.h ? '50%' : 1.5,
+                background: f.color,
+              }}
+            />
+          ))}
+
+        <motion.div
+          initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ ...SPRING_BOUNCY, delay: delay + 0.15 }}
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: '50%',
+            background: ALPHA_WHITE_15,
+            border: `2px solid ${ALPHA_WHITE_30}`,
+            display: 'grid',
+            placeItems: 'center',
+            marginBottom: 14,
+          }}
+        >
+          <EmojiEvents sx={{ fontSize: 38, color: GOLD_TROPHY }} />
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: delay + 0.35 }}>
+          <Box sx={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em', color: 'white' }}>You're In!</Box>
+          <Box sx={{ mt: 0.6, fontSize: 11.5, fontWeight: 500, lineHeight: 1.6, color: ALPHA_WHITE_80 }}>{sub}</Box>
+        </motion.div>
+
+        <motion.div
+          initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.82 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ ...SPRING_POP, delay: delay + 0.55 }}
+          style={{
+            marginTop: 13,
+            padding: '10px 22px',
+            borderRadius: 9,
+            background: ALPHA_WHITE_10,
+            border: `1px solid ${ALPHA_WHITE_20}`,
+          }}
+        >
+          <Box sx={{ fontSize: 8, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: ALPHA_WHITE_70 }}>Entry Code</Box>
+          <Box sx={{ mt: 0.4, fontFamily: 'monospace', fontSize: 19, fontWeight: 900, letterSpacing: '0.24em', color: 'white' }}>{code}</Box>
+        </motion.div>
+
+        {fine && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: delay + 0.75 }}>
+            <Box sx={{ mt: 1.5, fontSize: 8.5, fontWeight: 500, color: ALPHA_WHITE_70 }}>{fine}</Box>
+          </motion.div>
+        )}
+      </Box>
+    </motion.div>
+  );
+}
+
+// ── Beat 2 · Nearby map ───────────────────────────────────────────────────────
 
 function MapScreen({ reduced }: ScreenProps) {
   return (
@@ -245,7 +558,7 @@ function MapScreen({ reduced }: ScreenProps) {
   );
 }
 
-// ── Beat 2 · Snap the receipt, the form fills itself ──────────────────────────
+// ── Beat 3 · Snap the receipt, the form fills itself ──────────────────────────
 
 function ReceiptScreen({ reduced }: ScreenProps) {
   const fieldStyle = {
@@ -444,117 +757,9 @@ function ReceiptScreen({ reduced }: ScreenProps) {
           </motion.div>
         </motion.div>
       </Box>
-    </Box>
-  );
-}
 
-// ── Beat 3 · Entry success, straight out of EntrySuccessDialog ───────────────
-
-const FLECKS = [
-  { left: 8, dx: -20, spin: 360, w: 5, h: 5, color: GOLD_TROPHY, delay: 0 },
-  { left: 97, dx: -8, spin: 460, w: 7.5, h: 13, color: ACCENT_GOLD, delay: 0.35 },
-  { left: 186, dx: 3, spin: 550, w: 5.5, h: 9, color: ACCENT_GOLD_LIGHT, delay: 0.7 },
-  { left: 34, dx: 15, spin: 650, w: 8, h: 8, color: 'white', delay: 1.05 },
-  { left: 123, dx: -14, spin: 750, w: 6, h: 10, color: GOLD_TROPHY, delay: 0.2 },
-  { left: 212, dx: -2, spin: 845, w: 8.5, h: 14, color: ACCENT_GOLD, delay: 0.55 },
-  { left: 61, dx: 10, spin: 400, w: 6, h: 6, color: ACCENT_GOLD_LIGHT, delay: 0.9 },
-  { left: 150, dx: -19, spin: 500, w: 9, h: 15, color: 'white', delay: 0.1 },
-  { left: 238, dx: -7, spin: 595, w: 6.5, h: 11, color: GOLD_TROPHY, delay: 0.42 },
-  { left: 87, dx: 4, spin: 690, w: 9, h: 9, color: ACCENT_GOLD, delay: 0.75 },
-  { left: 176, dx: 16, spin: 790, w: 7, h: 12, color: ACCENT_GOLD_LIGHT, delay: 1.15 },
-  { left: 25, dx: -12, spin: 885, w: 9.5, h: 16, color: 'white', delay: 0.28 },
-];
-
-function SuccessScreen({ reduced }: ScreenProps) {
-  return (
-    <Box
-      sx={{
-        position: 'absolute',
-        inset: 0,
-        overflow: 'hidden',
-        background: GRADIENT_SUCCESS,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        p: '16px 18px',
-        textAlign: 'center',
-      }}
-    >
-      {!reduced &&
-        FLECKS.map((f, i) => (
-          <motion.div
-            key={i}
-            initial={{ y: -18, x: 0, rotate: 0, opacity: 0 }}
-            animate={{ y: SCREEN_H + 30, x: f.dx, rotate: f.spin, opacity: [0, 1, 1, 0.9] }}
-            transition={{ delay: 0.3 + f.delay, duration: 2.1, ease: 'easeIn' }}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: f.left,
-              width: f.w,
-              height: f.h,
-              borderRadius: f.w === f.h ? '50%' : 1.5,
-              background: f.color,
-            }}
-          />
-        ))}
-
-      <motion.div
-        initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ ...SPRING_BOUNCY, delay: 0.2 }}
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: '50%',
-          background: ALPHA_WHITE_15,
-          border: `2px solid ${ALPHA_WHITE_30}`,
-          display: 'grid',
-          placeItems: 'center',
-          marginBottom: 14,
-        }}
-      >
-        <EmojiEvents sx={{ fontSize: 38, color: GOLD_TROPHY }} />
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.45 }}>
-        <Box sx={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em', color: 'white' }}>You're In!</Box>
-        <Box sx={{ mt: 0.6, fontSize: 11.5, fontWeight: 500, lineHeight: 1.6, color: ALPHA_WHITE_80 }}>
-          Your entry is in the current draw.
-          <br />
-          Good luck!
-        </Box>
-      </motion.div>
-
-      <motion.div
-        initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.82 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ ...SPRING_POP, delay: 0.7 }}
-        style={{
-          marginTop: 13,
-          padding: '10px 22px',
-          borderRadius: 9,
-          background: ALPHA_WHITE_10,
-          border: `1px solid ${ALPHA_WHITE_20}`,
-        }}
-      >
-        <Box sx={{ fontSize: 8, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: ALPHA_WHITE_70 }}>Entry Code</Box>
-        <Box sx={{ mt: 0.4, fontFamily: 'monospace', fontSize: 19, fontWeight: 900, letterSpacing: '0.24em', color: 'white' }}>8KD2QP</Box>
-      </motion.div>
-
-      <motion.div
-        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.95 }}
-        style={{ marginTop: 15, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9 }}
-      >
-        <Box sx={{ height: 38, px: 2.5, borderRadius: '8px', bgcolor: 'white', display: 'flex', alignItems: 'center', gap: 0.9 }}>
-          <ConfirmationNumber sx={{ fontSize: 16, color: PRIMARY_MAIN }} />
-          <Box component='span' sx={{ fontSize: 12, fontWeight: 800, color: PRIMARY_MAIN }}>View My Entries</Box>
-        </Box>
-        <Box component='span' sx={{ fontSize: 11, fontWeight: 700, color: ALPHA_WHITE_70 }}>Submit Another Receipt</Box>
-      </motion.div>
+      {/* Submit fires at ~5.05s; the confetti takeover follows right after */}
+      <SuccessOverlay reduced={reduced} delay={5.2} code='8KD2QP' sub='Your entry is in the current draw. Good luck!' />
     </Box>
   );
 }
@@ -593,28 +798,7 @@ function EntriesScreen({ reduced }: ScreenProps) {
                 <Box component='span' sx={{ fontSize: 7.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: ACCENT_GOLD_LIGHT }}>Live now</Box>
               </Box>
             </Box>
-            <Box
-              sx={{
-                mt: 0.3,
-                fontSize: 34,
-                fontWeight: 900,
-                lineHeight: 1,
-                letterSpacing: '-0.02em',
-                background: `linear-gradient(90deg, ${ACCENT_GOLD} 0%, ${GOLD_TROPHY} 25%, ${ACCENT_GOLD_LIGHT} 50%, ${GOLD_TROPHY} 75%, ${ACCENT_GOLD} 100%)`,
-                backgroundSize: '200% auto',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                color: 'transparent',
-                animation: 'wbGoldShimmer 3s linear infinite',
-                '@keyframes wbGoldShimmer': {
-                  '0%': { backgroundPosition: '0% center' },
-                  '100%': { backgroundPosition: '200% center' },
-                },
-                '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-              }}
-            >
-              $$$
-            </Box>
+            <Box sx={{ ...GOLD_SHIMMER_SX, mt: 0.3, fontSize: 34 }}>$$$</Box>
             <Box sx={{ mt: 1.2, display: 'inline-flex', alignItems: 'center', gap: 0.7, px: 1.3, py: 0.6, borderRadius: 50, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}` }}>
               <AccessTime sx={{ fontSize: 12, color: 'white' }} />
               <Box component='span' sx={{ fontSize: 9.5, fontWeight: 600, color: 'white' }}>{CAMPAIGN_ENDS}</Box>
@@ -773,9 +957,18 @@ function WeeklyScreen({ reduced }: ScreenProps) {
         </motion.div>
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, delay: 1.0 }}>
-          <Box sx={{ textAlign: 'center', fontSize: 8.5, color: TEXT_SECONDARY }}>No purchase necessary. One per member per week.</Box>
+          <Box sx={{ textAlign: 'center', fontSize: 8.5, color: TEXT_SECONDARY }}>No purchase necessary to enter or win. One per member per week.</Box>
         </motion.div>
       </Box>
+
+      {/* Claim fires at ~2.2s; the confetti takeover keeps the no-purchase line on screen */}
+      <SuccessOverlay
+        reduced={reduced}
+        delay={2.35}
+        code='W9XK4T'
+        sub='Your weekly entry is in the draw. Good luck!'
+        fine='No purchase necessary to enter or win.'
+      />
     </Box>
   );
 }
@@ -783,17 +976,18 @@ function WeeklyScreen({ reduced }: ScreenProps) {
 // ── The consumer showcase ─────────────────────────────────────────────────────
 
 const BEATS: ShowcaseBeat[] = [
-  { key: 'map', caption: 'Find a shop near you', duration: 4400, Screen: MapScreen },
-  { key: 'receipt', caption: 'Snap it, we fill in the rest', duration: 5900, Screen: ReceiptScreen },
-  { key: 'success', caption: "You're in, with your entry", duration: 4400, Screen: SuccessScreen },
-  { key: 'entries', caption: 'All your entries in one place', duration: 4400, Screen: EntriesScreen },
-  { key: 'weekly', caption: 'Or claim your weekly entry', duration: 4200, Screen: WeeklyScreen },
+  // Comprehension first: the concept beat decodes everything that follows.
+  { key: 'concept', caption: 'Everyday purchases can become entries', duration: 10500, Screen: ConceptScreen },
+  { key: 'map', caption: 'Find participating businesses around you', duration: 4400, Screen: MapScreen },
+  { key: 'receipt', caption: 'Snap your receipt, collect your entries', duration: 9200, Screen: ReceiptScreen },
+  { key: 'entries', caption: 'Your entries add up as you shop', duration: 4400, Screen: EntriesScreen },
+  { key: 'weekly', caption: 'Not shopping? Claim your weekly entry on us', duration: 6800, Screen: WeeklyScreen },
 ];
 
 const HeroShowcase = () => (
   <PhoneShowcase
     beats={BEATS}
-    srDescription='A quick look inside the app: find a participating shop near you, snap a photo of your receipt and the details fill in for you, get your entry code, see all your entries in one place, or claim your weekly entry.'
+    srDescription='A quick look inside the app: a receipt from a shop you already visit becomes an entry into a big cash prize draw. Find participating businesses around you on the map, snap a photo of your receipt and the details fill in for you and your entry code arrives in a burst of confetti, watch your entries add up as you shop, and claim your weekly entry on us when you are not shopping. No purchase necessary to enter or win.'
   />
 );
 
