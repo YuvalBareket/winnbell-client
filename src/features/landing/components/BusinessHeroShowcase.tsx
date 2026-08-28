@@ -8,7 +8,6 @@ import {
   CheckCircleOutline,
   TrendingUp,
   PeopleAlt,
-  Schedule,
   ConfirmationNumber,
   Download,
   QrCode2,
@@ -23,7 +22,6 @@ import {
   BG_SUBTLE,
   BG_SURFACE,
   TEXT_PRIMARY,
-  TEXT_SECONDARY,
   TEXT_HEADING,
   TEXT_TERTIARY,
   BORDER_LIGHT,
@@ -41,7 +39,6 @@ import {
   GRADIENT_HERO,
   GRADIENT_POST_NAVY,
   GRADIENT_POST_LIGHT,
-  GRADIENT_PROGRESS_BAR,
   SHADOW_CARD,
   SHADOW_CARD_DEEP,
   SHADOW_FLOAT,
@@ -57,24 +54,24 @@ import {
   ALPHA_BLACK_06,
 } from '../../../shared/colors';
 import { SECTOR_CONFIG } from '../../../shared/sectorConfig';
-import { SPRING_POP, SPRING_BOUNCY, SPRING_JUMP } from '../../../shared/motion';
+import { SPRING_POP, SPRING_BOUNCY } from '../../../shared/motion';
 import PhoneShowcase, {
   type ScreenProps,
   type ShowcaseBeat,
   SectorGlyph,
   MapPin,
 } from './PhoneShowcase';
-import { DAYS_LEFT_LABEL, LAST_6_MONTHS } from './showcaseDates';
+import { LAST_6_MONTHS } from './showcaseDates';
 import { PosterBlueCanvas } from '../../marketing/components/PosterTemplates';
 import { DESIGN_W, DESIGN_H } from '../../marketing/components/posterConstants';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BusinessHeroShowcase - the business landing's five-beat story loop, ordered
 // as the owner's questions arrive: what is this (a purchase becomes a cash-draw
-// entry), what does it get me (found on the map, sales climbing), what does it
-// cost me (Winnbell pays and runs everything), and the payoff (you take the
-// credit). Beats 2-5 are miniatures of the REAL owner pages; beat 1 is the one
-// explainer collage, told from the customer's side.
+// entry that could win a big prize, at no cost or effort to you), who runs it
+// (Winnbell, item by ticking item), then what it gets you (found on the map,
+// sales climbing) and how you launch (ready-made marketing materials).
+// Beats 3-5 are miniatures of the REAL owner pages; beats 1-2 are explainers.
 // Frame/loop machinery lives in PhoneShowcase; this file is just the screens.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -158,9 +155,10 @@ const CONCEPT_FLECKS = [
 
 // The flip happens at FLIP seconds: the receipt has left the stage by then and
 // the golden ticket takes its place, so only one object ever holds the screen.
-// Paced for a first-time viewer who has never heard of Winnbell: the receipt
-// and its line of text hold for ~3s before anything transforms.
-const FLIP = 3.2;
+// Paced for a first-time viewer who has never heard of Winnbell: the three-line
+// headline and the receipt hold for ~4.5s of reading time before anything
+// transforms.
+const FLIP = 4.5;
 
 function ConceptScreen({ reduced }: ScreenProps) {
   return (
@@ -193,24 +191,18 @@ function ConceptScreen({ reduced }: ScreenProps) {
       <Box sx={{ position: 'absolute', top: -70, right: -50, width: 210, height: 210, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 66%)` }} />
       <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 190, height: 190, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 66%)` }} />
 
-      {/* One line of story text, swapping with the flip */}
-      <Box sx={{ position: 'relative', height: 26, width: '100%', zIndex: 1 }}>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 1, 1, 0] }}
-          transition={{ delay: 0.3, duration: FLIP - 0.2, times: [0, 0.18, 0.85, 1] }}
-          style={{ position: 'absolute', inset: 0 }}
-        >
-          <Box sx={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.015em', color: 'white' }}>A purchase at your shop...</Box>
+      {/* The story headline holds the whole beat; the last line lands a second after it */}
+      <Box sx={{ position: 'relative', width: '100%', zIndex: 1 }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.4 }}>
+          <Box sx={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.015em', lineHeight: 1.45, color: 'white' }}>
+            What if your customers' entries
+            <br />
+            could win them a <Box component='span' sx={{ color: ACCENT_GOLD_LIGHT }}>big cash prize</Box>
+          </Box>
         </motion.div>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: FLIP + 0.15, duration: 0.4 }}
-          style={{ position: 'absolute', inset: 0 }}
-        >
-          <Box sx={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.015em', color: 'white' }}>
-            ...becomes a <Box component='span' sx={{ color: ACCENT_GOLD_LIGHT }}>chance to win</Box>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 0.4 }}>
+          <Box sx={{ mt: 0.4, fontSize: 11.5, fontWeight: 700, letterSpacing: '-0.01em', color: ALPHA_WHITE_80 }}>
+            Without you having to fund or operate it
           </Box>
         </motion.div>
       </Box>
@@ -345,7 +337,7 @@ function ConceptScreen({ reduced }: ScreenProps) {
   );
 }
 
-// ── Beat 2 · Customers find you on the Nearby map ─────────────────────────────
+// ── Beat 3 · Customers find you on the Nearby map ─────────────────────────────
 
 function PresenceScreen({ reduced }: ScreenProps) {
   return (
@@ -492,7 +484,7 @@ function PresenceScreen({ reduced }: ScreenProps) {
   );
 }
 
-// ── Beat 3 · Growth: dashboard KPIs counting up, live feed, rising sales ──────
+// ── Beat 4 · Growth: dashboard KPIs counting up, live feed, rising sales ──────
 
 const FEED_ROWS = [
   { title: 'RCP-48213', when: '2m ago', amount: '$45.00' },
@@ -613,76 +605,91 @@ function GrowthScreen({ reduced }: ScreenProps) {
   );
 }
 
-// ── Beat 4 · The campaign card: prize, countdown, entry capacity ──────────────
+// ── Beat 2 · Winnbell runs the campaign: the checklist ticks itself ───────────
 
-function CampaignScreen({ reduced }: ScreenProps) {
+const HANDLED_ITEMS = [
+  'Prize funding',
+  'Official rules and compliance',
+  'Entry validation',
+  'Campaign operations',
+  'Winner selection & fulfilment',
+];
+
+// Each row's check lands on its own beat, one after another.
+const tickAt = (i: number) => 1.15 + i * 0.7;
+
+function HandledScreen({ reduced }: ScreenProps) {
   return (
-    <Box sx={{ position: 'absolute', inset: 0, bgcolor: BG_SUBTLE, overflow: 'hidden' }}>
-      <ScreenHeader title='Campaign Dashboard' subtitle='Monitor your active campaign and entries' />
+    <Box
+      sx={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        background: GRADIENT_HERO,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        p: '0 16px',
+      }}
+    >
+      {/* Soft radial glows, like the app's hero bands */}
+      <Box sx={{ position: 'absolute', top: -70, right: -50, width: 210, height: 210, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 66%)` }} />
+      <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 190, height: 190, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 66%)` }} />
 
-      <Box sx={{ p: '12px 14px 0' }}>
-        <motion.div
-          initial={reduced ? { opacity: 0 } : { opacity: 0, y: 26, scale: 0.94 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ ...SPRING_POP, delay: 0.25 }}
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            borderRadius: 16,
-            padding: '14px 14px 15px',
-            background: GRADIENT_HERO,
-            boxShadow: SHADOW_CARD_DEEP,
-          }}
-        >
-          <ConfirmationNumber sx={{ position: 'absolute', right: 8, bottom: 6, fontSize: 52, color: 'white', opacity: 0.2, transform: 'rotate(12deg)' }} />
-          <Box sx={{ position: 'relative', zIndex: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-              <Box sx={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap', color: ALPHA_WHITE_80 }}>Prize</Box>
-              <Box sx={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 0.6, px: 1, py: 0.35, borderRadius: 50, bgcolor: ALPHA_WHITE_15, border: `1px solid ${ALPHA_WHITE_20}` }}>
-                <Schedule sx={{ fontSize: 10, color: ACCENT_GOLD_LIGHT }} />
-                <Box component='span' sx={{ fontSize: 7.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: ACCENT_GOLD_LIGHT }}>{DAYS_LEFT_LABEL}</Box>
-              </Box>
-            </Box>
-            <Box sx={{ ...GOLD_SHIMMER_SX, mt: 0.3, fontSize: 34 }}>$$$</Box>
-            <Box sx={{ mt: 1, fontSize: 9.5, fontWeight: 600, color: ALPHA_WHITE_80 }}>Sponsored and run by Winnbell</Box>
-          </Box>
-        </motion.div>
-      </Box>
-
-      {/* Entry capacity, like the campaign card's progress section */}
-      <Box sx={{ p: '13px 16px 0' }}>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, delay: 0.7 }}>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 0.7 }}>
-            <Box component='span' sx={{ fontSize: 10.5, fontWeight: 700, color: TEXT_SECONDARY }}>Entry capacity</Box>
-            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.4 }}>
-              <Box component='span' sx={{ fontSize: 15, fontWeight: 900, color: PRIMARY_MAIN }}>342</Box>
-              <Box component='span' sx={{ fontSize: 10, fontWeight: 700, color: TEXT_SECONDARY }}>/ 1,000</Box>
-            </Box>
-          </Box>
-        </motion.div>
-        <Box sx={{ height: 7, borderRadius: 4, bgcolor: ALPHA_BLACK_06, overflow: 'hidden' }}>
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={reduced ? { duration: 0.3, delay: 0.75 } : { ...SPRING_JUMP, delay: 0.8 }}
-            style={{ height: '100%', width: '34%', transformOrigin: 'left', background: GRADIENT_PROGRESS_BAR }}
-          />
+      <motion.div
+        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING_POP, delay: 0.25 }}
+        style={{ position: 'relative', zIndex: 1, textAlign: 'center', marginBottom: 16 }}
+      >
+        <Box sx={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.015em', lineHeight: 1.35, color: 'white' }}>
+          Winnbell runs the campaign,
+          <br />
+          <Box component='span' sx={{ color: ACCENT_GOLD_LIGHT }}>you take the credit</Box>
         </Box>
-      </Box>
+      </motion.div>
 
-      <Box sx={{ p: '14px 14px 0' }}>
-        <motion.div
-          initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING_POP, delay: 1.2 }}
-        >
-          <Box sx={{ display: 'flex', gap: 1.1, p: '12px 12px', borderRadius: '16px', bgcolor: BG_SURFACE, border: `1px solid ${BORDER_LIGHT}` }}>
-            <CheckCircle sx={{ fontSize: 18, color: METRIC_GOOD, flex: 'none', mt: 0.1 }} />
-            <Box sx={{ fontSize: 9.5, lineHeight: 1.6, color: TEXT_SECONDARY }}>
-              Prize, official rules, entry validation, and winner selection are all handled by Winnbell. You take the credit.
-            </Box>
-          </Box>
-        </motion.div>
+      <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {HANDLED_ITEMS.map((item, i) => (
+          <motion.div
+            key={item}
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...SPRING_POP, delay: 0.4 + i * 0.1 }}
+          >
+            {/* The row nudges as its check lands */}
+            <motion.div
+              animate={reduced ? undefined : { scale: [1, 1, 1.03, 1] }}
+              transition={{ delay: tickAt(i), duration: 0.35, times: [0, 0.01, 0.5, 1] }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '10px 12px',
+                borderRadius: 14,
+                background: BG_SURFACE,
+                boxShadow: SHADOW_CARD,
+              }}
+            >
+              <Box sx={{ position: 'relative', width: 22, height: 22, flex: 'none' }}>
+                <Box sx={{ position: 'absolute', inset: 1, borderRadius: '50%', border: `2px solid ${BORDER_LIGHT}` }} />
+                {reduced ? (
+                  <CheckCircle sx={{ position: 'absolute', inset: 0, fontSize: 22, color: METRIC_GOOD }} />
+                ) : (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ ...SPRING_BOUNCY, delay: tickAt(i) }}
+                    style={{ position: 'absolute', inset: 0 }}
+                  >
+                    <CheckCircle sx={{ fontSize: 22, color: METRIC_GOOD }} />
+                  </motion.div>
+                )}
+              </Box>
+              <Box component='span' sx={{ fontSize: 11, fontWeight: 800, color: TEXT_PRIMARY }}>{item}</Box>
+            </motion.div>
+          </motion.div>
+        ))}
       </Box>
     </Box>
   );
@@ -808,18 +815,17 @@ function MarketingScreen({ reduced }: ScreenProps) {
 // every beat gets extra dwell time after its choreography settles.
 const BEATS: ShowcaseBeat[] = [
   // Comprehension first: the concept beat decodes everything that follows.
-  { key: 'concept', caption: 'Your customers enter to win real cash', duration: 8200, Screen: ConceptScreen },
-  { key: 'presence', caption: 'So new customers pick you', duration: 5400, Screen: PresenceScreen },
+  { key: 'concept', caption: 'Your customers enter to win real cash', duration: 10500, Screen: ConceptScreen },
+  { key: 'handled', caption: 'Winnbell runs it, you take the credit', duration: 6600, Screen: HandledScreen },
+  { key: 'presence', caption: 'Get discovered by new customers', duration: 5400, Screen: PresenceScreen },
   { key: 'growth', caption: 'Watch sales and customers climb', duration: 6600, Screen: GrowthScreen },
-  // Longer beat: the "handled by Winnbell" note lands late and deserves reading time.
-  { key: 'campaign', caption: 'Winnbell pays the prize and runs it all', duration: 7000, Screen: CampaignScreen },
-  { key: 'marketing', caption: 'You just take the credit', duration: 5000, Screen: MarketingScreen },
+  { key: 'marketing', caption: 'Easy to launch with our marketing materials', duration: 5000, Screen: MarketingScreen },
 ];
 
 const BusinessHeroShowcase = () => (
   <PhoneShowcase
     beats={BEATS}
-    srDescription='A quick look at Winnbell for business owners: a qualifying purchase at your shop enters your customer in the cash prize draw, new customers find your shop on the Winnbell map, entries and sales climb on your campaign dashboard, Winnbell sponsors the prize and runs the whole campaign, and ready-made marketing materials put your name on professional posters.'
+    srDescription='A quick look at Winnbell for business owners: a qualifying purchase at your shop becomes an entry that could win your customer a big cash prize, without you funding or operating anything. Winnbell handles prize funding, official rules and compliance, entry validation, campaign operations, and winner selection. New customers discover your shop on the Winnbell map, entries and sales climb on your campaign dashboard, and ready-made marketing materials make it easy to launch.'
   />
 );
 
