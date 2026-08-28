@@ -191,7 +191,7 @@ function ConceptScreen({ reduced }: ScreenProps) {
       <Box sx={{ position: 'absolute', top: -70, right: -50, width: 210, height: 210, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 66%)` }} />
       <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 190, height: 190, borderRadius: '50%', background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 66%)` }} />
 
-      {/* The story headline holds the whole beat; the last line lands a second after it */}
+      {/* The story headline holds the whole beat; the last line lands with the ticket flip */}
       <Box sx={{ position: 'relative', width: '100%', zIndex: 1 }}>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.4 }}>
           <Box sx={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.015em', lineHeight: 1.45, color: 'white' }}>
@@ -200,7 +200,7 @@ function ConceptScreen({ reduced }: ScreenProps) {
             could win them a <Box component='span' sx={{ color: ACCENT_GOLD_LIGHT }}>big cash prize</Box>
           </Box>
         </motion.div>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 0.4 }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: FLIP + 0.15, duration: 0.45 }}>
           <Box sx={{ mt: 0.4, fontSize: 11.5, fontWeight: 700, letterSpacing: '-0.01em', color: ALPHA_WHITE_80 }}>
             Without you having to fund or operate it
           </Box>
