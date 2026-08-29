@@ -365,12 +365,12 @@ const BusinessLandingPage = () => {
 
           <Stack spacing={1.5}>
             {[
-              { Icon: TrendingUpRounded, title: 'Increase average purchase value', detail: 'A qualifying spend threshold gives customers a concrete reason to add one more item and reach it. Small nudges, applied to every transaction, lift your average basket.' },
-              { Icon: AutorenewRounded, title: 'Encourage repeat visits', detail: 'A live campaign gives customers an ongoing reason to come back. Each qualifying visit is another opportunity to earn entries into the current prize draw.' },
+              { Icon: TrendingUpRounded, title: 'Encourage larger purchases', detail: 'A qualifying spend threshold gives customers a concrete reason to add one more item and reach it. Small nudges like that can add up across your transactions.' },
+              { Icon: AutorenewRounded, title: 'Encourage repeat visits', detail: 'A live campaign is one more reason for customers to come back. Each qualifying visit is another opportunity to earn entries into the current prize draw.' },
               { Icon: TrackChangesRounded, title: 'Stand out from competitors', detail: 'Offer an experience most competing businesses simply don\'t have. Winnbell turns an ordinary purchase into something memorable, and memorable businesses get chosen.' },
               { Icon: SavingsRounded, title: 'No prize costs or campaign administration', detail: 'Winnbell sponsors the prize, operates the campaign, validates entries, selects the winner, and manages everything end to end. You stay focused on running your business.' },
               { Icon: CampaignRounded, title: 'Marketing platform, not just a promotion', detail: 'Your business is listed and discoverable on the Winnbell platform, putting you in front of users who are actively looking for places to earn entries.' },
-              { Icon: PsychologyRounded, title: 'Proven customer engagement', detail: 'Prize promotions have driven engagement for leading brands for decades. Winnbell makes the same proven strategy available to businesses of every size.' },
+              { Icon: PsychologyRounded, title: 'Tested marketing approach', detail: 'Prize promotions have been a staple of big-brand marketing for decades. Winnbell brings that same approach within reach of businesses of every size.' },
               { Icon: PaidRounded, title: 'Built to be affordable', detail: 'Our shared campaign model spreads the cost of a professionally managed prize promotion, keeping it affordable for businesses of every size.' },
               { Icon: BoltRounded, title: 'Ready in under 10 minutes', detail: 'Create your account, set up your business, and join your first campaign in minutes. No technical knowledge, no complicated onboarding.' },
               { Icon: InsightsRounded, title: 'Track what matters', detail: 'Follow campaign performance, customer activity, and business trends from your dashboard, and make marketing decisions backed by real data.' },

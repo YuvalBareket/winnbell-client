@@ -195,7 +195,7 @@ function ConceptScreen({ reduced }: ScreenProps) {
       <Box sx={{ position: 'relative', width: '100%', zIndex: 1 }}>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.4 }}>
           <Box sx={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.015em', lineHeight: 1.45, color: 'white' }}>
-            What if your customers' entries
+            What if your customers' purchases
             <br />
             could win them a <Box component='span' sx={{ color: ACCENT_GOLD_LIGHT }}>big cash prize</Box>
           </Box>
