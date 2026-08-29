@@ -10,7 +10,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Verified, Edit, CameraAlt } from '@mui/icons-material';
-import { GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_30, VERIFIED_BLUE } from '../../../../shared/colors';
+import { GRADIENT_HERO, ALPHA_WHITE_15, ALPHA_WHITE_20, ALPHA_WHITE_30, VERIFIED_BLUE } from '../../../../shared/colors';
 import { BUSINESS_SECTORS } from '../../../admin/data';
 
 interface BusinessData {
@@ -52,8 +52,11 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
     >
       {header}
       <Container maxWidth='lg' sx={{ px: 3, pt: 1 }}>
-        <Stack direction='row' alignItems='center' justifyContent='space-between'>
-          <Stack direction='row' alignItems='center' spacing={2}>
+        {/* minWidth 0 down the chain + wrapping chips: without them the nowrap chips fix
+            this row's minimum width above small viewports, shoving the edit button off
+            screen and making the whole page horizontally scrollable. */}
+        <Stack direction='row' alignItems='center' justifyContent='space-between' spacing={1}>
+          <Stack direction='row' alignItems='center' spacing={2} sx={{ minWidth: 0, flex: 1 }}>
             <Box
               onClick={onLogoClick}
               sx={{
@@ -98,23 +101,23 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
                 onChange={onFileChange}
               />
             </Box>
-            <Box>
+            <Box sx={{ minWidth: 0 }}>
               <Typography
                 variant='h5'
                 fontWeight={800}
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5 }}
               >
                 {business.name}
                 <Verified sx={{ fontSize: 20, color: VERIFIED_BLUE }} />
               </Typography>
-              <Stack direction='row' spacing={1} mt={0.5}>
+              <Stack direction='row' spacing={1} useFlexGap flexWrap='wrap' mt={0.5}>
                 <Chip
                   label={sectorUI.label}
                   size='small'
-                  sx={{ bgcolor: ALPHA_WHITE_15, color: 'white', fontWeight: 700, borderRadius: 2 }}
+                  sx={{ bgcolor: ALPHA_WHITE_15, color: 'white', fontWeight: 700, borderRadius: 2, fontSize: { xs: 12, sm: 13 } }}
                 />
                 {!business.is_subscribed && (
-                  <Chip label='Pending Activation' size='small' sx={{ fontWeight: 700, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
+                  <Chip label='Pending Activation' size='small' sx={{ fontWeight: 700, borderRadius: 2, bgcolor: ALPHA_WHITE_20, color: 'white', fontSize: { xs: 12, sm: 13 }, '& .MuiChip-label': { px: { xs: 1, sm: 1.5 } } }} />
                 )}
               </Stack>
             </Box>
@@ -123,7 +126,7 @@ const BusinessHeroSection: React.FC<BusinessHeroSectionProps> = ({
             <IconButton
               onClick={onEditClick}
               aria-label='Edit business details'
-              sx={{ color: 'white', border: `1px solid ${ALPHA_WHITE_30}`, borderRadius: 2 }}
+              sx={{ color: 'white', border: `1px solid ${ALPHA_WHITE_30}`, borderRadius: 2, flexShrink: 0 }}
             >
               <Edit />
             </IconButton>

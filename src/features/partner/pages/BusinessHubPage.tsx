@@ -65,6 +65,8 @@ import {
   ALPHA_WHITE_15,
   GRADIENT_HERO,
   MOBILE_CONTENT_HEIGHT,
+  AMBER_TEXT_AA,
+  AMBER_TEXT_AA_TINT,
   STATUS_ACTIVATED_BG,
   STATUS_ACTIVATED_TEXT,
   ALPHA_GREEN_10,
@@ -269,20 +271,26 @@ const BusinessHubPage = () => {
                     display: 'flex',
                     p: 2.5,
                     borderRadius: 2,
-                    border: '1px solid #00000021',
-                    backgroundColor:'white',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    backgroundColor: 'background.paper',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: 2,
                     flexWrap: 'wrap',
                   }}
                 >
-                  <Stack direction='row' alignItems='center' spacing={1.5} flex={1} minWidth={0}>
+                  {/* flex-basis must be a real width, not 0: the Paper wraps the button to its
+                      own line on narrow screens, and wrapping is decided from base sizes - a
+                      basis-0 item never triggers it, the text just gets crushed instead. */}
+                  <Stack direction='row' alignItems='center' spacing={1.5} sx={{ flex: '1 1 240px', minWidth: 0 }}>
                     <motion.span {...wiggle} style={{ display: 'flex', flexShrink: 0 }}>
                       <Warning sx={{ color: 'warning.main' }} />
                     </motion.span>
                     <Box minWidth={0}>
-                      <Typography variant='body2' fontWeight={700} color='warning.dark'>
+                      {/* AMBER_TEXT_AA, not warning.dark: the palette orange is 3.78:1 on
+                          white and fails AA for 14px text. */}
+                      <Typography variant='body2' fontWeight={700} sx={{ color: AMBER_TEXT_AA }}>
                         Complete your onboarding
                       </Typography>
                       <Typography variant='caption' color='text.secondary' sx={{ display: { xs: 'none', sm: 'block' } }}>
@@ -299,7 +307,7 @@ const BusinessHubPage = () => {
                       size='small'
                       startIcon={<CreditCard sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
                       onClick={() => navigate('/subscribe')}
-                      sx={{ fontWeight: 800, flexShrink: 0, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
+                      sx={{ fontWeight: 800, flexShrink: 0, ml: 'auto', bgcolor: AMBER_TEXT_AA, '&:hover': { bgcolor: AMBER_TEXT_AA_TINT } }}
                     >
                       Start Campaign
                     </Button>

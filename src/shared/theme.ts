@@ -50,8 +50,13 @@ export const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         html: {
-          // Reserve the scrollbar track so transient overflow (animations, card swipes) never shifts the layout
-          scrollbarGutter: 'stable',
+          // Reserve the scrollbar track on desktop so transient overflow (animations,
+          // card swipes) never shifts the layout. Desktop only: at phone widths modern
+          // browsers use overlay scrollbars that take no space, so the reserved gutter
+          // just renders as a dead 15px band down the right edge of every page.
+          '@media (min-width: 900px)': {
+            scrollbarGutter: 'stable',
+          },
         },
         body: {
           WebkitFontSmoothing: 'antialiased',
