@@ -9,7 +9,13 @@ import {
   useTheme,
 } from '@mui/material';
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { HourglassTopRounded } from '@mui/icons-material';
 import type { NearbyLocation } from '../../nearBy/types/nearBy.types';
+import { getCurrentDraw } from '../../draw/api/draw.api';
+import { queryKeys } from '../../../shared/constants/queryKeys';
+import CampaignCountdown from '../../../shared/components/CampaignCountdown';
 import { selectIsAuthenticated } from '../../../store/selectors/authSelectors';
 import { useAppSelector } from '../../../store/hook';
 import { useActivatePromotional } from '../hooks/useActivatePromotional';
@@ -19,7 +25,7 @@ import { usePhoneVerifySheet } from '../hooks/usePhoneVerifySheet';
 import AppPageHero from '../../../shared/components/AppPageHero';
 import PhoneVerifySheet from '../components/PhoneVerifySheet';
 import ReferralBonusSuccessDialog from '../components/ReferralBonusSuccessDialog';
-import { PRIMARY_MAIN } from '../../../shared/colors';
+import { PRIMARY_MAIN, ACCENT_GOLD_LIGHT, ACCENT_GOLD_TEXT_AA, BORDER_LIGHT, TEXT_HEADING, TEXT_SECONDARY } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
 import RedeemFeedback from '../components/RedeemFeedback';
 import ReceiptEntryForm, { StepIndicator } from '../components/ReceiptEntryForm';
@@ -59,6 +65,19 @@ const RedeemPage = () => {
 
   // Phone verification status - fetched fresh from server on every page visit
   const { isPhoneVerified, isPhoneVerifiedLoaded, welcomeBonusPending, isError: riskLevelError, refetch: refetchRiskLevel } = useMyRiskLevel();
+
+  // Between campaigns the form is replaced by a countdown to the next opening (same
+  // ticking countdown as /join and /start). Fail OPEN on a query error: the server
+  // rejects entries without an open campaign anyway, so an API hiccup here must not
+  // lock a healthy page behind a false "closed" state.
+  const { data: currentDraw, isLoading: drawLoading, isSuccess: drawLoaded } = useQuery({
+    queryKey: queryKeys.draws.current,
+    queryFn: getCurrentDraw,
+    staleTime: 2 * 60_000,
+    retry: 1,
+  });
+  const noOpenDraw = drawLoaded && currentDraw?.status !== 'Open';
+  const opensAt = noOpenDraw && currentDraw?.status === 'Upcoming' ? currentDraw.start_date : undefined;
 
   // Phone verification sheet for soft prompt. The referral-congrats dialog resumes the
   // pending entry action when dismissed; the callback lives in a ref, not global state.
@@ -133,7 +152,7 @@ const RedeemPage = () => {
 
   // ─── Loading gate ───────────────────────────────────────────────────────────
   // The header renders in every gate state too, so it never pops in after the fact.
-  if (!isPhoneVerifiedLoaded) {
+  if (!isPhoneVerifiedLoaded || drawLoading) {
     return (
       <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', display: 'flex', flexDirection: 'column' }}>
         <AppPageHero title='Entry submission' subtitle='Two quick steps to earn your entries' />
@@ -170,30 +189,81 @@ const RedeemPage = () => {
     <Box sx={{ minHeight: 'var(--dvh100, 100dvh)', pb: { xs: 12, md: 6 }, overflowX: 'clip' }}>
       <AppPageHero
         title='Entry submission'
-        subtitle='Two quick steps to earn your entries'
-        actions={isDesktop ? <StepIndicator step={receiptStep2 ? 2 : 1} /> : undefined}
+        subtitle={noOpenDraw ? 'Opens again with the next campaign' : 'Two quick steps to earn your entries'}
+        actions={isDesktop && !noOpenDraw ? <StepIndicator step={receiptStep2 ? 2 : 1} /> : undefined}
       />
 
       <Container maxWidth='lg' sx={{ mt: { xs: 2, md: 2.5 } }}>
-        <ReceiptEntryForm
-          primaryColor={primaryColor}
-          preselectedBusinessId={preselectedBusinessId}
-          preselectedLocation={preselectedLocation}
-          preselectedLocationId={qrLocationId}
-          onLocationSelect={setReceiptStep2}
-          guardEntryAction={(proceed) => requirePhone('receipt', proceed)}
-        />
+        {noOpenDraw ? (
+          // Between-campaigns state: the same ticking countdown as /join and /start,
+          // framed as anticipation rather than a dead end.
+          <Box
+            component={motion.div}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            sx={{
+              maxWidth: 560,
+              mx: 'auto',
+              mt: { xs: 1, md: 3 },
+              px: { xs: 2.5, md: 4 },
+              py: { xs: 3.5, md: 4.5 },
+              bgcolor: 'background.paper',
+              border: `1px solid ${BORDER_LIGHT}`,
+              borderRadius: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+            }}
+          >
+            <Box
+              sx={{
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                bgcolor: ACCENT_GOLD_LIGHT,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 2,
+              }}
+            >
+              <HourglassTopRounded sx={{ fontSize: 28, color: ACCENT_GOLD_TEXT_AA }} />
+            </Box>
+            <Typography component='h2' sx={{ fontSize: { xs: '19px', md: '22px' }, fontWeight: 800, letterSpacing: '-0.01em', color: TEXT_HEADING }}>
+              The next campaign is on its way
+            </Typography>
+            <Typography sx={{ mt: 1, maxWidth: 420, fontSize: '14.5px', fontWeight: 500, lineHeight: 1.55, color: TEXT_SECONDARY }}>
+              {opensAt
+                ? 'Entry submission is closed between campaigns. Come back when the new campaign opens to submit your receipts.'
+                : 'Entry submission is closed between campaigns. Check back soon for the next one.'}
+            </Typography>
+            {opensAt && <CampaignCountdown opensAt={opensAt} onGradient={false} />}
+          </Box>
+        ) : (
+          <>
+            <ReceiptEntryForm
+              primaryColor={primaryColor}
+              preselectedBusinessId={preselectedBusinessId}
+              preselectedLocation={preselectedLocation}
+              preselectedLocationId={qrLocationId}
+              onLocationSelect={setReceiptStep2}
+              guardEntryAction={(proceed) => requirePhone('receipt', proceed)}
+            />
 
-        {/* Sweepstakes disclosure at the point of entry, linking the governing Official Rules. */}
-        <Typography
-          variant='caption'
-          sx={{ display: 'block', textAlign: 'center', color: 'text.secondary', lineHeight: 1.5, mt: 3 }}
-        >
-          No purchase necessary. A purchase will not increase chances of winning. Alternative method of entry available on the platform. 18+. Void where prohibited. See the{' '}
-          <Box component={Link} to='/rules' sx={{ color: PRIMARY_MAIN, fontWeight: 700 }}>
-            Official Rules
-          </Box>.
-        </Typography>
+            {/* Sweepstakes disclosure at the point of entry, linking the governing Official Rules. */}
+            <Typography
+              variant='caption'
+              sx={{ display: 'block', textAlign: 'center', color: 'text.secondary', lineHeight: 1.5, mt: 3 }}
+            >
+              No purchase necessary. A purchase will not increase chances of winning. Alternative method of entry available on the platform. 18+. Void where prohibited. See the{' '}
+              <Box component={Link} to='/rules' sx={{ color: PRIMARY_MAIN, fontWeight: 700 }}>
+                Official Rules
+              </Box>.
+            </Typography>
+          </>
+        )}
       </Container>
 
       <RedeemFeedback
