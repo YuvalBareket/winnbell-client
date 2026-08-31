@@ -3,8 +3,8 @@ import { getReceiptUploadUrl } from '../api/ticketsApi';
 import { trackFunnel } from '../../../shared/analytics/funnel';
 
 // Original-file guard protects canvas memory only - the upload is the compressed WebP
-// (4000px max), so large phone photos must pass. The server's 10 MB presign cap applies
-// to the COMPRESSED size, which stays far below it (a 4000px WebP q0.92 is ~1-2 MB).
+// (JPEG on Safari, 4000px max), so large phone photos must pass. The server's 10 MB presign
+// cap applies to the COMPRESSED size, which stays far below it (~1-4 MB at q0.92/0.85).
 const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB original file
 // A long receipt is a thin vertical strip in the frame, so downscaling the whole photo's
 // longest side to 1920px rendered the actual text at a tiny effective resolution and OCR
@@ -12,6 +12,11 @@ const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB original file
 // photos near full-res so the text survives; file size stays well under the 10 MB caps.
 const MAX_DIMENSION = 4000;              // keep receipt text readable for OCR
 const WEBP_QUALITY = 0.92;
+// Safari cannot encode WebP: canvas.toBlob('image/webp') silently falls back to PNG, and a
+// 4000px photographic PNG is ~15-25 MB - over the server's 10 MB presign cap, so every iOS
+// camera photo failed to upload (prod incident 2026-08-31). When that fallback is detected
+// re-encode as JPEG, which every browser supports and keeps a 4000px photo at ~2-4 MB.
+const JPEG_FALLBACK_QUALITY = 0.85;
 
 // A stalled mobile PUT used to spin forever (2026-08-24 staging complaint: ~50s hang,
 // user reloaded and gave up). Bound it, retry once with a FRESH presigned URL, and only
@@ -31,6 +36,15 @@ const putTimeoutSignal = (): AbortSignal | undefined =>
 const isTimeoutError = (err: unknown): boolean =>
   (err instanceof DOMException && (err.name === 'TimeoutError' || err.name === 'AbortError'))
   || (err instanceof Error && 'code' in err && (err as { code?: string }).code === 'ECONNABORTED');
+
+// The presign endpoint's 4xx messages are curated and user-actionable (e.g. the 10 MB cap);
+// hiding them behind generic copy left users guessing (prod incident 2026-08-31). 5xx and
+// R2 PUT failures carry no user-facing message, so those keep the generic copy.
+const serverMessage = (err: unknown): string | null => {
+  const status = (err as { response?: { status?: number } }).response?.status;
+  const message = (err as { response?: { data?: { message?: unknown } } }).response?.data?.message;
+  return status !== undefined && status < 500 && typeof message === 'string' ? message : null;
+};
 
 // Retry only transient failures: network-level errors (no HTTP status: stall, abort,
 // connection drop) and 5xx. A 4xx (413 too large, 403 bad signature, 401 expired session)
@@ -59,21 +73,29 @@ const loadImageEl = (file: File): Promise<HTMLImageElement> =>
     img.src = objectUrl;
   });
 
-const encodeWebP = (img: HTMLImageElement): Promise<Blob> =>
+const canvasToBlob = (canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> =>
   new Promise((resolve, reject) => {
-    const scale = Math.min(1, MAX_DIMENSION / Math.max(img.width, img.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(img.width * scale);
-    canvas.height = Math.round(img.height * scale);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) { reject(new Error('Canvas not available')); return; }
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(
-      (blob) => { blob ? resolve(blob) : reject(new Error('Conversion failed')); },
-      'image/webp',
-      WEBP_QUALITY,
+      (blob) => { if (blob) { resolve(blob); } else { reject(new Error('Conversion failed')); } },
+      type,
+      quality,
     );
   });
+
+const encodeImage = async (img: HTMLImageElement): Promise<Blob> => {
+  const scale = Math.min(1, MAX_DIMENSION / Math.max(img.width, img.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(img.width * scale);
+  canvas.height = Math.round(img.height * scale);
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas not available');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const webp = await canvasToBlob(canvas, 'image/webp', WEBP_QUALITY);
+  // A browser that cannot encode the requested type returns a blob of a DIFFERENT type
+  // (Safari hands back PNG) instead of failing - trust blob.type, never the requested type.
+  if (webp.type === 'image/webp') return webp;
+  return canvasToBlob(canvas, 'image/jpeg', JPEG_FALLBACK_QUALITY);
+};
 
 // Re-encoding an already-compressed photo (e.g. a WhatsApp-forwarded JPEG) only re-applies
 // lossy compression to pixels that already lost detail: it adds a second generation of loss
@@ -88,7 +110,10 @@ const prepareUpload = async (file: File): Promise<{ body: Blob; contentType: str
   if (withinCap && supported && file.size <= PASSTHROUGH_MAX_BYTES) {
     return { body: file, contentType: file.type };
   }
-  return { body: await encodeWebP(img), contentType: 'image/webp' };
+  // The blob's own type (webp, or jpeg on Safari) is what gets signed into the presigned
+  // URL and sent on the PUT - a hardcoded type here would break the R2 signature match.
+  const encoded = await encodeImage(img);
+  return { body: encoded, contentType: encoded.type };
 };
 
 export const useUploadReceiptImage = () => {
@@ -157,7 +182,7 @@ export const useUploadReceiptImage = () => {
       trackFunnel('submit_image_upload_failed', { meta: { stage: 'upload' }, flushNow: true });
       setError(isTimeoutError(err)
         ? 'The upload is taking too long. Please check your connection and try again.'
-        : 'Failed to upload the file. Please try a different image or PDF.');
+        : serverMessage(err) ?? 'Failed to upload the file. Please try a different image or PDF.');
       return null;
     } finally {
       setIsUploading(false);
