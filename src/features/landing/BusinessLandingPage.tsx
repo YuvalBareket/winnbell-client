@@ -7,13 +7,16 @@ import {
   TravelExploreRounded, QrCodeScannerRounded, ConfirmationNumberRounded, AutoAwesomeRounded,
   TrendingUpRounded, AutorenewRounded, TrackChangesRounded, SavingsRounded, CampaignRounded,
   PsychologyRounded, PaidRounded, BoltRounded, InsightsRounded, DesignServicesRounded,
+  CelebrationRounded,
 } from '@mui/icons-material';
 
 // "How it works" steps - numbered 01-04 to match the user landing design
 const BUSINESS_STEPS = [
   { num: '01', title: 'Create your account', body: 'Register your business in a minute.' },
   { num: '02', title: 'Set up your profile', body: 'Add your name, logo, and locations so customers can discover you.' },
-  { num: '03', title: 'Subscribe', body: 'Pick the plan that fits you.' },
+  // TRIAL-ERA copy: when paid campaigns return, revert to
+  // { num: '03', title: 'Subscribe', body: 'Pick the plan that fits you.' }
+  { num: '03', title: 'Join the campaign', body: 'The current campaign is a free trial. Join it at no cost, no subscription needed.' },
   { num: '04', title: 'Prepare for the campaign', body: 'Look through our guide and get ready for the upcoming campaign.' },
 ];
 import { motion } from 'framer-motion';
@@ -27,6 +30,9 @@ import {
   TEXT_SECONDARY,
   BG_SUBTLE,
   BORDER_LIGHT,
+  GOLD_TROPHY,
+  ALPHA_WHITE_15,
+  ALPHA_WHITE_20,
 } from '../../shared/colors';
 
 const BusinessLandingPage = () => {
@@ -72,6 +78,32 @@ const BusinessLandingPage = () => {
                 alignItems: { xs: 'center', md: 'flex-start' },
               }}
             >
+              {/* TRIAL-ERA badge: remove when paid campaigns return (December revert). */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.05 }}
+              >
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    bgcolor: ALPHA_WHITE_15,
+                    border: `1px solid ${ALPHA_WHITE_20}`,
+                    borderRadius: '999px',
+                    px: { xs: 1.75, md: 2 },
+                    py: 0.75,
+                    mb: { xs: 2, md: 2.5 },
+                  }}
+                >
+                  <CelebrationRounded sx={{ fontSize: 16, color: GOLD_TROPHY }} />
+                  <Typography sx={{ fontSize: { xs: '0.78rem', md: '0.85rem' }, fontWeight: 700, color: 'white', lineHeight: 1.4 }}>
+                    Free trial campaign is live. Join at no cost.
+                  </Typography>
+                </Box>
+              </motion.div>
+
               <motion.div
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
