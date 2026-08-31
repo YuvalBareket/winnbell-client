@@ -82,6 +82,8 @@ interface PostersTabProps {
   copied: boolean;
   onCopy: () => void;
   minAmountLabel?: string | null;
+  /** Current draw prize figure for the poster headline ("$3,000"). */
+  prizeLabel?: string;
 }
 
 const PostersTab = ({
@@ -96,6 +98,7 @@ const PostersTab = ({
   copied,
   onCopy,
   minAmountLabel,
+  prizeLabel,
 }: PostersTabProps) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
@@ -347,12 +350,12 @@ const PostersTab = ({
           One per page size: Letter and the re-flowed 5.5x8.5 half sheet. */}
       <Box aria-hidden style={{ position: 'fixed', left: -20000, top: 0, width: DESIGN_W, height: DESIGN_H, pointerEvents: 'none', zIndex: -1 }}>
         <Box ref={captureRef} style={{ width: DESIGN_W, height: DESIGN_H }}>
-          <SelectedCanvas businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} />
+          <SelectedCanvas businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} prizeLabel={prizeLabel} />
         </Box>
       </Box>
       <Box aria-hidden style={{ position: 'fixed', left: -20000, top: DESIGN_H + 40, width: HALF_DESIGN_W, height: DESIGN_H, pointerEvents: 'none', zIndex: -1 }}>
         <Box ref={captureHalfRef} style={{ width: HALF_DESIGN_W, height: DESIGN_H }}>
-          <SelectedCanvas businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} pageW={HALF_DESIGN_W} />
+          <SelectedCanvas businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} prizeLabel={prizeLabel} pageW={HALF_DESIGN_W} />
         </Box>
       </Box>
 
@@ -405,7 +408,7 @@ const PostersTab = ({
                               pointerEvents: 'none',
                             }}
                           >
-                            <Thumb businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} />
+                            <Thumb businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} prizeLabel={prizeLabel} />
                           </Box>
                           {isActive && (
                             <Box sx={{
@@ -457,12 +460,12 @@ const PostersTab = ({
                             {posterSize === 'half' ? (
                               // Half sheet: the re-flowed 1294-wide canvas at preview scale.
                               <Box style={{ width: HALF_DESIGN_W, height: DESIGN_H, transform: `scale(${POSTER_H / DESIGN_H})`, transformOrigin: 'top left' }}>
-                                <SelectedCanvas businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} pageW={HALF_DESIGN_W} />
+                                <SelectedCanvas businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} prizeLabel={prizeLabel} pageW={HALF_DESIGN_W} />
                               </Box>
                             ) : (
                               (() => {
                                 const Comp = (TEMPLATES.find(t => t.id === selectedId) ?? TEMPLATES[0]).Component;
-                                return <Comp businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} />;
+                                return <Comp businessName={businessName} scanUrl={scanUrl} minAmountLabel={minAmountLabel} prizeLabel={prizeLabel} />;
                               })()
                             )}
                           </Box>

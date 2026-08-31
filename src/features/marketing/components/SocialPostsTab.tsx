@@ -25,6 +25,8 @@ interface SocialPostsTabProps {
   /** Re-ask the location on every action (owner with 2+ locations) */
   alwaysAskLocation: boolean;
   onToast: (msg: string) => void;
+  /** Current draw prize figure baked into the post ("$3,000"). */
+  prizeLabel: string;
 }
 
 // Ratio presets (drop post-4-5)
@@ -204,6 +206,7 @@ const SocialPostsTab = ({
   locationPickVersion,
   alwaysAskLocation,
   onToast,
+  prizeLabel,
 }: SocialPostsTabProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -246,7 +249,7 @@ const SocialPostsTab = ({
   // works close to a real tap, and the html2canvas capture is slow enough to burn
   // that window - pre-capturing means the tap shares instantly on the first try.
   // Only inputs that are actually rendered into the image; the scan link is not.
-  const captureKey = JSON.stringify([selectedRatio, selectedStyle, headline, subtext]);
+  const captureKey = JSON.stringify([selectedRatio, selectedStyle, headline, subtext, prizeLabel]);
   const blobCacheRef = useRef<{ key: string; blob: Blob } | null>(null);
   const pendingCaptureRef = useRef<{ key: string; promise: Promise<Blob> } | null>(null);
 
@@ -345,6 +348,9 @@ const SocialPostsTab = ({
     const headlineSize = isStory ? 52 : 48;
     const subtextSize = isStory ? 15 : 13;
     const logoHeight = isStory ? 50 : 44;
+    // Prize block mirrors the poster headline: big figure + "This Current Draw." accent
+    const prizeSize = isStory ? 64 : 52;
+    const prizeDrawSize = isStory ? 27 : 23;
 
     return (
       <Box
@@ -391,10 +397,18 @@ const SocialPostsTab = ({
               wordSpacing: '0.18em',
               lineHeight: 1.05,
               whiteSpace: 'pre-line',
-              mb: subtext ? 1.5 : 0,
+              mb: 1.5,
             }}
           >
             {headline}
+          </Typography>
+          {/* Prize - same structure as the flyer headline: figure in the primary text
+              color, "This Current Draw." in the accent. */}
+          <Typography sx={{ fontWeight: 800, fontSize: prizeSize, letterSpacing: '-0.03em', lineHeight: 1.05, color: style.textPrimary }}>
+            {prizeLabel}
+          </Typography>
+          <Typography sx={{ fontWeight: 800, fontSize: prizeDrawSize, letterSpacing: '-0.02em', lineHeight: 1.2, color: style.textAccent, mb: subtext ? 1.5 : 0 }}>
+            This Current Draw.
           </Typography>
           {subtext && (
             <Typography
@@ -506,7 +520,10 @@ const SocialPostsTab = ({
             p: '22px',
             mb: 3,
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'minmax(0,392px) 1fr' },
+            // minmax(0, ...) everywhere: a bare 1fr floors at the content's min width, and
+            // the nowrap campaign link is wider than a phone - it pushed the whole card
+            // past the viewport (swatches and Copy button clipped on small screens).
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 392px) minmax(0, 1fr)' },
             gap: '26px',
             alignItems: 'stretch',
           }}
@@ -651,7 +668,9 @@ const SocialPostsTab = ({
               <Typography sx={{ fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: TEXT_SECONDARY, mb: 1 }}>
                 Color
               </Typography>
-              <Stack direction='row' spacing={1.5} sx={{ flexWrap: 'wrap', gap: 1.5 }}>
+              {/* gap only (no Stack spacing): spacing adds margins ON TOP of the flex gap,
+                  double-spacing the row and wrapping the last swatch on phones. */}
+              <Stack direction='row' sx={{ flexWrap: 'wrap', gap: 1.5 }}>
                 {STYLE_PRESETS.map((preset) => (
                   <motion.div
                     key={preset.id}

@@ -67,7 +67,7 @@ const PinIcon = ({ color, size }: { color: string; size: number }) => (
 // ── Colorway definitions (measured values, one entry per design colorway) ────
 interface Colorway {
   pageBg: string;
-  headlineColor: string;      // "$3,000." + step labels' base text
+  headlineColor: string;      // prize headline + step labels' base text
   accentColor: string;        // "This Current Draw.", "Scan to get your entries"
   sublineColor: string;
   chipColor: string;          // location chip text + pin (NOT always the accent)
@@ -165,7 +165,7 @@ const COLORWAYS: Record<'blue' | 'navy' | 'cream' | 'light', Colorway> = {
 // column ratio), right-anchored art tracks the right edge, centered blocks re-center.
 // At the Letter width every derived value reduces EXACTLY to the approved design
 // measurements (s = 1), so the Letter output is pixel-identical to before.
-const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, pageW, cw }: PosterProps & { cw: Colorway }) => {
+const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, prizeLabel, pageW, cw }: PosterProps & { cw: Colorway }) => {
   const logoSrc = cw.logoVariant === 'white' ? '/winnbell_app_name_white.svg' : '/winnbell_app_name.svg';
   // Same semantics as the previous posters: minAmountLabel is a formatted amount
   // ("$20") or null when the business has no threshold.
@@ -231,7 +231,7 @@ const PosterCanvas = ({ businessName, scanUrl, minAmountLabel, pageW, cw }: Post
       {/* Headline + subline */}
       <div style={{ position: 'absolute', left: 72, top: 236, width: headlineW }}>
         <div style={{ fontSize: 150 * s, fontWeight: 800, letterSpacing: -5.25 * s, lineHeight: `${159 * s}px`, color: cw.headlineColor }}>
-          $3,000
+          {prizeLabel ?? '$3,000'}
           <br />
           {/* Smaller than line one: at the design's 150px this line overflows the 1270px
               column and wraps. 110px keeps it on one line; tracking keeps the same

@@ -42,6 +42,8 @@ export interface PosterProps {
   businessName: string;
   scanUrl: string;
   minAmountLabel?: string | null;
+  /** Headline prize figure ("$3,000"). Comes from the current draw; $3,000 default. */
+  prizeLabel?: string;
   /** Canvas width in design px. Default DESIGN_W (Letter); pass HALF_DESIGN_W for 5.5x8.5.
    *  The canvas re-flows: text metrics scale by the headline-column ratio, right-anchored
    *  art tracks the edge, centered elements re-center. */

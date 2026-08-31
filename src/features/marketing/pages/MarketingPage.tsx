@@ -8,10 +8,13 @@ import {
   Dialog, DialogTitle, List, ListItemButton, ListItemIcon, ListItemText, Typography,
 } from '@mui/material';
 import { LocationOnOutlined, MenuBookRounded, FactCheckRounded, ArrowForwardRounded } from '@mui/icons-material';
+import { useQuery } from '@tanstack/react-query';
 import { useAppSelector } from '../../../store/hook';
 import { selectIsBusiness, selectIsLocationManager, selectCurrentUser } from '../../../store/selectors/authSelectors';
 import { useBusinessData } from '../../partner/hooks/useBusinessData';
 import { useBusinessDetail } from '../../admin/hooks/useAdmin';
+import { getCurrentDraw } from '../../draw/api/draw.api';
+import { queryKeys } from '../../../shared/constants/queryKeys';
 import {
    PRIMARY_MAIN, MOBILE_CONTENT_HEIGHT,
    ACCENT_GOLD_DARK, ACCENT_GOLD_LIGHT,
@@ -91,6 +94,17 @@ const MarketingPage = ({ adminBusinessId }: MarketingPageProps = {}) => {
   const scanUrl = effectiveLocationId
     ? `${window.location.origin}/scan?l=${effectiveLocationId}`
     : window.location.origin;
+
+  // Prize figure printed on the posters and social posts. Public endpoint (works in the
+  // admin embed too); a missing/unrevealed prize falls back to the standard $3,000.
+  const { data: currentDraw } = useQuery({
+    queryKey: queryKeys.draws.current,
+    queryFn: getCurrentDraw,
+    staleTime: 2 * 60_000,
+    retry: 1,
+  });
+  const prizeValue = Number(currentDraw?.prize_amount);
+  const prizeLabel = Number.isFinite(prizeValue) && prizeValue > 0 ? formatCurrency(prizeValue) : '$3,000';
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   const handleCopyScanUrl = () => {
@@ -242,6 +256,7 @@ const MarketingPage = ({ adminBusinessId }: MarketingPageProps = {}) => {
             copied={copied}
             onCopy={handleCopyScanUrl}
             minAmountLabel={minTransactionAmount ? `${formatCurrency(Number(minTransactionAmount))}` : null}
+            prizeLabel={prizeLabel}
           />
         )}
 
@@ -255,6 +270,7 @@ const MarketingPage = ({ adminBusinessId }: MarketingPageProps = {}) => {
             locationPickVersion={locPickVersion}
             alwaysAskLocation={alwaysAskLocation}
             onToast={setSnackbar}
+            prizeLabel={prizeLabel}
           />
         )}
 
