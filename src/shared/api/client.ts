@@ -29,15 +29,102 @@ const deleteAuthHeader = (h: unknown): void => {
   delete bag.authorization;
 };
 
+// Shared refresh state, keyed PER ACCOUNT. A single shared promise would let account B's
+// refresh call silently join account A's in-flight refresh: A's tokens get written back,
+// B's never do, and B's retried mutation goes out with its stale token and dies quietly.
+// Keying by account id dedupes concurrent refreshes for the SAME account (the important
+// case: a cold-open request burst) while never cross-wiring two accounts.
+const refreshPromises = new Map<number | null, Promise<void>>();
+
+// Run ONE /auth/refresh for the pinned account and write the rotated tokens back.
+// Uses bare axios (not `api`) so the interceptors can't recurse into this call.
+// Write-back semantics are load-bearing (audit F9/F11): re-read the account by its
+// pinned id at write-back time — a removed account is never resurrected, and the
+// CURRENT user object is used so concurrent updates aren't clobbered.
+const runTokenRefresh = (accountId: number | null, refreshToken: string): Promise<void> => {
+  const existing = refreshPromises.get(accountId);
+  if (existing) return existing;
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+  const p = axios
+    .post(`${base}/auth/refresh`, { refreshToken })
+    .then(({ data }) => {
+      const current = (store.getState().auth.accounts ?? []).find((a) => a.user.id === accountId);
+      if (current) {
+        store.dispatch(updateAccountTokens({ user: current.user, token: data.token, refreshToken: data.refreshToken }));
+      }
+    })
+    .finally(() => { refreshPromises.delete(accountId); });
+  refreshPromises.set(accountId, p);
+  return p;
+};
+
+// True when the internal JWT is expired or expires within `ms`. Unparsable tokens
+// return false: the reactive 401 path is the authority on whether they still work.
+const tokenExpiresWithin = (token: string, ms: number): boolean => {
+  try {
+    // base64url -> base64 needs the '=' padding restored: atob throws on inputs whose
+    // length % 4 is 2 or 3, and payload length varies per user (id digits, role string),
+    // so without padding some users' tokens would silently never proactively refresh.
+    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4)));
+    return typeof payload.exp === 'number' && payload.exp * 1000 - Date.now() < ms;
+  } catch {
+    return false;
+  }
+};
+
+// Clock-skew guard for the proactive path, per account: a device clock far in the future
+// makes every token look expired forever, and without this floor each new request would
+// fire its own /auth/refresh (a rotation storm that eventually invalidates the family).
+// At most one PROACTIVE refresh per window per account; between windows the stale-looking
+// token is sent as-is and the reactive 401 path (which never loops) remains the authority.
+// The stamp is set BEFORE the attempt on purpose - stamping only on success would turn a
+// server outage into one refresh POST per request; this way failures back off naturally.
+const lastProactiveRefreshAt = new Map<number | null, number>();
+const PROACTIVE_MIN_INTERVAL_MS = 15_000;
+
 // 1. Request Interceptor — attach the ACTIVE account's token from Redux, UNLESS the caller
 // explicitly set its own Authorization. /auth/sync must send the SUPABASE access token; with
 // multi-account a user can be signed in while syncing a second account, and overwriting that
 // header with the internal token made every add-account sign-in fail with 401.
+//
+// PROACTIVE refresh: the internal JWT lives 1h, so the first burst of requests on a cold
+// open after an idle hour is GUARANTEED to 401. The expiry is readable client-side, so when
+// the token is expired (or within 30s of it) refresh FIRST — one /auth/refresh, then every
+// queued request goes out with the fresh token. This removes the 401 -> refresh -> retry
+// waterfall (~0.5-1s) from every cold open. The reactive 401 handler below stays as the
+// fallback for everything expiry can't predict (server-side revocation, clock skew).
 api.interceptors.request.use(
-  (config) => {
-    const token = store.getState().auth.token;
-    if (token && !readAuthHeader(config.headers)) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    // Caller pinned its own Authorization (e.g. /auth/sync with the Supabase token):
+    // never touch it and never spend the active account's refresh token for it.
+    if (readAuthHeader(config.headers)) return config;
+
+    const { token, refreshToken, activeAccountId } = store.getState().auth;
+    if (token && refreshToken && tokenExpiresWithin(token, 30_000)) {
+      const inFlight = refreshPromises.get(activeAccountId);
+      if (inFlight) {
+        // A refresh for THIS account is already in flight (started by a concurrent
+        // request in this same cold-open burst): JOIN it instead of consulting the skew
+        // guard, or requests 2..n of the burst would 401 with the expired token anyway.
+        await inFlight.catch(() => {});
+      } else if (Date.now() - (lastProactiveRefreshAt.get(activeAccountId) ?? 0) > PROACTIVE_MIN_INTERVAL_MS) {
+        lastProactiveRefreshAt.set(activeAccountId, Date.now());
+        try {
+          await runTokenRefresh(activeAccountId, refreshToken);
+        } catch {
+          // Proactive refresh is best-effort: on ANY failure send the request with the
+          // stored token and let the reactive path decide. It alone owns the
+          // drop-account/logout rules (definitive 401/403 vs transient blip).
+        }
+      }
+      // else: skew guard active with no refresh in flight — send the request as-is; the
+      // reactive 401 path remains the authority.
+    }
+
+    const freshToken = store.getState().auth.token;
+    if (freshToken) {
+      config.headers.Authorization = `Bearer ${freshToken}`;
     }
     return config;
   },
@@ -50,7 +137,6 @@ api.interceptors.request.use(
 // queries, never mutations, so without this a receipt submission or code redeem
 // fired just after token expiry would fail once and force the user to tap again.
 // The _retry flag prevents loops; refreshPromise dedupes concurrent refreshes.
-let refreshPromise: Promise<void> | null = null;
 
 // Throttle for the null-refresh-token repair path (audit P2-7): a burst of 401s from a
 // corrupted account must trigger ONE Supabase-session nudge, not one per failed request.
@@ -80,27 +166,10 @@ api.interceptors.response.use(
 
       if (entry.refreshToken && failingUser) {
         try {
-          if (!refreshPromise) {
-            const base = (error.config.baseURL || import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
-            const refreshTokenToUse = entry.refreshToken;
-            refreshPromise = axios
-              .post(`${base}/auth/refresh`, { refreshToken: refreshTokenToUse })
-              .then(({ data }) => {
-                // updateAccountTokens (NOT login): writes the rotated tokens back to this
-                // account without re-activating it if the user switched away mid-refresh.
-                // Re-read the account by its pinned id at write-back time:
-                //  - if it's no longer saved (removed mid-refresh) we skip the dispatch entirely,
-                //    so a just-removed account can never be resurrected with fresh tokens (F9);
-                //  - we use its CURRENT user object, not the one captured at 401 time, so a
-                //    concurrent update (e.g. businessIsActive) isn't clobbered (F11).
-                const current = (store.getState().auth.accounts ?? []).find((a) => a.user.id === failingId);
-                if (current) {
-                  store.dispatch(updateAccountTokens({ user: current.user, token: data.token, refreshToken: data.refreshToken }));
-                }
-              })
-              .finally(() => { refreshPromise = null; });
-          }
-          await refreshPromise;
+          // updateAccountTokens (NOT login) inside runTokenRefresh: writes the rotated
+          // tokens back to the pinned account without re-activating it if the user
+          // switched away mid-refresh (F9/F11 — see runTokenRefresh above).
+          await runTokenRefresh(failingId, entry.refreshToken);
           // Mutations (POST/PUT/PATCH/DELETE) are NOT retried by React Query, so re-issue
           // them here with the fresh token (this is why this path exists). GET requests are
           // left to React Query's own retry (retry: 1 in main.tsx) — re-issuing a GET response
