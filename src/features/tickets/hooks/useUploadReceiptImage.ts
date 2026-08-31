@@ -82,6 +82,23 @@ const canvasToBlob = (canvas: HTMLCanvasElement, type: string, quality: number):
     );
   });
 
+// Probed ONCE on a 1x1 canvas (sub-millisecond) so the real photo is never encoded twice -
+// a wasted full-size PNG pass on a 4000px canvas costs ~1s + a large allocation on phones.
+let webpEncodeSupport: Promise<boolean> | null = null;
+const canEncodeWebP = (): Promise<boolean> => {
+  webpEncodeSupport ??= new Promise((resolve) => {
+    const probe = document.createElement('canvas');
+    probe.width = 1;
+    probe.height = 1;
+    // Spec guarantees the callback fires, but a hung probe here would stall EVERY upload
+    // forever - strictly worse than the bug this fixes. Resolving false takes the JPEG
+    // path, which every browser can encode; real browsers answer in <10ms.
+    const fallback = setTimeout(() => resolve(false), 2_000);
+    probe.toBlob((blob) => { clearTimeout(fallback); resolve(blob?.type === 'image/webp'); }, 'image/webp');
+  });
+  return webpEncodeSupport;
+};
+
 const encodeImage = async (img: HTMLImageElement): Promise<Blob> => {
   const scale = Math.min(1, MAX_DIMENSION / Math.max(img.width, img.height));
   const canvas = document.createElement('canvas');
@@ -90,11 +107,16 @@ const encodeImage = async (img: HTMLImageElement): Promise<Blob> => {
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas not available');
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  const webp = await canvasToBlob(canvas, 'image/webp', WEBP_QUALITY);
-  // A browser that cannot encode the requested type returns a blob of a DIFFERENT type
-  // (Safari hands back PNG) instead of failing - trust blob.type, never the requested type.
-  if (webp.type === 'image/webp') return webp;
-  return canvasToBlob(canvas, 'image/jpeg', JPEG_FALLBACK_QUALITY);
+  const useWebP = await canEncodeWebP();
+  const blob = useWebP
+    ? await canvasToBlob(canvas, 'image/webp', WEBP_QUALITY)
+    : await canvasToBlob(canvas, 'image/jpeg', JPEG_FALLBACK_QUALITY);
+  // Safety net: if the browser STILL produced a different type than the probe promised
+  // (Safari's fallback is silent), one jpeg re-encode beats an oversized-PNG upload failure.
+  if (blob.type !== 'image/webp' && blob.type !== 'image/jpeg') {
+    return canvasToBlob(canvas, 'image/jpeg', JPEG_FALLBACK_QUALITY);
+  }
+  return blob;
 };
 
 // Re-encoding an already-compressed photo (e.g. a WhatsApp-forwarded JPEG) only re-applies
