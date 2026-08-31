@@ -63,7 +63,15 @@ const ProfileSetupPage = () => {
   // this account, so the back affordance signs out (per-account logout semantics).
   const handleLogout = useLogout();
 
-  useEffect(() => { trackFunnel('profile_setup_viewed'); }, []);
+  // Consumer funnel only: location managers pass through this gate too but are staff
+  // accounts, not user-acquisition signal. Fire-once-per-mount on purpose: the role
+  // selectors are settled before this page can render (the setup redirect only fires
+  // after the auth sync populates the user), and mount-once semantics can never
+  // double-count a step if the store ever re-dispatches the same user.
+  useEffect(() => {
+    if (!isBusiness && !isLocationManager) trackFunnel('profile_setup_viewed');
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per mount, roles are settled
+  }, []);
 
   const [dob, setDob] = useState<Dayjs | null>(null);
   const [selectedGender, setSelectedGender] = useState<Gender | ''>('');

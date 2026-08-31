@@ -75,6 +75,12 @@ const RegisterPage = () => {
     return dest;
   })();
 
+  // Consumer-funnel only: the business owner and manager-invite variants of this page
+  // are staff onboarding, not user acquisition - they must not emit registration events.
+  const trackConsumerFunnel: typeof trackFunnel = (type, fields) => {
+    if (!isBusinessVariant) trackFunnel(type, fields);
+  };
+
   const { isLoaded: syncLoaded, isSignedIn, syncError } = useSyncStatus();
   const isAuth = useAppSelector(selectIsAuthenticated);
   const isAdminUser = useAppSelector(selectIsAdmin);
@@ -110,7 +116,7 @@ const RegisterPage = () => {
     }
     // Only anonymous visitors count as sign-up views: an authed user bouncing through
     // (the post-signup redirect mounts this page for a frame) is not funnel signal.
-    if (!isAuth) trackFunnel('registration_page_viewed');
+    if (!isAuth) trackConsumerFunnel('registration_page_viewed');
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL param once on mount
   }, []);
 
@@ -119,7 +125,7 @@ const RegisterPage = () => {
   const markStarted = () => {
     if (!startedRef.current) {
       startedRef.current = true;
-      trackFunnel('registration_started');
+      trackConsumerFunnel('registration_started');
     }
   };
 
@@ -136,7 +142,7 @@ const RegisterPage = () => {
     // rate past 100%. Clicking the provider button IS starting registration. flushNow:
     // the OAuth redirect leaves the page immediately, so the batch must not wait.
     markStarted();
-    trackFunnel('registration_submitted', { flushNow: true });
+    trackConsumerFunnel('registration_submitted', { flushNow: true });
     const roleFormatted = role ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase() : 'User';
     localStorage.setItem('pendingRole', roleFormatted);
     if (inviteToken) localStorage.setItem('pendingInviteToken', inviteToken);
@@ -176,7 +182,7 @@ const RegisterPage = () => {
     if (!termsAccepted) { setError(isBusinessOwner ? 'Please read and accept the Business Agreement to continue.' : 'Please accept the Terms of Service to continue.'); return; }
     setLoading(true);
     setError('');
-    trackFunnel('registration_submitted', { flushNow: true });
+    trackConsumerFunnel('registration_submitted', { flushNow: true });
     try {
       const { data: emailCheck } = await api.post('/auth/check-email', { email: formData.email });
       // Signup-email policy (production): disposable domains and plus-aliases are
@@ -189,7 +195,7 @@ const RegisterPage = () => {
       if (emailCheck.exists) {
         setError('An account with this email already exists. Please sign in instead.');
         setLoading(false);
-        trackFunnel('registration_failed', { reason: 'email_taken' });
+        trackConsumerFunnel('registration_failed', { reason: 'email_taken' });
         return;
       }
 
@@ -218,14 +224,14 @@ const RegisterPage = () => {
         localStorage.removeItem('pendingInviteToken');
         localStorage.removeItem('pendingAddAccount');
         setError(signUpError.message || 'Registration failed');
-        trackFunnel('registration_failed', {
+        trackConsumerFunnel('registration_failed', {
           reason: /password/i.test(signUpError.message ?? '') ? 'weak_password' : 'provider_error',
         });
         return;
       }
       // Store email so VerifyEmailPage can display it
       localStorage.setItem('pendingEmail', formData.email);
-      trackFunnel('email_verification_pending');
+      trackConsumerFunnel('email_verification_pending');
 
       // Navigate to email verification — user must confirm before syncing
       const params = new URLSearchParams({ role: roleFormatted });
@@ -234,7 +240,7 @@ const RegisterPage = () => {
       navigate(`/verify-email?${params.toString()}`);
     } catch {
       setError('Registration failed');
-      trackFunnel('registration_failed', { reason: 'provider_error' });
+      trackConsumerFunnel('registration_failed', { reason: 'provider_error' });
     } finally {
       setLoading(false);
     }
@@ -344,7 +350,7 @@ const RegisterPage = () => {
               <TextField fullWidth name='email' value={formData.email} onChange={handleChange} placeholder='Enter your email'
                 onBlur={() => {
                   setTouched((t) => ({ ...t, email: true }));
-                  if (formData.email.trim() !== '') trackFunnel('registration_email_entered');
+                  if (formData.email.trim() !== '') trackConsumerFunnel('registration_email_entered');
                 }}
                 error={!!emailError} helperText={emailError}
                 sx={authInputSx}
@@ -389,7 +395,7 @@ const RegisterPage = () => {
                     return;
                   }
                   setTermsAccepted(e.target.checked);
-                  if (e.target.checked) trackFunnel('terms_accepted');
+                  if (e.target.checked) trackConsumerFunnel('terms_accepted');
                 }} size='small' />}
                 label={
                   isBusinessOwner ? (

@@ -8,7 +8,7 @@ import {
   GRADIENT_POST_NAVY, GRADIENT_POST_LIGHT, GRADIENT_POST_ORANGE, GRADIENT_POST_PURPLE,
   GRADIENT_DRAW_CARD, GRADIENT_SUCCESS_GREEN, GRADIENT_PRIMARY,
   GOLD_TROPHY, ACCENT_GOLD_LIGHT, ALPHA_WHITE_80,
-  PRIMARY_MAIN, TEXT_HEADING, TEXT_SECONDARY, BORDER_SUBTLE,
+  PRIMARY_MAIN, TEXT_HEADING, TEXT_SECONDARY, BORDER_SUBTLE, BG_ROW_SUBTLE,
 } from '../../../shared/colors';
 import { captureNodeToBlob, shareImageBlob, triggerBlobDownload } from '../utils/capture';
 import { useLocationGatedActions } from '../hooks/useLocationGatedActions';
@@ -582,7 +582,7 @@ const SocialPostsTab = ({
                 sx={{
                   display: 'flex',
                   gap: '3px',
-                  background: '#f7f9fc',
+                  background: BG_ROW_SUBTLE,
                   border: '1px solid',
                   borderColor: BORDER_SUBTLE,
                   borderRadius: '12px',
@@ -631,7 +631,7 @@ const SocialPostsTab = ({
                     minWidth: 0,
                     display: 'flex',
                     alignItems: 'center',
-                    background: '#f7f9fc',
+                    background: BG_ROW_SUBTLE,
                     border: '1px solid',
                     borderColor: BORDER_SUBTLE,
                     borderRadius: '12px',

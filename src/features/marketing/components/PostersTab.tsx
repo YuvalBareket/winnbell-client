@@ -9,7 +9,7 @@ import {
 } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { PRIMARY_MAIN, SHADOW_CARD } from '../../../shared/colors';
+import { PRIMARY_MAIN, SHADOW_CARD, BG_ROW_SUBTLE } from '../../../shared/colors';
 import { svgToPngDataUrl, downloadNodeAsPng } from '../utils/capture';
 import { useLocationGatedActions } from '../hooks/useLocationGatedActions';
 import { StickerCanvas, StickerPreview } from './StickerTemplates';
@@ -491,7 +491,7 @@ const PostersTab = ({
                       sx={{
                         display: 'flex',
                         gap: '3px',
-                        background: '#f7f9fc',
+                        background: BG_ROW_SUBTLE,
                         border: '1px solid',
                         borderColor: 'divider',
                         borderRadius: '12px',

@@ -116,10 +116,16 @@ const FunnelTab = () => {
   const { data, isLoading } = useFunnelAnalytics(days);
 
   const totals = data?.totals ?? {};
+  // Distinct people per step (user id, or journey session pre-auth). The funnels and
+  // ratio KPIs read these so one person opening a page five times still counts once.
+  // Falls back to event counts on deploy skew (older API without `people`) - the
+  // "counts people" captions hide in that window so the label never lies.
+  const hasPeople = !!data?.people;
+  const people = data?.people ?? totals;
   const hasData = Object.keys(totals).length > 0;
   const regTime = findTransition(data, 'registration_started', 'account_created');
-  const otpRequested = totals['otp_requested'] ?? 0;
-  const otpVerified = totals['otp_verified'] ?? 0;
+  const otpRequested = people['otp_requested'] ?? 0;
+  const otpVerified = people['otp_verified'] ?? 0;
   const rejected = totals['submission_rejected'] ?? 0;
   const accepted = totals['submission_accepted'] ?? 0;
 
@@ -163,8 +169,8 @@ const FunnelTab = () => {
               </Grid>
               <Grid size={{ xs: 6, md: 2 }}>
                 <StatCard icon={<TaskAltOutlined />} tint={CHART_PURPLE_TINT} color={CHART_PURPLE}
-                  label='Sign-up completion' value={pct(totals['account_created'] ?? 0, totals['registration_started'] ?? 0)}
-                  caption='Started form to account' />
+                  label='Sign-up completion' value={pct(people['account_created'] ?? 0, people['registration_started'] ?? 0)}
+                  caption='People: started form to account' />
               </Grid>
               <Grid size={{ xs: 6, md: 2 }}>
                 <StatCard icon={<TimerOutlined />} tint={ALPHA_PRIMARY_10} color={PRIMARY_MAIN}
@@ -174,7 +180,7 @@ const FunnelTab = () => {
               <Grid size={{ xs: 6, md: 2 }}>
                 <StatCard icon={<SmsOutlined />} tint={CHART_TEAL_TINT} color={CHART_TEAL}
                   label='Phone verify success' value={pct(otpVerified, otpRequested)}
-                  caption={otpRequested > 0 ? `${otpVerified.toLocaleString()} of ${otpRequested.toLocaleString()} codes` : 'No codes sent yet'} />
+                  caption={otpRequested > 0 ? `${otpVerified.toLocaleString()} of ${otpRequested.toLocaleString()} people` : 'No codes sent yet'} />
               </Grid>
               <Grid size={{ xs: 6, md: 2 }}>
                 {/* Receipt-photo uploads that failed after the automatic retry (client-reported,
@@ -222,7 +228,12 @@ const FunnelTab = () => {
             {isLoading ? <AdminCardSkeleton height={320} /> : (
               <AdminCard sx={{ p: 2.5, height: '100%' }}>
                 <SectionHeader icon={<FilterAltOutlined />} tint={CHART_BLUE_TINT} color={CHART_BLUE} title='Registration funnel' />
-                <FunnelSteps steps={REG_STEPS} totals={totals} color={CHART_BLUE} tint={CHART_BLUE_TINT} />
+                <FunnelSteps steps={REG_STEPS} totals={people} color={CHART_BLUE} tint={CHART_BLUE_TINT} />
+                {hasPeople && (
+                  <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', mt: 1.5 }}>
+                    Counts people, not events - repeat visits by the same person count once per step.
+                  </Typography>
+                )}
               </AdminCard>
             )}
           </motion.div>
@@ -232,7 +243,13 @@ const FunnelTab = () => {
             {isLoading ? <AdminCardSkeleton height={320} /> : (
               <AdminCard sx={{ p: 2.5, height: '100%' }}>
                 <SectionHeader icon={<FilterAltOutlined />} tint={CHART_GREEN_TINT} color={CHART_GREEN} title='Entry funnel' />
-                <FunnelSteps steps={SUB_STEPS} totals={totals} color={CHART_GREEN} tint={CHART_GREEN_TINT} />
+                <FunnelSteps steps={SUB_STEPS} totals={people} color={CHART_GREEN} tint={CHART_GREEN_TINT} />
+                {hasPeople && (
+                  <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', mt: 1.5 }}>
+                    Counts people, not events - repeat visits by the same person count once per step.
+                    Entry accepted includes free and referral entries, which skip the form.
+                  </Typography>
+                )}
               </AdminCard>
             )}
           </motion.div>

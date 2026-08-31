@@ -93,6 +93,10 @@ export interface FunnelAnalytics {
   days: number;
   /** Raw event counts by type over the range (live, includes today). */
   totals: Record<string, number>;
+  /** Distinct PEOPLE per event type (by user id, or journey session for pre-auth
+   *  events). Optional: absent when the API is an older build (deploy skew) - the
+   *  dashboard falls back to event counts. */
+  people?: Record<string, number>;
   rejectionReasons: { reason: string; n: number }[];
   daily: { day: string; accounts: number; submissions: number }[];
   /** From the nightly rollup - excludes today; timings are n-weighted averages. */
