@@ -24,7 +24,7 @@ import { useCurrentLocation } from '../hooks/useCurrentLocation';
 import BusinessMap from '../components/BusinessMap';
 import MapBusinessPopup from '../components/MapBusinessPopup';
 import type { NearbyLocation } from '../types/nearBy.types';
-import { useNearbyWithZoom } from '../hooks/useNearbyWithZoom';
+import { useNearbyLaunchMode } from '../hooks/useNearbyLaunchMode';
 import { useBusinessSearch } from '../hooks/useBusinessSearch';
 import { BUSINESS_SECTORS, UNKNOWN_SECTOR } from '../../admin/data';
 import { useMenuDrawer } from '../../../shared/context/MenuDrawerContext';
@@ -123,7 +123,9 @@ const NearbyPage = () => {
 
   // 2. Pull Location and Fetch Data
   const userLocation = useAppSelector(selectUserLocation);
-  const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyWithZoom(selectedSector);
+  // TEMPORARY LAUNCH MODE: one fetch for all ~10 locations, pan/zoom never refetches.
+  // Revert to useNearbyWithZoom (same return shape) when locations approach the 30-row budget.
+  const { locations, isLoading, isFetching, isError, onViewportChange } = useNearbyLaunchMode(selectedSector);
 
   // Global search drives the LIST (finds businesses ANYWHERE, not just the on-screen viewport);
   // the MAP keeps showing viewport-nearby markers and only moves when a result is tapped.

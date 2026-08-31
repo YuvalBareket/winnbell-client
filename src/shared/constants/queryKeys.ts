@@ -111,6 +111,8 @@ export const queryKeys = {
     all:     ['nearby']            as const,
     receipt: ['nearby', 'receipt'] as const,
     search:  (q: string) => ['nearby', 'search', q] as const,
+    // Launch-mode map: one fetch for every participating location, keyed by sector only.
+    launchAll: (sector: string) => ['nearby', 'launch-all', sector] as const,
   },
 
   // --- Referral ------------------------------------------------------------
