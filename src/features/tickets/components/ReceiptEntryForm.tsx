@@ -38,6 +38,7 @@ import {
   BORDER_SUBTLE, BOTTOM_NAV_HEIGHT,
 } from '../../../shared/colors';
 import { apiErrorMessage, apiErrorCode } from '../../../shared/utils/apiError';
+import { localDateString } from '../../../shared/utils/date';
 import { staggerContainer, riseIn, popIn, pressable, pressableCard, SPRING_SNAPPY, heroPop } from '../../../shared/motion';
 import EntrySuccessDialog from './EntrySuccessDialog';
 import ReceiptImageUploadField, { SCAN_INPUT_ID } from './ReceiptImageUploadField';
@@ -281,7 +282,9 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   const [geoCoords, setGeoCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [receiptIdentifier, setReceiptIdentifier] = useState('');
   const [transactionAmount, setTransactionAmount] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
+  // LOCAL date, not toISOString (UTC): a US user after 8pm Eastern would default to
+  // tomorrow's date - stored wrong AND rejectable at campaign boundaries.
+  const [purchaseDate, setPurchaseDate] = useState(localDateString());
   const [errorMessage, setErrorMessage] = useState('');
   const receiptKeystrokeTimesRef = useRef<number[]>([]);
   const [receiptWasPasted, setReceiptWasPasted] = useState(false);
@@ -441,7 +444,11 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
   // ──────────────────────────────────────────────────
   // Validation
   // ──────────────────────────────────────────────────
-  const today = new Date().toISOString().split('T')[0];
+  // today is the user's LOCAL date (default + max selectable purchase date). sevenDaysAgo
+  // stays UTC-derived ON PURPOSE: the server's 7-day window is anchored at UTC midnight,
+  // and this exact expression yields that same boundary date - deriving it locally would
+  // let a US evening user pick a date the server then rejects.
+  const today = localDateString();
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const purchaseDateTooOld = purchaseDate !== '' && purchaseDate < sevenDaysAgo;
 
@@ -681,8 +688,13 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
     ?? selectedLocationDetail?.min_transaction_amount
     ?? null;
   const previewAmt = parseFloat(transactionAmount);
+  // Integer-cents division, mirroring the server's entry math exactly: float division
+  // makes exact multiples come out just under (36.90 / 12.30 = 2.9999...) and floor
+  // would preview one entry fewer than the server actually awards.
   const previewCount = selectedLocation && previewAmt > 0
-    ? (previewMin && previewMin > 0 ? Math.min(Math.floor(previewAmt / previewMin), MAX_ENTRIES_PER_RECEIPT) : 1)
+    ? (previewMin && previewMin > 0
+        ? Math.min(Math.floor(Math.round(previewAmt * 100) / Math.round(previewMin * 100)), MAX_ENTRIES_PER_RECEIPT)
+        : 1)
     : 0;
 
   // readState guard: during a re-read the previous values and photo URL are still in state,

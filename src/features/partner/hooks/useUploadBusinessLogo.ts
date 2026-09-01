@@ -12,7 +12,7 @@ const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB original file
 const MAX_DIMENSION = 512; // px - logos are displayed small, 512 is plenty
 const WEBP_QUALITY = 0.85;
 
-const convertToWebP = (file: File): Promise<File> =>
+const convertToLogoFile = (file: File): Promise<File> =>
   new Promise((resolve, reject) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
@@ -32,8 +32,15 @@ const convertToWebP = (file: File): Promise<File> =>
 
       canvas.toBlob(
         (blob) => {
-          if (!blob) { reject(new Error('WebP conversion failed')); return; }
-          resolve(new File([blob], 'logo.webp', { type: 'image/webp' }));
+          if (!blob) { reject(new Error('Logo conversion failed')); return; }
+          // Safari cannot encode WebP - toBlob('image/webp') silently returns a PNG blob
+          // (the same fallback that broke receipt uploads, prod incident 2026-08-31).
+          // Keep the blob's REAL type: it is what gets signed into the presigned URL and
+          // sent on the PUT, and PNG (unlike a JPEG re-encode) preserves logo
+          // transparency. At 512px either format stays far under the 10 MB presign cap.
+          const type = blob.type || 'image/png';
+          const ext = type === 'image/webp' ? 'webp' : 'png';
+          resolve(new File([blob], `logo.${ext}`, { type }));
         },
         'image/webp',
         WEBP_QUALITY,
@@ -60,17 +67,19 @@ export const useUploadBusinessLogo = () => {
     setIsUploading(true);
 
     try {
-      // Convert to WebP and resize before uploading
-      const webpFile = await convertToWebP(file);
+      // Resize + re-encode before uploading (WebP, or the browser's real fallback type)
+      const logoFile = await convertToLogoFile(file);
 
-      const { uploadUrl, key } = await getUploadUrl('image/webp', webpFile.size);
+      // Presign and PUT the file's ACTUAL type (they must stay identical for the R2
+      // signature) - hardcoding 'image/webp' stored Safari's PNG bytes mislabeled as WebP.
+      const { uploadUrl, key } = await getUploadUrl(logoFile.type, logoFile.size);
 
       // fetch only rejects on network/CSP failure; a non-2xx from R2 (e.g. expired
       // presigned URL) resolves normally, so check res.ok or a broken key gets saved.
       const res = await fetch(uploadUrl, {
         method: 'PUT',
-        body: webpFile,
-        headers: { 'Content-Type': 'image/webp' },
+        body: logoFile,
+        headers: { 'Content-Type': logoFile.type },
       });
       if (!res.ok) throw new Error(`Upload failed (${res.status})`);
 

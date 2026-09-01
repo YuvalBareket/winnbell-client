@@ -7,17 +7,26 @@
 export const calculateDaysLeft = (dateString: string | undefined): number => {
   if (!dateString) return 0;
 
-  const drawDate = new Date(dateString);
-  const today = new Date();
-
-  // Set both to midnight to ensure we count full days
-  drawDate.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-
-  const diffTime = drawDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  // draw_date is midnight America/New_York expressed as a UTC timestamp. Pure epoch math:
+  // the old setHours(0,0,0,0) floored both sides to the VIEWER'S local midnight, which for
+  // anyone west of Eastern (incl. Florida panhandle CST) shifted the boundary a whole day
+  // and showed "Ends today" a day early. Ceil counts any remaining fraction as a day, so
+  // for Eastern viewers the result is identical to the old behavior.
+  const diffDays = Math.ceil((new Date(dateString).getTime() - Date.now()) / 86_400_000);
 
   return diffDays > 0 ? diffDays : 0;
+};
+
+/**
+ * Today's date as YYYY-MM-DD in the USER'S timezone. toISOString() is UTC - for a US user
+ * after 8pm Eastern that is already TOMORROW, which made date fields default to (and
+ * accept) a date the user has not reached yet.
+ */
+export const localDateString = (d: Date = new Date()): string => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 };
 
 /**

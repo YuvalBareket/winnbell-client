@@ -51,8 +51,11 @@ const getCroppedFile = async (imageSrc: string, croppedAreaPixels: Area): Promis
   });
 };
 
-// Convert to WebP like useUploadBusinessLogo does
-const convertToWebP = (file: File): Promise<File> => {
+// Resize + re-encode like useUploadBusinessLogo does (WebP, or the browser's real
+// fallback type). Safari cannot encode WebP - toBlob('image/webp') silently returns a
+// PNG blob (the same fallback that broke receipt uploads, prod incident 2026-08-31), so
+// the blob's REAL type is kept and later presigned/PUT as-is.
+const convertToLogoFile = (file: File): Promise<File> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
@@ -73,8 +76,10 @@ const convertToWebP = (file: File): Promise<File> => {
 
       canvas.toBlob(
         (blob) => {
-          if (!blob) { reject(new Error('WebP conversion failed')); return; }
-          resolve(new File([blob], 'logo.webp', { type: 'image/webp' }));
+          if (!blob) { reject(new Error('Logo conversion failed')); return; }
+          const type = blob.type || 'image/png';
+          const ext = type === 'image/webp' ? 'webp' : 'png';
+          resolve(new File([blob], `logo.${ext}`, { type }));
         },
         'image/webp',
         0.85,
@@ -146,17 +151,18 @@ const LogoCropDialog: React.FC<LogoCropDialogWithPickerProps> = ({ open, onClose
       // Get cropped file
       const croppedFile = await getCroppedFile(imageSrc, croppedAreaPixels);
 
-      // Convert to WebP
-      const webpFile = await convertToWebP(croppedFile);
+      // Resize + re-encode (WebP, or the browser's real fallback type)
+      const logoFile = await convertToLogoFile(croppedFile);
 
-      // Get upload URL
-      const { uploadUrl, key } = await getUploadUrl('image/webp', webpFile.size);
+      // Presign and PUT the file's ACTUAL type (they must stay identical for the R2
+      // signature) - hardcoding 'image/webp' stored Safari's PNG bytes mislabeled as WebP.
+      const { uploadUrl, key } = await getUploadUrl(logoFile.type, logoFile.size);
 
       // Upload to S3
       const uploadResponse = await fetch(uploadUrl, {
         method: 'PUT',
-        body: webpFile,
-        headers: { 'Content-Type': 'image/webp' },
+        body: logoFile,
+        headers: { 'Content-Type': logoFile.type },
       });
 
       if (!uploadResponse.ok) {
