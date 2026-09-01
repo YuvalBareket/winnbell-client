@@ -22,8 +22,9 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import RouteOutlinedIcon from '@mui/icons-material/RouteOutlined';
 import { motion } from 'framer-motion';
-import { useUserDetail, useAdminImageDecision } from '../../hooks/useAdmin';
+import { useUserDetail, useAdminImageDecision, type AdminJourneyEvent } from '../../hooks/useAdmin';
 import {
   GRADIENT_HERO,
   ALPHA_WHITE_15,
@@ -122,12 +123,155 @@ const ACQUISITION_LABELS: Record<Acquisition['source'], string> = {
   direct: 'Direct signup',
 };
 
+// ── Journey timeline (funnel_event stream, oldest first) ─────────────────────
+
+const JOURNEY_EVENT_LABELS: Record<string, string> = {
+  scan_landing_viewed: 'Viewed the QR landing page',
+  join_landing_viewed: 'Viewed the invite landing page',
+  registration_page_viewed: 'Viewed the sign-up page',
+  registration_started: 'Started signing up',
+  registration_email_entered: 'Entered their email',
+  terms_accepted: 'Accepted the terms',
+  registration_submitted: 'Submitted the sign-up form',
+  registration_failed: 'Sign-up failed',
+  email_verification_pending: 'Sent to email verification',
+  account_created: 'Account created',
+  first_login: 'First sign-in',
+  returning_login: 'Signed in again',
+  profile_setup_viewed: 'Viewed profile setup',
+  profile_setup_completed: 'Completed profile setup',
+  profile_setup_failed: 'Profile setup failed',
+  submit_page_viewed: 'Viewed the entry page',
+  submit_business_selected: 'Picked a business',
+  submit_amount_entered: 'Entered a receipt amount',
+  submit_receipt_id_entered: 'Entered a receipt number',
+  receipt_scan_used: 'Scanned a receipt photo',
+  submit_image_attached: 'Attached a receipt photo',
+  submit_image_upload_failed: 'Receipt photo upload failed',
+  submit_attempted: 'Submitted an entry',
+  submission_confirmed_shown: 'Saw the entry confirmation',
+  submission_accepted: 'Entry accepted',
+  submission_rejected: 'Entry rejected',
+  submission_ocr_cleared: 'Receipt image verified',
+  submission_ocr_rejected: 'Receipt image rejected',
+  otp_requested: 'Requested a phone code',
+  otp_send_failed: 'Phone code failed to send',
+  otp_delivered: 'Phone code delivered',
+  otp_undelivered: 'Phone code not delivered',
+  otp_verify_attempted: 'Entered a phone code',
+  otp_verified: 'Phone verified',
+  otp_verify_failed: 'Phone code incorrect',
+};
+
+const JOURNEY_DEVICE_LABELS: Record<string, string> = {
+  ios_pwa: 'iOS app',
+  ios_safari: 'iOS Safari',
+  android_pwa: 'Android app',
+  android_chrome: 'Android Chrome',
+  desktop: 'Desktop',
+  other: 'Other device',
+};
+
+const JOURNEY_GOOD = new Set([
+  'account_created', 'first_login', 'profile_setup_completed', 'otp_verified',
+  'submission_accepted', 'submission_ocr_cleared',
+]);
+const isJourneyBad = (t: string) =>
+  t.endsWith('_failed') || t.endsWith('_rejected') || t === 'otp_undelivered';
+
+const formatGap = (ms: number): string => {
+  const mins = Math.round(ms / 60000);
+  if (mins < 60) return `${mins} min later`;
+  const hours = Math.round(mins / 60);
+  if (hours < 48) return `${hours}h later`;
+  return `${Math.round(hours / 24)} days later`;
+};
+
+const JourneyTimeline: React.FC<{ events: AdminJourneyEvent[] }> = ({ events }) => {
+  const rows: React.ReactNode[] = [];
+  let prevDate = '';
+  let prevDevice: string | null = null;
+  let prevTs = 0;
+
+  events.forEach((ev, i) => {
+    const at = new Date(ev.occurred_at);
+    const dayKey = at.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const ts = at.getTime();
+
+    if (dayKey !== prevDate) {
+      rows.push(
+        <Typography key={`day-${i}`} variant='caption' display='block' sx={{ color: TEXT_HEADING, fontWeight: 800, mt: i === 0 ? 0 : 1.5, mb: 0.5 }}>
+          {dayKey}
+        </Typography>,
+      );
+    } else if (prevTs && ts - prevTs > 30 * 60000) {
+      // A same-day pause over 30 minutes reads as a separate visit; mark the gap.
+      rows.push(
+        <Typography key={`gap-${i}`} variant='caption' display='block' sx={{ color: TEXT_TERTIARY, fontStyle: 'italic', py: 0.5, pl: 8.5 }}>
+          {formatGap(ts - prevTs)}
+        </Typography>,
+      );
+    }
+    prevDate = dayKey;
+    prevTs = ts;
+
+    const deviceChanged = ev.device_class != null && ev.device_class !== prevDevice;
+    if (ev.device_class != null) prevDevice = ev.device_class;
+
+    const dotColor = isJourneyBad(ev.event_type) ? METRIC_BAD : JOURNEY_GOOD.has(ev.event_type) ? METRIC_GOOD : PRIMARY_MAIN;
+    const meta = ev.meta ?? {};
+    const entryCount = typeof meta.entry_count === 'number' ? meta.entry_count : null;
+
+    rows.push(
+      <Stack key={`ev-${i}`} direction='row' spacing={1} alignItems='flex-start' sx={{ position: 'relative', pb: 0.75 }}>
+        <Typography variant='caption' sx={{ color: TEXT_TERTIARY, minWidth: 56, pt: '1px', fontVariantNumeric: 'tabular-nums' }}>
+          {at.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'stretch', pt: '5px' }}>
+          <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: dotColor, flexShrink: 0 }} />
+          {i < events.length - 1 && <Box sx={{ width: '2px', flex: 1, bgcolor: BORDER_SUBTLE, mt: 0.5 }} />}
+        </Box>
+        <Stack direction='row' spacing={0.75} alignItems='center' flexWrap='wrap' useFlexGap sx={{ minWidth: 0 }}>
+          <Typography variant='body2' fontWeight={600} sx={{ color: isJourneyBad(ev.event_type) ? METRIC_BAD : TEXT_HEADING }}>
+            {JOURNEY_EVENT_LABELS[ev.event_type] ?? ev.event_type}
+            {entryCount != null && entryCount > 1 && ` (${entryCount} entries)`}
+          </Typography>
+          {ev.reason_code && (
+            <Chip
+              label={ev.reason_code.replace(/_/g, ' ')}
+              size='small'
+              sx={{ bgcolor: METRIC_BAD_TINT, color: METRIC_BAD, fontWeight: 700, borderRadius: '6px', fontSize: 10, height: 18 }}
+            />
+          )}
+          {meta.preselected === true && (
+            <Chip
+              label='preselected from flyer'
+              size='small'
+              sx={{ bgcolor: BG_ROW_SUBTLE, color: TEXT_TERTIARY, fontWeight: 700, borderRadius: '6px', fontSize: 10, height: 18 }}
+            />
+          )}
+          {deviceChanged && ev.device_class && (
+            <Chip
+              label={JOURNEY_DEVICE_LABELS[ev.device_class] ?? ev.device_class}
+              size='small'
+              sx={{ bgcolor: STATUS_PENDING_BG, color: STATUS_PENDING_TEXT, fontWeight: 700, borderRadius: '6px', fontSize: 10, height: 18 }}
+            />
+          )}
+        </Stack>
+      </Stack>,
+    );
+  });
+
+  return <Box sx={{ maxHeight: 400, overflowY: 'auto', pr: 1 }}>{rows}</Box>;
+};
+
 const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
   const { data, isLoading } = useUserDetail(userId);
   const imageDecision = useAdminImageDecision();
   const [pendingTicket, setPendingTicket] = React.useState<number | null>(null);
   const user = data?.user;
   const entries = data?.entries ?? [];
+  const journey = data?.journey ?? [];
   const acquisition = (user?.acquisition ?? null) as Acquisition | null;
   // Branch managers own no business row - their tie to a business is the location(s)
   // they manage, surfaced by getUserDetailService as a JSON array.
@@ -270,6 +414,31 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                   }}
                 />
               </Stack>
+            </motion.div>
+
+            {/* Journey: every recorded step through the app, oldest first, including the
+                anonymous pre-signup session stitched at account creation */}
+            <motion.div variants={popIn}>
+              <AdminCard sx={{ p: 2 }}>
+                <Stack direction='row' spacing={1} alignItems='center' mb={1.5}>
+                  <RouteOutlinedIcon sx={{ fontSize: 18, color: PRIMARY_MAIN }} />
+                  <Typography variant='caption' sx={{ color: TEXT_TERTIARY, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Journey
+                  </Typography>
+                  {journey.length > 0 && (
+                    <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                      {journey.length} steps
+                    </Typography>
+                  )}
+                </Stack>
+                {journey.length > 0 ? (
+                  <JourneyTimeline events={journey} />
+                ) : (
+                  <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>
+                    No journey events recorded - this account predates event tracking.
+                  </Typography>
+                )}
+              </AdminCard>
             </motion.div>
 
             {/* Stats */}

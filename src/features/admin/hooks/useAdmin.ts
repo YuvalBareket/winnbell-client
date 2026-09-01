@@ -510,12 +510,23 @@ type AdminUserEntry = {
   [key: string]: unknown;
 };
 
+// One step of the user's journey through the app (funnel_event stream, oldest first).
+// Includes anonymous pre-signup steps recovered via the stitched session.
+export type AdminJourneyEvent = {
+  event_type: string;
+  reason_code: string | null;
+  device_class: string | null;
+  session_id: string | null;
+  occurred_at: string;
+  meta: Record<string, unknown> | null;
+};
+
 export const useUserDetail = (userId: number | null) => {
   return useQuery({
     queryKey: queryKeys.admin.userDetail(userId),
     queryFn: async () => {
       const { data } = await fetchUserDetail(userId!);
-      return data as { user: AdminUserDetail; entries: AdminUserEntry[] };
+      return data as { user: AdminUserDetail; entries: AdminUserEntry[]; journey?: AdminJourneyEvent[] };
     },
     enabled: userId !== null,
     staleTime: 30_000,
