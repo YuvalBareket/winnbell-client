@@ -34,6 +34,7 @@ import { US_STATES } from '../../../shared/constants/usStates';
 import { queryKeys } from '../../../shared/constants/queryKeys';
 import PhoneVerifySheet from '../../tickets/components/PhoneVerifySheet';
 import ReferralBonusSuccessDialog from '../../tickets/components/ReferralBonusSuccessDialog';
+import { markScanTourPending } from '../../onboarding/tourState';
 
 const GENDERS = ['Female', 'Male', 'Other', 'Prefer not to say'] as const;
 type Gender = typeof GENDERS[number];
@@ -155,6 +156,10 @@ const ProfileSetupPage = () => {
       {
         onSuccess: () => {
           dispatch(completeProfileSetup({ dateOfBirth, gender: selectedGender, state: selectedState }));
+          // Consumers get the one-time on-screen tour when they land on /scan. Armed here
+          // because profile-setup completion is a once-per-signup event, which is what
+          // keeps the tour to new signups only.
+          if (!isBusiness && !isLocationManager) markScanTourPending();
           navigate(homeDest, { replace: true });
         },
         onError: (error: unknown) => {

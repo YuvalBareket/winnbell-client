@@ -224,6 +224,7 @@ const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact
         {...pressableCard}
         {...attractGlow}
         onClick={onClaim}
+        data-tour='weekly-entry'
         sx={{ ...blue, display: 'flex', alignItems: 'center', gap: 1.5, p: 1.75, borderRadius: 3, cursor: 'pointer' }}
       >
         {iconChip}
@@ -237,7 +238,7 @@ const FreeEntryCard: React.FC<{ onClaim: () => void; variant?: 'full' | 'compact
   }
 
   return (
-    <Box component={motion.div} {...attractGlow} sx={{ ...blue, borderRadius: 3, px: 3, py: 3.5, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <Box component={motion.div} {...attractGlow} data-tour='weekly-entry' sx={{ ...blue, borderRadius: 3, px: 3, py: 3.5, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {/* Large prize icon on top so the card sits taller */}
       <Box sx={{ width: 68, height: 68, borderRadius: '50%', bgcolor: 'white', color: PRIMARY_MAIN, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
         <CardGiftcardOutlined sx={{ fontSize: 36 }} />
@@ -928,7 +929,7 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
             <Box sx={{ flex: 1, height: '1px', bgcolor: BORDER_LIGHT }} />
           </Box>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'flex-start' }}>
-            <Box component={motion.div} variants={riseIn} sx={{ flex: 1, width: '100%', minWidth: 0 }}>
+            <Box component={motion.div} variants={riseIn} data-tour='receipt-form' sx={{ flex: 1, width: '100%', minWidth: 0 }}>
               {isLocationFetching ? (
                 <Box sx={{ mb: 2 }}>
                   <Skeleton variant='rounded' height={48} sx={{ borderRadius: 2.5, mb: 1 }} />
@@ -1069,15 +1070,17 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
           {/* Phone verification interposes BEFORE the upload starts: the upload-url endpoint
               is phone-gated server-side, and without the sheet a 403 there surfaces as a
               misleading "try a different image" error for every unverified user. */}
-          <ReceiptImageUploadField
-            state={readState === 'awaiting_photo' ? 'prompt' : readState === 'reading' ? 'reading' : 'row'}
-            receiptImageUrl={receiptImageUrl}
-            uploadError={receiptImageUpload.error}
-            onFile={(file) => {
-              if (guardEntryAction) guardEntryAction(() => void handleReceiptFile(file));
-              else void handleReceiptFile(file);
-            }}
-          />
+          <Box data-tour='receipt-form'>
+            <ReceiptImageUploadField
+              state={readState === 'awaiting_photo' ? 'prompt' : readState === 'reading' ? 'reading' : 'row'}
+              receiptImageUrl={receiptImageUrl}
+              uploadError={receiptImageUpload.error}
+              onFile={(file) => {
+                if (guardEntryAction) guardEntryAction(() => void handleReceiptFile(file));
+                else void handleReceiptFile(file);
+              }}
+            />
+          </Box>
 
           {/* Reading: skeletons where the three fields and the submit are about to arrive. */}
           {readState === 'reading' && (
@@ -1294,6 +1297,22 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               </Box>
           </Box>
           )}
+
+          {/* No receipt in hand? The weekly entry must stay reachable with a business
+              selected: QR flyer arrivals land on this step directly and would otherwise
+              never see it (the step-1 card lives behind !selectedLocation - prod funnel
+              showed those users bouncing with zero entries). Mobile only; the desktop
+              summary rail carries its own copy below the privacy note. */}
+          <Box sx={{ display: { xs: 'block', md: 'none' }, mt: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+              <Box sx={{ flex: 1, height: '1px', bgcolor: BORDER_LIGHT }} />
+              <Typography sx={{ color: TEXT_SECONDARY, fontWeight: 700, fontSize: '0.7rem', letterSpacing: 0.6, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                No receipt yet?
+              </Typography>
+              <Box sx={{ flex: 1, height: '1px', bgcolor: BORDER_LIGHT }} />
+            </Box>
+            <FreeEntryCard variant='compact' onClaim={() => navigate('/freeTicket')} />
+          </Box>
             </Box>
           </Box>
 
@@ -1342,6 +1361,10 @@ const ReceiptEntryForm: React.FC<ReceiptEntryFormProps> = ({
               <Typography sx={{ fontSize: 12, lineHeight: 1.5, color: TEXT_TERTIARY }}>
                 Used to verify this entry only.
               </Typography>
+            </Box>
+            {/* Weekly entry stays reachable in step 2 (QR arrivals never see step 1). */}
+            <Box sx={{ mt: 2 }}>
+              <FreeEntryCard variant='compact' onClaim={() => navigate('/freeTicket')} />
             </Box>
           </Box>
         </Box>

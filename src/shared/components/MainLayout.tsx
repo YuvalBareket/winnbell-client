@@ -124,7 +124,8 @@ const LayoutShell = () => {
             }}
           >
             {/* Icon-only nav actions need aria-labels: WCAG button-name (screen readers) */}
-            <BottomNavigationAction {...tapNearby} value={firstTabPath} showLabel={false} aria-label='Nearby businesses' icon={<Storefront />} />
+            {/* data-tour: consumer map tab is a first-run tour target on /scan */}
+            <BottomNavigationAction {...tapNearby} value={firstTabPath} showLabel={false} aria-label='Nearby businesses' data-tour={!isBusinessOrManager ? 'nav-map' : undefined} icon={<Storefront />} />
 
             <BottomNavigationAction
               {...tapMain}

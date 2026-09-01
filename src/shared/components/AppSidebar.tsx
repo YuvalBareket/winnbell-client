@@ -94,6 +94,8 @@ const AppSidebar = () => {
                 <ListItemButton
                   key={path}
                   onClick={() => navigate(path)}
+                  // Consumer map link is a first-run tour target on /scan
+                  data-tour={path === '/nearby' && !isBusiness && !isManager && !isAdmin ? 'nav-map' : undefined}
                   sx={{
                     borderRadius: 2.5, mb: 0.3, px: 1.5, py: 0.65, '@media (max-height: 700px)': { py: 0.5, mb: 0.15 },
                     bgcolor: active ? ALPHA_WHITE_20 : 'transparent',

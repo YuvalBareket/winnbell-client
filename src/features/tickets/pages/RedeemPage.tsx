@@ -27,8 +27,11 @@ import PhoneVerifySheet from '../components/PhoneVerifySheet';
 import ReferralBonusSuccessDialog from '../components/ReferralBonusSuccessDialog';
 import { PRIMARY_MAIN, ACCENT_GOLD_LIGHT, ACCENT_GOLD_TEXT_AA, BORDER_LIGHT, TEXT_HEADING, TEXT_SECONDARY } from '../../../shared/colors';
 import { apiErrorMessage } from '../../../shared/utils/apiError';
+import { formatCurrency } from '../../../shared/utils/date';
 import RedeemFeedback from '../components/RedeemFeedback';
 import ReceiptEntryForm, { StepIndicator } from '../components/ReceiptEntryForm';
+import SpotlightTour, { type TourStep } from '../../onboarding/components/SpotlightTour';
+import { isScanTourPending, clearScanTourPending } from '../../onboarding/tourState';
 
 // The /scan route is guarded by `isUser` in AppRoutes, so this page only ever renders for
 // regular users. It is the consumer "Submit a receipt" screen (receipt is the only entry
@@ -149,6 +152,58 @@ const RedeemPage = () => {
     requirePhone('referral');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isPhoneVerified, isPhoneVerifiedLoaded, welcomeBonusPending]);
+
+  // One-time on-screen tour for fresh signups (flag armed at profile-setup completion).
+  // Coach marks over the LIVE screen: receipt area, weekly entry card, map tab. Waits for a
+  // quiet screen: no loading gate, no phone sheet, no promo auto-activation, no dialogs.
+  // The short delay lets the form's entrance stagger settle so the measured targets sit still.
+  const [tourOn, setTourOn] = useState(false);
+  const didTour = useRef(false);
+  const quietForTour =
+    isPhoneVerifiedLoaded && !drawLoading && !noOpenDraw && !isAutoActivating &&
+    !sheetProps.open && !successDialogOpen && !showReferralBonusDialog;
+  useEffect(() => {
+    if (didTour.current || !quietForTour || !isScanTourPending()) return;
+    didTour.current = true;
+    const timer = window.setTimeout(() => {
+      setTourOn(true);
+      trackFunnel('tour_viewed');
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [quietForTour]);
+
+  const endTour = (completed: boolean) => {
+    clearScanTourPending();
+    setTourOn(false);
+    trackFunnel(completed ? 'tour_completed' : 'tour_skipped', { flushNow: true });
+  };
+
+  // Live prize in the opening line sells the loop harder than any generic wording; while
+  // the prize is still unrevealed we fall back to "current campaign".
+  const tourPrize = currentDraw?.prize_amount != null ? formatCurrency(currentDraw.prize_amount) : null;
+  const tourCampaign = tourPrize ? `the ${tourPrize} campaign` : 'the current campaign';
+  // With a QR-preselected business, step 1 highlights the photo upload ("snap it here");
+  // organic signups see the business picker first, so the copy walks them through that.
+  const hasPreselectedSpot = !!(preselectedBusinessId || preselectedLocation || qrLocationId);
+  const tourSteps: TourStep[] = [
+    {
+      selector: '[data-tour="receipt-form"]',
+      title: 'Turn receipts into entries',
+      body: hasPreselectedSpot
+        ? `Shopped at a participating spot? Snap your receipt here and enter ${tourCampaign}.`
+        : `Shopped at a participating spot? Pick it here, snap your receipt, and enter ${tourCampaign}.`,
+    },
+    {
+      selector: '[data-tour="weekly-entry"]',
+      title: 'A weekly entry, on us',
+      body: 'No receipt? No problem. This card gives you one entry every week. No purchase needed, and it refreshes every Sunday.',
+    },
+    {
+      selector: '[data-tour="nav-map"]',
+      title: 'Your next entry is nearby',
+      body: 'The map shows every participating spot around you, so you always know where to play next.',
+    },
+  ];
 
   // ─── Loading gate ───────────────────────────────────────────────────────────
   // The header renders in every gate state too, so it never pops in after the fact.
@@ -285,6 +340,13 @@ const RedeemPage = () => {
           referralDialogCallbackRef.current?.();
           referralDialogCallbackRef.current = null;
         }}
+      />
+
+      <SpotlightTour
+        active={tourOn}
+        steps={tourSteps}
+        onFinish={endTour}
+        onStepShown={(i) => { if (i === 1) trackFunnel('spotlight_weekly_shown'); }}
       />
     </Box>
   );

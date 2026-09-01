@@ -34,7 +34,12 @@ export type FunnelClientEvent =
   | 'submit_image_attached'
   | 'submit_image_upload_failed'
   | 'submit_attempted'
-  | 'submission_confirmed_shown';
+  | 'submission_confirmed_shown'
+  | 'tour_viewed'
+  | 'tour_completed'
+  | 'tour_skipped'
+  | 'spotlight_weekly_shown'
+  | 'spotlight_weekly_clicked';
 
 interface QueuedEvent {
   id: string;
