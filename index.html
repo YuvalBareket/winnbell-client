@@ -53,10 +53,13 @@
     <!-- ── PWA / Icons ── -->
     <!-- Real favicon-sized assets: Google search needs a small square icon - pointing this
          at the 1200px logo made results fall back to the generic globe. favicon.ico exists
-         in public/ so the bare /favicon.ico probe gets an icon, not the SPA's index.html. -->
+         in public/ so the bare /favicon.ico probe gets an icon, not the SPA's index.html.
+         Hyphenated filenames are deliberate NEW URLs (renamed 2026-09-02): Google's favicon
+         store held a stuck 404 record for the www host from the 1200px-logo era, and a
+         recrawl of unchanged URLs never re-evaluates it - do not rename these back. -->
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="icon" type="image/png" sizes="48x48" href="/winnbell_favicon_48.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/winnbell_favicon_192.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/winnbell-favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/winnbell-favicon-192.png" />
     <!-- apple-touch stays SQUARE: iOS rounds home-screen icons itself and renders
          transparent corners as black, so it must not use the pre-rounded favicon. -->
     <link rel="apple-touch-icon" href="/winnbell_touch_192.png" />
