@@ -196,7 +196,7 @@ const RedeemPage = () => {
     {
       selector: '[data-tour="weekly-entry"]',
       title: 'A weekly entry, on us',
-      body: 'No receipt? No problem. This card gives you one entry every week. No purchase needed, and it refreshes every Sunday.',
+      body: 'No receipt, no purchase, nothing needed. Just tap this card and claim your weekly entry. A new one is waiting every Sunday.',
     },
     {
       selector: '[data-tour="nav-map"]',
