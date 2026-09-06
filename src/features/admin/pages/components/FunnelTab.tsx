@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Box, Chip, Grid, Stack, Typography } from '@mui/material';
+import { Box, Chip, Grid, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import {
   PersonAddAlt1Outlined, ReceiptLongOutlined, TaskAltOutlined, TimerOutlined, SmsOutlined,
-  FilterAltOutlined, BlockOutlined, ShowChartOutlined, CloudOffOutlined,
+  FilterAltOutlined, BlockOutlined, ShowChartOutlined, CloudOffOutlined, QrCode2Outlined,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import {
@@ -21,6 +21,9 @@ import {
 
 // The two funnels, in step order. Counts come live from raw events (includes today).
 const REG_STEPS: ReadonlyArray<readonly [key: string, label: string]> = [
+  // Flyer-QR entry point. Only flyer scanners hit this step (direct and invite traffic
+  // skips it), so later steps can legitimately exceed 100% of it.
+  ['scan_landing_viewed', 'Scanned a flyer'],
   ['registration_page_viewed', 'Viewed sign-up'],
   ['registration_started', 'Started the form'],
   ['registration_submitted', 'Submitted the form'],
@@ -78,7 +81,9 @@ const FunnelSteps = ({ steps, totals, color, tint }: {
     <Stack spacing={1.25}>
       {steps.map(([key, label], i) => {
         const n = totals[key] ?? 0;
-        const width = first > 0 ? Math.max((n / first) * 100, n > 0 ? 4 : 0) : 0;
+        // Clamped at 100: a step can outgrow the first one (direct sign-ups skip the
+        // flyer-scan step), and an unclamped width would slide the fill off the track.
+        const width = first > 0 ? Math.min(100, Math.max((n / first) * 100, n > 0 ? 4 : 0)) : 0;
         const prev = i > 0 ? (totals[steps[i - 1][0]] ?? 0) : n;
         return (
           <Box key={key}>
@@ -255,6 +260,61 @@ const FunnelTab = () => {
           </motion.div>
         </Grid>
       </Grid>
+
+      {/* Flyer scans by location: which physical QR flyers actually get scanned, and how
+          many of those visitors turn into flyer-attributed signups. Hidden entirely on an
+          older API build without flyerScans (deploy skew). */}
+      <motion.div variants={riseIn}>
+        {isLoading ? <AdminCardSkeleton height={220} sx={{ mb: 3 }} /> : data?.flyerScans && (
+          <AdminCard sx={{ p: 2.5, mb: 3 }}>
+            <SectionHeader icon={<QrCode2Outlined />} tint={CHART_TEAL_TINT} color={CHART_TEAL} title='Flyer scans by location' />
+            {data.flyerScans.length > 0 ? (
+              <>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <Table size='small' sx={{
+                    '& th': { fontSize: '12px', fontWeight: 700, color: TEXT_TERTIARY, borderColor: BORDER_LIGHT, whiteSpace: 'nowrap' },
+                    '& td': { fontSize: '13px', color: TEXT_SECONDARY, borderColor: BORDER_LIGHT },
+                  }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Location</TableCell>
+                        <TableCell align='right'>People scanned</TableCell>
+                        <TableCell align='right'>Signed up</TableCell>
+                        <TableCell align='right'>Scan to signup</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {data.flyerScans.map((row) => (
+                        <TableRow key={row.location_id} hover>
+                          <TableCell>
+                            <Typography sx={{ fontSize: '13px', fontWeight: 600, color: TEXT_HEADING }}>
+                              {row.location_name || row.business_name}
+                            </Typography>
+                            {row.location_name && (
+                              <Typography sx={{ fontSize: '11.5px', color: TEXT_TERTIARY }}>{row.business_name}</Typography>
+                            )}
+                          </TableCell>
+                          <TableCell align='right' sx={{ fontWeight: 700, color: TEXT_HEADING }}>{row.visitors.toLocaleString()}</TableCell>
+                          <TableCell align='right'>{row.signups.toLocaleString()}</TableCell>
+                          <TableCell align='right' sx={{ fontWeight: 600 }}>{pct(row.signups, row.visitors)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+                <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', mt: 1.5 }}>
+                  Counts people, not scans - the same person scanning a flyer twice counts once.
+                  Signed up means accounts created through that location's flyer in the selected range.
+                </Typography>
+              </>
+            ) : (
+              <Typography variant='body2' sx={{ color: TEXT_TERTIARY, py: 6, textAlign: 'center' }}>
+                No flyer scans in this range yet.
+              </Typography>
+            )}
+          </AdminCard>
+        )}
+      </motion.div>
 
       {/* Trend + rejection reasons */}
       <Grid container spacing={2}>

@@ -38,14 +38,17 @@
     <meta name="twitter:image" content="https://www.winnbell.com/winnbell_icon_512.png" />
 
     <!-- ── Structured data: lets Google show the brand name/logo for "winnbell" searches.
-         type=application/ld+json is a data block (never executed), so strict CSP allows it. ── -->
+         type=application/ld+json is a data block (never executed), so strict CSP allows it.
+         logo must be the blue-tile icon, NOT winnbell_logo.png: Google renders this image as
+         the search-result site icon, and the raw black mark on transparent shows as a black
+         W in a white circle. ── -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "Winnbell",
         "url": "https://www.winnbell.com/",
-        "logo": "https://www.winnbell.com/winnbell_logo.png",
+        "logo": "https://www.winnbell.com/winnbell_icon_512.png",
         "email": "support@winnbell.com"
       }
     </script>

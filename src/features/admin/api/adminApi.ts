@@ -105,6 +105,17 @@ export interface FunnelAnalytics {
    *  Optional: absent when the API is an older build (deploy version skew) - the
    *  dashboard must render without it, never crash. */
   journey?: { accounts: number; phone_verified: number; tried_entry: number; got_entry: number };
+  /** Per-location flyer QR performance (scan_landing_viewed grouped by location).
+   *  Visitors counts PEOPLE (dedup by user or anonymous journey session, never raw scan
+   *  events); signups are flyer-attributed accounts created in range. Optional: absent
+   *  when the API is an older build (deploy skew) - the dashboard hides the card. */
+  flyerScans?: {
+    location_id: number;
+    location_name: string | null;
+    business_name: string;
+    visitors: number;
+    signups: number;
+  }[];
 }
 export const fetchFunnelAnalytics = (days: number) =>
   api.get<FunnelAnalytics>('/admin/funnel', { params: { days } });
