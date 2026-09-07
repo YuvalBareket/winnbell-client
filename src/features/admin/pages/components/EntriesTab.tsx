@@ -34,7 +34,7 @@ import { useAdminEntries, useAdminImageDecision } from '../../hooks/useAdmin';
 import type { AdminEntryRow } from '../../hooks/useAdmin';
 import type { Draw } from '../../types/admin.types';
 import {
-  QUARANTINE_LABELS, RISK_FLAG_LABELS, IMAGE_STATUS_LABELS,
+  QUARANTINE_LABELS, RISK_FLAG_LABELS, IMAGE_STATUS_LABELS, SOURCE_LABELS,
 } from '../../constants/entryLabels';
 import { staggerContainer, riseIn } from '../../../../shared/motion';
 import {
@@ -145,7 +145,8 @@ const EntriesTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuc
             justifyContent='space-between'
           >
             <Typography variant='body2' sx={{ color: TEXT_SECONDARY }}>
-              Review receipt photos and approve or reject entries. Filter by campaign to focus on one draw.
+              Every entry from every source, newest submissions first. Receipt photos can be
+              approved or rejected. Filter by campaign to focus on one draw.
             </Typography>
             <FormControl size='small' sx={{ minWidth: 220 }}>
               <InputLabel id='entries-campaign-label'>Campaign</InputLabel>
@@ -252,10 +253,10 @@ const EntriesTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuc
             ) : (
               <AdminCard sx={{ p: 0, overflow: 'hidden' }}>
                 <Box sx={{ overflowX: 'auto' }}>
-                  <Table size='small' sx={{ minWidth: 860 }}>
+                  <Table size='small' sx={{ minWidth: 940 }}>
                     <TableHead>
                       <TableRow sx={{ bgcolor: BG_ROW_SUBTLE }}>
-                        {['Entry', 'Customer', 'Business', 'Date', 'Amount', 'Status', 'Receipt', 'Risk'].map((h) => (
+                        {['Entry', 'Customer', 'Business', 'Submitted', 'Receipt date', 'Amount', 'Status', 'Receipt', 'Risk'].map((h) => (
                           <TableCell
                             key={h}
                             sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}
@@ -276,11 +277,10 @@ const EntriesTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuc
                               <Typography variant='caption' fontWeight={700} sx={{ color: TEXT_HEADING }} display='block'>
                                 {e.draw_name ?? '-'}
                               </Typography>
-                              {e.receipt_identifier && (
-                                <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
-                                  #{e.receipt_identifier}
-                                </Typography>
-                              )}
+                              <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                                {SOURCE_LABELS[e.entry_source] ?? e.entry_source}
+                                {e.receipt_identifier ? ` #${e.receipt_identifier}` : ''}
+                              </Typography>
                             </TableCell>
                             {/* Customer */}
                             <TableCell sx={{ maxWidth: 180 }}>
@@ -304,10 +304,19 @@ const EntriesTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuc
                                 </Typography>
                               )}
                             </TableCell>
-                            {/* Date */}
+                            {/* Submitted (when the entry was created, the list's sort order) */}
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                              <Typography variant='caption' sx={{ color: TEXT_HEADING }} display='block'>
+                                {new Date(e.created_at).toLocaleDateString('en-US')}
+                              </Typography>
+                              <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
+                                {new Date(e.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                              </Typography>
+                            </TableCell>
+                            {/* Receipt date (the date printed on the receipt; only receipt entries have one) */}
                             <TableCell sx={{ whiteSpace: 'nowrap' }}>
                               <Typography variant='caption' sx={{ color: TEXT_HEADING }}>
-                                {e.transaction_date ?? (e.activated_at ? new Date(e.activated_at).toLocaleDateString('en-US') : '-')}
+                                {e.transaction_date ?? '-'}
                               </Typography>
                             </TableCell>
                             {/* Amount */}

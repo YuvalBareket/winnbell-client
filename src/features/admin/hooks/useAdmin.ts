@@ -656,6 +656,7 @@ export type AdminEntryRow = {
   code: string;
   entry_source: string;
   activated_at: string | null;
+  created_at: string;
   transaction_date: string | null;
   transaction_amount: number | null;
   receipt_identifier: string | null;
