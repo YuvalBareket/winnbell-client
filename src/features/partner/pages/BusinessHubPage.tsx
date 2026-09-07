@@ -261,9 +261,11 @@ const BusinessHubPage = () => {
           initial='hidden'
           animate='visible'
         >
-          {/* Onboarding banner - shown when not yet subscribed */}
+          {/* Onboarding banner - only when NOT in the open campaign. A business can be
+              participating without a plan (free-trial join holds a draw_entry with no
+              subscription), and telling a live business "you aren't live yet" is false. */}
           <AnimatePresence>
-            {!business.is_subscribed && (
+            {!business.is_subscribed && !business.is_participating && (
               <motion.div key='onboarding-banner' variants={riseIn} exit={{ opacity: 0, y: -12, transition: { duration: 0.25 } }}>
                 <Paper
                   elevation={3}
@@ -313,6 +315,31 @@ const BusinessHubPage = () => {
                     </Button>
                   )}
                 </Paper>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Under-review banner - shown when the business has not yet been approved */}
+          <AnimatePresence>
+            {business.is_under_review && (
+              <motion.div
+                key='under-review-banner'
+                variants={riseIn}
+                initial='hidden'
+                animate='visible'
+                exit={{ opacity: 0, y: -12, transition: { duration: 0.25 } }}
+              >
+                <Alert
+                  severity='info'
+                  sx={{ borderRadius: 2, fontWeight: 500 }}
+                >
+                  <Typography variant='body2' fontWeight={700} sx={{ mb: 0.25 }}>
+                    Your business is under review
+                  </Typography>
+                  <Typography variant='body2'>
+                    We review every new business before it goes live. This usually takes less than a day. You can finish setting up in the meantime.
+                  </Typography>
+                </Alert>
               </motion.div>
             )}
           </AnimatePresence>

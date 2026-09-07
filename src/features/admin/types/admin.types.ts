@@ -29,6 +29,7 @@ export interface BusinessStats {
   id: number;
   name: string;
   sector: string;
+  review_status?: 'under_review' | 'approved' | 'blocked';
   entry_cap: number | null;
   is_subscribed: boolean;
   owner_name: string | null;
@@ -67,6 +68,7 @@ export interface BusinessHealthSummary {
   billing: number;
   setup: number;
   next_ready: number;
+  pending_review: number;
 }
 
 export interface UserAnalyticsSummary {

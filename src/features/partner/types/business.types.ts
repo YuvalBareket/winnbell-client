@@ -69,6 +69,9 @@ export interface BusinessData {
   website_url?: string | null;
   is_subscribed: boolean;
   is_participating: boolean;
+  // True when the business is not yet approved (or has been blocked). The raw
+  // review_status field is never exposed to owner endpoints - only this boolean.
+  is_under_review: boolean;
   entry_cap: number | null;              // NULL = falls back to global cap
   min_transaction_amount: number;        // always present; minimum required per receipt
   pending_min_transaction_amount: number | null; // set when changed during active campaign

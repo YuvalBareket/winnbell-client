@@ -118,6 +118,16 @@ const FILTER_TYPES = [
       'They are paying but cannot receive entries.',
     ],
   },
+  {
+    key: 'review',
+    label: 'Pending review',
+    tipTitle: 'Pending review',
+    tipLines: [
+      'Self-serve businesses waiting for admin approval.',
+      'They are hidden from all customer surfaces until approved.',
+      'Approve or block from the business detail drawer.',
+    ],
+  },
 ] as const;
 
 // Structured tooltip body: bold title + short spaced lines. Long single-string tooltips
@@ -270,6 +280,26 @@ const BusinessesTab: React.FC<Props> = ({ isMobile }) => {
     );
   };
 
+  const reviewStatusChip = (reviewStatus: string | undefined) => {
+    if (!reviewStatus || reviewStatus === 'approved') return null;
+    if (reviewStatus === 'blocked') {
+      return (
+        <Chip
+          label='Blocked'
+          size='small'
+          sx={{ bgcolor: METRIC_BAD_TINT, color: METRIC_BAD, fontWeight: 700, borderRadius: '8px' }}
+        />
+      );
+    }
+    return (
+      <Chip
+        label='Under review'
+        size='small'
+        sx={{ bgcolor: STATUS_PENDING_BG, color: STATUS_PENDING_TEXT, fontWeight: 700, borderRadius: '8px' }}
+      />
+    );
+  };
+
   // Desktop: show only the current page's rows
   const desktopRows = data?.pages[page]?.rows ?? [];
   const total = data?.pages[0]?.total ?? 0;
@@ -295,7 +325,7 @@ const BusinessesTab: React.FC<Props> = ({ isMobile }) => {
               ))
             ) : (
               FILTER_TYPES.map((filter) => {
-                const count = summary ? (summary[filter.key as keyof typeof summary] as number) || 0 : 0;
+                const count = summary ? (summary[filter.key === 'review' ? 'pending_review' : filter.key as keyof typeof summary] as number) || 0 : 0;
                 const isActive = activeFilter === filter.key;
                 const isMuted = count === 0;
                 // Card accent: green = positive enrollment forecast, red = urgent, amber = watch.
@@ -303,6 +333,8 @@ const BusinessesTab: React.FC<Props> = ({ isMobile }) => {
                   ? { main: METRIC_GOOD, tint: METRIC_GOOD_TINT }
                   : (filter.key === 'attention' || filter.key === 'billing' || filter.key === 'setup')
                   ? { main: METRIC_BAD, tint: METRIC_BAD_TINT }
+                  : filter.key === 'review'
+                  ? { main: STATUS_PENDING_TEXT, tint: STATUS_PENDING_BG }
                   : { main: METRIC_WARN, tint: METRIC_WARN_TINT };
                 // "Next campaign" reads as ready-out-of-total; warning cards show a plain count.
                 const countLabel = filter.key === 'next_ready'
@@ -408,7 +440,8 @@ const BusinessesTab: React.FC<Props> = ({ isMobile }) => {
                                 </IconButton>
                               </Tooltip>
                             </Box>
-                            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                              {reviewStatusChip(biz.review_status)}
                               {healthBadge(biz.health, biz.flags)}
                               {subChip(biz.subscription_status)}
                             </Box>
@@ -525,7 +558,10 @@ const BusinessesTab: React.FC<Props> = ({ isMobile }) => {
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: '12px', bgcolor: PRIMARY_TINT, color: PRIMARY_MAIN }}>
                               {sectorData?.icon || <StorefrontIcon sx={{ fontSize: 20 }} />}
                             </Box>
-                            <Typography variant='body2' fontWeight={600} noWrap>{biz.name}</Typography>
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography variant='body2' fontWeight={600} noWrap>{biz.name}</Typography>
+                              {reviewStatusChip(biz.review_status)}
+                            </Box>
                           </Box>
                         </TableCell>
                         <TableCell sx={{ maxWidth: 140 }}>

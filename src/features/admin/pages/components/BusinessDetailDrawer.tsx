@@ -42,7 +42,7 @@ import {
   STATUS_PENDING_BG, STATUS_PENDING_TEXT, METRIC_BAD_TINT, METRIC_BAD,
 } from '../../../../shared/colors';
 import { AdminCard, SectionHeader } from './adminUi';
-import { useBusinessDetail, useAdminImageDecision, useBusinessEntries, useUpdateBusinessThreshold } from '../../hooks/useAdmin';
+import { useBusinessDetail, useAdminImageDecision, useBusinessEntries, useUpdateBusinessThreshold, useUpdateBusinessReviewStatus } from '../../hooks/useAdmin';
 
 interface Props {
   businessId: number | null;
@@ -98,12 +98,16 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
   const imageDecision = useAdminImageDecision();
   const [pendingTicket, setPendingTicket] = useState<number | null>(null);
   const [thresholdOpen, setThresholdOpen] = useState(false);
+  const [blockConfirmOpen, setBlockConfirmOpen] = useState(false);
+  const reviewStatusMutation = useUpdateBusinessReviewStatus();
 
   // Reset both campaign selection and entries page when a different business opens.
   // Collapsed from two chained effects (3 renders) to one (2 renders).
   useEffect(() => {
     setSelectedDrawId(ALL);
     setEntriesPage(1);
+    // A block-confirm dialog left open must not carry over to the next business.
+    setBlockConfirmOpen(false);
   }, [businessId]);
 
   const biz = data?.business;
@@ -265,6 +269,73 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                   }}
                 />
               </Stack>
+            </motion.div>
+
+            {/* Review status */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
+              <AdminCard sx={{ p: 2 }}>
+                <Stack direction='row' alignItems='center' justifyContent='space-between' flexWrap='wrap' gap={1.5}>
+                  <Box>
+                    <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, mb: 0.5 }}>
+                      Review Status
+                    </Typography>
+                    <Chip
+                      label={
+                        biz.review_status === 'approved' ? 'Approved'
+                        : biz.review_status === 'blocked' ? 'Blocked'
+                        : 'Under review'
+                      }
+                      size='small'
+                      sx={{
+                        bgcolor: biz.review_status === 'approved' ? STATUS_ACTIVATED_BG : biz.review_status === 'blocked' ? METRIC_BAD_TINT : STATUS_PENDING_BG,
+                        color: biz.review_status === 'approved' ? STATUS_ACTIVATED_TEXT : biz.review_status === 'blocked' ? METRIC_BAD : STATUS_PENDING_TEXT,
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                      }}
+                    />
+                    {biz.review_status_changed_at && (
+                      <Typography variant='caption' sx={{ color: TEXT_TERTIARY, display: 'block', mt: 0.5 }}>
+                        Changed {new Date(biz.review_status_changed_at).toLocaleDateString('en-US')}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Stack direction='row' spacing={1}>
+                    {biz.review_status !== 'approved' && (
+                      <Button
+                        size='small'
+                        variant='contained'
+                        disabled={reviewStatusMutation.isPending}
+                        onClick={() => reviewStatusMutation.mutate({ businessId: biz.id, status: 'approved' })}
+                        sx={{ fontWeight: 700, bgcolor: STATUS_ACTIVATED_TEXT, '&:hover': { bgcolor: STATUS_ACTIVATED_TEXT, filter: 'brightness(0.9)' } }}
+                      >
+                        Approve
+                      </Button>
+                    )}
+                    {biz.review_status === 'blocked' && (
+                      <Button
+                        size='small'
+                        variant='outlined'
+                        disabled={reviewStatusMutation.isPending}
+                        onClick={() => reviewStatusMutation.mutate({ businessId: biz.id, status: 'under_review' })}
+                        sx={{ fontWeight: 700 }}
+                      >
+                        Move to review
+                      </Button>
+                    )}
+                    {biz.review_status !== 'blocked' && (
+                      <Button
+                        size='small'
+                        variant='outlined'
+                        disabled={reviewStatusMutation.isPending}
+                        onClick={() => setBlockConfirmOpen(true)}
+                        sx={{ fontWeight: 700, borderColor: METRIC_BAD, color: METRIC_BAD, '&:hover': { bgcolor: METRIC_BAD_TINT, borderColor: METRIC_BAD } }}
+                      >
+                        Block
+                      </Button>
+                    )}
+                  </Stack>
+                </Stack>
+              </AdminCard>
             </motion.div>
 
             {/* Campaign selector */}
@@ -679,6 +750,35 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
           onClose={() => setThresholdOpen(false)}
         />
       )}
+
+      {/* Block confirmation dialog */}
+      <Dialog open={blockConfirmOpen} onClose={() => setBlockConfirmOpen(false)} maxWidth='xs' fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Block this business?</DialogTitle>
+        <DialogContent>
+          <Typography variant='body2'>
+            This immediately removes the business from the map and all customer surfaces. Existing customer entries stay in the draw.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setBlockConfirmOpen(false)} sx={{ fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button
+            variant='contained'
+            disabled={reviewStatusMutation.isPending}
+            onClick={() => {
+              if (!businessId) return;
+              reviewStatusMutation.mutate(
+                { businessId, status: 'blocked' },
+                { onSettled: () => setBlockConfirmOpen(false) },
+              );
+            }}
+            sx={{ fontWeight: 700, bgcolor: METRIC_BAD, '&:hover': { bgcolor: METRIC_BAD, filter: 'brightness(0.9)' } }}
+          >
+            Block business
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Drawer>
   );
 };

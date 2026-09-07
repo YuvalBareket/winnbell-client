@@ -41,6 +41,7 @@ import {
   setBusinessParticipation,
   fetchBusinessDetail,
   updateBusinessThreshold,
+  updateBusinessReviewStatus,
   fetchBusinessEntries,
   fetchAdminEntries,
   adminImageDecision,
@@ -619,6 +620,19 @@ export const useUpdateBusinessThreshold = () => {
   });
 };
 
+export const useUpdateBusinessReviewStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ businessId, status }: { businessId: number; status: 'under_review' | 'approved' | 'blocked' }) =>
+      updateBusinessReviewStatus(businessId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businessDetailAll });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.healthSummary });
+    },
+  });
+};
+
 export const useAdminImageDecision = (onSettled?: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -697,6 +711,7 @@ export const useAdminEntries = (
 
 // Minimal types for the fields actually consumed by BusinessDetailDrawer
 type AdminBusinessDetail = {
+  id: number;
   name: string;
   sector: string;
   description: string | null;
@@ -714,6 +729,9 @@ type AdminBusinessDetail = {
   owner_is_active: boolean;
   owner_risk_score: number;
   owner_risk_flags: string[];
+  review_status: 'under_review' | 'approved' | 'blocked';
+  review_status_changed_at: string | null;
+  legal_name: string | null;
   [key: string]: unknown;
 };
 

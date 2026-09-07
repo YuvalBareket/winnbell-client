@@ -196,6 +196,11 @@ export const updateBusinessThreshold = (
   payload: { minTransactionAmount?: number; drawEntryMinTransaction?: number },
 ) => api.patch(`/admin/businesses/${businessId}/threshold`, payload);
 
+export const updateBusinessReviewStatus = (
+  businessId: number,
+  status: 'under_review' | 'approved' | 'blocked',
+) => api.patch(`/admin/businesses/${businessId}/review-status`, { status });
+
 export const adminImageDecision = (ticketId: number, decision: 'approve' | 'reject') =>
   api.patch(`/admin/tickets/${ticketId}/image-decision`, { decision });
 
