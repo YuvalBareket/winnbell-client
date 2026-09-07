@@ -657,6 +657,9 @@ export type AdminEntryRow = {
   entry_source: string;
   activated_at: string | null;
   created_at: string;
+  // Entries this row represents: a multi-entry receipt (amount multiplier) is collapsed
+  // into one row; 1 for every other entry.
+  entry_count: number;
   transaction_date: string | null;
   transaction_amount: number | null;
   receipt_identifier: string | null;

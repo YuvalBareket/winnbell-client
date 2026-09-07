@@ -113,7 +113,7 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
           onChange={(_, val) => { setAnalyticsDrawFilter(val?.id ?? null); setLocationPage(0); }}
           isOptionEqualToValue={(a, b) => a.id === b.id}
           renderInput={(params) => <TextField {...params} label='Campaign' />}
-          sx={{ minWidth: 200 }}
+          sx={{ minWidth: 200, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}
         />
         <Autocomplete
           size='small'
@@ -145,7 +145,7 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
               }}
             />
           )}
-          sx={{ minWidth: 200 }}
+          sx={{ minWidth: 200, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}
         />
         {(analyticsDrawFilter || analyticsBusinessFilter) && (
           <Chip
@@ -541,7 +541,7 @@ const AnalyticsTab: React.FC<Props> = ({ isMobile }) => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ width: 280 }}
+                  sx={{ width: { xs: '100%', sm: 280 } }}
                 />
                 </Box>
               </CardContent>

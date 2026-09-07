@@ -20,7 +20,6 @@ import {
   RocketLaunchOutlined,
   BusinessOutlined,
   BarChartOutlined,
-  FilterAltOutlined,
   ReceiptLongOutlined,
   PrivacyTipOutlined,
   GavelOutlined,
@@ -28,15 +27,12 @@ import {
   ArticleOutlined,
   ChevronRight,
   EmojiEventsOutlined,
-  AdminPanelSettingsOutlined,
   SettingsOutlined,
   CampaignOutlined,
-  DashboardOutlined,
-  PeopleOutlined,
-  NotificationsOutlined,
   CardGiftcardOutlined,
   UnfoldMore,
 } from '@mui/icons-material';
+import { adminNavItems } from '../constants/navItems';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, Fragment } from 'react';
 import { useAppSelector } from '../../store/hook';
@@ -97,16 +93,9 @@ const AppMenuDrawer = ({ open, onClose }: Props) => {
   const roleLabel = getRoleLabel(isAdmin, isBusiness, isManager);
 
   const mainNavItems: NavItem[] = isAdmin
-    ? [
-        { label: 'Overview', icon: <DashboardOutlined />, path: '/admin' },
-        { label: 'Campaigns', icon: <AdminPanelSettingsOutlined />, path: '/admin/campaigns' },
-        { label: 'Users', icon: <PeopleOutlined />, path: '/admin/users' },
-        { label: 'Businesses', icon: <BusinessOutlined />, path: '/admin/businesses' },
-        { label: 'Analytics', icon: <BarChartOutlined />, path: '/admin/analytics' },
-        { label: 'Funnel', icon: <FilterAltOutlined />, path: '/admin/funnel' },
-        { label: 'Notifications', icon: <NotificationsOutlined />, path: '/admin/notifications' },
-        { label: 'Settings', icon: <SettingsOutlined />, path: '/admin/settings' },
-      ]
+    // Derived from the shared list so mobile always offers every admin page the
+    // desktop sidebar has (this list previously drifted and dropped Entries + Map).
+    ? adminNavItems.map(({ label, Icon, path }) => ({ label, icon: <Icon />, path }))
     : isBusiness
     ? [
         { label: 'Business Hub', icon: <BusinessOutlined />, path: '/nearby' },

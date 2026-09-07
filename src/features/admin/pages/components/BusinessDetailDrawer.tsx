@@ -168,19 +168,19 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
           position: 'relative',
           overflow: 'hidden',
           flexShrink: 0,
-          borderRadius: '20px 0 0 20px',
+          borderRadius: { xs: 0, md: '20px 0 0 20px' },
         }}
       >
-        {/* Glow orb detail */}
+        {/* Glow orb detail, scaled down on phones so it stays a corner accent */}
         <Box
           sx={{
             position: 'absolute',
-            width: 280,
-            height: 280,
+            width: { xs: 160, sm: 280 },
+            height: { xs: 160, sm: 280 },
             borderRadius: '50%',
             background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 70%)`,
-            top: -80,
-            right: -80,
+            top: { xs: -50, sm: -80 },
+            right: { xs: -50, sm: -80 },
             pointerEvents: 'none',
           }}
         />
@@ -356,7 +356,9 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
 
             {/* Stats — scoped to selected campaign */}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 1.5 }}>
+              {/* Phones pin an even 2-up grid (auto-fill would collapse to one long column
+                  on the narrowest screens); wider screens pack as many 150px+ tiles as fit. */}
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(auto-fill, minmax(150px, 1fr))' }, gap: 1.5 }}>
                 {([
                   { label: selectedDrawId === ALL ? 'Total Entries' : 'Entries (campaign)', value: activeEntries },
                   { label: selectedDrawId === ALL ? 'Quarantined' : 'Quarantined (campaign)', value: quarantinedEntries },
@@ -533,7 +535,10 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
               <Typography variant='body2' sx={{ color: TEXT_TERTIARY }}>No entries{selectedDrawId !== ALL ? ' for this campaign' : ''} yet.</Typography>
             ) : (
               <AdminCard sx={{ overflow: 'hidden' }}>
-                <Table size='small'>
+                {/* Horizontal scroll on narrow screens: the table (8 columns, 9 with the
+                    all-campaigns Campaign column) is wider than a phone */}
+                <Box sx={{ overflowX: 'auto' }}>
+                <Table size='small' sx={{ minWidth: 760 }}>
                   <TableHead>
                     <TableRow sx={{ bgcolor: BG_ROW_SUBTLE }}>
                       {selectedDrawId === ALL && <TableCell sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: TEXT_TERTIARY, fontSize: 11 }}>Campaign</TableCell>}
@@ -707,6 +712,7 @@ const BusinessDetailDrawer: React.FC<Props> = ({ businessId, onClose }) => {
                     ))}
                   </TableBody>
                 </Table>
+                </Box>
               </AdminCard>
             )}
             {entriesTotal > 50 && (

@@ -124,7 +124,7 @@ const BusinessDashboard: React.FC = () => {
         title={sectionTitle[path] ?? 'Admin'}
       />
 
-      <Box p={3}>
+      <Box sx={{ p: { xs: 2, md: 3 } }}>
         {renderContent()}
 
         <CreateDrawModal open={isDrawModalOpen} onClose={() => setIsDrawModalOpen(false)} />

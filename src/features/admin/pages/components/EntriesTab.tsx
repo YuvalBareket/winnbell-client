@@ -272,11 +272,20 @@ const EntriesTab: React.FC<Props> = ({ draws, isMobile, onSnackError, onSnackSuc
                         const showActions = !!imgStatus && imgStatus !== 'not_required';
                         return (
                           <TableRow key={e.id} hover sx={{ '&:hover': { bgcolor: BG_ROW_SUBTLE }, borderBottom: `1px solid ${BORDER_SUBTLE}` }}>
-                            {/* Entry */}
+                            {/* Entry - one row per receipt; the badge shows how many entries it earned */}
                             <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                              <Typography variant='caption' fontWeight={700} sx={{ color: TEXT_HEADING }} display='block'>
-                                {e.draw_name ?? '-'}
-                              </Typography>
+                              <Stack direction='row' spacing={0.75} alignItems='center'>
+                                <Typography variant='caption' fontWeight={700} sx={{ color: TEXT_HEADING }}>
+                                  {e.draw_name ?? '-'}
+                                </Typography>
+                                {e.entry_count > 1 && (
+                                  <Chip
+                                    label={`x${e.entry_count} entries`}
+                                    size='small'
+                                    sx={{ bgcolor: PRIMARY_TINT, color: PRIMARY_MAIN, fontWeight: 700, fontSize: 10, height: 18, borderRadius: '6px' }}
+                                  />
+                                )}
+                              </Stack>
                               <Typography variant='caption' sx={{ color: TEXT_TERTIARY }}>
                                 {SOURCE_LABELS[e.entry_source] ?? e.entry_source}
                                 {e.receipt_identifier ? ` #${e.receipt_identifier}` : ''}

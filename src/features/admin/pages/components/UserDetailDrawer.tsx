@@ -311,13 +311,15 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
           py: 3,
           position: 'relative',
           overflow: 'hidden',
+          // Corner glow, scaled down on phones so it stays an accent instead of
+          // washing over most of the narrow header.
           '&::after': {
             content: '""',
             position: 'absolute',
-            top: '-50%',
-            right: '-10%',
-            width: '60%',
-            height: '120%',
+            top: { xs: -60, sm: '-50%' },
+            right: { xs: -40, sm: '-10%' },
+            width: { xs: 160, sm: '60%' },
+            height: { xs: 160, sm: '120%' },
             borderRadius: '50%',
             background: `radial-gradient(circle, ${ALPHA_WHITE_15} 0%, transparent 70%)`,
             pointerEvents: 'none',
@@ -449,7 +451,9 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
             {/* Stats */}
             <motion.div variants={popIn}>
               <AdminCard sx={{ p: 0, overflow: 'hidden' }}>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderRadius: '15px' }}>
+                {/* 2x2 on wider screens; a single column on phones (the border sx below
+                    mirrors this split so the cell dividers track the active layout). */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, borderRadius: '15px' }}>
                   {[
                     { label: 'Member Since', value: new Date(user.created_at).toLocaleDateString('en-US') },
                     { label: 'Total Entries', value: entries.length },
@@ -460,8 +464,14 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                       key={label}
                       sx={{
                         p: 2,
-                        borderBottom: idx >= 2 ? 'none' : `1px solid ${BORDER_SUBTLE}`,
-                        borderRight: idx % 2 === 0 ? `1px solid ${BORDER_SUBTLE}` : 'none',
+                        borderBottom: {
+                          xs: idx < 3 ? `1px solid ${BORDER_SUBTLE}` : 'none',
+                          sm: idx >= 2 ? 'none' : `1px solid ${BORDER_SUBTLE}`,
+                        },
+                        borderRight: {
+                          xs: 'none',
+                          sm: idx % 2 === 0 ? `1px solid ${BORDER_SUBTLE}` : 'none',
+                        },
                         bgcolor: idx % 2 === 0 ? BG_ROW_SUBTLE : 'transparent',
                       }}
                     >
@@ -641,7 +651,9 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                   </Typography>
                 ) : (
                   <AdminCard sx={{ p: 0, overflow: 'hidden' }}>
-                    <Table size='small'>
+                    {/* Horizontal scroll on narrow screens: the 7-column table is wider than a phone */}
+                    <Box sx={{ overflowX: 'auto' }}>
+                    <Table size='small' sx={{ minWidth: 640 }}>
                       <TableHead>
                         <TableRow sx={{ bgcolor: BG_ROW_SUBTLE }}>
                           <TableCell sx={{ fontWeight: 700, color: TEXT_TERTIARY, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.04em' }}>Campaign</TableCell>
@@ -856,6 +868,7 @@ const UserDetailDrawer: React.FC<Props> = ({ userId, onClose }) => {
                         ))}
                       </TableBody>
                     </Table>
+                    </Box>
                   </AdminCard>
                 )}
               </Box>

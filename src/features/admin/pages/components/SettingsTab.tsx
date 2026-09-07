@@ -141,7 +141,7 @@ const SettingsTab: React.FC = () => {
                         {...params}
                         size='small'
                         placeholder='Search state…'
-                        sx={{ width: 300, '& .MuiOutlinedInput-root': { borderRadius: '12px', borderColor: BORDER_LIGHT } }}
+                        sx={{ width: { xs: '100%', sm: 300 }, '& .MuiOutlinedInput-root': { borderRadius: '12px', borderColor: BORDER_LIGHT } }}
                       />
                     )}
                   />
@@ -258,7 +258,7 @@ const SettingsTab: React.FC = () => {
                         error={!!foundingCapError}
                         helperText={foundingCapError || 'Minimum: current number of paid members'}
                         sx={{
-                          width: 220,
+                          width: { xs: '100%', sm: 220 },
                           '& .MuiOutlinedInput-root': { borderRadius: '12px', borderColor: BORDER_LIGHT },
                         }}
                       />
@@ -310,7 +310,7 @@ const SettingsTab: React.FC = () => {
                 helperText={entryCapError || (globalEntryCap.trim() === '' ? 'Currently: no cap (unlimited)' : `Currently: ${globalEntryCap} entries per location`)}
                 placeholder='e.g. 1000'
                 sx={{
-                  width: 220,
+                  width: { xs: '100%', sm: 220 },
                   '& .MuiOutlinedInput-root': { borderRadius: '12px', borderColor: BORDER_LIGHT },
                 }}
               />
